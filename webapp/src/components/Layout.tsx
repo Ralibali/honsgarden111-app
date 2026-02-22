@@ -22,7 +22,7 @@ export default function Layout() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <span className="logo">🥚</span>
-          <h1>Hönshus</h1>
+          <h1>Hönsgården</h1>
         </div>
         
         <nav className="sidebar-nav">
