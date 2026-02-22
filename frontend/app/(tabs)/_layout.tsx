@@ -2,8 +2,11 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Platform, StyleSheet } from 'react-native';
+import i18n from '../../src/i18n';
 
 export default function TabLayout() {
+  const t = i18n.t.bind(i18n);
+  
   return (
     <Tabs
       screenOptions={{
@@ -17,7 +20,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Hem',
+          title: t('nav.home'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -26,7 +29,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="eggs"
         options={{
-          title: 'Ägg',
+          title: t('nav.eggs'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="egg" size={size} color={color} />
           ),
@@ -35,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="finance"
         options={{
-          title: 'Ekonomi',
+          title: t('nav.finance'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="wallet" size={size} color={color} />
           ),
@@ -44,7 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="statistics"
         options={{
-          title: 'Statistik',
+          title: t('nav.statistics'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="stats-chart" size={size} color={color} />
           ),
@@ -53,7 +56,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Inställningar',
+          title: t('nav.settings'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings" size={size} color={color} />
           ),
