@@ -4,11 +4,11 @@ import React, { useEffect } from 'react';
 import { usePremiumStore } from '../src/store/premiumStore';
 
 export default function RootLayout() {
-  const { checkPremiumStatus } = usePremiumStore();
+  const { initializePremium } = usePremiumStore();
   
   useEffect(() => {
-    // Check premium status on app launch
-    checkPremiumStatus();
+    // Initialize RevenueCat and check premium status on app launch
+    initializePremium();
   }, []);
   
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,37 +7,147 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { usePremiumStore } from '../src/store/premiumStore';
-import i18n, { formatCurrency } from '../src/i18n';
+import { getOfferings, purchasePackage, ENTITLEMENT_ID } from '../src/services/revenuecat';
+import i18n from '../src/i18n';
 
-const MONTHLY_PRICE = 19;
-const YEARLY_PRICE = 149;
-const YEARLY_SAVINGS = Math.round((1 - (YEARLY_PRICE / (MONTHLY_PRICE * 12))) * 100);
+// Try to import RevenueCatUI (only available on native)
+let RevenueCatUI: any = null;
+let PAYWALL_RESULT: any = null;
+
+try {
+  const rcui = require('react-native-purchases-ui');
+  RevenueCatUI = rcui.default;
+  PAYWALL_RESULT = rcui.PAYWALL_RESULT;
+} catch (e) {
+  console.log('RevenueCatUI not available (likely on web)');
+}
+
+const MONTHLY_PRICE = '19 kr';
+const YEARLY_PRICE = '149 kr';
+const YEARLY_SAVINGS = 35;
 
 export default function PaywallScreen() {
   const router = useRouter();
-  const { setPremiumStatus, restorePurchases, loading } = usePremiumStore();
+  const { setPremiumStatus, restorePurchases, checkPremiumStatus, loading: storeLoading } = usePremiumStore();
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [purchasing, setPurchasing] = useState(false);
+  const [offerings, setOfferings] = useState<any>(null);
+  const [loadingOfferings, setLoadingOfferings] = useState(true);
   
   const t = i18n.t.bind(i18n);
+  const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
+  
+  useEffect(() => {
+    loadOfferings();
+  }, []);
+  
+  const loadOfferings = async () => {
+    if (!isNative) {
+      setLoadingOfferings(false);
+      return;
+    }
+    
+    try {
+      const currentOffering = await getOfferings();
+      setOfferings(currentOffering);
+    } catch (error) {
+      console.error('Failed to load offerings:', error);
+    }
+    setLoadingOfferings(false);
+  };
+  
+  // Use RevenueCat's built-in paywall if available
+  const presentRevenueCatPaywall = async (): Promise<boolean> => {
+    if (!RevenueCatUI || !PAYWALL_RESULT) {
+      console.log('RevenueCatUI not available');
+      return false;
+    }
+    
+    try {
+      const paywallResult = await RevenueCatUI.presentPaywall();
+      
+      switch (paywallResult) {
+        case PAYWALL_RESULT.PURCHASED:
+        case PAYWALL_RESULT.RESTORED:
+          await checkPremiumStatus();
+          return true;
+        case PAYWALL_RESULT.NOT_PRESENTED:
+        case PAYWALL_RESULT.ERROR:
+        case PAYWALL_RESULT.CANCELLED:
+        default:
+          return false;
+      }
+    } catch (error) {
+      console.error('Paywall presentation error:', error);
+      return false;
+    }
+  };
   
   const handlePurchase = async () => {
     setPurchasing(true);
     
-    // TODO: Integrate with RevenueCat
-    // For now, simulate purchase
-    try {
-      // In production, this would call RevenueCat
-      // const { customerInfo } = await Purchases.purchasePackage(package);
-      
-      // Simulate successful purchase for demo
+    // Try to use RevenueCat's built-in paywall first (if configured in dashboard)
+    if (isNative && RevenueCatUI) {
+      const success = await presentRevenueCatPaywall();
+      if (success) {
+        setPurchasing(false);
+        Alert.alert(
+          t('common.success'),
+          t('premium.purchaseSuccess'),
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+        return;
+      }
+    }
+    
+    // Fallback: Manual package purchase
+    if (isNative && offerings) {
+      try {
+        const packageId = selectedPlan === 'yearly' ? '$rc_annual' : '$rc_monthly';
+        const packageToPurchase = offerings.availablePackages?.find(
+          (pkg: any) => pkg.packageType === packageId || pkg.identifier === packageId
+        );
+        
+        if (packageToPurchase) {
+          const result = await purchasePackage(packageToPurchase);
+          
+          if (result.success) {
+            await checkPremiumStatus();
+            setPurchasing(false);
+            Alert.alert(
+              t('common.success'),
+              t('premium.purchaseSuccess'),
+              [{ text: 'OK', onPress: () => router.back() }]
+            );
+            return;
+          } else if (result.error === 'cancelled') {
+            setPurchasing(false);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Purchase error:', error);
+      }
+    }
+    
+    // Demo mode for web or if no offerings available
+    if (!isNative) {
+      // Simulate purchase for demo
       setTimeout(() => {
-        setPremiumStatus(true, 'demo_subscription', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), selectedPlan);
+        const expiresAt = new Date();
+        if (selectedPlan === 'yearly') {
+          expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+        } else {
+          expiresAt.setMonth(expiresAt.getMonth() + 1);
+        }
+        
+        setPremiumStatus(true, 'demo_subscription', expiresAt.toISOString(), selectedPlan);
         setPurchasing(false);
         Alert.alert(
           t('common.success'),
@@ -45,10 +155,11 @@ export default function PaywallScreen() {
           [{ text: 'OK', onPress: () => router.back() }]
         );
       }, 1500);
-    } catch (error) {
-      setPurchasing(false);
-      Alert.alert(t('common.error'), t('premium.purchaseError'));
+      return;
     }
+    
+    setPurchasing(false);
+    Alert.alert(t('common.error'), t('premium.purchaseError'));
   };
   
   const handleRestore = async () => {
@@ -113,6 +224,31 @@ export default function PaywallScreen() {
       premium: true,
     },
   ];
+  
+  // Get prices from offerings if available
+  const getPrice = (plan: 'monthly' | 'yearly'): string => {
+    if (offerings?.availablePackages) {
+      const packageType = plan === 'yearly' ? '$rc_annual' : '$rc_monthly';
+      const pkg = offerings.availablePackages.find(
+        (p: any) => p.packageType === packageType || p.identifier === packageType
+      );
+      if (pkg?.product?.priceString) {
+        return pkg.product.priceString;
+      }
+    }
+    return plan === 'yearly' ? YEARLY_PRICE : MONTHLY_PRICE;
+  };
+  
+  if (loadingOfferings) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#4CAF50" />
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
   
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -184,13 +320,11 @@ export default function PaywallScreen() {
             ]}
             onPress={() => setSelectedPlan('yearly')}
           >
-            {YEARLY_SAVINGS > 0 && (
-              <View style={styles.savingsBadge}>
-                <Text style={styles.savingsText}>
-                  {t('premium.yearlySavings', { percent: YEARLY_SAVINGS })}
-                </Text>
-              </View>
-            )}
+            <View style={styles.savingsBadge}>
+              <Text style={styles.savingsText}>
+                {t('premium.yearlySavings', { percent: YEARLY_SAVINGS })}
+              </Text>
+            </View>
             <View style={styles.planRadio}>
               <View style={[
                 styles.radioOuter,
@@ -201,8 +335,8 @@ export default function PaywallScreen() {
             </View>
             <View style={styles.planInfo}>
               <Text style={styles.planName}>Årsprenumeration</Text>
-              <Text style={styles.planPrice}>{YEARLY_PRICE} kr{t('common.perYear')}</Text>
-              <Text style={styles.planMonthly}>({Math.round(YEARLY_PRICE / 12)} kr{t('common.perMonth')})</Text>
+              <Text style={styles.planPrice}>{getPrice('yearly')}{t('common.perYear')}</Text>
+              <Text style={styles.planMonthly}>(~12 kr{t('common.perMonth')})</Text>
             </View>
           </TouchableOpacity>
           
@@ -223,27 +357,33 @@ export default function PaywallScreen() {
             </View>
             <View style={styles.planInfo}>
               <Text style={styles.planName}>Månadsprenumeration</Text>
-              <Text style={styles.planPrice}>{MONTHLY_PRICE} kr{t('common.perMonth')}</Text>
+              <Text style={styles.planPrice}>{getPrice('monthly')}{t('common.perMonth')}</Text>
             </View>
           </TouchableOpacity>
         </View>
         
         {/* CTA Button */}
         <TouchableOpacity
-          style={[styles.ctaButton, purchasing && styles.ctaButtonDisabled]}
+          style={[styles.ctaButton, (purchasing || storeLoading) && styles.ctaButtonDisabled]}
           onPress={handlePurchase}
-          disabled={purchasing}
+          disabled={purchasing || storeLoading}
         >
-          <Text style={styles.ctaButtonText}>
-            {purchasing ? t('common.loading') : t('premium.startPremium')}
-          </Text>
+          {purchasing ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.ctaButtonText}>{t('premium.startPremium')}</Text>
+          )}
         </TouchableOpacity>
         
         {/* Cancel anytime notice */}
         <Text style={styles.cancelNotice}>{t('premium.cancelAnytime')}</Text>
         
         {/* Restore purchases */}
-        <TouchableOpacity style={styles.restoreButton} onPress={handleRestore} disabled={loading}>
+        <TouchableOpacity 
+          style={styles.restoreButton} 
+          onPress={handleRestore} 
+          disabled={storeLoading}
+        >
           <Text style={styles.restoreButtonText}>{t('premium.restorePurchases')}</Text>
         </TouchableOpacity>
         
@@ -260,6 +400,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0D0D0D',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#8E8E93',
+    marginTop: 12,
+    fontSize: 16,
   },
   scrollView: {
     flex: 1,
@@ -423,6 +573,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 56,
   },
   ctaButtonDisabled: {
     opacity: 0.7,
