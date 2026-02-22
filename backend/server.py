@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Query, Request, Response, Cookie
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -15,6 +16,9 @@ import httpx
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Webapp static files path
+WEBAPP_DIR = ROOT_DIR / 'webapp_dist'
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
