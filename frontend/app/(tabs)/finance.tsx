@@ -15,24 +15,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore, Transaction, TransactionType, TransactionCategory } from '../../src/store/appStore';
+import { useThemeStore, ThemeColors } from '../../src/store/themeStore';
+import { usePremiumStore } from '../../src/store/premiumStore';
 import { format, parseISO, subDays } from 'date-fns';
-import { sv } from 'date-fns/locale';
-
-const COST_CATEGORIES: { value: TransactionCategory; label: string; icon: string }[] = [
-  { value: 'feed', label: 'Foder', icon: 'nutrition' },
-  { value: 'equipment', label: 'Utrustning', icon: 'construct' },
-  { value: 'medicine', label: 'Medicin', icon: 'medical' },
-  { value: 'other_cost', label: 'Övrigt', icon: 'ellipsis-horizontal' },
-];
-
-const SALE_CATEGORIES: { value: TransactionCategory; label: string; icon: string }[] = [
-  { value: 'egg_sale', label: 'Äggförsäljning', icon: 'egg' },
-  { value: 'hen_sale', label: 'Hönsförsäljning', icon: 'heart' },
-  { value: 'other_income', label: 'Övriga intäkter', icon: 'ellipsis-horizontal' },
-];
+import { sv, enUS } from 'date-fns/locale';
+import i18n, { formatCurrency } from '../../src/i18n';
 
 export default function FinanceScreen() {
   const { transactions, fetchTransactions, addTransaction, deleteTransaction, loading } = useAppStore();
+  const { colors, isDark } = useThemeStore();
+  const { isPremium } = usePremiumStore();
   
   const [refreshing, setRefreshing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -43,13 +35,30 @@ export default function FinanceScreen() {
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('');
   
+  const t = i18n.t.bind(i18n);
+  const getLocale = () => i18n.locale.startsWith('sv') ? sv : enUS;
+  const isSv = i18n.locale.startsWith('sv');
+  
+  const COST_CATEGORIES: { value: TransactionCategory; label: string; icon: string }[] = [
+    { value: 'feed', label: t('finance.categories.feed'), icon: 'nutrition' },
+    { value: 'equipment', label: t('finance.categories.equipment'), icon: 'construct' },
+    { value: 'medicine', label: t('finance.categories.medicine'), icon: 'medical' },
+    { value: 'other_cost', label: t('finance.categories.other_cost'), icon: 'ellipsis-horizontal' },
+  ];
+  
+  const SALE_CATEGORIES: { value: TransactionCategory; label: string; icon: string }[] = [
+    { value: 'egg_sale', label: t('finance.categories.egg_sale'), icon: 'egg' },
+    { value: 'hen_sale', label: t('finance.categories.hen_sale'), icon: 'heart' },
+    { value: 'other_income', label: t('finance.categories.other_income'), icon: 'ellipsis-horizontal' },
+  ];
+  
   useEffect(() => {
     loadData();
   }, []);
   
   const loadData = async () => {
     const end = new Date();
-    const start = subDays(end, 90);
+    const start = subDays(end, isPremium ? 90 : 30);
     await fetchTransactions(
       format(start, 'yyyy-MM-dd'),
       format(end, 'yyyy-MM-dd')
@@ -75,11 +84,11 @@ export default function FinanceScreen() {
   const handleAddTransaction = async () => {
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      Alert.alert('Fel', 'Ange ett giltigt belopp');
+      Alert.alert(t('common.error'), t('errors.invalidInput'));
       return;
     }
     if (!selectedCategory) {
-      Alert.alert('Fel', 'Välj en kategori');
+      Alert.alert(t('common.error'), isSv ? 'Välj en kategori' : 'Select a category');
       return;
     }
     
@@ -101,11 +110,11 @@ export default function FinanceScreen() {
     )?.label || trans.category;
     
     Alert.alert(
-      'Ta bort',
-      `Vill du ta bort ${categoryLabel} på ${trans.amount} kr?`,
+      t('common.delete'),
+      t('finance.deleteConfirm', { category: categoryLabel, amount: trans.amount }),
       [
-        { text: 'Avbryt', style: 'cancel' },
-        { text: 'Ta bort', style: 'destructive', onPress: () => deleteTransaction(trans.id) },
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.delete'), style: 'destructive', onPress: () => deleteTransaction(trans.id) },
       ]
     );
   };
@@ -124,11 +133,13 @@ export default function FinanceScreen() {
     const date = subDays(new Date(), i);
     return {
       date: format(date, 'yyyy-MM-dd'),
-      display: i === 0 ? 'Idag' : i === 1 ? 'Igår' : format(date, 'EEE d', { locale: sv }),
+      display: i === 0 ? t('eggs.today') : i === 1 ? t('eggs.yesterday') : format(date, 'EEE d', { locale: getLocale() }),
     };
   });
   
   const categories = transactionType === 'cost' ? COST_CATEGORIES : SALE_CATEGORIES;
+  
+  const styles = createStyles(colors, isDark);
   
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -136,41 +147,43 @@ export default function FinanceScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4CAF50" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Ekonomi</Text>
-          <Text style={styles.subtitle}>Senaste 90 dagarna</Text>
+          <Text style={styles.title}>{t('finance.title')}</Text>
+          <Text style={styles.subtitle}>
+            {isPremium ? t('finance.subtitle') : t('finance.subtitleLimited')}
+          </Text>
         </View>
         
         {/* Summary Cards */}
         <View style={styles.summaryRow}>
           <View style={[styles.summaryCard, styles.costCard]}>
-            <Ionicons name="trending-down" size={20} color="#FF6B6B" />
-            <Text style={[styles.summaryValue, { color: '#FF6B6B' }]}>
-              {totalCosts.toFixed(0)} kr
+            <Ionicons name="trending-down" size={20} color={colors.error} />
+            <Text style={[styles.summaryValue, { color: colors.error }]}>
+              {formatCurrency(totalCosts)}
             </Text>
-            <Text style={styles.summaryLabel}>Kostnader</Text>
+            <Text style={styles.summaryLabel}>{t('finance.costs')}</Text>
           </View>
           <View style={[styles.summaryCard, styles.saleCard]}>
-            <Ionicons name="trending-up" size={20} color="#4CAF50" />
-            <Text style={[styles.summaryValue, { color: '#4CAF50' }]}>
-              {totalSales.toFixed(0)} kr
+            <Ionicons name="trending-up" size={20} color={colors.success} />
+            <Text style={[styles.summaryValue, { color: colors.success }]}>
+              {formatCurrency(totalSales)}
             </Text>
-            <Text style={styles.summaryLabel}>Försäljning</Text>
+            <Text style={styles.summaryLabel}>{t('finance.sales')}</Text>
           </View>
         </View>
         
         {/* Net Result */}
         <View style={styles.netCard}>
-          <Text style={styles.netLabel}>Nettoresultat</Text>
+          <Text style={styles.netLabel}>{t('finance.netResult')}</Text>
           <Text style={[
             styles.netValue,
-            { color: net >= 0 ? '#4CAF50' : '#FF6B6B' }
+            { color: net >= 0 ? colors.success : colors.error }
           ]}>
-            {net >= 0 ? '+' : ''}{net.toFixed(0)} kr
+            {net >= 0 ? '+' : ''}{formatCurrency(net)}
           </Text>
         </View>
         
@@ -184,8 +197,8 @@ export default function FinanceScreen() {
               setShowAddModal(true);
             }}
           >
-            <Ionicons name="remove-circle" size={20} color="#FF6B6B" />
-            <Text style={styles.actionButtonText}>Lägg till kostnad</Text>
+            <Ionicons name="remove-circle" size={20} color={colors.error} />
+            <Text style={styles.actionButtonText}>{t('finance.addCost')}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
@@ -196,19 +209,20 @@ export default function FinanceScreen() {
               setShowAddModal(true);
             }}
           >
-            <Ionicons name="add-circle" size={20} color="#4CAF50" />
-            <Text style={styles.actionButtonText}>Lägg till försäljning</Text>
+            <Ionicons name="add-circle" size={20} color={colors.success} />
+            <Text style={styles.actionButtonText}>{t('finance.addSale')}</Text>
           </TouchableOpacity>
         </View>
         
         {/* Transactions List */}
         <View style={styles.listContainer}>
-          <Text style={styles.listTitle}>Transaktioner</Text>
+          <Text style={styles.listTitle}>{t('finance.transactions')}</Text>
           
           {transactions.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="wallet-outline" size={48} color="#4A4A4A" />
-              <Text style={styles.emptyText}>Inga transaktioner ännu</Text>
+              <Ionicons name="wallet-outline" size={48} color={colors.textMuted} />
+              <Text style={styles.emptyText}>{t('finance.noTransactions')}</Text>
+              <Text style={styles.emptyHint}>{t('finance.noTransactionsHint')}</Text>
             </View>
           ) : (
             transactions.map((trans) => {
@@ -222,18 +236,18 @@ export default function FinanceScreen() {
                   <View style={styles.transactionLeft}>
                     <View style={[
                       styles.transactionIcon,
-                      { backgroundColor: trans.type === 'cost' ? '#FF6B6B22' : '#4CAF5022' }
+                      { backgroundColor: trans.type === 'cost' ? colors.error + '22' : colors.success + '22' }
                     ]}>
                       <Ionicons
                         name={catInfo?.icon as any || 'cash'}
                         size={18}
-                        color={trans.type === 'cost' ? '#FF6B6B' : '#4CAF50'}
+                        color={trans.type === 'cost' ? colors.error : colors.success}
                       />
                     </View>
                     <View style={styles.transactionInfo}>
                       <Text style={styles.transactionCategory}>{catInfo?.label || trans.category}</Text>
                       <Text style={styles.transactionDate}>
-                        {format(parseISO(trans.date), 'd MMM yyyy', { locale: sv })}
+                        {format(parseISO(trans.date), 'd MMM yyyy', { locale: getLocale() })}
                       </Text>
                       {trans.description && (
                         <Text style={styles.transactionDesc}>{trans.description}</Text>
@@ -242,9 +256,9 @@ export default function FinanceScreen() {
                   </View>
                   <Text style={[
                     styles.transactionAmount,
-                    { color: trans.type === 'cost' ? '#FF6B6B' : '#4CAF50' }
+                    { color: trans.type === 'cost' ? colors.error : colors.success }
                   ]}>
-                    {trans.type === 'cost' ? '-' : '+'}{trans.amount.toFixed(0)} kr
+                    {trans.type === 'cost' ? '-' : '+'}{formatCurrency(trans.amount)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -267,11 +281,11 @@ export default function FinanceScreen() {
           <ScrollView contentContainerStyle={styles.modalScrollContent}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>
-                {transactionType === 'cost' ? 'Lägg till kostnad' : 'Lägg till försäljning'}
+                {transactionType === 'cost' ? t('finance.addCost') : t('finance.addSale')}
               </Text>
               
               {/* Category Selection */}
-              <Text style={styles.inputLabel}>Kategori</Text>
+              <Text style={styles.inputLabel}>{t('finance.category')}</Text>
               <View style={styles.categoryGrid}>
                 {categories.map((cat) => (
                   <TouchableOpacity
@@ -285,7 +299,7 @@ export default function FinanceScreen() {
                     <Ionicons
                       name={cat.icon as any}
                       size={24}
-                      color={selectedCategory === cat.value ? '#FFF' : '#8E8E93'}
+                      color={selectedCategory === cat.value ? '#FFF' : colors.textSecondary}
                     />
                     <Text style={[
                       styles.categoryButtonText,
@@ -298,7 +312,7 @@ export default function FinanceScreen() {
               </View>
               
               {/* Date Selection */}
-              <Text style={styles.inputLabel}>Datum</Text>
+              <Text style={styles.inputLabel}>{t('eggs.selectDate')}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateScroll}>
                 {last7Days.map((day) => (
                   <TouchableOpacity
@@ -320,45 +334,45 @@ export default function FinanceScreen() {
               </ScrollView>
               
               {/* Amount */}
-              <Text style={styles.inputLabel}>Belopp (kr)</Text>
+              <Text style={styles.inputLabel}>{t('finance.amount')}</Text>
               <TextInput
                 style={styles.amountInput}
                 value={amount}
                 onChangeText={setAmount}
                 keyboardType="decimal-pad"
                 placeholder="0"
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textMuted}
               />
               
               {/* Quantity (for egg sales) */}
               {selectedCategory === 'egg_sale' && (
                 <>
-                  <Text style={styles.inputLabel}>Antal ägg (valfritt)</Text>
+                  <Text style={styles.inputLabel}>{t('finance.eggQuantity')}</Text>
                   <TextInput
                     style={styles.textInput}
                     value={quantity}
                     onChangeText={setQuantity}
                     keyboardType="number-pad"
-                    placeholder="T.ex. 30"
-                    placeholderTextColor="#666"
+                    placeholder={isSv ? 'T.ex. 30' : 'E.g. 30'}
+                    placeholderTextColor={colors.textMuted}
                   />
                 </>
               )}
               
               {/* Description */}
-              <Text style={styles.inputLabel}>Beskrivning (valfritt)</Text>
+              <Text style={styles.inputLabel}>{t('finance.description')}</Text>
               <TextInput
                 style={styles.textInput}
                 value={description}
                 onChangeText={setDescription}
-                placeholder="T.ex. Fodersäck 25kg"
-                placeholderTextColor="#666"
+                placeholder={t('finance.descriptionPlaceholder')}
+                placeholderTextColor={colors.textMuted}
               />
               
               {/* Buttons */}
               <View style={styles.modalButtons}>
                 <TouchableOpacity style={styles.cancelButton} onPress={resetModal}>
-                  <Text style={styles.cancelButtonText}>Avbryt</Text>
+                  <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
@@ -370,7 +384,7 @@ export default function FinanceScreen() {
                   disabled={!amount || !selectedCategory || loading}
                 >
                   <Text style={styles.saveButtonText}>
-                    {loading ? 'Sparar...' : 'Spara'}
+                    {loading ? t('common.loading') : t('common.save')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -382,10 +396,10 @@ export default function FinanceScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -399,11 +413,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
   },
   subtitle: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   summaryRow: {
@@ -413,17 +427,17 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   costCard: {
-    borderColor: '#FF6B6B33',
+    borderColor: colors.error + '33',
     borderWidth: 1,
   },
   saleCard: {
-    borderColor: '#4CAF5033',
+    borderColor: colors.success + '33',
     borderWidth: 1,
   },
   summaryValue: {
@@ -433,11 +447,11 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   netCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -447,7 +461,7 @@ const styles = StyleSheet.create({
   },
   netLabel: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: colors.textSecondary,
   },
   netValue: {
     fontSize: 24,
@@ -463,33 +477,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 14,
     gap: 6,
   },
   costActionButton: {
-    borderColor: '#FF6B6B33',
+    borderColor: colors.error + '33',
     borderWidth: 1,
   },
   saleActionButton: {
-    borderColor: '#4CAF5033',
+    borderColor: colors.success + '33',
     borderWidth: 1,
   },
   actionButtonText: {
-    color: '#FFF',
+    color: colors.text,
     fontSize: 13,
     fontWeight: '500',
   },
   listContainer: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
   },
   listTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginBottom: 12,
   },
   emptyState: {
@@ -497,9 +511,15 @@ const styles = StyleSheet.create({
     padding: 40,
   },
   emptyText: {
-    color: '#4A4A4A',
+    color: colors.textSecondary,
     marginTop: 12,
     fontSize: 14,
+  },
+  emptyHint: {
+    color: colors.textMuted,
+    marginTop: 4,
+    fontSize: 12,
+    textAlign: 'center',
   },
   transactionItem: {
     flexDirection: 'row',
@@ -507,7 +527,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#2C2C2E',
+    borderBottomColor: colors.border,
   },
   transactionLeft: {
     flexDirection: 'row',
@@ -527,17 +547,17 @@ const styles = StyleSheet.create({
   },
   transactionCategory: {
     fontSize: 15,
-    color: '#FFF',
+    color: colors.text,
     fontWeight: '500',
   },
   transactionDate: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 2,
   },
   transactionDesc: {
     fontSize: 12,
-    color: '#666',
+    color: colors.textMuted,
     marginTop: 2,
   },
   transactionAmount: {
@@ -554,7 +574,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -563,14 +583,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 24,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginBottom: 8,
     marginTop: 8,
   },
@@ -584,16 +604,16 @@ const styles = StyleSheet.create({
     width: '48%',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 12,
     gap: 8,
   },
   categoryButtonActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
   },
   categoryButtonText: {
-    color: '#8E8E93',
+    color: colors.textSecondary,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -607,14 +627,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     marginRight: 8,
   },
   dateButtonActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
   },
   dateButtonText: {
-    color: '#8E8E93',
+    color: colors.textSecondary,
     fontSize: 14,
     fontWeight: '500',
     textTransform: 'capitalize',
@@ -623,20 +643,20 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   amountInput: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
-    color: '#FFF',
+    color: colors.text,
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
   },
   textInput: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
-    color: '#FFF',
+    color: colors.text,
     fontSize: 16,
     marginBottom: 8,
   },
@@ -647,19 +667,19 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#FFF',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '600',
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

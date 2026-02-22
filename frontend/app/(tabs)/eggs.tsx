@@ -15,25 +15,30 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore, EggRecord } from '../../src/store/appStore';
-import { format, parseISO, subDays, startOfMonth, endOfMonth } from 'date-fns';
-import { sv } from 'date-fns/locale';
+import { useThemeStore, ThemeColors } from '../../src/store/themeStore';
+import { format, parseISO, subDays } from 'date-fns';
+import { sv, enUS } from 'date-fns/locale';
+import i18n from '../../src/i18n';
 
 export default function EggsScreen() {
   const { eggRecords, fetchEggRecords, addEggRecord, deleteEggRecord, loading } = useAppStore();
+  const { colors, isDark } = useThemeStore();
   
   const [refreshing, setRefreshing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [eggCount, setEggCount] = useState('');
   const [notes, setNotes] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'week'>('list');
+  
+  const t = i18n.t.bind(i18n);
+  const getLocale = () => i18n.locale.startsWith('sv') ? sv : enUS;
+  const isSv = i18n.locale.startsWith('sv');
   
   useEffect(() => {
     loadData();
   }, []);
   
   const loadData = async () => {
-    // Get last 30 days of records
     const end = new Date();
     const start = subDays(end, 30);
     await fetchEggRecords(
@@ -51,7 +56,7 @@ export default function EggsScreen() {
   const handleAddRecord = async () => {
     const count = parseInt(eggCount);
     if (isNaN(count) || count < 0) {
-      Alert.alert('Fel', 'Ange ett giltigt antal');
+      Alert.alert(t('common.error'), t('errors.invalidInput'));
       return;
     }
     
@@ -64,11 +69,11 @@ export default function EggsScreen() {
   
   const handleDeleteRecord = (record: EggRecord) => {
     Alert.alert(
-      'Ta bort',
-      `Vill du ta bort ${record.count} ägg från ${format(parseISO(record.date), 'd MMMM', { locale: sv })}?`,
+      t('common.delete'),
+      t('eggs.deleteConfirm', { count: record.count, date: format(parseISO(record.date), 'd MMMM', { locale: getLocale() }) }),
       [
-        { text: 'Avbryt', style: 'cancel' },
-        { text: 'Ta bort', style: 'destructive', onPress: () => deleteEggRecord(record.id) },
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('common.delete'), style: 'destructive', onPress: () => deleteEggRecord(record.id) },
       ]
     );
   };
@@ -78,7 +83,7 @@ export default function EggsScreen() {
     const date = subDays(new Date(), i);
     return {
       date: format(date, 'yyyy-MM-dd'),
-      display: i === 0 ? 'Idag' : i === 1 ? 'Igår' : format(date, 'EEE d', { locale: sv }),
+      display: i === 0 ? t('eggs.today') : i === 1 ? t('eggs.yesterday') : format(date, 'EEE d', { locale: getLocale() }),
     };
   });
   
@@ -86,34 +91,36 @@ export default function EggsScreen() {
   const totalEggs = eggRecords.reduce((sum, r) => sum + r.count, 0);
   const avgEggs = eggRecords.length > 0 ? (totalEggs / eggRecords.length).toFixed(1) : '0';
   
+  const styles = createStyles(colors, isDark);
+  
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4CAF50" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Ägglogg</Text>
-          <Text style={styles.subtitle}>Senaste 30 dagarna</Text>
+          <Text style={styles.title}>{t('eggs.title')}</Text>
+          <Text style={styles.subtitle}>{t('eggs.subtitle')}</Text>
         </View>
         
         {/* Summary */}
         <View style={styles.summaryRow}>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryValue}>{totalEggs}</Text>
-            <Text style={styles.summaryLabel}>Totalt ägg</Text>
+            <Text style={styles.summaryLabel}>{t('eggs.totalEggs')}</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryValue}>{avgEggs}</Text>
-            <Text style={styles.summaryLabel}>Snitt/dag</Text>
+            <Text style={styles.summaryLabel}>{t('eggs.avgPerDay')}</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryValue}>{eggRecords.length}</Text>
-            <Text style={styles.summaryLabel}>Dagar</Text>
+            <Text style={styles.summaryLabel}>{t('eggs.days')}</Text>
           </View>
         </View>
         
@@ -123,17 +130,18 @@ export default function EggsScreen() {
           onPress={() => setShowAddModal(true)}
         >
           <Ionicons name="add-circle" size={24} color="#FFF" />
-          <Text style={styles.addButtonText}>Lägg till ägg</Text>
+          <Text style={styles.addButtonText}>{t('eggs.addEggs')}</Text>
         </TouchableOpacity>
         
         {/* Records List */}
         <View style={styles.listContainer}>
-          <Text style={styles.listTitle}>Historik</Text>
+          <Text style={styles.listTitle}>{t('eggs.history')}</Text>
           
           {eggRecords.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="egg-outline" size={48} color="#4A4A4A" />
-              <Text style={styles.emptyText}>Inga ägg registrerade ännu</Text>
+              <Ionicons name="egg-outline" size={48} color={colors.textMuted} />
+              <Text style={styles.emptyText}>{t('eggs.noEggs')}</Text>
+              <Text style={styles.emptyHint}>{t('eggs.noEggsHint')}</Text>
             </View>
           ) : (
             eggRecords.map((record) => (
@@ -144,11 +152,11 @@ export default function EggsScreen() {
               >
                 <View style={styles.recordLeft}>
                   <View style={styles.recordIcon}>
-                    <Ionicons name="egg" size={20} color="#FFD93D" />
+                    <Ionicons name="egg" size={20} color={colors.warning} />
                   </View>
                   <View>
                     <Text style={styles.recordDate}>
-                      {format(parseISO(record.date), 'EEEE d MMMM', { locale: sv })}
+                      {format(parseISO(record.date), 'EEEE d MMMM', { locale: getLocale() })}
                     </Text>
                     {record.notes && (
                       <Text style={styles.recordNotes}>{record.notes}</Text>
@@ -174,10 +182,10 @@ export default function EggsScreen() {
           style={styles.modalOverlay}
         >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Lägg till ägg</Text>
+            <Text style={styles.modalTitle}>{t('eggs.addEggs')}</Text>
             
             {/* Date Selection */}
-            <Text style={styles.inputLabel}>Välj datum</Text>
+            <Text style={styles.inputLabel}>{t('eggs.selectDate')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateScroll}>
               {last7Days.map((day) => (
                 <TouchableOpacity
@@ -199,7 +207,7 @@ export default function EggsScreen() {
             </ScrollView>
             
             {/* Egg Count */}
-            <Text style={styles.inputLabel}>Antal ägg</Text>
+            <Text style={styles.inputLabel}>{t('eggs.eggCount')}</Text>
             <View style={styles.inputRow}>
               <TouchableOpacity
                 style={styles.countButton}
@@ -208,7 +216,7 @@ export default function EggsScreen() {
                   if (current > 0) setEggCount((current - 1).toString());
                 }}
               >
-                <Ionicons name="remove" size={24} color="#FFF" />
+                <Ionicons name="remove" size={24} color={colors.text} />
               </TouchableOpacity>
               
               <TextInput
@@ -217,7 +225,7 @@ export default function EggsScreen() {
                 onChangeText={setEggCount}
                 keyboardType="number-pad"
                 placeholder="0"
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textMuted}
               />
               
               <TouchableOpacity
@@ -227,18 +235,18 @@ export default function EggsScreen() {
                   setEggCount((current + 1).toString());
                 }}
               >
-                <Ionicons name="add" size={24} color="#FFF" />
+                <Ionicons name="add" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
             
             {/* Notes */}
-            <Text style={styles.inputLabel}>Anteckningar (valfritt)</Text>
+            <Text style={styles.inputLabel}>{t('eggs.notes')}</Text>
             <TextInput
               style={styles.notesInput}
               value={notes}
               onChangeText={setNotes}
-              placeholder="T.ex. Nya värpare, sjuk höna..."
-              placeholderTextColor="#666"
+              placeholder={t('eggs.notesPlaceholder')}
+              placeholderTextColor={colors.textMuted}
               multiline
             />
             
@@ -252,7 +260,7 @@ export default function EggsScreen() {
                   setNotes('');
                 }}
               >
-                <Text style={styles.cancelButtonText}>Avbryt</Text>
+                <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
@@ -264,7 +272,7 @@ export default function EggsScreen() {
                 disabled={!eggCount || loading}
               >
                 <Text style={styles.saveButtonText}>
-                  {loading ? 'Sparar...' : 'Spara'}
+                  {loading ? t('common.loading') : t('common.save')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -275,10 +283,10 @@ export default function EggsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -292,11 +300,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
   },
   subtitle: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   summaryRow: {
@@ -306,7 +314,7 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -314,18 +322,18 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFD93D',
+    color: colors.warning,
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
@@ -337,14 +345,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   listContainer: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
   },
   listTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginBottom: 12,
   },
   emptyState: {
@@ -352,9 +360,15 @@ const styles = StyleSheet.create({
     padding: 40,
   },
   emptyText: {
-    color: '#4A4A4A',
+    color: colors.textSecondary,
     marginTop: 12,
     fontSize: 14,
+  },
+  emptyHint: {
+    color: colors.textMuted,
+    marginTop: 4,
+    fontSize: 12,
+    textAlign: 'center',
   },
   recordItem: {
     flexDirection: 'row',
@@ -362,7 +376,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#2C2C2E',
+    borderBottomColor: colors.border,
   },
   recordLeft: {
     flexDirection: 'row',
@@ -373,25 +387,25 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#FFD93D22',
+    backgroundColor: colors.warning + '22',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   recordDate: {
     fontSize: 15,
-    color: '#FFF',
+    color: colors.text,
     textTransform: 'capitalize',
   },
   recordNotes: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 2,
   },
   recordCount: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFD93D',
+    color: colors.warning,
   },
   modalOverlay: {
     flex: 1,
@@ -399,7 +413,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -408,14 +422,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 24,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginBottom: 8,
   },
   dateScroll: {
@@ -425,14 +439,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     marginRight: 8,
   },
   dateButtonActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
   },
   dateButtonText: {
-    color: '#8E8E93',
+    color: colors.textSecondary,
     fontSize: 14,
     fontWeight: '500',
     textTransform: 'capitalize',
@@ -451,22 +465,22 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   countInput: {
     fontSize: 40,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     textAlign: 'center',
     minWidth: 80,
   },
   notesInput: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
-    color: '#FFF',
+    color: colors.text,
     fontSize: 16,
     minHeight: 80,
     textAlignVertical: 'top',
@@ -478,19 +492,19 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#FFF',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '600',
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
