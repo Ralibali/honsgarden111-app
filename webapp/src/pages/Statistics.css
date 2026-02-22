@@ -1,0 +1,166 @@
+.statistics-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.period-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-surface);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.nav-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background-color: transparent;
+  color: var(--text-primary);
+  font-size: 24px;
+}
+
+.nav-btn:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.period-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: capitalize;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background-color: var(--bg-surface);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-icon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.card {
+  background-color: var(--bg-surface);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.finance-row {
+  display: flex;
+  justify-content: space-around;
+}
+
+.finance-item {
+  text-align: center;
+}
+
+.finance-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.finance-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.finance-value.cost {
+  color: var(--accent-error);
+}
+
+.finance-value.income {
+  color: var(--accent-success);
+}
+
+.empty-chart {
+  text-align: center;
+  padding: 40px;
+}
+
+.empty-chart span {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.empty-chart p {
+  color: var(--text-muted);
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  height: 140px;
+  padding-top: 20px;
+  overflow-x: auto;
+}
+
+.bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 28px;
+  margin: 0 4px;
+}
+
+.bar-wrapper {
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.bar {
+  width: 20px;
+  background-color: var(--accent-primary);
+  border-radius: 4px;
+  min-height: 4px;
+}
+
+.bar-value {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.bar-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
