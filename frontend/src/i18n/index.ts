@@ -9,7 +9,8 @@ const i18n = new I18n({
 });
 
 // Set default locale based on device settings
-i18n.locale = Localization.locale.startsWith('sv') ? 'sv' : 'en';
+const deviceLocale = Localization.locale || 'sv';
+i18n.locale = deviceLocale.startsWith('sv') ? 'sv' : 'en';
 i18n.enableFallback = true;
 i18n.defaultLocale = 'sv';
 
