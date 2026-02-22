@@ -57,21 +57,51 @@ class CoopSettingsUpdate(BaseModel):
     coop_name: Optional[str] = None
     hen_count: Optional[int] = None
 
+# Individual Hen Profile
+class Hen(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    breed: Optional[str] = None
+    color: Optional[str] = None
+    birth_date: Optional[str] = None  # YYYY-MM-DD
+    notes: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class HenCreate(BaseModel):
+    name: str
+    breed: Optional[str] = None
+    color: Optional[str] = None
+    birth_date: Optional[str] = None
+    notes: Optional[str] = None
+
+class HenUpdate(BaseModel):
+    name: Optional[str] = None
+    breed: Optional[str] = None
+    color: Optional[str] = None
+    birth_date: Optional[str] = None
+    notes: Optional[str] = None
+    is_active: Optional[bool] = None
+
 # Egg Record - daily egg collection
 class EggRecord(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     date: str  # YYYY-MM-DD format
     count: int
+    hen_id: Optional[str] = None  # Optional: link to specific hen
     notes: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class EggRecordCreate(BaseModel):
     date: str  # YYYY-MM-DD format
     count: int
+    hen_id: Optional[str] = None
     notes: Optional[str] = None
 
 class EggRecordUpdate(BaseModel):
     count: Optional[int] = None
+    hen_id: Optional[str] = None
     notes: Optional[str] = None
 
 # Transaction - costs and income
@@ -112,8 +142,8 @@ class PremiumStatusResponse(BaseModel):
     expires_at: Optional[str] = None
 
 class PremiumWebhookPayload(BaseModel):
-    event_type: str  # "subscription.created", "subscription.renewed", "subscription.cancelled", "subscription.expired"
-    store: str  # "apple" or "google"
+    event_type: str
+    store: str
     store_subscription_id: str
     plan: SubscriptionPlan
     expires_at: Optional[str] = None
@@ -149,20 +179,118 @@ async def update_coop_settings(update: CoopSettingsUpdate):
     updated = await db.coop_settings.find_one()
     return CoopSettings(**updated)
 
+# ============ HEN ENDPOINTS ============
+
+@api_router.post("/hens", response_model=Hen)
+async def create_hen(hen: HenCreate):
+    """Create a new hen profile"""
+    new_hen = Hen(**hen.dict())
+    await db.hens.insert_one(new_hen.dict())
+    
+    # Update hen count in coop settings
+    active_hens = await db.hens.count_documents({"is_active": True})
+    await db.coop_settings.update_one({}, {"$set": {"hen_count": active_hens}}, upsert=True)
+    
+    return new_hen
+
+@api_router.get("/hens", response_model=List[Hen])
+async def get_hens(active_only: bool = True):
+    """Get all hens"""
+    query = {"is_active": True} if active_only else {}
+    hens = await db.hens.find(query).sort("name", 1).to_list(100)
+    return [Hen(**h) for h in hens]
+
+@api_router.get("/hens/{hen_id}", response_model=Hen)
+async def get_hen(hen_id: str):
+    """Get a specific hen"""
+    hen = await db.hens.find_one({"id": hen_id})
+    if not hen:
+        raise HTTPException(status_code=404, detail="Hen not found")
+    return Hen(**hen)
+
+@api_router.put("/hens/{hen_id}", response_model=Hen)
+async def update_hen(hen_id: str, update: HenUpdate):
+    """Update a hen's profile"""
+    update_data = {k: v for k, v in update.dict().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No data to update")
+    
+    update_data['updated_at'] = datetime.utcnow()
+    
+    result = await db.hens.update_one(
+        {"id": hen_id},
+        {"$set": update_data}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Hen not found")
+    
+    # Update hen count if active status changed
+    if 'is_active' in update_data:
+        active_hens = await db.hens.count_documents({"is_active": True})
+        await db.coop_settings.update_one({}, {"$set": {"hen_count": active_hens}}, upsert=True)
+    
+    hen = await db.hens.find_one({"id": hen_id})
+    return Hen(**hen)
+
+@api_router.delete("/hens/{hen_id}")
+async def delete_hen(hen_id: str):
+    """Delete a hen (or mark as inactive)"""
+    # Soft delete - mark as inactive
+    result = await db.hens.update_one(
+        {"id": hen_id},
+        {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Hen not found")
+    
+    # Update hen count
+    active_hens = await db.hens.count_documents({"is_active": True})
+    await db.coop_settings.update_one({}, {"$set": {"hen_count": active_hens}}, upsert=True)
+    
+    return {"message": "Hen removed"}
+
+@api_router.get("/hens/{hen_id}/eggs")
+async def get_hen_eggs(hen_id: str, start_date: Optional[str] = None, end_date: Optional[str] = None):
+    """Get egg records for a specific hen"""
+    query = {"hen_id": hen_id}
+    if start_date:
+        query["date"] = {"$gte": start_date}
+    if end_date:
+        if "date" in query:
+            query["date"]["$lte"] = end_date
+        else:
+            query["date"] = {"$lte": end_date}
+    
+    records = await db.egg_records.find(query).sort("date", -1).to_list(1000)
+    total_eggs = sum(r['count'] for r in records)
+    
+    return {
+        "hen_id": hen_id,
+        "total_eggs": total_eggs,
+        "record_count": len(records),
+        "records": [EggRecord(**r) for r in records]
+    }
+
 # ============ EGG RECORD ENDPOINTS ============
 
 @api_router.post("/eggs", response_model=EggRecord)
 async def create_egg_record(record: EggRecordCreate):
     """Log eggs collected for a date"""
-    # Check if record exists for this date
-    existing = await db.egg_records.find_one({"date": record.date})
+    # If hen_id is provided, create individual record
+    if record.hen_id:
+        egg_record = EggRecord(**record.dict())
+        await db.egg_records.insert_one(egg_record.dict())
+        return egg_record
+    
+    # Otherwise, check if record exists for this date (without hen_id)
+    existing = await db.egg_records.find_one({"date": record.date, "hen_id": None})
     if existing:
         # Update existing record
         await db.egg_records.update_one(
             {"id": existing['id']},
             {"$set": {"count": record.count, "notes": record.notes}}
         )
-        updated = await db.egg_records.find_one({"date": record.date})
+        updated = await db.egg_records.find_one({"date": record.date, "hen_id": None})
         return EggRecord(**updated)
     
     egg_record = EggRecord(**record.dict())
@@ -173,6 +301,7 @@ async def create_egg_record(record: EggRecordCreate):
 async def get_egg_records(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
+    hen_id: Optional[str] = None,
     limit: int = 100
 ):
     """Get egg records with optional date filtering"""
@@ -184,6 +313,8 @@ async def get_egg_records(
             query["date"]["$lte"] = end_date
         else:
             query["date"] = {"$lte": end_date}
+    if hen_id:
+        query["hen_id"] = hen_id
     
     records = await db.egg_records.find(query).sort("date", -1).to_list(limit)
     return [EggRecord(**r) for r in records]
@@ -199,7 +330,7 @@ async def get_egg_record(record_id: str):
 @api_router.get("/eggs/date/{date_str}", response_model=Optional[EggRecord])
 async def get_egg_record_by_date(date_str: str):
     """Get egg record for a specific date"""
-    record = await db.egg_records.find_one({"date": date_str})
+    record = await db.egg_records.find_one({"date": date_str, "hen_id": None})
     if not record:
         return None
     return EggRecord(**record)
@@ -286,14 +417,12 @@ async def get_premium_status():
     if not subscription:
         return PremiumStatusResponse(is_premium=False)
     
-    # Check if subscription is still active
     is_active = subscription.get('is_active', False)
     expires_at = subscription.get('expires_at')
     
     if expires_at and isinstance(expires_at, datetime):
         if expires_at < datetime.utcnow():
             is_active = False
-            # Update subscription status
             await db.subscriptions.update_one(
                 {"user_id": "default_user"},
                 {"$set": {"is_active": False}}
@@ -308,14 +437,12 @@ async def get_premium_status():
 
 @api_router.post("/premium/restore", response_model=PremiumStatusResponse)
 async def restore_premium():
-    """Restore premium purchases - validates with store"""
-    # In production, this would validate with Apple/Google
-    # For now, just return current status
+    """Restore premium purchases"""
     return await get_premium_status()
 
 @api_router.post("/premium/webhook")
 async def handle_premium_webhook(payload: PremiumWebhookPayload):
-    """Handle webhooks from RevenueCat or direct store webhooks"""
+    """Handle webhooks from RevenueCat"""
     logger.info(f"Received premium webhook: {payload.event_type}")
     
     subscription = await db.subscriptions.find_one({"user_id": "default_user"})
@@ -345,7 +472,6 @@ async def handle_premium_webhook(payload: PremiumWebhookPayload):
             subscription_data["created_at"] = datetime.utcnow()
             await db.subscriptions.insert_one(subscription_data)
         
-        # Log the event
         await db.subscription_logs.insert_one({
             "id": str(uuid.uuid4()),
             "event_type": payload.event_type,
@@ -364,7 +490,6 @@ async def handle_premium_webhook(payload: PremiumWebhookPayload):
                 {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
             )
         
-        # Log the event
         await db.subscription_logs.insert_one({
             "id": str(uuid.uuid4()),
             "event_type": payload.event_type,
@@ -384,16 +509,13 @@ async def get_today_statistics():
     """Get today's statistics"""
     today = date.today().isoformat()
     
-    # Get today's eggs
-    egg_record = await db.egg_records.find_one({"date": today})
-    eggs_today = egg_record['count'] if egg_record else 0
+    egg_records = await db.egg_records.find({"date": today}).to_list(100)
+    eggs_today = sum(r['count'] for r in egg_records)
     
-    # Get today's transactions
     transactions = await db.transactions.find({"date": today}).to_list(100)
     costs = sum(t['amount'] for t in transactions if t['type'] == 'cost')
     sales = sum(t['amount'] for t in transactions if t['type'] == 'sale')
     
-    # Get coop settings
     settings = await db.coop_settings.find_one()
     hen_count = settings['hen_count'] if settings else 0
     
@@ -409,45 +531,55 @@ async def get_today_statistics():
 @api_router.get("/statistics/month/{year}/{month}")
 async def get_month_statistics(year: int, month: int):
     """Get statistics for a specific month"""
-    # Build date range
     start_date = f"{year:04d}-{month:02d}-01"
     if month == 12:
         end_date = f"{year+1:04d}-01-01"
     else:
         end_date = f"{year:04d}-{month+1:02d}-01"
     
-    # Get egg records
     eggs = await db.egg_records.find({
         "date": {"$gte": start_date, "$lt": end_date}
-    }).to_list(100)
+    }).to_list(1000)
     total_eggs = sum(e['count'] for e in eggs)
-    days_with_eggs = len(eggs)
+    days_with_eggs = len(set(e['date'] for e in eggs))
     avg_eggs = total_eggs / days_with_eggs if days_with_eggs > 0 else 0
     
-    # Get transactions
     transactions = await db.transactions.find({
         "date": {"$gte": start_date, "$lt": end_date}
     }).to_list(1000)
     total_costs = sum(t['amount'] for t in transactions if t['type'] == 'cost')
     total_sales = sum(t['amount'] for t in transactions if t['type'] == 'sale')
     
-    # Get hen count for eggs per hen calculation
     settings = await db.coop_settings.find_one()
     hen_count = settings['hen_count'] if settings else 0
     eggs_per_hen = total_eggs / hen_count if hen_count > 0 else None
     
-    # Daily breakdown
-    daily_data = []
+    # Daily breakdown (aggregate by date)
+    daily_data = {}
     for egg in eggs:
-        day_trans = [t for t in transactions if t['date'] == egg['date']]
-        day_costs = sum(t['amount'] for t in day_trans if t['type'] == 'cost')
-        day_sales = sum(t['amount'] for t in day_trans if t['type'] == 'sale')
-        daily_data.append({
-            "date": egg['date'],
-            "eggs": egg['count'],
-            "costs": day_costs,
-            "sales": day_sales
-        })
+        d = egg['date']
+        if d not in daily_data:
+            daily_data[d] = {'date': d, 'eggs': 0, 'costs': 0, 'sales': 0}
+        daily_data[d]['eggs'] += egg['count']
+    
+    for trans in transactions:
+        d = trans['date']
+        if d not in daily_data:
+            daily_data[d] = {'date': d, 'eggs': 0, 'costs': 0, 'sales': 0}
+        if trans['type'] == 'cost':
+            daily_data[d]['costs'] += trans['amount']
+        else:
+            daily_data[d]['sales'] += trans['amount']
+    
+    daily_breakdown = sorted(daily_data.values(), key=lambda x: x['date'])
+    
+    # Eggs per hen breakdown
+    hens = await db.hens.find({"is_active": True}).to_list(100)
+    hen_eggs = []
+    for hen in hens:
+        hen_records = [e for e in eggs if e.get('hen_id') == hen['id']]
+        hen_total = sum(e['count'] for e in hen_records)
+        hen_eggs.append({"id": hen['id'], "name": hen['name'], "eggs": hen_total})
     
     return {
         "year": year,
@@ -458,7 +590,8 @@ async def get_month_statistics(year: int, month: int):
         "total_sales": total_sales,
         "net": total_sales - total_costs,
         "eggs_per_hen": round(eggs_per_hen, 1) if eggs_per_hen else None,
-        "daily_breakdown": daily_data
+        "daily_breakdown": daily_breakdown,
+        "hen_breakdown": hen_eggs
     }
 
 @api_router.get("/statistics/year/{year}")
@@ -467,22 +600,19 @@ async def get_year_statistics(year: int):
     start_date = f"{year:04d}-01-01"
     end_date = f"{year+1:04d}-01-01"
     
-    # Get all egg records for the year
     eggs = await db.egg_records.find({
         "date": {"$gte": start_date, "$lt": end_date}
-    }).to_list(1000)
+    }).to_list(10000)
     total_eggs = sum(e['count'] for e in eggs)
-    days_with_eggs = len(eggs)
+    days_with_eggs = len(set(e['date'] for e in eggs))
     avg_eggs = total_eggs / days_with_eggs if days_with_eggs > 0 else 0
     
-    # Get all transactions for the year
     transactions = await db.transactions.find({
         "date": {"$gte": start_date, "$lt": end_date}
     }).to_list(10000)
     total_costs = sum(t['amount'] for t in transactions if t['type'] == 'cost')
     total_sales = sum(t['amount'] for t in transactions if t['type'] == 'sale')
     
-    # Monthly breakdown
     monthly = []
     for m in range(1, 13):
         m_start = f"{year:04d}-{m:02d}-01"
@@ -516,7 +646,6 @@ async def get_year_statistics(year: int):
 @api_router.get("/statistics/summary")
 async def get_summary_statistics():
     """Get overall summary statistics"""
-    # Get all data
     all_eggs = await db.egg_records.find().to_list(10000)
     all_transactions = await db.transactions.find().to_list(10000)
     settings = await db.coop_settings.find_one()
@@ -526,7 +655,6 @@ async def get_summary_statistics():
     total_sales = sum(t['amount'] for t in all_transactions if t['type'] == 'sale')
     hen_count = settings['hen_count'] if settings else 0
     
-    # Get this month's data
     today = date.today()
     month_start = f"{today.year:04d}-{today.month:02d}-01"
     month_eggs = sum(e['count'] for e in all_eggs if e['date'] >= month_start)
@@ -551,7 +679,7 @@ async def get_summary_statistics():
 
 @api_router.get("/")
 async def root():
-    return {"message": "Hönshus Statistik API", "version": "1.1"}
+    return {"message": "Hönshus Statistik API", "version": "1.2"}
 
 @api_router.get("/health")
 async def health_check():
