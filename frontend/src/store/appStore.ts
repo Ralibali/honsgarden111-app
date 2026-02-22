@@ -73,6 +73,14 @@ export interface SummaryStats {
   };
 }
 
+// For undo functionality
+interface UndoAction {
+  type: 'egg_record';
+  recordId: string;
+  data: any;
+  timestamp: number;
+}
+
 interface AppState {
   // Data
   coopSettings: CoopSettings | null;
@@ -80,6 +88,9 @@ interface AppState {
   transactions: Transaction[];
   todayStats: TodayStats | null;
   summaryStats: SummaryStats | null;
+  
+  // Undo state
+  lastAction: UndoAction | null;
   
   // Loading states
   loading: boolean;
@@ -89,14 +100,16 @@ interface AppState {
   fetchCoopSettings: () => Promise<void>;
   updateCoopSettings: (data: { coop_name?: string; hen_count?: number }) => Promise<void>;
   fetchEggRecords: (startDate?: string, endDate?: string) => Promise<void>;
-  addEggRecord: (date: string, count: number, notes?: string) => Promise<void>;
+  addEggRecord: (date: string, count: number, notes?: string) => Promise<EggRecord | null>;
   deleteEggRecord: (id: string) => Promise<void>;
+  undoLastAction: () => Promise<boolean>;
   fetchTransactions: (startDate?: string, endDate?: string, type?: TransactionType) => Promise<void>;
   addTransaction: (data: Omit<Transaction, 'id' | 'created_at'>) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   fetchTodayStats: () => Promise<void>;
   fetchSummaryStats: () => Promise<void>;
   clearError: () => void;
+  setLastAction: (action: UndoAction | null) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -106,10 +119,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   transactions: [],
   todayStats: null,
   summaryStats: null,
+  lastAction: null,
   loading: false,
   error: null,
   
   clearError: () => set({ error: null }),
+  
+  setLastAction: (action) => set({ lastAction: action }),
   
   fetchCoopSettings: async () => {
     try {
@@ -169,13 +185,27 @@ export const useAppStore = create<AppState>((set, get) => ({
         body: JSON.stringify({ date, count, notes }),
       });
       if (!response.ok) throw new Error('Failed to add egg record');
+      const newRecord = await response.json();
+      
+      // Store for undo
+      set({
+        lastAction: {
+          type: 'egg_record',
+          recordId: newRecord.id,
+          data: { date, count, notes },
+          timestamp: Date.now(),
+        },
+      });
+      
       // Refresh data
       await get().fetchEggRecords();
       await get().fetchTodayStats();
       await get().fetchSummaryStats();
       set({ loading: false });
+      return newRecord;
     } catch (error: any) {
       set({ error: error.message, loading: false });
+      return null;
     }
   },
   
@@ -192,6 +222,28 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ loading: false });
     } catch (error: any) {
       set({ error: error.message, loading: false });
+    }
+  },
+  
+  undoLastAction: async () => {
+    const { lastAction } = get();
+    if (!lastAction) return false;
+    
+    // Check if action is within 5 seconds
+    if (Date.now() - lastAction.timestamp > 5000) {
+      set({ lastAction: null });
+      return false;
+    }
+    
+    try {
+      if (lastAction.type === 'egg_record') {
+        await get().deleteEggRecord(lastAction.recordId);
+        set({ lastAction: null });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
     }
   },
   
