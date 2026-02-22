@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Request, Response, Cookie
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +7,11 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
-from datetime import datetime, date
+from datetime import datetime, date, timezone, timedelta
 from enum import Enum
+import httpx
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,11 +21,27 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Stripe config
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_emergent')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+STRIPE_PRICE_MONTHLY = os.environ.get('STRIPE_PRICE_MONTHLY', '')
+STRIPE_PRICE_YEARLY = os.environ.get('STRIPE_PRICE_YEARLY', '')
+
+# Import Stripe checkout helper
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+
 # Create the main app without a prefix
 app = FastAPI()
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # ============ ENUMS ============
 class TransactionType(str, Enum):
@@ -43,11 +61,27 @@ class SubscriptionPlan(str, Enum):
     MONTHLY = "monthly"
     YEARLY = "yearly"
 
-# ============ MODELS ============
+# ============ AUTH MODELS ============
+class User(BaseModel):
+    user_id: str
+    email: str
+    name: str
+    picture: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-# Coop Settings (hen count, coop name)
+class UserSession(BaseModel):
+    user_id: str
+    session_token: str
+    expires_at: datetime
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SessionRequest(BaseModel):
+    session_id: str
+
+# ============ COOP/DATA MODELS ============
 class CoopSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str = "default_user"
     coop_name: str = "Min Hönsgård"
     hen_count: int = 0
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -57,13 +91,13 @@ class CoopSettingsUpdate(BaseModel):
     coop_name: Optional[str] = None
     hen_count: Optional[int] = None
 
-# Individual Hen Profile
 class Hen(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str = "default_user"
     name: str
     breed: Optional[str] = None
     color: Optional[str] = None
-    birth_date: Optional[str] = None  # YYYY-MM-DD
+    birth_date: Optional[str] = None
     notes: Optional[str] = None
     is_active: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -84,17 +118,17 @@ class HenUpdate(BaseModel):
     notes: Optional[str] = None
     is_active: Optional[bool] = None
 
-# Egg Record - daily egg collection
 class EggRecord(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    date: str  # YYYY-MM-DD format
+    user_id: str = "default_user"
+    date: str
     count: int
-    hen_id: Optional[str] = None  # Optional: link to specific hen
+    hen_id: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class EggRecordCreate(BaseModel):
-    date: str  # YYYY-MM-DD format
+    date: str
     count: int
     hen_id: Optional[str] = None
     notes: Optional[str] = None
@@ -104,15 +138,15 @@ class EggRecordUpdate(BaseModel):
     hen_id: Optional[str] = None
     notes: Optional[str] = None
 
-# Transaction - costs and income
 class Transaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    date: str  # YYYY-MM-DD format
+    user_id: str = "default_user"
+    date: str
     type: TransactionType
     category: TransactionCategory
-    amount: float  # Always positive, type determines +/-
+    amount: float
     description: Optional[str] = None
-    quantity: Optional[int] = None  # For egg sales - number of eggs sold
+    quantity: Optional[int] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class TransactionCreate(BaseModel):
@@ -123,94 +157,422 @@ class TransactionCreate(BaseModel):
     description: Optional[str] = None
     quantity: Optional[int] = None
 
-# Premium/Subscription
-class PremiumSubscription(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str = "default_user"  # For now, single user
-    is_active: bool = False
-    plan: Optional[SubscriptionPlan] = None
-    store: Optional[str] = None  # "apple" or "google"
-    store_subscription_id: Optional[str] = None
-    expires_at: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-
+# ============ SUBSCRIPTION MODELS ============
 class PremiumStatusResponse(BaseModel):
     is_premium: bool
     subscription_id: Optional[str] = None
     plan: Optional[str] = None
     expires_at: Optional[str] = None
+    stripe_customer_id: Optional[str] = None
 
-class PremiumWebhookPayload(BaseModel):
-    event_type: str
-    store: str
-    store_subscription_id: str
-    plan: SubscriptionPlan
-    expires_at: Optional[str] = None
+class CreateCheckoutRequest(BaseModel):
+    plan: str  # "monthly" or "yearly"
+    origin_url: str
+
+class CreateCheckoutResponse(BaseModel):
+    url: str
+    session_id: str
+
+# ============ AUTH HELPER FUNCTIONS ============
+async def get_current_user(request: Request) -> Optional[User]:
+    """Get current user from session token in cookie or header"""
+    session_token = request.cookies.get("session_token")
+    if not session_token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            session_token = auth_header.split(" ")[1]
+    
+    if not session_token:
+        return None
+    
+    session = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
+    if not session:
+        return None
+    
+    # Check expiry
+    expires_at = session.get("expires_at")
+    if isinstance(expires_at, str):
+        expires_at = datetime.fromisoformat(expires_at)
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < datetime.now(timezone.utc):
+        return None
+    
+    user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    if not user:
+        return None
+    
+    return User(**user)
+
+async def require_user(request: Request) -> User:
+    """Require authenticated user, raise 401 if not"""
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user
+
+# ============ AUTH ENDPOINTS ============
+@api_router.post("/auth/session")
+async def exchange_session(session_req: SessionRequest, response: Response):
+    """Exchange session_id from Emergent Auth for user data and session token"""
+    # REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+                headers={"X-Session-ID": session_req.session_id}
+            )
+            if resp.status_code != 200:
+                raise HTTPException(status_code=401, detail="Invalid session")
+            
+            data = resp.json()
+    except Exception as e:
+        logger.error(f"Auth error: {e}")
+        raise HTTPException(status_code=401, detail="Authentication failed")
+    
+    email = data.get("email")
+    name = data.get("name", email.split("@")[0] if email else "User")
+    picture = data.get("picture")
+    session_token = data.get("session_token")
+    
+    # Find or create user
+    existing_user = await db.users.find_one({"email": email}, {"_id": 0})
+    if existing_user:
+        user_id = existing_user["user_id"]
+        # Update user info
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"name": name, "picture": picture}}
+        )
+    else:
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
+        await db.users.insert_one({
+            "user_id": user_id,
+            "email": email,
+            "name": name,
+            "picture": picture,
+            "created_at": datetime.now(timezone.utc)
+        })
+        # Create default coop settings for new user
+        await db.coop_settings.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "coop_name": "Min Hönsgård",
+            "hen_count": 0,
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        })
+    
+    # Store session
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    await db.user_sessions.delete_many({"user_id": user_id})  # Remove old sessions
+    await db.user_sessions.insert_one({
+        "user_id": user_id,
+        "session_token": session_token,
+        "expires_at": expires_at,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Set cookie
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=7 * 24 * 60 * 60
+    )
+    
+    return {
+        "user_id": user_id,
+        "email": email,
+        "name": name,
+        "picture": picture
+    }
+
+@api_router.get("/auth/me")
+async def get_me(request: Request):
+    """Get current user info"""
+    user = await require_user(request)
+    return {
+        "user_id": user.user_id,
+        "email": user.email,
+        "name": user.name,
+        "picture": user.picture
+    }
+
+@api_router.post("/auth/logout")
+async def logout(request: Request, response: Response):
+    """Logout user"""
+    session_token = request.cookies.get("session_token")
+    if session_token:
+        await db.user_sessions.delete_many({"session_token": session_token})
+    
+    response.delete_cookie(key="session_token", path="/", secure=True, samesite="none")
+    return {"message": "Logged out"}
+
+# ============ STRIPE CHECKOUT ENDPOINTS ============
+@api_router.post("/checkout/create", response_model=CreateCheckoutResponse)
+async def create_checkout_session(req: CreateCheckoutRequest, request: Request):
+    """Create Stripe checkout session for subscription"""
+    user = await require_user(request)
+    
+    # Get price ID based on plan
+    if req.plan == "monthly":
+        price_id = STRIPE_PRICE_MONTHLY
+    elif req.plan == "yearly":
+        price_id = STRIPE_PRICE_YEARLY
+    else:
+        raise HTTPException(status_code=400, detail="Invalid plan. Use 'monthly' or 'yearly'")
+    
+    if not price_id:
+        raise HTTPException(status_code=500, detail="Stripe price not configured")
+    
+    # Initialize Stripe checkout
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    # Build URLs
+    success_url = f"{req.origin_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{req.origin_url}/premium"
+    
+    # Create checkout session
+    checkout_req = CheckoutSessionRequest(
+        stripe_price_id=price_id,
+        quantity=1,
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "user_id": user.user_id,
+            "plan": req.plan
+        }
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_req)
+    
+    # Store pending transaction
+    await db.payment_transactions.insert_one({
+        "id": str(uuid.uuid4()),
+        "session_id": session.session_id,
+        "user_id": user.user_id,
+        "plan": req.plan,
+        "amount": 19.0 if req.plan == "monthly" else 149.0,
+        "currency": "SEK",
+        "payment_status": "pending",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return CreateCheckoutResponse(url=session.url, session_id=session.session_id)
+
+@api_router.get("/checkout/status/{session_id}")
+async def get_checkout_status(session_id: str, request: Request):
+    """Get checkout session status"""
+    user = await require_user(request)
+    
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    status = await stripe_checkout.get_checkout_status(session_id)
+    
+    # Update transaction status
+    if status.payment_status == "paid":
+        # Find the transaction
+        transaction = await db.payment_transactions.find_one({"session_id": session_id})
+        if transaction and transaction.get("payment_status") != "paid":
+            # Update transaction
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc)}}
+            )
+            
+            # Activate premium for user
+            plan = transaction.get("plan", "monthly")
+            if plan == "yearly":
+                expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+            else:
+                expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+            
+            await db.subscriptions.update_one(
+                {"user_id": user.user_id},
+                {"$set": {
+                    "is_active": True,
+                    "plan": plan,
+                    "expires_at": expires_at,
+                    "stripe_session_id": session_id,
+                    "updated_at": datetime.now(timezone.utc)
+                }},
+                upsert=True
+            )
+    
+    return {
+        "status": status.status,
+        "payment_status": status.payment_status,
+        "amount_total": status.amount_total,
+        "currency": status.currency
+    }
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    body = await request.body()
+    signature = request.headers.get("Stripe-Signature")
+    
+    host_url = str(request.base_url).rstrip('/')
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    try:
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        logger.info(f"Webhook received: {webhook_response.event_type}")
+        
+        if webhook_response.payment_status == "paid":
+            user_id = webhook_response.metadata.get("user_id")
+            plan = webhook_response.metadata.get("plan", "monthly")
+            
+            if user_id:
+                if plan == "yearly":
+                    expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+                else:
+                    expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+                
+                await db.subscriptions.update_one(
+                    {"user_id": user_id},
+                    {"$set": {
+                        "is_active": True,
+                        "plan": plan,
+                        "expires_at": expires_at,
+                        "stripe_session_id": webhook_response.session_id,
+                        "updated_at": datetime.now(timezone.utc)
+                    }},
+                    upsert=True
+                )
+                
+                # Update payment transaction
+                await db.payment_transactions.update_one(
+                    {"session_id": webhook_response.session_id},
+                    {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc)}}
+                )
+        
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        return {"status": "error", "message": str(e)}
+
+# ============ PREMIUM STATUS ENDPOINT ============
+@api_router.get("/premium/status", response_model=PremiumStatusResponse)
+async def get_premium_status(request: Request):
+    """Get premium subscription status for current user"""
+    user = await get_current_user(request)
+    
+    if not user:
+        # For mobile app compatibility, check default_user
+        subscription = await db.subscriptions.find_one({"user_id": "default_user"})
+    else:
+        subscription = await db.subscriptions.find_one({"user_id": user.user_id})
+    
+    if not subscription:
+        return PremiumStatusResponse(is_premium=False)
+    
+    is_active = subscription.get('is_active', False)
+    expires_at = subscription.get('expires_at')
+    
+    if expires_at:
+        if isinstance(expires_at, str):
+            expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < datetime.now(timezone.utc):
+            is_active = False
+            await db.subscriptions.update_one(
+                {"user_id": subscription.get("user_id")},
+                {"$set": {"is_active": False}}
+            )
+    
+    return PremiumStatusResponse(
+        is_premium=is_active,
+        subscription_id=subscription.get('stripe_session_id'),
+        plan=subscription.get('plan'),
+        expires_at=expires_at.isoformat() if expires_at else None,
+        stripe_customer_id=subscription.get('stripe_customer_id')
+    )
+
+# ============ USER DATA HELPER ============
+async def get_user_id(request: Request) -> str:
+    """Get user_id from session or return default for mobile app"""
+    user = await get_current_user(request)
+    return user.user_id if user else "default_user"
 
 # ============ COOP SETTINGS ENDPOINTS ============
-
 @api_router.get("/coop", response_model=CoopSettings)
-async def get_coop_settings():
+async def get_coop_settings(request: Request):
     """Get or create coop settings"""
-    settings = await db.coop_settings.find_one()
+    user_id = await get_user_id(request)
+    settings = await db.coop_settings.find_one({"user_id": user_id})
     if not settings:
-        new_settings = CoopSettings()
+        new_settings = CoopSettings(user_id=user_id)
         await db.coop_settings.insert_one(new_settings.dict())
         return new_settings
     return CoopSettings(**settings)
 
 @api_router.put("/coop", response_model=CoopSettings)
-async def update_coop_settings(update: CoopSettingsUpdate):
+async def update_coop_settings(update: CoopSettingsUpdate, request: Request):
     """Update coop settings"""
-    settings = await db.coop_settings.find_one()
+    user_id = await get_user_id(request)
+    settings = await db.coop_settings.find_one({"user_id": user_id})
     if not settings:
-        settings = CoopSettings().dict()
+        settings = CoopSettings(user_id=user_id).dict()
+        await db.coop_settings.insert_one(settings)
     
     update_data = {k: v for k, v in update.dict().items() if v is not None}
     update_data['updated_at'] = datetime.utcnow()
     
     await db.coop_settings.update_one(
-        {"id": settings.get('id', settings.get('_id'))},
-        {"$set": update_data},
-        upsert=True
+        {"user_id": user_id},
+        {"$set": update_data}
     )
     
-    updated = await db.coop_settings.find_one()
+    updated = await db.coop_settings.find_one({"user_id": user_id})
     return CoopSettings(**updated)
 
 # ============ HEN ENDPOINTS ============
-
 @api_router.post("/hens", response_model=Hen)
-async def create_hen(hen: HenCreate):
+async def create_hen(hen: HenCreate, request: Request):
     """Create a new hen profile"""
-    new_hen = Hen(**hen.dict())
+    user_id = await get_user_id(request)
+    new_hen = Hen(user_id=user_id, **hen.dict())
     await db.hens.insert_one(new_hen.dict())
     
-    # Update hen count in coop settings
-    active_hens = await db.hens.count_documents({"is_active": True})
-    await db.coop_settings.update_one({}, {"$set": {"hen_count": active_hens}}, upsert=True)
+    active_hens = await db.hens.count_documents({"user_id": user_id, "is_active": True})
+    await db.coop_settings.update_one({"user_id": user_id}, {"$set": {"hen_count": active_hens}}, upsert=True)
     
     return new_hen
 
 @api_router.get("/hens", response_model=List[Hen])
-async def get_hens(active_only: bool = True):
+async def get_hens(request: Request, active_only: bool = True):
     """Get all hens"""
-    query = {"is_active": True} if active_only else {}
+    user_id = await get_user_id(request)
+    query = {"user_id": user_id}
+    if active_only:
+        query["is_active"] = True
     hens = await db.hens.find(query).sort("name", 1).to_list(100)
     return [Hen(**h) for h in hens]
 
 @api_router.get("/hens/{hen_id}", response_model=Hen)
-async def get_hen(hen_id: str):
+async def get_hen(hen_id: str, request: Request):
     """Get a specific hen"""
-    hen = await db.hens.find_one({"id": hen_id})
+    user_id = await get_user_id(request)
+    hen = await db.hens.find_one({"id": hen_id, "user_id": user_id})
     if not hen:
         raise HTTPException(status_code=404, detail="Hen not found")
     return Hen(**hen)
 
 @api_router.put("/hens/{hen_id}", response_model=Hen)
-async def update_hen(hen_id: str, update: HenUpdate):
+async def update_hen(hen_id: str, update: HenUpdate, request: Request):
     """Update a hen's profile"""
+    user_id = await get_user_id(request)
     update_data = {k: v for k, v in update.dict().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No data to update")
@@ -218,94 +580,70 @@ async def update_hen(hen_id: str, update: HenUpdate):
     update_data['updated_at'] = datetime.utcnow()
     
     result = await db.hens.update_one(
-        {"id": hen_id},
+        {"id": hen_id, "user_id": user_id},
         {"$set": update_data}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Hen not found")
     
-    # Update hen count if active status changed
     if 'is_active' in update_data:
-        active_hens = await db.hens.count_documents({"is_active": True})
-        await db.coop_settings.update_one({}, {"$set": {"hen_count": active_hens}}, upsert=True)
+        active_hens = await db.hens.count_documents({"user_id": user_id, "is_active": True})
+        await db.coop_settings.update_one({"user_id": user_id}, {"$set": {"hen_count": active_hens}})
     
     hen = await db.hens.find_one({"id": hen_id})
     return Hen(**hen)
 
 @api_router.delete("/hens/{hen_id}")
-async def delete_hen(hen_id: str):
-    """Delete a hen (or mark as inactive)"""
-    # Soft delete - mark as inactive
+async def delete_hen(hen_id: str, request: Request):
+    """Delete a hen (soft delete)"""
+    user_id = await get_user_id(request)
     result = await db.hens.update_one(
-        {"id": hen_id},
+        {"id": hen_id, "user_id": user_id},
         {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Hen not found")
     
-    # Update hen count
-    active_hens = await db.hens.count_documents({"is_active": True})
-    await db.coop_settings.update_one({}, {"$set": {"hen_count": active_hens}}, upsert=True)
+    active_hens = await db.hens.count_documents({"user_id": user_id, "is_active": True})
+    await db.coop_settings.update_one({"user_id": user_id}, {"$set": {"hen_count": active_hens}})
     
     return {"message": "Hen removed"}
 
-@api_router.get("/hens/{hen_id}/eggs")
-async def get_hen_eggs(hen_id: str, start_date: Optional[str] = None, end_date: Optional[str] = None):
-    """Get egg records for a specific hen"""
-    query = {"hen_id": hen_id}
-    if start_date:
-        query["date"] = {"$gte": start_date}
-    if end_date:
-        if "date" in query:
-            query["date"]["$lte"] = end_date
-        else:
-            query["date"] = {"$lte": end_date}
-    
-    records = await db.egg_records.find(query).sort("date", -1).to_list(1000)
-    total_eggs = sum(r['count'] for r in records)
-    
-    return {
-        "hen_id": hen_id,
-        "total_eggs": total_eggs,
-        "record_count": len(records),
-        "records": [EggRecord(**r) for r in records]
-    }
-
 # ============ EGG RECORD ENDPOINTS ============
-
 @api_router.post("/eggs", response_model=EggRecord)
-async def create_egg_record(record: EggRecordCreate):
+async def create_egg_record(record: EggRecordCreate, request: Request):
     """Log eggs collected for a date"""
-    # If hen_id is provided, create individual record
+    user_id = await get_user_id(request)
+    
     if record.hen_id:
-        egg_record = EggRecord(**record.dict())
+        egg_record = EggRecord(user_id=user_id, **record.dict())
         await db.egg_records.insert_one(egg_record.dict())
         return egg_record
     
-    # Otherwise, check if record exists for this date (without hen_id)
-    existing = await db.egg_records.find_one({"date": record.date, "hen_id": None})
+    existing = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
     if existing:
-        # Update existing record
         await db.egg_records.update_one(
             {"id": existing['id']},
             {"$set": {"count": record.count, "notes": record.notes}}
         )
-        updated = await db.egg_records.find_one({"date": record.date, "hen_id": None})
+        updated = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
         return EggRecord(**updated)
     
-    egg_record = EggRecord(**record.dict())
+    egg_record = EggRecord(user_id=user_id, **record.dict())
     await db.egg_records.insert_one(egg_record.dict())
     return egg_record
 
 @api_router.get("/eggs", response_model=List[EggRecord])
 async def get_egg_records(
+    request: Request,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     hen_id: Optional[str] = None,
     limit: int = 100
 ):
     """Get egg records with optional date filtering"""
-    query = {}
+    user_id = await get_user_id(request)
+    query = {"user_id": user_id}
     if start_date:
         query["date"] = {"$gte": start_date}
     if end_date:
@@ -319,65 +657,35 @@ async def get_egg_records(
     records = await db.egg_records.find(query).sort("date", -1).to_list(limit)
     return [EggRecord(**r) for r in records]
 
-@api_router.get("/eggs/{record_id}", response_model=EggRecord)
-async def get_egg_record(record_id: str):
-    """Get a specific egg record"""
-    record = await db.egg_records.find_one({"id": record_id})
-    if not record:
-        raise HTTPException(status_code=404, detail="Record not found")
-    return EggRecord(**record)
-
-@api_router.get("/eggs/date/{date_str}", response_model=Optional[EggRecord])
-async def get_egg_record_by_date(date_str: str):
-    """Get egg record for a specific date"""
-    record = await db.egg_records.find_one({"date": date_str, "hen_id": None})
-    if not record:
-        return None
-    return EggRecord(**record)
-
-@api_router.put("/eggs/{record_id}", response_model=EggRecord)
-async def update_egg_record(record_id: str, update: EggRecordUpdate):
-    """Update an egg record"""
-    update_data = {k: v for k, v in update.dict().items() if v is not None}
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No data to update")
-    
-    result = await db.egg_records.update_one(
-        {"id": record_id},
-        {"$set": update_data}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Record not found")
-    
-    record = await db.egg_records.find_one({"id": record_id})
-    return EggRecord(**record)
-
 @api_router.delete("/eggs/{record_id}")
-async def delete_egg_record(record_id: str):
+async def delete_egg_record(record_id: str, request: Request):
     """Delete an egg record"""
-    result = await db.egg_records.delete_one({"id": record_id})
+    user_id = await get_user_id(request)
+    result = await db.egg_records.delete_one({"id": record_id, "user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Record not found")
     return {"message": "Record deleted"}
 
 # ============ TRANSACTION ENDPOINTS ============
-
 @api_router.post("/transactions", response_model=Transaction)
-async def create_transaction(transaction: TransactionCreate):
-    """Create a new transaction (cost or sale)"""
-    trans = Transaction(**transaction.dict())
+async def create_transaction(transaction: TransactionCreate, request: Request):
+    """Create a new transaction"""
+    user_id = await get_user_id(request)
+    trans = Transaction(user_id=user_id, **transaction.dict())
     await db.transactions.insert_one(trans.dict())
     return trans
 
 @api_router.get("/transactions", response_model=List[Transaction])
 async def get_transactions(
+    request: Request,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     type: Optional[TransactionType] = None,
     limit: int = 100
 ):
     """Get transactions with optional filtering"""
-    query = {}
+    user_id = await get_user_id(request)
+    query = {"user_id": user_id}
     if start_date:
         query["date"] = {"$gte": start_date}
     if end_date:
@@ -391,132 +699,30 @@ async def get_transactions(
     transactions = await db.transactions.find(query).sort("date", -1).to_list(limit)
     return [Transaction(**t) for t in transactions]
 
-@api_router.get("/transactions/{transaction_id}", response_model=Transaction)
-async def get_transaction(transaction_id: str):
-    """Get a specific transaction"""
-    trans = await db.transactions.find_one({"id": transaction_id})
-    if not trans:
-        raise HTTPException(status_code=404, detail="Transaction not found")
-    return Transaction(**trans)
-
 @api_router.delete("/transactions/{transaction_id}")
-async def delete_transaction(transaction_id: str):
+async def delete_transaction(transaction_id: str, request: Request):
     """Delete a transaction"""
-    result = await db.transactions.delete_one({"id": transaction_id})
+    user_id = await get_user_id(request)
+    result = await db.transactions.delete_one({"id": transaction_id, "user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return {"message": "Transaction deleted"}
 
-# ============ PREMIUM/SUBSCRIPTION ENDPOINTS ============
-
-@api_router.get("/premium/status", response_model=PremiumStatusResponse)
-async def get_premium_status():
-    """Get current premium subscription status"""
-    subscription = await db.subscriptions.find_one({"user_id": "default_user"})
-    
-    if not subscription:
-        return PremiumStatusResponse(is_premium=False)
-    
-    is_active = subscription.get('is_active', False)
-    expires_at = subscription.get('expires_at')
-    
-    if expires_at and isinstance(expires_at, datetime):
-        if expires_at < datetime.utcnow():
-            is_active = False
-            await db.subscriptions.update_one(
-                {"user_id": "default_user"},
-                {"$set": {"is_active": False}}
-            )
-    
-    return PremiumStatusResponse(
-        is_premium=is_active,
-        subscription_id=subscription.get('store_subscription_id'),
-        plan=subscription.get('plan'),
-        expires_at=expires_at.isoformat() if expires_at else None
-    )
-
-@api_router.post("/premium/restore", response_model=PremiumStatusResponse)
-async def restore_premium():
-    """Restore premium purchases"""
-    return await get_premium_status()
-
-@api_router.post("/premium/webhook")
-async def handle_premium_webhook(payload: PremiumWebhookPayload):
-    """Handle webhooks from RevenueCat"""
-    logger.info(f"Received premium webhook: {payload.event_type}")
-    
-    subscription = await db.subscriptions.find_one({"user_id": "default_user"})
-    
-    if payload.event_type in ["subscription.created", "subscription.renewed"]:
-        expires_at = None
-        if payload.expires_at:
-            expires_at = datetime.fromisoformat(payload.expires_at.replace('Z', '+00:00'))
-        
-        subscription_data = {
-            "user_id": "default_user",
-            "is_active": True,
-            "plan": payload.plan,
-            "store": payload.store,
-            "store_subscription_id": payload.store_subscription_id,
-            "expires_at": expires_at,
-            "updated_at": datetime.utcnow(),
-        }
-        
-        if subscription:
-            await db.subscriptions.update_one(
-                {"user_id": "default_user"},
-                {"$set": subscription_data}
-            )
-        else:
-            subscription_data["id"] = str(uuid.uuid4())
-            subscription_data["created_at"] = datetime.utcnow()
-            await db.subscriptions.insert_one(subscription_data)
-        
-        await db.subscription_logs.insert_one({
-            "id": str(uuid.uuid4()),
-            "event_type": payload.event_type,
-            "store": payload.store,
-            "store_subscription_id": payload.store_subscription_id,
-            "plan": payload.plan,
-            "timestamp": datetime.utcnow(),
-        })
-        
-        return {"status": "success", "is_premium": True}
-    
-    elif payload.event_type in ["subscription.cancelled", "subscription.expired"]:
-        if subscription:
-            await db.subscriptions.update_one(
-                {"user_id": "default_user"},
-                {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
-            )
-        
-        await db.subscription_logs.insert_one({
-            "id": str(uuid.uuid4()),
-            "event_type": payload.event_type,
-            "store": payload.store,
-            "store_subscription_id": payload.store_subscription_id,
-            "timestamp": datetime.utcnow(),
-        })
-        
-        return {"status": "success", "is_premium": False}
-    
-    return {"status": "ignored", "reason": "Unknown event type"}
-
 # ============ STATISTICS ENDPOINTS ============
-
 @api_router.get("/statistics/today")
-async def get_today_statistics():
+async def get_today_statistics(request: Request):
     """Get today's statistics"""
+    user_id = await get_user_id(request)
     today = date.today().isoformat()
     
-    egg_records = await db.egg_records.find({"date": today}).to_list(100)
+    egg_records = await db.egg_records.find({"date": today, "user_id": user_id}).to_list(100)
     eggs_today = sum(r['count'] for r in egg_records)
     
-    transactions = await db.transactions.find({"date": today}).to_list(100)
+    transactions = await db.transactions.find({"date": today, "user_id": user_id}).to_list(100)
     costs = sum(t['amount'] for t in transactions if t['type'] == 'cost')
     sales = sum(t['amount'] for t in transactions if t['type'] == 'sale')
     
-    settings = await db.coop_settings.find_one()
+    settings = await db.coop_settings.find_one({"user_id": user_id})
     hen_count = settings['hen_count'] if settings else 0
     
     return {
@@ -529,8 +735,9 @@ async def get_today_statistics():
     }
 
 @api_router.get("/statistics/month/{year}/{month}")
-async def get_month_statistics(year: int, month: int):
+async def get_month_statistics(year: int, month: int, request: Request):
     """Get statistics for a specific month"""
+    user_id = await get_user_id(request)
     start_date = f"{year:04d}-{month:02d}-01"
     if month == 12:
         end_date = f"{year+1:04d}-01-01"
@@ -538,6 +745,7 @@ async def get_month_statistics(year: int, month: int):
         end_date = f"{year:04d}-{month+1:02d}-01"
     
     eggs = await db.egg_records.find({
+        "user_id": user_id,
         "date": {"$gte": start_date, "$lt": end_date}
     }).to_list(1000)
     total_eggs = sum(e['count'] for e in eggs)
@@ -545,16 +753,16 @@ async def get_month_statistics(year: int, month: int):
     avg_eggs = total_eggs / days_with_eggs if days_with_eggs > 0 else 0
     
     transactions = await db.transactions.find({
+        "user_id": user_id,
         "date": {"$gte": start_date, "$lt": end_date}
     }).to_list(1000)
     total_costs = sum(t['amount'] for t in transactions if t['type'] == 'cost')
     total_sales = sum(t['amount'] for t in transactions if t['type'] == 'sale')
     
-    settings = await db.coop_settings.find_one()
+    settings = await db.coop_settings.find_one({"user_id": user_id})
     hen_count = settings['hen_count'] if settings else 0
     eggs_per_hen = total_eggs / hen_count if hen_count > 0 else None
     
-    # Daily breakdown (aggregate by date)
     daily_data = {}
     for egg in eggs:
         d = egg['date']
@@ -573,14 +781,6 @@ async def get_month_statistics(year: int, month: int):
     
     daily_breakdown = sorted(daily_data.values(), key=lambda x: x['date'])
     
-    # Eggs per hen breakdown
-    hens = await db.hens.find({"is_active": True}).to_list(100)
-    hen_eggs = []
-    for hen in hens:
-        hen_records = [e for e in eggs if e.get('hen_id') == hen['id']]
-        hen_total = sum(e['count'] for e in hen_records)
-        hen_eggs.append({"id": hen['id'], "name": hen['name'], "eggs": hen_total})
-    
     return {
         "year": year,
         "month": month,
@@ -590,17 +790,18 @@ async def get_month_statistics(year: int, month: int):
         "total_sales": total_sales,
         "net": total_sales - total_costs,
         "eggs_per_hen": round(eggs_per_hen, 1) if eggs_per_hen else None,
-        "daily_breakdown": daily_breakdown,
-        "hen_breakdown": hen_eggs
+        "daily_breakdown": daily_breakdown
     }
 
 @api_router.get("/statistics/year/{year}")
-async def get_year_statistics(year: int):
+async def get_year_statistics(year: int, request: Request):
     """Get statistics for a specific year"""
+    user_id = await get_user_id(request)
     start_date = f"{year:04d}-01-01"
     end_date = f"{year+1:04d}-01-01"
     
     eggs = await db.egg_records.find({
+        "user_id": user_id,
         "date": {"$gte": start_date, "$lt": end_date}
     }).to_list(10000)
     total_eggs = sum(e['count'] for e in eggs)
@@ -608,6 +809,7 @@ async def get_year_statistics(year: int):
     avg_eggs = total_eggs / days_with_eggs if days_with_eggs > 0 else 0
     
     transactions = await db.transactions.find({
+        "user_id": user_id,
         "date": {"$gte": start_date, "$lt": end_date}
     }).to_list(10000)
     total_costs = sum(t['amount'] for t in transactions if t['type'] == 'cost')
@@ -644,11 +846,13 @@ async def get_year_statistics(year: int):
     }
 
 @api_router.get("/statistics/summary")
-async def get_summary_statistics():
+async def get_summary_statistics(request: Request):
     """Get overall summary statistics"""
-    all_eggs = await db.egg_records.find().to_list(10000)
-    all_transactions = await db.transactions.find().to_list(10000)
-    settings = await db.coop_settings.find_one()
+    user_id = await get_user_id(request)
+    
+    all_eggs = await db.egg_records.find({"user_id": user_id}).to_list(10000)
+    all_transactions = await db.transactions.find({"user_id": user_id}).to_list(10000)
+    settings = await db.coop_settings.find_one({"user_id": user_id})
     
     total_eggs = sum(e['count'] for e in all_eggs)
     total_costs = sum(t['amount'] for t in all_transactions if t['type'] == 'cost')
@@ -676,10 +880,9 @@ async def get_summary_statistics():
     }
 
 # ============ BASIC ROUTES ============
-
 @api_router.get("/")
 async def root():
-    return {"message": "Hönshus Statistik API", "version": "1.2"}
+    return {"message": "Hönshus Statistik API", "version": "2.0"}
 
 @api_router.get("/health")
 async def health_check():
@@ -695,13 +898,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
