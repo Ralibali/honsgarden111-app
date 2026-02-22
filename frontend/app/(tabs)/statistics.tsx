@@ -6,16 +6,20 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  Dimensions,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../../src/store/appStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
+import { useThemeStore, ThemeColors } from '../../src/store/themeStore';
 import { useRouter } from 'expo-router';
 import i18n, { formatCurrency } from '../../src/i18n';
 import { format, getDaysInMonth } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
@@ -35,6 +39,11 @@ interface MonthStats {
     eggs: number;
     costs: number;
     sales: number;
+  }>;
+  hen_breakdown?: Array<{
+    id: string;
+    name: string;
+    eggs: number;
   }>;
 }
 
@@ -57,6 +66,7 @@ interface YearStats {
 export default function StatisticsScreen() {
   const { coopSettings, fetchCoopSettings } = useAppStore();
   const { isPremium } = usePremiumStore();
+  const { colors, isDark } = useThemeStore();
   const router = useRouter();
   
   const [refreshing, setRefreshing] = useState(false);
@@ -67,9 +77,11 @@ export default function StatisticsScreen() {
   const [prevMonthStats, setPrevMonthStats] = useState<MonthStats | null>(null);
   const [yearStats, setYearStats] = useState<YearStats | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   
   const t = i18n.t.bind(i18n);
-  const getLocale = () => i18n.locale.startsWith('sv') ? sv : enUS;
+  const isSv = i18n.locale.startsWith('sv');
+  const getLocale = () => isSv ? sv : enUS;
   
   useEffect(() => {
     fetchCoopSettings();
@@ -172,6 +184,198 @@ export default function StatisticsScreen() {
     return Math.round(monthStats.avg_eggs_per_day * daysInMonth);
   };
   
+  // PDF Export functionality
+  const handleExportPDF = async () => {
+    if (!isPremium) {
+      router.push('/paywall');
+      return;
+    }
+    
+    setExporting(true);
+    try {
+      const stats = viewMode === 'month' ? monthStats : yearStats;
+      if (!stats) {
+        Alert.alert(t('common.error'), isSv ? 'Ingen data att exportera' : 'No data to export');
+        setExporting(false);
+        return;
+      }
+      
+      const periodText = viewMode === 'month' 
+        ? `${getMonthName(selectedMonth)} ${selectedYear}`
+        : `${selectedYear}`;
+      
+      const htmlContent = generatePDFHtml(stats, periodText, viewMode);
+      
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
+        base64: false,
+      });
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: isSv ? 'Dela rapport' : 'Share report',
+          UTI: 'com.adobe.pdf',
+        });
+      } else {
+        Alert.alert(
+          isSv ? 'Klart!' : 'Done!',
+          isSv ? 'PDF skapad' : 'PDF created'
+        );
+      }
+    } catch (error) {
+      console.error('PDF export error:', error);
+      Alert.alert(t('common.error'), isSv ? 'Kunde inte skapa PDF' : 'Could not create PDF');
+    }
+    setExporting(false);
+  };
+  
+  const generatePDFHtml = (stats: MonthStats | YearStats, periodText: string, mode: ViewMode): string => {
+    const coopName = coopSettings?.coop_name || 'Min Hönsgård';
+    const henCount = coopSettings?.hen_count || 0;
+    
+    const isMonth = mode === 'month';
+    const monthData = stats as MonthStats;
+    const yearData = stats as YearStats;
+    
+    let dailyRows = '';
+    if (isMonth && monthData.daily_breakdown) {
+      dailyRows = monthData.daily_breakdown.map(day => `
+        <tr>
+          <td>${day.date}</td>
+          <td style="text-align:center;">${day.eggs}</td>
+          <td style="text-align:right;">${day.costs.toFixed(0)} kr</td>
+          <td style="text-align:right;">${day.sales.toFixed(0)} kr</td>
+        </tr>
+      `).join('');
+    }
+    
+    let monthlyRows = '';
+    if (!isMonth && yearData.monthly_breakdown) {
+      monthlyRows = yearData.monthly_breakdown.map(m => `
+        <tr>
+          <td>${getMonthName(m.month)}</td>
+          <td style="text-align:center;">${m.eggs}</td>
+          <td style="text-align:right;">${m.costs.toFixed(0)} kr</td>
+          <td style="text-align:right;">${m.sales.toFixed(0)} kr</td>
+          <td style="text-align:right;${m.net >= 0 ? 'color:#4CAF50;' : 'color:#FF6B6B;'}">${m.net >= 0 ? '+' : ''}${m.net.toFixed(0)} kr</td>
+        </tr>
+      `).join('');
+    }
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 40px; color: #333; }
+          h1 { color: #4CAF50; margin-bottom: 5px; }
+          h2 { color: #666; font-weight: normal; margin-top: 0; }
+          .period { color: #888; font-size: 14px; }
+          .stats-grid { display: flex; gap: 20px; margin: 30px 0; }
+          .stat-box { background: #f5f5f5; border-radius: 12px; padding: 20px; flex: 1; text-align: center; }
+          .stat-value { font-size: 32px; font-weight: bold; color: #333; }
+          .stat-label { color: #666; font-size: 14px; margin-top: 5px; }
+          .finance-row { display: flex; gap: 20px; margin: 20px 0; }
+          .finance-box { flex: 1; padding: 15px; border-radius: 8px; text-align: center; }
+          .costs { background: #FFEBEE; }
+          .costs .value { color: #FF6B6B; }
+          .sales { background: #E8F5E9; }
+          .sales .value { color: #4CAF50; }
+          .net { background: #f5f5f5; }
+          .value { font-size: 24px; font-weight: bold; }
+          .label { font-size: 12px; color: #666; margin-top: 5px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+          th { background: #4CAF50; color: white; padding: 12px; text-align: left; }
+          td { padding: 10px; border-bottom: 1px solid #eee; }
+          tr:nth-child(even) { background: #fafafa; }
+          .footer { margin-top: 40px; text-align: center; color: #888; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <h1>🥚 ${coopName}</h1>
+        <h2>${isSv ? 'Statistikrapport' : 'Statistics Report'}</h2>
+        <p class="period">${periodText} • ${henCount} ${isSv ? 'hönor' : 'hens'}</p>
+        
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-value">${stats.total_eggs}</div>
+            <div class="stat-label">${isSv ? 'Totalt ägg' : 'Total eggs'}</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value">${stats.avg_eggs_per_day}</div>
+            <div class="stat-label">${isSv ? 'Snitt/dag' : 'Avg/day'}</div>
+          </div>
+          ${isMonth && monthData.eggs_per_hen ? `
+          <div class="stat-box">
+            <div class="stat-value">${monthData.eggs_per_hen}</div>
+            <div class="stat-label">${isSv ? 'Ägg/höna' : 'Eggs/hen'}</div>
+          </div>
+          ` : ''}
+        </div>
+        
+        <h3>${isSv ? 'Ekonomisk sammanfattning' : 'Financial Summary'}</h3>
+        <div class="finance-row">
+          <div class="finance-box costs">
+            <div class="value">${stats.total_costs.toFixed(0)} kr</div>
+            <div class="label">${isSv ? 'Kostnader' : 'Costs'}</div>
+          </div>
+          <div class="finance-box sales">
+            <div class="value">${stats.total_sales.toFixed(0)} kr</div>
+            <div class="label">${isSv ? 'Försäljning' : 'Sales'}</div>
+          </div>
+          <div class="finance-box net">
+            <div class="value" style="color:${stats.net >= 0 ? '#4CAF50' : '#FF6B6B'}">
+              ${stats.net >= 0 ? '+' : ''}${stats.net.toFixed(0)} kr
+            </div>
+            <div class="label">${isSv ? 'Netto' : 'Net'}</div>
+          </div>
+        </div>
+        
+        ${isMonth && monthData.daily_breakdown && monthData.daily_breakdown.length > 0 ? `
+        <h3>${isSv ? 'Daglig översikt' : 'Daily Overview'}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>${isSv ? 'Datum' : 'Date'}</th>
+              <th style="text-align:center;">${isSv ? 'Ägg' : 'Eggs'}</th>
+              <th style="text-align:right;">${isSv ? 'Kostnader' : 'Costs'}</th>
+              <th style="text-align:right;">${isSv ? 'Försäljning' : 'Sales'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dailyRows}
+          </tbody>
+        </table>
+        ` : ''}
+        
+        ${!isMonth && yearData.monthly_breakdown ? `
+        <h3>${isSv ? 'Månadsöversikt' : 'Monthly Overview'}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>${isSv ? 'Månad' : 'Month'}</th>
+              <th style="text-align:center;">${isSv ? 'Ägg' : 'Eggs'}</th>
+              <th style="text-align:right;">${isSv ? 'Kostnader' : 'Costs'}</th>
+              <th style="text-align:right;">${isSv ? 'Försäljning' : 'Sales'}</th>
+              <th style="text-align:right;">${isSv ? 'Netto' : 'Net'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${monthlyRows}
+          </tbody>
+        </table>
+        ` : ''}
+        
+        <div class="footer">
+          ${isSv ? 'Skapad med Hönshus Statistik' : 'Created with Chicken Coop Statistics'} • ${format(new Date(), 'yyyy-MM-dd HH:mm')}
+        </div>
+      </body>
+      </html>
+    `;
+  };
+  
   const renderTrendBadge = (current: number, previous: number) => {
     const trend = calculateTrend(current, previous);
     if (trend.direction === 'same' || trend.value === 0) return null;
@@ -184,17 +388,19 @@ export default function StatisticsScreen() {
         <Ionicons
           name={trend.direction === 'up' ? 'arrow-up' : 'arrow-down'}
           size={12}
-          color={trend.direction === 'up' ? '#4CAF50' : '#FF6B6B'}
+          color={trend.direction === 'up' ? colors.success : colors.error}
         />
         <Text style={[
           styles.trendText,
-          { color: trend.direction === 'up' ? '#4CAF50' : '#FF6B6B' }
+          { color: trend.direction === 'up' ? colors.success : colors.error }
         ]}>
           {trend.value}%
         </Text>
       </View>
     );
   };
+  
+  const styles = createStyles(colors, isDark);
   
   const renderMonthView = () => {
     if (!monthStats) return null;
@@ -208,7 +414,7 @@ export default function StatisticsScreen() {
         <View style={styles.statsGrid}>
           <View style={styles.statItem}>
             <View style={styles.statHeader}>
-              <Ionicons name="egg" size={24} color="#FFD93D" />
+              <Ionicons name="egg" size={24} color={colors.warning} />
               {prevMonthStats && renderTrendBadge(monthStats.total_eggs, prevMonthStats.total_eggs)}
             </View>
             <Text style={styles.statValue}>{monthStats.total_eggs}</Text>
@@ -216,7 +422,7 @@ export default function StatisticsScreen() {
           </View>
           <View style={styles.statItem}>
             <View style={styles.statHeader}>
-              <Ionicons name="analytics" size={24} color="#4CAF50" />
+              <Ionicons name="analytics" size={24} color={colors.success} />
               {prevMonthStats && renderTrendBadge(monthStats.avg_eggs_per_day, prevMonthStats.avg_eggs_per_day)}
             </View>
             <Text style={styles.statValue}>{monthStats.avg_eggs_per_day}</Text>
@@ -225,7 +431,7 @@ export default function StatisticsScreen() {
           {monthStats.eggs_per_hen && (
             <View style={styles.statItem}>
               <View style={styles.statHeader}>
-                <Ionicons name="heart" size={24} color="#FF6B6B" />
+                <Ionicons name="heart" size={24} color={colors.error} />
                 {prevMonthStats?.eggs_per_hen && renderTrendBadge(monthStats.eggs_per_hen, prevMonthStats.eggs_per_hen)}
               </View>
               <Text style={styles.statValue}>{monthStats.eggs_per_hen}</Text>
@@ -237,7 +443,7 @@ export default function StatisticsScreen() {
         {/* Forecast */}
         {forecast && (
           <View style={styles.forecastCard}>
-            <Ionicons name="bulb" size={20} color="#FFD93D" />
+            <Ionicons name="bulb" size={20} color={colors.warning} />
             <Text style={styles.forecastText}>
               {t('statistics.forecast')}: <Text style={styles.forecastValue}>~{forecast} {t('home.totalEggs')}</Text>
             </Text>
@@ -250,13 +456,13 @@ export default function StatisticsScreen() {
           <View style={styles.financeRow}>
             <View style={styles.financeItem}>
               <Text style={styles.financeLabel}>{t('statistics.costLabel')}</Text>
-              <Text style={[styles.financeValue, { color: '#FF6B6B' }]}>
+              <Text style={[styles.financeValue, { color: colors.error }]}>
                 -{formatCurrency(monthStats.total_costs)}
               </Text>
             </View>
             <View style={styles.financeItem}>
               <Text style={styles.financeLabel}>{t('statistics.salesLabel')}</Text>
-              <Text style={[styles.financeValue, { color: '#4CAF50' }]}>
+              <Text style={[styles.financeValue, { color: colors.success }]}>
                 +{formatCurrency(monthStats.total_sales)}
               </Text>
             </View>
@@ -264,7 +470,7 @@ export default function StatisticsScreen() {
               <Text style={styles.financeLabel}>{t('statistics.netLabel')}</Text>
               <Text style={[
                 styles.financeValue,
-                { color: monthStats.net >= 0 ? '#4CAF50' : '#FF6B6B' }
+                { color: monthStats.net >= 0 ? colors.success : colors.error }
               ]}>
                 {monthStats.net >= 0 ? '+' : ''}{formatCurrency(monthStats.net)}
               </Text>
@@ -277,7 +483,7 @@ export default function StatisticsScreen() {
           <Text style={styles.cardTitle}>{t('statistics.dailyProduction')}</Text>
           {monthStats.daily_breakdown.length === 0 ? (
             <View style={styles.emptyChart}>
-              <Ionicons name="egg-outline" size={48} color="#4A4A4A" />
+              <Ionicons name="egg-outline" size={48} color={colors.textMuted} />
               <Text style={styles.emptyText}>{t('statistics.noData')}</Text>
               <Text style={styles.emptyHint}>{t('statistics.noDataHint')}</Text>
             </View>
@@ -291,7 +497,7 @@ export default function StatisticsScreen() {
                       <View
                         style={[
                           styles.bar,
-                          { height: Math.max((day.eggs / maxEggs) * 100, 4) }
+                          { height: Math.max((day.eggs / maxEggs) * 100, 4), backgroundColor: colors.primary }
                         ]}
                       />
                     </View>
@@ -313,10 +519,13 @@ export default function StatisticsScreen() {
     if (!isPremium) {
       return (
         <View style={styles.premiumLock}>
-          <Ionicons name="lock-closed" size={48} color="#FFD93D" />
+          <Ionicons name="lock-closed" size={48} color={colors.warning} />
           <Text style={styles.premiumLockTitle}>{t('statistics.premiumRequired')}</Text>
           <Text style={styles.premiumLockText}>{t('statistics.unlockYearStats')}</Text>
-          <TouchableOpacity style={styles.upgradeButton}>
+          <TouchableOpacity 
+            style={styles.upgradeButton}
+            onPress={() => router.push('/paywall')}
+          >
             <Text style={styles.upgradeButtonText}>{t('common.upgrade')}</Text>
           </TouchableOpacity>
         </View>
@@ -332,12 +541,12 @@ export default function StatisticsScreen() {
         {/* Summary Cards */}
         <View style={styles.statsGrid}>
           <View style={styles.statItem}>
-            <Ionicons name="egg" size={24} color="#FFD93D" />
+            <Ionicons name="egg" size={24} color={colors.warning} />
             <Text style={styles.statValue}>{yearStats.total_eggs}</Text>
             <Text style={styles.statLabel}>{t('statistics.totalEggs')}</Text>
           </View>
           <View style={styles.statItem}>
-            <Ionicons name="analytics" size={24} color="#4CAF50" />
+            <Ionicons name="analytics" size={24} color={colors.success} />
             <Text style={styles.statValue}>{yearStats.avg_eggs_per_day}</Text>
             <Text style={styles.statLabel}>{t('statistics.avgPerDay')}</Text>
           </View>
@@ -349,13 +558,13 @@ export default function StatisticsScreen() {
           <View style={styles.financeRow}>
             <View style={styles.financeItem}>
               <Text style={styles.financeLabel}>{t('statistics.costLabel')}</Text>
-              <Text style={[styles.financeValue, { color: '#FF6B6B' }]}>
+              <Text style={[styles.financeValue, { color: colors.error }]}>
                 -{formatCurrency(yearStats.total_costs)}
               </Text>
             </View>
             <View style={styles.financeItem}>
               <Text style={styles.financeLabel}>{t('statistics.salesLabel')}</Text>
-              <Text style={[styles.financeValue, { color: '#4CAF50' }]}>
+              <Text style={[styles.financeValue, { color: colors.success }]}>
                 +{formatCurrency(yearStats.total_sales)}
               </Text>
             </View>
@@ -363,7 +572,7 @@ export default function StatisticsScreen() {
               <Text style={styles.financeLabel}>{t('statistics.netLabel')}</Text>
               <Text style={[
                 styles.financeValue,
-                { color: yearStats.net >= 0 ? '#4CAF50' : '#FF6B6B' }
+                { color: yearStats.net >= 0 ? colors.success : colors.error }
               ]}>
                 {yearStats.net >= 0 ? '+' : ''}{formatCurrency(yearStats.net)}
               </Text>
@@ -383,7 +592,7 @@ export default function StatisticsScreen() {
                     <View
                       style={[
                         styles.bar,
-                        { height: Math.max((month.eggs / maxEggs) * 100, 4) }
+                        { height: Math.max((month.eggs / maxEggs) * 100, 4), backgroundColor: colors.primary }
                       ]}
                     />
                   </View>
@@ -404,12 +613,12 @@ export default function StatisticsScreen() {
               <Text style={styles.monthName}>{getMonthName(month.month)}</Text>
               <View style={styles.monthStats}>
                 <View style={styles.monthStat}>
-                  <Ionicons name="egg-outline" size={14} color="#FFD93D" />
+                  <Ionicons name="egg-outline" size={14} color={colors.warning} />
                   <Text style={styles.monthStatText}>{month.eggs}</Text>
                 </View>
                 <Text style={[
                   styles.monthNet,
-                  { color: month.net >= 0 ? '#4CAF50' : '#FF6B6B' }
+                  { color: month.net >= 0 ? colors.success : colors.error }
                 ]}>
                   {month.net >= 0 ? '+' : ''}{formatCurrency(month.net)}
                 </Text>
@@ -427,12 +636,34 @@ export default function StatisticsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4CAF50" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>{t('statistics.title')}</Text>
+          <View style={styles.headerRow}>
+            <Text style={styles.title}>{t('statistics.title')}</Text>
+            <TouchableOpacity 
+              style={[styles.exportButton, !isPremium && styles.exportButtonLocked]}
+              onPress={handleExportPDF}
+              disabled={exporting}
+            >
+              {exporting ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <>
+                  <Ionicons 
+                    name={isPremium ? "document-text" : "lock-closed"} 
+                    size={18} 
+                    color={isPremium ? colors.primary : colors.textMuted} 
+                  />
+                  <Text style={[styles.exportButtonText, !isPremium && styles.exportButtonTextLocked]}>
+                    PDF
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
         
         {/* View Mode Toggle */}
@@ -473,7 +704,7 @@ export default function StatisticsScreen() {
         {/* Period Navigator */}
         <View style={styles.periodNav}>
           <TouchableOpacity style={styles.navButton} onPress={goToPreviousPeriod}>
-            <Ionicons name="chevron-back" size={24} color="#FFF" />
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
           </TouchableOpacity>
           
           <Text style={styles.periodText}>
@@ -484,13 +715,14 @@ export default function StatisticsScreen() {
           </Text>
           
           <TouchableOpacity style={styles.navButton} onPress={goToNextPeriod}>
-            <Ionicons name="chevron-forward" size={24} color="#FFF" />
+            <Ionicons name="chevron-forward" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
         
         {/* Loading State */}
         {loading ? (
           <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
             <Text style={styles.loadingText}>{t('common.loading')}</Text>
           </View>
         ) : (
@@ -501,10 +733,10 @@ export default function StatisticsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -516,14 +748,41 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 20,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
+  },
+  exportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.primary + '44',
+  },
+  exportButtonLocked: {
+    borderColor: colors.border,
+  },
+  exportButtonText: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  exportButtonTextLocked: {
+    color: colors.textMuted,
   },
   toggleContainer: {
     flexDirection: 'row',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 4,
     marginBottom: 16,
@@ -535,24 +794,24 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   toggleButtonActive: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
   },
   toggleText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#8E8E93',
+    color: colors.textSecondary,
   },
   toggleTextActive: {
     color: '#FFF',
   },
   premiumBadge: {
-    color: '#FFD93D',
+    color: colors.warning,
   },
   periodNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 12,
     marginBottom: 20,
@@ -566,7 +825,7 @@ const styles = StyleSheet.create({
   periodText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFF',
+    color: colors.text,
     textTransform: 'capitalize',
   },
   loadingContainer: {
@@ -574,8 +833,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#8E8E93',
+    color: colors.textSecondary,
     fontSize: 16,
+    marginTop: 12,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -586,7 +846,7 @@ const styles = StyleSheet.create({
   statItem: {
     flex: 1,
     minWidth: '30%',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -599,12 +859,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     marginTop: 8,
   },
   statLabel: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   trendBadge: {
@@ -616,10 +876,10 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   trendUp: {
-    backgroundColor: '#4CAF5022',
+    backgroundColor: colors.success + '22',
   },
   trendDown: {
-    backgroundColor: '#FF6B6B22',
+    backgroundColor: colors.error + '22',
   },
   trendText: {
     fontSize: 11,
@@ -628,24 +888,24 @@ const styles = StyleSheet.create({
   forecastCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     gap: 12,
     borderWidth: 1,
-    borderColor: '#FFD93D33',
+    borderColor: colors.warning + '33',
   },
   forecastText: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: colors.textSecondary,
   },
   forecastValue: {
-    color: '#FFF',
+    color: colors.text,
     fontWeight: '600',
   },
   financeCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -653,7 +913,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginBottom: 16,
   },
   financeRow: {
@@ -665,7 +925,7 @@ const styles = StyleSheet.create({
   },
   financeLabel: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: colors.textSecondary,
   },
   financeValue: {
     fontSize: 18,
@@ -673,7 +933,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   chartCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -683,12 +943,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: '#8E8E93',
+    color: colors.textSecondary,
     fontSize: 16,
     marginTop: 12,
   },
   emptyHint: {
-    color: '#4A4A4A',
+    color: colors.textMuted,
     fontSize: 13,
     marginTop: 4,
     textAlign: 'center',
@@ -710,22 +970,21 @@ const styles = StyleSheet.create({
   },
   bar: {
     width: 20,
-    backgroundColor: '#4CAF50',
     borderRadius: 4,
     minHeight: 4,
   },
   barValue: {
     fontSize: 10,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginBottom: 4,
   },
   barLabel: {
     fontSize: 10,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   listCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
   },
@@ -735,11 +994,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#2C2C2E',
+    borderBottomColor: colors.border,
   },
   monthName: {
     fontSize: 15,
-    color: '#FFF',
+    color: colors.text,
     textTransform: 'capitalize',
   },
   monthStats: {
@@ -754,7 +1013,7 @@ const styles = StyleSheet.create({
   },
   monthStatText: {
     fontSize: 14,
-    color: '#FFF',
+    color: colors.text,
   },
   monthNet: {
     fontSize: 14,
@@ -763,7 +1022,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   premiumLock: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
@@ -772,17 +1031,17 @@ const styles = StyleSheet.create({
   premiumLockTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFF',
+    color: colors.text,
     marginTop: 16,
   },
   premiumLockText: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 8,
     textAlign: 'center',
   },
   upgradeButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     paddingHorizontal: 32,
     paddingVertical: 14,
