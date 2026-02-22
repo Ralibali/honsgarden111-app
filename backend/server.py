@@ -905,19 +905,21 @@ app.add_middleware(
 
 # ============ WEBAPP STATIC FILES ============
 # Serve webapp static files if they exist
+# NOTE: Due to proxy stripping /api, we serve on both /web and /api/web paths
 if WEBAPP_DIR.exists():
-    # Mount assets folder at /web/assets
-    app.mount("/web/assets", StaticFiles(directory=str(WEBAPP_DIR / "assets")), name="static_assets")
+    # Mount assets folder at both paths
+    app.mount("/api/web/assets", StaticFiles(directory=str(WEBAPP_DIR / "assets")), name="static_assets_api")
     
-    # Serve favicon
-    @app.get("/web/favicon.svg")
-    async def favicon():
+    # Serve favicon at both paths
+    @app.get("/api/web/favicon.svg")
+    async def favicon_api():
         return FileResponse(str(WEBAPP_DIR / "favicon.svg"))
     
-    # Serve webapp for all non-API routes (SPA fallback)
-    @app.get("/web")
-    @app.get("/web/{full_path:path}")
-    async def serve_webapp(request: Request, full_path: str = ""):
+    # Serve webapp for API-prefixed routes (SPA fallback)
+    @app.get("/api/web")
+    @app.get("/api/web/")
+    @app.get("/api/web/{full_path:path}")
+    async def serve_webapp_api(request: Request, full_path: str = ""):
         """Serve the React webapp"""
         return FileResponse(str(WEBAPP_DIR / "index.html"))
 
