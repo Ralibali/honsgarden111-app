@@ -906,11 +906,11 @@ app.add_middleware(
 # ============ WEBAPP STATIC FILES ============
 # Serve webapp static files if they exist
 if WEBAPP_DIR.exists():
-    # Mount assets folder
-    app.mount("/assets", StaticFiles(directory=str(WEBAPP_DIR / "assets")), name="static_assets")
+    # Mount assets folder at /web/assets
+    app.mount("/web/assets", StaticFiles(directory=str(WEBAPP_DIR / "assets")), name="static_assets")
     
     # Serve favicon
-    @app.get("/favicon.svg")
+    @app.get("/web/favicon.svg")
     async def favicon():
         return FileResponse(str(WEBAPP_DIR / "favicon.svg"))
     
