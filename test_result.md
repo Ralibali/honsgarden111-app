@@ -111,11 +111,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented and tested with curl - can get and update coop settings including hen_count and coop_name"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - GET/PUT /api/coop working correctly. Can retrieve default settings and update hen_count (12) and coop_name (Lyckliga Hönor Gård). Data persists properly."
 
   - task: "Egg Records CRUD API (/api/eggs)"
     implemented: true
@@ -123,11 +126,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented POST/GET/PUT/DELETE for egg records with date filtering"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Full CRUD working: POST creates records (handles date duplicates by updating), GET with date filtering, PUT updates, DELETE removes records. Tested with realistic Swedish data (8-10 eggs/day with notes like 'Morgonägg')."
 
   - task: "Transactions CRUD API (/api/transactions)"
     implemented: true
@@ -135,11 +141,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented cost and sale transactions with categories (feed, equipment, medicine, egg_sale, etc.)"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Full transaction CRUD working. Tested all categories: costs (feed 85.50kr, equipment 245kr, medicine 120kr) and sales (egg_sale with quantities 24/18 eggs, other_income 200kr). Type filtering and date filtering work correctly."
 
   - task: "Today Statistics API (/api/statistics/today)"
     implemented: true
@@ -147,11 +156,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Returns today's egg count, hen count, costs, sales, and net"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Today stats API working correctly. Returns proper JSON with date, egg_count (9), hen_count (12), total_costs (205.5), total_sales (260.0), net (54.5). All calculations verified."
 
   - task: "Month Statistics API (/api/statistics/month/{year}/{month})"
     implemented: true
@@ -159,11 +171,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Returns monthly totals with daily breakdown"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Monthly stats working correctly. Returns totals: 25 eggs, avg 8.3/day, costs 450.5kr, sales 305kr, net -145.5kr, eggs_per_hen 2.1. Daily breakdown with 3 days data verified."
 
   - task: "Year Statistics API (/api/statistics/year/{year})"
     implemented: true
@@ -171,11 +186,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Returns yearly totals with monthly breakdown"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Year stats working correctly. Returns yearly totals (25 eggs, net -145.5kr) and complete 12-month breakdown array. All required fields present and calculations verified."
 
   - task: "Summary Statistics API (/api/statistics/summary)"
     implemented: true
@@ -183,11 +201,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Returns all-time totals and current month summary"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Summary stats working perfectly. All-time totals: 31 eggs, 700.5kr costs, 485kr sales, -215.5kr net. This month breakdown matches monthly endpoint data. Calculations mathematically verified."
 
 frontend:
   - task: "Home Dashboard Screen"
