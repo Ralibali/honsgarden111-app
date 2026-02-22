@@ -903,6 +903,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ============ WEBAPP STATIC FILES ============
+# Serve webapp static files if they exist
+if WEBAPP_DIR.exists():
+    # Mount assets folder
+    app.mount("/assets", StaticFiles(directory=str(WEBAPP_DIR / "assets")), name="static_assets")
+    
+    # Serve favicon
+    @app.get("/favicon.svg")
+    async def favicon():
+        return FileResponse(str(WEBAPP_DIR / "favicon.svg"))
+    
+    # Serve webapp for all non-API routes (SPA fallback)
+    @app.get("/web")
+    @app.get("/web/{full_path:path}")
+    async def serve_webapp(request: Request, full_path: str = ""):
+        """Serve the React webapp"""
+        return FileResponse(str(WEBAPP_DIR / "index.html"))
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
