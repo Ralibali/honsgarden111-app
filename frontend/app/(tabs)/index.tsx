@@ -15,13 +15,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import { useAppStore } from '../../src/store/appStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
+import { useThemeStore, ThemeColors } from '../../src/store/themeStore';
 import i18n, { formatCurrency } from '../../src/i18n';
 import { format } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const {
     coopSettings,
     todayStats,
@@ -36,6 +39,7 @@ export default function HomeScreen() {
   } = useAppStore();
   
   const { isPremium } = usePremiumStore();
+  const { colors, isDark } = useThemeStore();
   
   const [refreshing, setRefreshing] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -146,13 +150,15 @@ export default function HomeScreen() {
   const dateString = format(today, 'EEEE d MMMM yyyy', { locale: getLocale() });
   const t = i18n.t.bind(i18n);
   
+  const styles = createStyles(colors, isDark);
+  
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4CAF50" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
         {/* Header */}
@@ -165,13 +171,13 @@ export default function HomeScreen() {
         {/* Quick Stats Cards */}
         <View style={styles.statsRow}>
           <View style={[styles.statCard, styles.henCard]}>
-            <Ionicons name="heart" size={28} color="#FF6B6B" />
+            <Ionicons name="heart" size={28} color={colors.error} />
             <Text style={styles.statValue}>{todayStats?.hen_count || 0}</Text>
             <Text style={styles.statLabel}>{t('home.hens')}</Text>
           </View>
           
           <View style={[styles.statCard, styles.eggCard]}>
-            <Ionicons name="egg" size={28} color="#FFD93D" />
+            <Ionicons name="egg" size={28} color={colors.warning} />
             <Text style={styles.statValue}>{todayStats?.egg_count || 0}</Text>
             <Text style={styles.statLabel}>{t('home.eggsToday')}</Text>
           </View>
@@ -199,14 +205,14 @@ export default function HomeScreen() {
             </View>
             <View style={styles.monthDivider} />
             <View style={styles.monthStat}>
-              <Text style={[styles.monthValue, { color: '#FF6B6B' }]}>
+              <Text style={[styles.monthValue, { color: colors.error }]}>
                 {formatCurrency(summaryStats?.this_month.costs || 0)}
               </Text>
               <Text style={styles.monthLabel}>{t('home.costs')}</Text>
             </View>
             <View style={styles.monthDivider} />
             <View style={styles.monthStat}>
-              <Text style={[styles.monthValue, { color: '#4CAF50' }]}>
+              <Text style={[styles.monthValue, { color: colors.success }]}>
                 {formatCurrency(summaryStats?.this_month.sales || 0)}
               </Text>
               <Text style={styles.monthLabel}>{t('home.sales')}</Text>
@@ -216,7 +222,7 @@ export default function HomeScreen() {
             <Text style={styles.netLabel}>{t('home.net')}:</Text>
             <Text style={[
               styles.netValue,
-              { color: (summaryStats?.this_month.net || 0) >= 0 ? '#4CAF50' : '#FF6B6B' }
+              { color: (summaryStats?.this_month.net || 0) >= 0 ? colors.success : colors.error }
             ]}>
               {(summaryStats?.this_month.net || 0) >= 0 ? '+' : ''}
               {formatCurrency(summaryStats?.this_month.net || 0)}
@@ -229,17 +235,17 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>{t('home.total')}</Text>
           <View style={styles.totalRow}>
             <View style={styles.totalItem}>
-              <Ionicons name="egg-outline" size={20} color="#FFD93D" />
+              <Ionicons name="egg-outline" size={20} color={colors.warning} />
               <Text style={styles.totalValue}>{summaryStats?.total_eggs_all_time || 0}</Text>
               <Text style={styles.totalLabel}>{t('home.totalEggs')}</Text>
             </View>
             <View style={styles.totalItem}>
-              <Ionicons name="trending-up" size={20} color="#4CAF50" />
+              <Ionicons name="trending-up" size={20} color={colors.success} />
               <Text style={styles.totalValue}>{formatCurrency(summaryStats?.total_sales_all_time || 0)}</Text>
               <Text style={styles.totalLabel}>{t('home.income')}</Text>
             </View>
             <View style={styles.totalItem}>
-              <Ionicons name="trending-down" size={20} color="#FF6B6B" />
+              <Ionicons name="trending-down" size={20} color={colors.error} />
               <Text style={styles.totalValue}>{formatCurrency(summaryStats?.total_costs_all_time || 0)}</Text>
               <Text style={styles.totalLabel}>{t('home.expenses')}</Text>
             </View>
@@ -248,15 +254,18 @@ export default function HomeScreen() {
         
         {/* Premium Banner (if not premium) */}
         {!isPremium && (
-          <TouchableOpacity style={styles.premiumBanner}>
+          <TouchableOpacity 
+            style={styles.premiumBanner}
+            onPress={() => router.push('/paywall')}
+          >
             <View style={styles.premiumBannerContent}>
-              <Ionicons name="star" size={24} color="#FFD93D" />
+              <Ionicons name="star" size={24} color={colors.warning} />
               <View style={styles.premiumBannerText}>
                 <Text style={styles.premiumBannerTitle}>{t('common.upgrade')} till Premium</Text>
                 <Text style={styles.premiumBannerSubtitle}>Obegränsad historik, PDF-export, påminnelser</Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#8E8E93" />
+            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -321,7 +330,7 @@ export default function HomeScreen() {
                 onChangeText={setEggCount}
                 keyboardType="number-pad"
                 placeholder="0"
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textMuted}
               />
               
               <TouchableOpacity
@@ -366,10 +375,10 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
@@ -383,17 +392,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginBottom: 4,
   },
   date: {
     fontSize: 13,
-    color: '#666',
+    color: colors.textMuted,
     textTransform: 'capitalize',
   },
   statsRow: {
@@ -403,35 +412,35 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
   },
   henCard: {
-    borderColor: '#FF6B6B33',
+    borderColor: colors.error + '33',
     borderWidth: 1,
   },
   eggCard: {
-    borderColor: '#FFD93D33',
+    borderColor: colors.warning + '33',
     borderWidth: 1,
   },
   statValue: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     marginTop: 8,
   },
   statLabel: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   quickAddButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -443,7 +452,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   sectionCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -451,7 +460,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFF',
+    color: colors.text,
     marginBottom: 16,
   },
   monthlyStats: {
@@ -464,16 +473,16 @@ const styles = StyleSheet.create({
   },
   monthDivider: {
     width: 1,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.border,
   },
   monthValue: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
   },
   monthLabel: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   netRow: {
@@ -483,12 +492,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#2C2C2E',
+    borderTopColor: colors.border,
     gap: 8,
   },
   netLabel: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: colors.textSecondary,
   },
   netValue: {
     fontSize: 20,
@@ -505,23 +514,23 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     marginTop: 4,
   },
   totalLabel: {
     fontSize: 11,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 2,
   },
   premiumBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#FFD93D33',
+    borderColor: colors.warning + '33',
   },
   premiumBannerContent: {
     flexDirection: 'row',
@@ -535,11 +544,11 @@ const styles = StyleSheet.create({
   premiumBannerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFF',
+    color: colors.text,
   },
   premiumBannerSubtitle: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 2,
   },
   undoSnackbar: {
@@ -547,7 +556,7 @@ const styles = StyleSheet.create({
     bottom: 100,
     left: 16,
     right: 16,
-    backgroundColor: '#333',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 8,
     padding: 16,
     flexDirection: 'row',
@@ -555,7 +564,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   undoText: {
-    color: '#FFF',
+    color: colors.text,
     fontSize: 14,
     flex: 1,
   },
@@ -565,7 +574,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   undoButtonText: {
-    color: '#4CAF50',
+    color: colors.primary,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -575,7 +584,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -584,12 +593,12 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     textAlign: 'center',
   },
   modalDate: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 4,
     textTransform: 'capitalize',
@@ -597,7 +606,7 @@ const styles = StyleSheet.create({
   quickAddLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 24,
     marginBottom: 12,
   },
@@ -607,7 +616,7 @@ const styles = StyleSheet.create({
   },
   quickButton: {
     flex: 1,
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -628,14 +637,14 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   countInput: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     textAlign: 'center',
     minWidth: 100,
   },
@@ -646,19 +655,19 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#FFF',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '600',
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

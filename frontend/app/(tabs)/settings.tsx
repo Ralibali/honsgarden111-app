@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '../../src/store/appStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
+import { useThemeStore, ThemeColors, ThemeMode } from '../../src/store/themeStore';
 import i18n, { setLanguage, getLanguage } from '../../src/i18n';
 import * as Notifications from 'expo-notifications';
 
@@ -23,6 +24,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { coopSettings, fetchCoopSettings, updateCoopSettings, loading } = useAppStore();
   const { isPremium, plan, expiresAt } = usePremiumStore();
+  const { colors, isDark, mode, setThemeMode } = useThemeStore();
   
   const [coopName, setCoopName] = useState('');
   const [henCount, setHenCount] = useState('');
@@ -34,6 +36,7 @@ export default function SettingsScreen() {
   const [feedReminderEnabled, setFeedReminderEnabled] = useState(false);
   
   const t = i18n.t.bind(i18n);
+  const isSv = i18n.locale.startsWith('sv');
   
   useEffect(() => {
     fetchCoopSettings();
@@ -78,8 +81,10 @@ export default function SettingsScreen() {
   const handleLanguageChange = (lang: 'sv' | 'en') => {
     setLanguage(lang);
     setCurrentLanguage(lang);
-    // Force re-render by updating state
-    // In a real app, you might want to use a context or state management
+  };
+  
+  const handleThemeChange = (newMode: ThemeMode) => {
+    setThemeMode(newMode);
   };
   
   const handleReminderToggle = async (type: 'egg' | 'feed', enabled: boolean) => {
@@ -93,8 +98,8 @@ export default function SettingsScreen() {
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert(
-          'Behörighet krävs',
-          'Aktivera notifikationer i telefonens inställningar för att använda påminnelser.'
+          isSv ? 'Behörighet krävs' : 'Permission required',
+          isSv ? 'Aktivera notifikationer i telefonens inställningar för att använda påminnelser.' : 'Enable notifications in phone settings to use reminders.'
         );
         return;
       }
@@ -108,6 +113,8 @@ export default function SettingsScreen() {
       // TODO: Schedule/cancel notification
     }
   };
+  
+  const styles = createStyles(colors, isDark);
   
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -137,7 +144,7 @@ export default function SettingsScreen() {
                   <Ionicons 
                     name={isPremium ? 'star' : 'star-outline'} 
                     size={24} 
-                    color={isPremium ? '#FFD93D' : '#666'} 
+                    color={isPremium ? colors.warning : colors.textMuted} 
                   />
                 </View>
                 <View style={styles.premiumInfo}>
@@ -146,12 +153,12 @@ export default function SettingsScreen() {
                   </Text>
                   {isPremium && plan && (
                     <Text style={styles.premiumPlan}>
-                      {plan === 'yearly' ? 'Årsprenumeration' : 'Månadsprenumeration'}
+                      {plan === 'yearly' ? (isSv ? 'Årsprenumeration' : 'Yearly subscription') : (isSv ? 'Månadsprenumeration' : 'Monthly subscription')}
                     </Text>
                   )}
                 </View>
                 {!isPremium && (
-                  <Ionicons name="chevron-forward" size={20} color="#8E8E93" />
+                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
                 )}
               </View>
             </TouchableOpacity>
@@ -169,7 +176,7 @@ export default function SettingsScreen() {
                 value={coopName}
                 onChangeText={setCoopName}
                 placeholder={t('settings.coopNamePlaceholder')}
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textMuted}
               />
             </View>
             
@@ -181,7 +188,7 @@ export default function SettingsScreen() {
                   style={styles.counterButton}
                   onPress={() => adjustHenCount(-1)}
                 >
-                  <Ionicons name="remove" size={24} color="#FFF" />
+                  <Ionicons name="remove" size={24} color={colors.text} />
                 </TouchableOpacity>
                 
                 <TextInput
@@ -190,14 +197,14 @@ export default function SettingsScreen() {
                   onChangeText={setHenCount}
                   keyboardType="number-pad"
                   placeholder="0"
-                  placeholderTextColor="#666"
+                  placeholderTextColor={colors.textMuted}
                 />
                 
                 <TouchableOpacity
                   style={styles.counterButton}
                   onPress={() => adjustHenCount(1)}
                 >
-                  <Ionicons name="add" size={24} color="#FFF" />
+                  <Ionicons name="add" size={24} color={colors.text} />
                 </TouchableOpacity>
               </View>
               <Text style={styles.settingHint}>
@@ -220,6 +227,61 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           )}
           
+          {/* Theme Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{isSv ? 'Utseende' : 'Appearance'}</Text>
+            
+            <View style={styles.themeContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
+                  mode === 'light' && styles.themeButtonActive,
+                ]}
+                onPress={() => handleThemeChange('light')}
+              >
+                <Ionicons name="sunny" size={24} color={mode === 'light' ? colors.primary : colors.textSecondary} />
+                <Text style={[
+                  styles.themeText,
+                  mode === 'light' && styles.themeTextActive,
+                ]}>
+                  {isSv ? 'Ljust' : 'Light'}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
+                  mode === 'dark' && styles.themeButtonActive,
+                ]}
+                onPress={() => handleThemeChange('dark')}
+              >
+                <Ionicons name="moon" size={24} color={mode === 'dark' ? colors.primary : colors.textSecondary} />
+                <Text style={[
+                  styles.themeText,
+                  mode === 'dark' && styles.themeTextActive,
+                ]}>
+                  {isSv ? 'Mörkt' : 'Dark'}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
+                  mode === 'system' && styles.themeButtonActive,
+                ]}
+                onPress={() => handleThemeChange('system')}
+              >
+                <Ionicons name="phone-portrait" size={24} color={mode === 'system' ? colors.primary : colors.textSecondary} />
+                <Text style={[
+                  styles.themeText,
+                  mode === 'system' && styles.themeTextActive,
+                ]}>
+                  {isSv ? 'System' : 'System'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
           {/* Reminders Section (Premium) */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
@@ -230,7 +292,7 @@ export default function SettingsScreen() {
             <View style={styles.reminderItem}>
               <View style={styles.reminderInfo}>
                 <View style={styles.reminderIcon}>
-                  <Ionicons name="egg" size={20} color="#FFD93D" />
+                  <Ionicons name="egg" size={20} color={colors.warning} />
                 </View>
                 <View>
                   <Text style={styles.reminderTitle}>{t('settings.eggReminder')}</Text>
@@ -240,15 +302,15 @@ export default function SettingsScreen() {
               <Switch
                 value={eggReminderEnabled}
                 onValueChange={(val) => handleReminderToggle('egg', val)}
-                trackColor={{ false: '#3A3A3C', true: '#4CAF50' }}
-                thumbColor={eggReminderEnabled ? '#FFF' : '#8E8E93'}
+                trackColor={{ false: colors.surfaceSecondary, true: colors.primary }}
+                thumbColor={eggReminderEnabled ? '#FFF' : colors.textSecondary}
               />
             </View>
             
             <View style={styles.reminderItem}>
               <View style={styles.reminderInfo}>
                 <View style={styles.reminderIcon}>
-                  <Ionicons name="cart" size={20} color="#4CAF50" />
+                  <Ionicons name="cart" size={20} color={colors.success} />
                 </View>
                 <View>
                   <Text style={styles.reminderTitle}>{t('settings.feedReminder')}</Text>
@@ -258,8 +320,8 @@ export default function SettingsScreen() {
               <Switch
                 value={feedReminderEnabled}
                 onValueChange={(val) => handleReminderToggle('feed', val)}
-                trackColor={{ false: '#3A3A3C', true: '#4CAF50' }}
-                thumbColor={feedReminderEnabled ? '#FFF' : '#8E8E93'}
+                trackColor={{ false: colors.surfaceSecondary, true: colors.primary }}
+                thumbColor={feedReminderEnabled ? '#FFF' : colors.textSecondary}
               />
             </View>
           </View>
@@ -309,10 +371,10 @@ export default function SettingsScreen() {
             
             <View style={styles.infoCard}>
               <View style={styles.infoRow}>
-                <Ionicons name="egg" size={24} color="#FFD93D" />
+                <Ionicons name="egg" size={24} color={colors.warning} />
                 <View style={styles.infoContent}>
                   <Text style={styles.infoTitle}>{t('settings.appName')}</Text>
-                  <Text style={styles.infoText}>{t('settings.version')} 1.1</Text>
+                  <Text style={styles.infoText}>{t('settings.version')} 1.2</Text>
                 </View>
               </View>
               <Text style={styles.infoDescription}>
@@ -326,14 +388,14 @@ export default function SettingsScreen() {
             <Text style={styles.sectionTitle}>{t('settings.tipsSection')}</Text>
             
             <View style={styles.tipCard}>
-              <Ionicons name="bulb" size={20} color="#FFD93D" />
+              <Ionicons name="bulb" size={20} color={colors.warning} />
               <Text style={styles.tipText}>
                 {t('settings.tip1')}
               </Text>
             </View>
             
             <View style={styles.tipCard}>
-              <Ionicons name="calculator" size={20} color="#4CAF50" />
+              <Ionicons name="calculator" size={20} color={colors.success} />
               <Text style={styles.tipText}>
                 {t('settings.tip2')}
               </Text>
@@ -352,10 +414,10 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D0D',
+    backgroundColor: colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -373,7 +435,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
   },
   section: {
     marginBottom: 24,
@@ -381,16 +443,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginBottom: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   premiumBadge: {
-    color: '#FFD93D',
+    color: colors.warning,
   },
   premiumCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
   },
@@ -407,10 +469,10 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   premiumIconActive: {
-    backgroundColor: '#FFD93D22',
+    backgroundColor: colors.warning + '22',
   },
   premiumIconInactive: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
   },
   premiumInfo: {
     flex: 1,
@@ -418,15 +480,15 @@ const styles = StyleSheet.create({
   premiumStatus: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFF',
+    color: colors.text,
   },
   premiumPlan: {
     fontSize: 13,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 2,
   },
   settingItem: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -434,14 +496,14 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginBottom: 8,
   },
   textInput: {
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     borderRadius: 8,
     padding: 12,
-    color: '#FFF',
+    color: colors.text,
     fontSize: 16,
   },
   counterRow: {
@@ -454,20 +516,20 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   counterInput: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: colors.text,
     textAlign: 'center',
     minWidth: 80,
   },
   settingHint: {
     fontSize: 12,
-    color: '#666',
+    color: colors.textMuted,
     marginTop: 12,
     textAlign: 'center',
   },
@@ -475,7 +537,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -489,11 +551,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  themeContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  themeButton: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    gap: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  themeButtonActive: {
+    borderColor: colors.primary,
+  },
+  themeText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  themeTextActive: {
+    color: colors.text,
+  },
   reminderItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
@@ -507,19 +596,19 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#2C2C2E',
+    backgroundColor: colors.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   reminderTitle: {
     fontSize: 15,
-    color: '#FFF',
+    color: colors.text,
     fontWeight: '500',
   },
   reminderDesc: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     marginTop: 2,
   },
   languageContainer: {
@@ -531,7 +620,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     gap: 8,
@@ -539,21 +628,21 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   languageButtonActive: {
-    borderColor: '#4CAF50',
+    borderColor: colors.primary,
   },
   languageFlag: {
     fontSize: 24,
   },
   languageText: {
     fontSize: 15,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   languageTextActive: {
-    color: '#FFF',
+    color: colors.text,
   },
   infoCard: {
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
   },
@@ -569,21 +658,21 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFF',
+    color: colors.text,
   },
   infoText: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: colors.textSecondary,
   },
   infoDescription: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   tipCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#1C1C1E',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
@@ -592,7 +681,7 @@ const styles = StyleSheet.create({
   tipText: {
     flex: 1,
     fontSize: 14,
-    color: '#CCC',
+    color: colors.textSecondary,
     lineHeight: 20,
   },
 });
