@@ -50,7 +50,7 @@ export default function HomeScreen() {
   // Animation refs
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const undoOpacity = useRef(new Animated.Value(0)).current;
-  const undoTimeout = useRef<NodeJS.Timeout | null>(null);
+  const undoTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   useEffect(() => {
     loadData();
