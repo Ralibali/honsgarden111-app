@@ -39,6 +39,10 @@ class TransactionCategory(str, Enum):
     HEN_SALE = "hen_sale"
     OTHER_INCOME = "other_income"
 
+class SubscriptionPlan(str, Enum):
+    MONTHLY = "monthly"
+    YEARLY = "yearly"
+
 # ============ MODELS ============
 
 # Coop Settings (hen count, coop name)
@@ -89,32 +93,30 @@ class TransactionCreate(BaseModel):
     description: Optional[str] = None
     quantity: Optional[int] = None
 
-# Statistics response models
-class DayStatistics(BaseModel):
-    date: str
-    egg_count: int
-    total_costs: float
-    total_sales: float
-    net: float
+# Premium/Subscription
+class PremiumSubscription(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str = "default_user"  # For now, single user
+    is_active: bool = False
+    plan: Optional[SubscriptionPlan] = None
+    store: Optional[str] = None  # "apple" or "google"
+    store_subscription_id: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-class MonthStatistics(BaseModel):
-    year: int
-    month: int
-    total_eggs: int
-    avg_eggs_per_day: float
-    total_costs: float
-    total_sales: float
-    net: float
-    eggs_per_hen: Optional[float] = None
+class PremiumStatusResponse(BaseModel):
+    is_premium: bool
+    subscription_id: Optional[str] = None
+    plan: Optional[str] = None
+    expires_at: Optional[str] = None
 
-class YearStatistics(BaseModel):
-    year: int
-    total_eggs: int
-    avg_eggs_per_day: float
-    total_costs: float
-    total_sales: float
-    net: float
-    monthly_breakdown: List[dict]
+class PremiumWebhookPayload(BaseModel):
+    event_type: str  # "subscription.created", "subscription.renewed", "subscription.cancelled", "subscription.expired"
+    store: str  # "apple" or "google"
+    store_subscription_id: str
+    plan: SubscriptionPlan
+    expires_at: Optional[str] = None
 
 # ============ COOP SETTINGS ENDPOINTS ============
 
@@ -273,6 +275,107 @@ async def delete_transaction(transaction_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return {"message": "Transaction deleted"}
+
+# ============ PREMIUM/SUBSCRIPTION ENDPOINTS ============
+
+@api_router.get("/premium/status", response_model=PremiumStatusResponse)
+async def get_premium_status():
+    """Get current premium subscription status"""
+    subscription = await db.subscriptions.find_one({"user_id": "default_user"})
+    
+    if not subscription:
+        return PremiumStatusResponse(is_premium=False)
+    
+    # Check if subscription is still active
+    is_active = subscription.get('is_active', False)
+    expires_at = subscription.get('expires_at')
+    
+    if expires_at and isinstance(expires_at, datetime):
+        if expires_at < datetime.utcnow():
+            is_active = False
+            # Update subscription status
+            await db.subscriptions.update_one(
+                {"user_id": "default_user"},
+                {"$set": {"is_active": False}}
+            )
+    
+    return PremiumStatusResponse(
+        is_premium=is_active,
+        subscription_id=subscription.get('store_subscription_id'),
+        plan=subscription.get('plan'),
+        expires_at=expires_at.isoformat() if expires_at else None
+    )
+
+@api_router.post("/premium/restore", response_model=PremiumStatusResponse)
+async def restore_premium():
+    """Restore premium purchases - validates with store"""
+    # In production, this would validate with Apple/Google
+    # For now, just return current status
+    return await get_premium_status()
+
+@api_router.post("/premium/webhook")
+async def handle_premium_webhook(payload: PremiumWebhookPayload):
+    """Handle webhooks from RevenueCat or direct store webhooks"""
+    logger.info(f"Received premium webhook: {payload.event_type}")
+    
+    subscription = await db.subscriptions.find_one({"user_id": "default_user"})
+    
+    if payload.event_type in ["subscription.created", "subscription.renewed"]:
+        expires_at = None
+        if payload.expires_at:
+            expires_at = datetime.fromisoformat(payload.expires_at.replace('Z', '+00:00'))
+        
+        subscription_data = {
+            "user_id": "default_user",
+            "is_active": True,
+            "plan": payload.plan,
+            "store": payload.store,
+            "store_subscription_id": payload.store_subscription_id,
+            "expires_at": expires_at,
+            "updated_at": datetime.utcnow(),
+        }
+        
+        if subscription:
+            await db.subscriptions.update_one(
+                {"user_id": "default_user"},
+                {"$set": subscription_data}
+            )
+        else:
+            subscription_data["id"] = str(uuid.uuid4())
+            subscription_data["created_at"] = datetime.utcnow()
+            await db.subscriptions.insert_one(subscription_data)
+        
+        # Log the event
+        await db.subscription_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "event_type": payload.event_type,
+            "store": payload.store,
+            "store_subscription_id": payload.store_subscription_id,
+            "plan": payload.plan,
+            "timestamp": datetime.utcnow(),
+        })
+        
+        return {"status": "success", "is_premium": True}
+    
+    elif payload.event_type in ["subscription.cancelled", "subscription.expired"]:
+        if subscription:
+            await db.subscriptions.update_one(
+                {"user_id": "default_user"},
+                {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
+            )
+        
+        # Log the event
+        await db.subscription_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "event_type": payload.event_type,
+            "store": payload.store,
+            "store_subscription_id": payload.store_subscription_id,
+            "timestamp": datetime.utcnow(),
+        })
+        
+        return {"status": "success", "is_premium": False}
+    
+    return {"status": "ignored", "reason": "Unknown event type"}
 
 # ============ STATISTICS ENDPOINTS ============
 
@@ -448,7 +551,7 @@ async def get_summary_statistics():
 
 @api_router.get("/")
 async def root():
-    return {"message": "Hönshus Statistik API", "version": "1.0"}
+    return {"message": "Hönshus Statistik API", "version": "1.1"}
 
 @api_router.get("/health")
 async def health_check():
