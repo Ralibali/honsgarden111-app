@@ -1021,7 +1021,7 @@ async def trigger_all_reminders():
 # ============ BASIC ROUTES ============
 @api_router.get("/")
 async def root():
-    return {"message": "Hönshus Statistik API", "version": "2.0"}
+    return {"message": "Hönsgården API", "version": "2.0"}
 
 @api_router.get("/health")
 async def health_check():
@@ -1039,23 +1039,51 @@ app.add_middleware(
 )
 
 # ============ WEBAPP STATIC FILES ============
-# Serve webapp static files if they exist
-# NOTE: Due to proxy stripping /api, we serve on both /web and /api/web paths
+# Serve webapp at ROOT (honsgarden.se) and keep /api/web for backwards compatibility
 if WEBAPP_DIR.exists():
-    # Mount assets folder at both paths
+    # Mount assets folder at root and /api/web for backwards compatibility
+    app.mount("/assets", StaticFiles(directory=str(WEBAPP_DIR / "assets")), name="static_assets_root")
     app.mount("/api/web/assets", StaticFiles(directory=str(WEBAPP_DIR / "assets")), name="static_assets_api")
     
-    # Serve favicon at both paths
+    # Serve favicon
+    @app.get("/favicon.svg")
+    async def favicon_root():
+        return FileResponse(str(WEBAPP_DIR / "favicon.svg"))
+    
+    @app.get("/favicon.ico")
+    async def favicon_ico():
+        if (WEBAPP_DIR / "favicon.ico").exists():
+            return FileResponse(str(WEBAPP_DIR / "favicon.ico"))
+        return FileResponse(str(WEBAPP_DIR / "favicon.svg"))
+    
     @app.get("/api/web/favicon.svg")
     async def favicon_api():
         return FileResponse(str(WEBAPP_DIR / "favicon.svg"))
     
-    # Serve webapp for API-prefixed routes (SPA fallback)
+    # Serve webapp at ROOT - this catches all non-API routes
+    @app.get("/")
+    async def serve_webapp_root():
+        """Serve the React webapp at root"""
+        return FileResponse(str(WEBAPP_DIR / "index.html"))
+    
+    @app.get("/login")
+    @app.get("/eggs")
+    @app.get("/hens")
+    @app.get("/finance")
+    @app.get("/statistics")
+    @app.get("/settings")
+    @app.get("/premium")
+    @app.get("/checkout-success")
+    async def serve_webapp_routes(request: Request):
+        """Serve the React webapp for SPA routes"""
+        return FileResponse(str(WEBAPP_DIR / "index.html"))
+    
+    # Keep /api/web for backwards compatibility
     @app.get("/api/web")
     @app.get("/api/web/")
     @app.get("/api/web/{full_path:path}")
     async def serve_webapp_api(request: Request, full_path: str = ""):
-        """Serve the React webapp"""
+        """Serve the React webapp (backwards compatible)"""
         return FileResponse(str(WEBAPP_DIR / "index.html"))
 
 @app.on_event("shutdown")
