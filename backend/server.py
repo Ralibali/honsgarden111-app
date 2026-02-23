@@ -6,13 +6,15 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import asyncio
 from pathlib import Path
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, date, timezone, timedelta
 from enum import Enum
 import httpx
+import resend
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -30,6 +32,15 @@ STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_emergent')
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
 STRIPE_PRICE_MONTHLY = os.environ.get('STRIPE_PRICE_MONTHLY', '')
 STRIPE_PRICE_YEARLY = os.environ.get('STRIPE_PRICE_YEARLY', '')
+
+# Resend (Email) config
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
+
+# Free trial period (days)
+FREE_TRIAL_DAYS = 7
 
 # Import Stripe checkout helper
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
