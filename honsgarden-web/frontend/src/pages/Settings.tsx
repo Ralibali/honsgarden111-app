@@ -62,9 +62,10 @@ export default function Settings() {
   
   const loadSettings = async () => {
     try {
-      const [coopRes, reminderRes] = await Promise.all([
+      const [coopRes, reminderRes, premiumRes] = await Promise.all([
         fetch('/api/coop', { credentials: 'include' }),
-        fetch('/api/reminders/settings', { credentials: 'include' })
+        fetch('/api/reminders/settings', { credentials: 'include' }),
+        fetch('/api/premium/status', { credentials: 'include' })
       ]);
       
       if (coopRes.ok) {
@@ -79,6 +80,11 @@ export default function Settings() {
         setReminders(data);
         setReminderEnabled(data.enabled);
         setReminderTime(data.time);
+      }
+      
+      if (premiumRes.ok) {
+        const data = await premiumRes.json();
+        setPremium(data);
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
