@@ -56,22 +56,40 @@ export default function Premium() {
     }
   };
   
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('sv-SE', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+  
+  const getDaysLeft = (expiresAt: string) => {
+    const now = new Date();
+    const expires = new Date(expiresAt);
+    const diff = expires.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
+  
   if (loading) {
     return <div className="loading">Laddar...</div>;
   }
   
-  if (premium?.is_premium) {
+  const isTrial = premium?.plan === 'trial';
+  const daysLeft = premium?.expires_at ? getDaysLeft(premium.expires_at) : 0;
+  
+  if (premium?.is_premium && !isTrial) {
     return (
-      <div className="premium-page">
+      <div className="premium-page" data-testid="premium-active">
         <div className="premium-active">
           <span className="premium-star">⭐</span>
           <h1>Du är Premium!</h1>
-          <p>Tack för att du stödjer Hönshus Statistik.</p>
+          <p>Tack för att du stödjer Hönsgården.</p>
           
           <div className="plan-info">
             <p><strong>Plan:</strong> {premium.plan === 'yearly' ? 'Årsprenumeration' : 'Månadsprenumeration'}</p>
             {premium.expires_at && (
-              <p><strong>Förnyas:</strong> {new Date(premium.expires_at).toLocaleDateString('sv-SE')}</p>
+              <p><strong>Förnyas:</strong> {formatDate(premium.expires_at)}</p>
             )}
           </div>
           
@@ -81,7 +99,7 @@ export default function Premium() {
               <li>✅ Obegränsad statistikhistorik</li>
               <li>✅ Årsstatistik</li>
               <li>✅ PDF-export</li>
-              <li>✅ Påminnelser</li>
+              <li>✅ E-postpåminnelser</li>
               <li>✅ Statistik per höna</li>
             </ul>
           </div>
@@ -90,13 +108,37 @@ export default function Premium() {
     );
   }
   
+  // Show trial banner if in trial period
+  const showTrialBanner = isTrial && daysLeft > 0;
+  
   return (
-    <div className="premium-page">
+    <div className="premium-page" data-testid="premium-page">
+      {showTrialBanner && (
+        <div className="trial-banner" data-testid="trial-banner">
+          <span className="trial-icon">🎉</span>
+          <div className="trial-text">
+            <strong>Du har {daysLeft} dagar kvar av din gratis provperiod!</strong>
+            <p>Upplev alla premium-funktioner helt gratis</p>
+          </div>
+        </div>
+      )}
+      
       <header className="premium-header">
         <span className="premium-star">⭐</span>
-        <h1>Hönshus Premium</h1>
+        <h1>Hönsgården Premium</h1>
         <p>Lås upp alla funktioner och få ut mer av din hönsgård</p>
       </header>
+      
+      {/* Free trial highlight */}
+      {!showTrialBanner && (
+        <div className="trial-promo">
+          <span>🎁</span>
+          <div>
+            <strong>7 dagars gratis provperiod!</strong>
+            <p>Nya användare får automatiskt tillgång till alla premium-funktioner i 7 dagar</p>
+          </div>
+        </div>
+      )}
       
       <div className="features-grid">
         <div className="feature-item">
@@ -115,9 +157,9 @@ export default function Premium() {
           <p>Exportera rapporter som PDF</p>
         </div>
         <div className="feature-item">
-          <span className="feature-icon">🔔</span>
-          <h3>Påminnelser</h3>
-          <p>Glöm aldrig att registrera ägg</p>
+          <span className="feature-icon">📧</span>
+          <h3>E-postpåminnelser</h3>
+          <p>Daglig påminnelse att registrera ägg</p>
         </div>
         <div className="feature-item">
           <span className="feature-icon">🐔</span>
@@ -143,6 +185,7 @@ export default function Premium() {
             onClick={() => handlePurchase('monthly')}
             disabled={purchasing}
             className="btn-primary purchase-btn"
+            data-testid="purchase-monthly"
           >
             {purchasing ? 'Laddar...' : 'Välj månatlig'}
           </button>
@@ -160,6 +203,7 @@ export default function Premium() {
             onClick={() => handlePurchase('yearly')}
             disabled={purchasing}
             className="btn-primary purchase-btn"
+            data-testid="purchase-yearly"
           >
             {purchasing ? 'Laddar...' : 'Välj årlig'}
           </button>
@@ -167,7 +211,7 @@ export default function Premium() {
       </div>
       
       <p className="payment-info">
-        Säker betalning via Stripe. Du kan avsluta när som helst.
+        🔒 Säker betalning via Stripe. Du kan avsluta när som helst.
       </p>
     </div>
   );
