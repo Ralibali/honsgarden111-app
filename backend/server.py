@@ -831,7 +831,7 @@ async def get_year_statistics(year: int, request: Request):
     eggs = await db.egg_records.find({
         "user_id": user_id,
         "date": {"$gte": start_date, "$lt": end_date}
-    }).to_list(10000)
+    }, {"_id": 0, "count": 1, "date": 1}).to_list(10000)
     total_eggs = sum(e['count'] for e in eggs)
     days_with_eggs = len(set(e['date'] for e in eggs))
     avg_eggs = total_eggs / days_with_eggs if days_with_eggs > 0 else 0
@@ -839,7 +839,7 @@ async def get_year_statistics(year: int, request: Request):
     transactions = await db.transactions.find({
         "user_id": user_id,
         "date": {"$gte": start_date, "$lt": end_date}
-    }).to_list(10000)
+    }, {"_id": 0, "amount": 1, "type": 1, "date": 1}).to_list(10000)
     total_costs = sum(t['amount'] for t in transactions if t['type'] == 'cost')
     total_sales = sum(t['amount'] for t in transactions if t['type'] == 'sale')
     
