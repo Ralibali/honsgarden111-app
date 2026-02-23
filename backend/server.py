@@ -906,6 +906,118 @@ async def get_summary_statistics(request: Request):
         }
     }
 
+# ============ EMAIL REMINDERS ============
+class ReminderSettings(BaseModel):
+    enabled: bool = True
+    time: str = "18:00"  # HH:MM format
+
+class EmailRequest(BaseModel):
+    recipient_email: EmailStr
+    subject: str
+    html_content: str
+
+@api_router.get("/reminders/settings")
+async def get_reminder_settings(request: Request):
+    """Get reminder settings for current user"""
+    user = await require_user(request)
+    user_doc = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+    return {
+        "enabled": user_doc.get("reminder_enabled", True),
+        "time": user_doc.get("reminder_time", "18:00")
+    }
+
+@api_router.put("/reminders/settings")
+async def update_reminder_settings(request: Request, settings: ReminderSettings):
+    """Update reminder settings for current user"""
+    user = await require_user(request)
+    await db.users.update_one(
+        {"user_id": user.user_id},
+        {"$set": {
+            "reminder_enabled": settings.enabled,
+            "reminder_time": settings.time
+        }}
+    )
+    return {"message": "Påminnelseinställningar uppdaterade", "enabled": settings.enabled, "time": settings.time}
+
+async def send_reminder_email(email: str, name: str, coop_name: str):
+    """Send egg collection reminder email"""
+    if not RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured, skipping email")
+        return False
+    
+    html_content = f"""
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <span style="font-size: 48px;">🥚</span>
+        </div>
+        <h1 style="color: #1a1a2e; text-align: center; font-size: 24px;">Hej {name}!</h1>
+        <p style="color: #333; font-size: 16px; line-height: 1.6; text-align: center;">
+            Dags att plocka ägg från <strong>{coop_name}</strong>?
+        </p>
+        <p style="color: #666; font-size: 14px; text-align: center; margin-top: 20px;">
+            Glöm inte att registrera dagens ägg i Hönsgården-appen! 🐔
+        </p>
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="https://egg-tracker-pro.preview.emergentagent.com/api/web/" 
+               style="background-color: #4ade80; color: #1a1a2e; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: 600; display: inline-block;">
+                Öppna Hönsgården
+            </a>
+        </div>
+        <p style="color: #888; font-size: 12px; text-align: center; margin-top: 40px;">
+            Du får detta mail eftersom du aktiverat påminnelser i Hönsgården.<br>
+            <a href="https://egg-tracker-pro.preview.emergentagent.com/api/web/settings" style="color: #888;">Ändra inställningar</a>
+        </p>
+    </div>
+    """
+    
+    params = {
+        "from": SENDER_EMAIL,
+        "to": [email],
+        "subject": f"🥚 Påminnelse: Dags att plocka ägg!",
+        "html": html_content
+    }
+    
+    try:
+        result = await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Reminder email sent to {email}, id: {result.get('id')}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send reminder email to {email}: {e}")
+        return False
+
+@api_router.post("/reminders/send-test")
+async def send_test_reminder(request: Request):
+    """Send a test reminder email to current user"""
+    user = await require_user(request)
+    user_doc = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+    coop = await db.coop_settings.find_one({"user_id": user.user_id}, {"_id": 0})
+    coop_name = coop.get("coop_name", "Min Hönsgård") if coop else "Min Hönsgård"
+    
+    success = await send_reminder_email(user.email, user.name, coop_name)
+    if success:
+        return {"message": f"Testpåminnelse skickad till {user.email}"}
+    else:
+        raise HTTPException(status_code=500, detail="Kunde inte skicka påminnelse")
+
+@api_router.post("/reminders/send-all")
+async def trigger_all_reminders():
+    """Trigger reminder emails for all users with reminders enabled (for cron job)"""
+    users = await db.users.find({"reminder_enabled": True}, {"_id": 0}).to_list(1000)
+    sent_count = 0
+    
+    for user_doc in users:
+        email = user_doc.get("email")
+        name = user_doc.get("name", "")
+        user_id = user_doc.get("user_id")
+        
+        coop = await db.coop_settings.find_one({"user_id": user_id}, {"_id": 0})
+        coop_name = coop.get("coop_name", "Min Hönsgård") if coop else "Min Hönsgård"
+        
+        if await send_reminder_email(email, name, coop_name):
+            sent_count += 1
+    
+    return {"message": f"Skickade {sent_count} påminnelser", "total_users": len(users)}
+
 # ============ BASIC ROUTES ============
 @api_router.get("/")
 async def root():
