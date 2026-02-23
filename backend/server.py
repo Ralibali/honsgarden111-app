@@ -189,6 +189,24 @@ class CreateCheckoutResponse(BaseModel):
     url: str
     session_id: str
 
+class CancelSubscriptionRequest(BaseModel):
+    reason: Optional[str] = None
+
+# ============ FEEDBACK MODELS ============
+class FeedbackCreate(BaseModel):
+    type: str  # "feature", "bug", "improvement", "other"
+    message: str
+    email: Optional[str] = None
+
+class Feedback(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: Optional[str] = None
+    type: str
+    message: str
+    email: Optional[str] = None
+    status: str = "new"  # "new", "read", "replied"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============ AUTH HELPER FUNCTIONS ============
 async def get_current_user(request: Request) -> Optional[User]:
     """Get current user from session token in cookie or header"""
