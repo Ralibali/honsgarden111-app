@@ -1,9 +1,10 @@
 import { Platform } from 'react-native';
 import Purchases, { LOG_LEVEL, CustomerInfo, PurchasesOffering } from 'react-native-purchases';
+import Constants from 'expo-constants';
 
-// RevenueCat API Keys
-const REVENUECAT_IOS_API_KEY = 'test_RskXLKBFHMimNsbhyUgSBQHhsnd';
-const REVENUECAT_ANDROID_API_KEY = 'test_RskXLKBFHMimNsbhyUgSBQHhsnd';
+// RevenueCat API Keys from environment variables
+const REVENUECAT_IOS_API_KEY = Constants.expoConfig?.extra?.REVENUECAT_IOS_API_KEY || process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || '';
+const REVENUECAT_ANDROID_API_KEY = Constants.expoConfig?.extra?.REVENUECAT_ANDROID_API_KEY || process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || '';
 
 // Entitlement ID from RevenueCat dashboard
 export const ENTITLEMENT_ID = 'aurora media AB Pro';
