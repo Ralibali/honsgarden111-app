@@ -11,7 +11,7 @@ import uuid
 import time
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://egg-tracker-pro.preview.emergentagent.com/api"
+BACKEND_URL = "https://github-sync-47.preview.emergentagent.com/api"
 
 class ChickenCoopAPITester:
     def __init__(self):
