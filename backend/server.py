@@ -878,8 +878,8 @@ async def get_summary_statistics(request: Request):
     """Get overall summary statistics"""
     user_id = await get_user_id(request)
     
-    all_eggs = await db.egg_records.find({"user_id": user_id}).to_list(10000)
-    all_transactions = await db.transactions.find({"user_id": user_id}).to_list(10000)
+    all_eggs = await db.egg_records.find({"user_id": user_id}, {"_id": 0, "count": 1, "date": 1}).to_list(10000)
+    all_transactions = await db.transactions.find({"user_id": user_id}, {"_id": 0, "amount": 1, "type": 1, "date": 1}).to_list(10000)
     settings = await db.coop_settings.find_one({"user_id": user_id})
     
     total_eggs = sum(e['count'] for e in all_eggs)
