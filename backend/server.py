@@ -783,7 +783,7 @@ async def get_month_statistics(year: int, month: int, request: Request):
     transactions = await db.transactions.find({
         "user_id": user_id,
         "date": {"$gte": start_date, "$lt": end_date}
-    }).to_list(1000)
+    }, {"_id": 0, "amount": 1, "type": 1, "date": 1}).to_list(1000)
     total_costs = sum(t['amount'] for t in transactions if t['type'] == 'cost')
     total_sales = sum(t['amount'] for t in transactions if t['type'] == 'sale')
     
