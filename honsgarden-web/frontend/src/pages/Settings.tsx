@@ -160,6 +160,67 @@ export default function Settings() {
     }
   };
   
+  // Handle cancel subscription
+  const handleCancelSubscription = async () => {
+    setCancelling(true);
+    try {
+      const res = await fetch('/api/subscription/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason: cancelReason })
+      });
+      if (res.ok) {
+        setPremium({ is_premium: false, plan: null, expires_at: null });
+        setShowCancelModal(false);
+        setCancelReason('');
+        alert('Din prenumeration har avslutats. Du behåller Premium tills perioden går ut.');
+      } else {
+        const data = await res.json();
+        alert(data.detail || 'Kunde inte avsluta prenumerationen');
+      }
+    } catch (error) {
+      console.error('Failed to cancel:', error);
+      alert('Något gick fel');
+    } finally {
+      setCancelling(false);
+    }
+  };
+  
+  // Handle send feedback
+  const handleSendFeedback = async () => {
+    if (!feedbackMessage.trim()) {
+      alert('Skriv ett meddelande');
+      return;
+    }
+    setSendingFeedback(true);
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          type: feedbackType,
+          message: feedbackMessage,
+          email: feedbackEmail || user?.email || undefined
+        })
+      });
+      if (res.ok) {
+        setShowFeedbackModal(false);
+        setFeedbackMessage('');
+        setFeedbackEmail('');
+        alert('Tack för din feedback! Vi uppskattar det. 🙏');
+      } else {
+        alert('Kunde inte skicka feedback');
+      }
+    } catch (error) {
+      console.error('Failed to send feedback:', error);
+      alert('Något gick fel');
+    } finally {
+      setSendingFeedback(false);
+    }
+  };
+  
   if (loading) return <div className="loading">Laddar...</div>;
   
   return (
