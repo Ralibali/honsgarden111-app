@@ -228,3 +228,169 @@
   margin-bottom: 16px;
 }
 
+/* Premium Card */
+.premium-card {
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(251, 191, 36, 0.05) 100%);
+}
+
+.premium-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.status-badge.active {
+  background-color: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+}
+
+.status-badge.inactive {
+  background-color: rgba(156, 163, 175, 0.15);
+  color: var(--text-secondary);
+}
+
+.plan-info {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.cancel-btn {
+  width: 100%;
+  padding: 12px;
+}
+
+.upgrade-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* Feedback Card */
+.feedback-card {
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(99, 102, 241, 0.05) 100%);
+}
+
+.support-link {
+  display: inline-block;
+  color: var(--accent-primary);
+  font-size: 15px;
+  margin-top: 8px;
+}
+
+.support-link:hover {
+  text-decoration: underline;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background-color: var(--bg-surface);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.modal p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.modal-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.modal label {
+  margin-top: 16px;
+}
+
+.modal textarea,
+.modal select,
+.modal input[type="email"] {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--text-primary);
+  resize: vertical;
+}
+
+.modal textarea:focus,
+.modal select:focus,
+.modal input:focus {
+  border-color: var(--accent-primary);
+  outline: none;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 14px;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
