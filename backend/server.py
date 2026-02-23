@@ -775,7 +775,7 @@ async def get_month_statistics(year: int, month: int, request: Request):
     eggs = await db.egg_records.find({
         "user_id": user_id,
         "date": {"$gte": start_date, "$lt": end_date}
-    }).to_list(1000)
+    }, {"_id": 0, "count": 1, "date": 1}).to_list(1000)
     total_eggs = sum(e['count'] for e in eggs)
     days_with_eggs = len(set(e['date'] for e in eggs))
     avg_eggs = total_eggs / days_with_eggs if days_with_eggs > 0 else 0
