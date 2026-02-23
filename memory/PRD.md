@@ -1,100 +1,82 @@
 # Hönsgården - PRD (Product Requirements Document)
 
 ## Projektöversikt
-En digital assistent för hönsgårdsägare som hjälper dem att hålla koll på äggproduktion, ekonomi och individuella hönaprofiler.
+**Hönsgården** är en digital assistent för hönsgårdsägare som hjälper dem att hålla koll på äggproduktion, ekonomi och individuella hönaprofiler.
 
 **Live URL:** https://egg-tracker-pro.preview.emergentagent.com/api/web/
 
-## Plattformar
-- **Webbapp**: React (produktion)
-- **Mobilapp**: Expo/React Native (under utveckling - ngrok-problem)
-- **Backend**: FastAPI + MongoDB
+## Vad appen erbjuder
 
-## Kärnfunktioner
+### 🥚 Äggloggning
+- Registrera ägg enkelt med snabbknappar (+1, +2, +3, +5, +10)
+- **Välj vilken höna som la äggen**
+- Se historik per dag och per höna
+- Anteckningar för varje registrering
 
-### ✅ Implementerade funktioner
+### 🐔 Hönsprofiler
+- Döp dina hönor (t.ex. Greta, Saga, Malin)
+- Lägg till ras, färg och födelsedatum
+- **Se statistik per höna** - hur många ägg har varje höna lagt?
+- Redigera och ta bort hönaprofiler
 
-#### Webbapp
-1. **Landningssida**
-   - "Hönsgården" branding med hero-bild på kvinna med höns
-   - Google-inloggning (OAuth via Emergent Auth)
-   - Funktionsöversikt och prissättning
-   - Responsiv design
+### 📊 Statistik
+- Daglig, månatlig och årlig översikt
+- **Topplista: Vilken höna lägger mest?** 🏆
+- Trendanalys ("Greta lade 15% mer än förra månaden!")
+- Stapeldiagram för daglig produktion
 
-2. **Dashboard**
-   - Statistik för idag (antal höns, ägg)
-   - **Snabbregistrera ägg med höna-val** ✨
-   - Månadsöversikt (ägg, kostnader, försäljning, netto)
-   - Premium-banner
+### 💰 Ekonomi
+- Logga kostnader (foder, utrustning, medicin, övrigt)
+- Logga försäljning (ägg, höns, övrigt)
+- Se netto och vinst/förlust per månad
+- Transaktionshistorik
 
-3. **Ägglogg**
-   - Registrera ägg med datum
-   - **Välj vilken höna som la äggen** ✨
-   - Historik grupperad per dag med höna-badges
+### 📧 E-postpåminnelser (Premium)
+- Daglig påminnelse att registrera ägg
+- Välj tid (07:00, 12:00, 17:00, 18:00, 20:00)
+- Snyggt formaterade HTML-mail
+- Aktivera/inaktivera i inställningar
 
-4. **Hönsprofiler**
-   - CRUD för hönor (lägg till, redigera, ta bort)
-   - Namn, ras, färg, födelsedatum, anteckningar
-   - **Visa antal ägg per höna** ✨
+### ⭐ Premium
+- **7 dagars GRATIS provperiod** för alla nya användare!
+- Obegränsad statistikhistorik
+- PDF-export av rapporter
+- E-postpåminnelser
+- Statistik per höna med trendanalys
 
-5. **Statistik** ✨ NY!
-   - Flikar: "Översikt" och "Per höna"
-   - **Månadens topplista med ranking** 🏆
-   - Trendanalys (upp/ner jämfört med förra månaden)
-   - "X% över/under snittet"
-   - Lista över hönor utan ägg denna månad
-
-6. **Ekonomi**
-   - Registrera kostnader och försäljning
-   - Kategorier (foder, utrustning, medicin, äggförsäljning, etc.)
-   - Transaktionshistorik och netto-beräkning
-
-7. **Premium-sida**
-   - Stripe-betalning (månad: 19 kr, år: 149 kr)
-   - Checkout-flöde med statusverifiering
-   - Premium-förmåner visas efter köp
-
-8. **Inställningar**
-   - Google-profilinfo
-   - Hönsgårdens namn
-   - Logga ut
-
-### 🔄 Nästa steg
-
-#### P0 (Kritisk)
-- [x] Stripe-betalningsflöde - **KLAR** (backend + frontend)
-- [ ] Testa live Stripe-betalning med riktigt kort
-
-#### P1 (Hög prioritet)
-- [ ] PDF-export av statistik
-- [ ] Koppla hönaprofiler i mobilappen
-
-#### P2 (Medium prioritet)
-- [ ] Påminnelser (push-notifikationer)
-- [ ] Hälsospårning per höna
+## Prissättning
+| Plan | Pris | Beskrivning |
+|------|------|-------------|
+| Gratis | 0 kr | Grundfunktioner |
+| Provperiod | 0 kr | 7 dagar premium gratis |
+| Månatlig | 19 kr/månad | Flexibelt, avsluta när som helst |
+| Årlig | 149 kr/år | Spara 79 kr (över 30%!) |
 
 ## Teknisk arkitektur
 
 ```
 /app
 ├── backend/
-│   ├── server.py          # FastAPI (928 rader)
+│   ├── server.py          # FastAPI (1000+ rader)
 │   ├── webapp_dist/       # Byggd React-app
-│   └── .env               # MONGO_URL, STRIPE_*
+│   └── .env               # Secrets
 ├── webapp/                # React webbapp
-│   └── src/pages/         # 8 sidor + Layout
-└── frontend/              # Expo mobilapp
+│   └── src/
+│       ├── pages/         # 9 sidor
+│       ├── components/    # Layout
+│       └── context/       # AuthContext
+└── frontend/              # Expo mobilapp (under utveckling)
 ```
 
 ## API Endpoints
 
 ### Auth
-- `POST /api/auth/session` - Byt session_id mot user data
-- `GET /api/auth/me` - Hämta inloggad användare
+- `POST /api/auth/session` - Google OAuth callback
+- `GET /api/auth/me` - Aktuell användare
 - `POST /api/auth/logout` - Logga ut
 
 ### Data
-- `GET/POST /api/hens` - Hönor
+- `GET/POST /api/hens` - Hönor CRUD
 - `GET/POST /api/eggs` - Äggregistreringar (med hen_id)
 - `GET/POST /api/transactions` - Ekonomi
 - `GET/PUT /api/coop` - Hönsgårdsinställningar
@@ -102,39 +84,56 @@ En digital assistent för hönsgårdsägare som hjälper dem att hålla koll på
 ### Statistik
 - `GET /api/statistics/today`
 - `GET /api/statistics/month/{year}/{month}`
-- `GET /api/statistics/year/{year}`
 - `GET /api/statistics/summary`
 
-### Premium
+### Premium & Betalning
 - `GET /api/premium/status`
-- `POST /api/checkout/create`
+- `POST /api/checkout/create` - Stripe checkout
 - `GET /api/checkout/status/{session_id}`
-- `POST /api/webhook/stripe`
 
-## Stripe-konfiguration
-- Publishable Key: `pk_live_51IQzC3HzffTezY82...`
-- Price ID (Månad): `price_1T3joGHzffTezY82dRQc7GTO`
-- Price ID (År): `price_1T3jwRHzffTezY829aWQVXZr`
+### E-postpåminnelser
+- `GET /api/reminders/settings` - Hämta inställningar
+- `PUT /api/reminders/settings` - Uppdatera inställningar
+- `POST /api/reminders/send-test` - Skicka testmail
+- `POST /api/reminders/send-all` - Trigger för cron
+
+## Integrationer
+
+| Tjänst | Användning | Status |
+|--------|------------|--------|
+| Google OAuth | Inloggning | ✅ Live |
+| Stripe | Betalningar | ✅ Live |
+| Resend | E-postpåminnelser | ✅ Live |
+| MongoDB | Databas | ✅ Live |
 
 ## Ändringslogg
 
-### 2024-12-23 (Session 2)
+### 2026-02-23 (Session 3)
+- ✅ Lagt till 7 dagars gratis provperiod för nya användare
+- ✅ Implementerat e-postpåminnelser via Resend
+- ✅ Uppdaterat Settings-sidan med påminnelse-toggle
+- ✅ Premium-sidan visar trial-banner och dagar kvar
+
+### 2026-02-23 (Session 2)
 - ✅ Bytt hero-bild till kvinna med höns
 - ✅ Implementerat höna-val vid äggregistrering
-- ✅ Lagt till "Per höna"-statistik med topplista och trendanalys
-- ✅ Förbättrad Hens-sida med äggstatistik
-- ✅ Alla backend-tester (27/27) passerade
-- ✅ Frontend fungerar med responsiv design
+- ✅ Lagt till "Per höna"-statistik med topplista
 
-### 2024-12-22 (Session 1)
-- Grundläggande webbapp skapad
-- Google OAuth integrerat
-- Stripe-integration för premium
-- CRUD för hönor, ägg, transaktioner
+### 2026-02-22 (Session 1)
+- ✅ Grundläggande webbapp skapad
+- ✅ Google OAuth integrerat
+- ✅ Stripe-integration för premium
 
-## Testdata
-- 3 hönor registrerade (Greta, Saga, + 1 till)
-- Äggdata med hen_id koppling fungerar
+## Stripe-konfiguration
+- **Publishable Key:** `pk_live_51IQzC3...`
+- **Price ID (Månad):** `price_1T3joGHzffTezY82dRQc7GTO`
+- **Price ID (År):** `price_1T3jwRHzffTezY829aWQVXZr`
 
 ## Kända problem
-- Mobilappens ngrok-tunnel är instabil (miljöproblem)
+- Mobilappens ngrok-tunnel är instabil (miljöproblem, ej kodbug)
+
+## Framtida utveckling
+- [ ] PDF-export av statistik
+- [ ] Mobilapp (React Native/Expo)
+- [ ] Hälsospårning per höna
+- [ ] AI-driven statistikanalys
