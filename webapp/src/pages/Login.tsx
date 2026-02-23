@@ -3,9 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
 const PREVIEW_IMAGES = {
-  hero: 'https://images.pexels.com/photos/32100305/pexels-photo-32100305.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
-  eggs: 'https://images.pexels.com/photos/4530410/pexels-photo-4530410.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
-  chick: 'https://images.pexels.com/photos/5145/animal-easter-chick-chicken.jpg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940'
+  hero: 'https://images.pexels.com/photos/4911743/pexels-photo-4911743.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+  eggs: 'https://images.pexels.com/photos/4911785/pexels-photo-4911785.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
+  chick: 'https://images.pexels.com/photos/4911778/pexels-photo-4911778.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940'
 };
 
 export default function Login() {
@@ -16,7 +16,7 @@ export default function Login() {
       {/* Hero Section */}
       <header className="hero">
         <div className="hero-overlay"></div>
-        <img src={PREVIEW_IMAGES.hero} alt="Höna i trädgård" className="hero-image" />
+        <img src={PREVIEW_IMAGES.hero} alt="Kvinna som tar hand om sina höns" className="hero-image" />
         <div className="hero-content">
           <div className="logo-badge">🥚</div>
           <h1>Hönsgården</h1>
