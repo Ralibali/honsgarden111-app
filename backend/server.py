@@ -545,6 +545,101 @@ async def get_premium_status(request: Request):
         stripe_customer_id=subscription.get('stripe_customer_id')
     )
 
+# ============ CANCEL SUBSCRIPTION ENDPOINT ============
+@api_router.post("/subscription/cancel")
+async def cancel_subscription(request: Request, cancel_req: CancelSubscriptionRequest):
+    """Cancel user's subscription"""
+    user = await require_user(request)
+    
+    subscription = await db.subscriptions.find_one({"user_id": user.user_id})
+    if not subscription or not subscription.get('is_active'):
+        raise HTTPException(status_code=400, detail="Ingen aktiv prenumeration hittades")
+    
+    # Store cancellation info
+    await db.subscriptions.update_one(
+        {"user_id": user.user_id},
+        {"$set": {
+            "is_active": False,
+            "cancelled_at": datetime.now(timezone.utc),
+            "cancellation_reason": cancel_req.reason,
+            "updated_at": datetime.now(timezone.utc)
+        }}
+    )
+    
+    # Log cancellation
+    await db.cancellations.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user.user_id,
+        "email": user.email,
+        "plan": subscription.get('plan'),
+        "reason": cancel_req.reason,
+        "cancelled_at": datetime.now(timezone.utc)
+    })
+    
+    logger.info(f"Subscription cancelled for user {user.email}")
+    
+    return {
+        "message": "Prenumerationen har avslutats",
+        "expires_at": subscription.get('expires_at')
+    }
+
+# ============ FEEDBACK ENDPOINTS ============
+@api_router.post("/feedback")
+async def submit_feedback(feedback: FeedbackCreate, request: Request):
+    """Submit user feedback/tips"""
+    user = await get_current_user(request)
+    
+    new_feedback = Feedback(
+        user_id=user.user_id if user else None,
+        type=feedback.type,
+        message=feedback.message,
+        email=feedback.email or (user.email if user else None)
+    )
+    
+    await db.feedback.insert_one(new_feedback.dict())
+    
+    # Optionally send email notification to admin
+    if RESEND_API_KEY:
+        try:
+            admin_email = "onboarding@resend.dev"  # Change to actual admin email
+            email_html = f"""
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #1a1a2e;">🐔 Nytt tips från Hönsgården</h2>
+                <p><strong>Typ:</strong> {feedback.type}</p>
+                <p><strong>Från:</strong> {feedback.email or 'Anonym'}</p>
+                <p><strong>Meddelande:</strong></p>
+                <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin-top: 8px;">
+                    {feedback.message}
+                </div>
+                <p style="color: #888; font-size: 12px; margin-top: 20px;">
+                    Skickat: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+                </p>
+            </div>
+            """
+            await asyncio.to_thread(resend.Emails.send, {
+                "from": SENDER_EMAIL,
+                "to": [admin_email],
+                "subject": f"🐔 Nytt tips: {feedback.type}",
+                "html": email_html
+            })
+        except Exception as e:
+            logger.error(f"Failed to send feedback notification: {e}")
+    
+    logger.info(f"Feedback received: {feedback.type}")
+    
+    return {"message": "Tack för ditt tips! Vi uppskattar din feedback."}
+
+@api_router.get("/feedback")
+async def get_all_feedback(request: Request, limit: int = 50):
+    """Get all feedback (admin only - for future use)"""
+    user = await require_user(request)
+    
+    # Simple admin check (expand this later)
+    feedback_list = await db.feedback.find().sort("created_at", -1).to_list(limit)
+    return [{"id": f.get("id"), "type": f.get("type"), "message": f.get("message"), 
+             "email": f.get("email"), "status": f.get("status"), 
+             "created_at": f.get("created_at")} for f in feedback_list]
+
 # ============ USER DATA HELPER ============
 async def get_user_id(request: Request) -> str:
     """Get user_id from session or return default for mobile app"""
