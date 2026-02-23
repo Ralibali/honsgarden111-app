@@ -83,11 +83,80 @@
   margin-bottom: 20px;
 }
 
+.quick-add-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .quick-add-section h3 {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-secondary);
+  margin: 0;
+}
+
+.hen-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hen-toggle:hover, .hen-toggle.active {
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.toggle-icon {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.hen-toggle.active .toggle-icon,
+.hen-toggle:hover .toggle-icon {
+  color: var(--bg-primary);
+}
+
+.hen-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 16px;
+  padding: 12px;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.hen-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hen-option:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.hen-option.active {
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
 }
 
 .quick-add-buttons {
