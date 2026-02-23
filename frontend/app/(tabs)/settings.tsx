@@ -10,6 +10,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Switch,
+  Modal,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +21,8 @@ import { usePremiumStore } from '../../src/store/premiumStore';
 import { useThemeStore, ThemeColors, ThemeMode } from '../../src/store/themeStore';
 import i18n, { setLanguage, getLanguage } from '../../src/i18n';
 import * as Notifications from 'expo-notifications';
+
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 export default function SettingsScreen() {
   const router = useRouter();
