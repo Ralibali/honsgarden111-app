@@ -7,33 +7,42 @@ interface EggRecord {
   id: string;
   date: string;
   count: number;
+  hen_id?: string;
   notes?: string;
+}
+
+interface Hen {
+  id: string;
+  name: string;
+  breed?: string;
+  color?: string;
 }
 
 export default function Eggs() {
   const [records, setRecords] = useState<EggRecord[]>([]);
+  const [hens, setHens] = useState<Hen[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [eggCount, setEggCount] = useState('');
+  const [selectedHen, setSelectedHen] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   
   useEffect(() => {
-    loadRecords();
+    loadData();
   }, []);
   
-  const loadRecords = async () => {
+  const loadData = async () => {
     try {
-      const end = new Date();
-      const start = subDays(end, 30);
-      const res = await fetch(
-        `/api/eggs?start_date=${format(start, 'yyyy-MM-dd')}&end_date=${format(end, 'yyyy-MM-dd')}`,
-        { credentials: 'include' }
-      );
-      if (res.ok) setRecords(await res.json());
+      const [recordsRes, hensRes] = await Promise.all([
+        fetch(`/api/eggs?start_date=${format(subDays(new Date(), 30), 'yyyy-MM-dd')}&end_date=${format(new Date(), 'yyyy-MM-dd')}`, { credentials: 'include' }),
+        fetch('/api/hens', { credentials: 'include' })
+      ]);
+      if (recordsRes.ok) setRecords(await recordsRes.json());
+      if (hensRes.ok) setHens(await hensRes.json());
     } catch (error) {
-      console.error('Failed to load records:', error);
+      console.error('Failed to load data:', error);
     } finally {
       setLoading(false);
     }
@@ -50,13 +59,12 @@ export default function Eggs() {
         body: JSON.stringify({
           date: selectedDate,
           count: parseInt(eggCount),
+          hen_id: selectedHen || undefined,
           notes: notes || undefined
         })
       });
-      await loadRecords();
-      setShowModal(false);
-      setEggCount('');
-      setNotes('');
+      await loadData();
+      closeModal();
     } catch (error) {
       console.error('Failed to save:', error);
     } finally {
@@ -71,10 +79,23 @@ export default function Eggs() {
         method: 'DELETE',
         credentials: 'include'
       });
-      await loadRecords();
+      await loadData();
     } catch (error) {
       console.error('Failed to delete:', error);
     }
+  };
+  
+  const closeModal = () => {
+    setShowModal(false);
+    setEggCount('');
+    setSelectedHen('');
+    setNotes('');
+  };
+  
+  const getHenName = (henId?: string) => {
+    if (!henId) return null;
+    const hen = hens.find(h => h.id === henId);
+    return hen?.name || 'Okänd höna';
   };
   
   const totalEggs = records.reduce((sum, r) => sum + r.count, 0);
@@ -87,6 +108,18 @@ export default function Eggs() {
       display: i === 0 ? 'Idag' : i === 1 ? 'Igår' : format(date, 'EEE d', { locale: sv })
     };
   });
+  
+  // Group records by date for display, but keep individual hen records
+  const groupedByDate = records.reduce((acc, record) => {
+    const dateKey = record.date;
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
+    }
+    acc[dateKey].push(record);
+    return acc;
+  }, {} as Record<string, EggRecord[]>);
+  
+  const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
   
   if (loading) return <div className="loading">Laddar...</div>;
   
@@ -107,45 +140,64 @@ export default function Eggs() {
           <span className="summary-label">Snitt/dag</span>
         </div>
         <div className="summary-card">
-          <span className="summary-value">{records.length}</span>
-          <span className="summary-label">Dagar</span>
+          <span className="summary-value">{hens.length}</span>
+          <span className="summary-label">Hönor</span>
         </div>
       </div>
       
-      <button onClick={() => setShowModal(true)} className="btn-primary add-btn">
+      <button onClick={() => setShowModal(true)} className="btn-primary add-btn" data-testid="add-egg-btn">
         + Lägg till ägg
       </button>
       
       <div className="records-list">
         <h3>Historik</h3>
-        {records.length === 0 ? (
+        {sortedDates.length === 0 ? (
           <div className="empty-state">
             <span>🥚</span>
             <p>Inga ägg registrerade ännu</p>
           </div>
         ) : (
-          records.map(record => (
-            <div key={record.id} className="record-item">
-              <div className="record-left">
-                <div className="record-icon">🥚</div>
-                <div className="record-info">
-                  <span className="record-date">
-                    {format(parseISO(record.date), 'EEEE d MMMM', { locale: sv })}
+          sortedDates.map(date => {
+            const dayRecords = groupedByDate[date];
+            const dayTotal = dayRecords.reduce((sum, r) => sum + r.count, 0);
+            
+            return (
+              <div key={date} className="date-group">
+                <div className="date-header">
+                  <span className="date-title">
+                    {format(parseISO(date), 'EEEE d MMMM', { locale: sv })}
                   </span>
-                  {record.notes && <span className="record-notes">{record.notes}</span>}
+                  <span className="date-total">{dayTotal} ägg</span>
                 </div>
+                {dayRecords.map(record => (
+                  <div key={record.id} className="record-item" data-testid={`egg-record-${record.id}`}>
+                    <div className="record-left">
+                      <div className="record-icon">🥚</div>
+                      <div className="record-info">
+                        {record.hen_id ? (
+                          <span className="record-hen">
+                            <span className="hen-badge">🐔 {getHenName(record.hen_id)}</span>
+                          </span>
+                        ) : (
+                          <span className="record-hen general">Alla hönor</span>
+                        )}
+                        {record.notes && <span className="record-notes">{record.notes}</span>}
+                      </div>
+                    </div>
+                    <div className="record-right">
+                      <span className="record-count">{record.count}</span>
+                      <button onClick={() => handleDelete(record.id)} className="delete-btn" data-testid={`delete-egg-${record.id}`}>×</button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="record-right">
-                <span className="record-count">{record.count}</span>
-                <button onClick={() => handleDelete(record.id)} className="delete-btn">×</button>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
       
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <h2>Lägg till ägg</h2>
             
@@ -156,33 +208,77 @@ export default function Eggs() {
                   key={day.date}
                   className={`date-btn ${selectedDate === day.date ? 'active' : ''}`}
                   onClick={() => setSelectedDate(day.date)}
+                  data-testid={`date-btn-${day.date}`}
                 >
                   {day.display}
                 </button>
               ))}
             </div>
             
+            {hens.length > 0 && (
+              <>
+                <label>Vilken höna? (valfritt)</label>
+                <div className="hen-selector">
+                  <button
+                    className={`hen-btn ${selectedHen === '' ? 'active' : ''}`}
+                    onClick={() => setSelectedHen('')}
+                    data-testid="hen-btn-all"
+                  >
+                    <span className="hen-icon">🥚</span>
+                    <span>Alla hönor</span>
+                  </button>
+                  {hens.map(hen => (
+                    <button
+                      key={hen.id}
+                      className={`hen-btn ${selectedHen === hen.id ? 'active' : ''}`}
+                      onClick={() => setSelectedHen(hen.id)}
+                      data-testid={`hen-btn-${hen.id}`}
+                    >
+                      <span className="hen-icon">🐔</span>
+                      <span>{hen.name}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="hint">Välj en höna om du vet vilken som la ägget</p>
+              </>
+            )}
+            
             <label>Antal ägg</label>
-            <input
-              type="number"
-              value={eggCount}
-              onChange={(e) => setEggCount(e.target.value)}
-              placeholder="0"
-              min="0"
-            />
+            <div className="egg-count-selector">
+              {[1, 2, 3, 4, 5].map(num => (
+                <button
+                  key={num}
+                  className={`count-btn ${eggCount === String(num) ? 'active' : ''}`}
+                  onClick={() => setEggCount(String(num))}
+                  data-testid={`count-btn-${num}`}
+                >
+                  {num}
+                </button>
+              ))}
+              <input
+                type="number"
+                value={eggCount}
+                onChange={(e) => setEggCount(e.target.value)}
+                placeholder="Annat"
+                min="0"
+                className="count-input"
+                data-testid="egg-count-input"
+              />
+            </div>
             
             <label>Anteckningar (valfritt)</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="T.ex. 'Extra stora ägg'"
+              data-testid="egg-notes-input"
             />
             
             <div className="modal-buttons">
-              <button onClick={() => setShowModal(false)} className="btn-secondary">
+              <button onClick={closeModal} className="btn-secondary" data-testid="cancel-egg-btn">
                 Avbryt
               </button>
-              <button onClick={handleSubmit} disabled={!eggCount || saving} className="btn-primary">
+              <button onClick={handleSubmit} disabled={!eggCount || saving} className="btn-primary" data-testid="save-egg-btn">
                 {saving ? 'Sparar...' : 'Spara'}
               </button>
             </div>
