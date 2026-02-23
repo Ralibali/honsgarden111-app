@@ -37,14 +37,23 @@ interface PremiumStatus {
   plan?: string;
 }
 
+interface Hen {
+  id: string;
+  name: string;
+  breed?: string;
+}
+
 export default function Dashboard() {
   const [todayStats, setTodayStats] = useState<TodayStats | null>(null);
   const [summary, setSummary] = useState<SummaryStats | null>(null);
   const [coop, setCoop] = useState<CoopSettings | null>(null);
   const [premium, setPremium] = useState<PremiumStatus | null>(null);
+  const [hens, setHens] = useState<Hen[]>([]);
   const [loading, setLoading] = useState(true);
   const [eggCount, setEggCount] = useState('');
+  const [selectedHen, setSelectedHen] = useState<string>('');
   const [saving, setSaving] = useState(false);
+  const [showHenPicker, setShowHenPicker] = useState(false);
   
   useEffect(() => {
     loadData();
@@ -52,17 +61,19 @@ export default function Dashboard() {
   
   const loadData = async () => {
     try {
-      const [todayRes, summaryRes, coopRes, premiumRes] = await Promise.all([
+      const [todayRes, summaryRes, coopRes, premiumRes, hensRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
-        fetch('/api/premium/status', { credentials: 'include' })
+        fetch('/api/premium/status', { credentials: 'include' }),
+        fetch('/api/hens', { credentials: 'include' })
       ]);
       
       if (todayRes.ok) setTodayStats(await todayRes.json());
       if (summaryRes.ok) setSummary(await summaryRes.json());
       if (coopRes.ok) setCoop(await coopRes.json());
       if (premiumRes.ok) setPremium(await premiumRes.json());
+      if (hensRes.ok) setHens(await hensRes.json());
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -78,10 +89,16 @@ export default function Dashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ date: today, count })
+        body: JSON.stringify({ 
+          date: today, 
+          count,
+          hen_id: selectedHen || undefined
+        })
       });
       await loadData();
       setEggCount('');
+      setSelectedHen('');
+      setShowHenPicker(false);
     } catch (error) {
       console.error('Failed to add eggs:', error);
     } finally {
@@ -101,7 +118,7 @@ export default function Dashboard() {
   const dateString = format(today, 'EEEE d MMMM yyyy', { locale: sv });
   
   return (
-    <div className="dashboard">
+    <div className="dashboard" data-testid="dashboard">
       <header className="dashboard-header">
         <div>
           <h1>{coop?.coop_name || 'Min Hönsgård'}</h1>
@@ -112,12 +129,12 @@ export default function Dashboard() {
       
       {/* Quick Stats */}
       <div className="stats-row">
-        <div className="stat-card hen-card">
-          <span className="stat-icon">❤️</span>
+        <Link to="/hens" className="stat-card hen-card" data-testid="hen-count-card">
+          <span className="stat-icon">🐔</span>
           <span className="stat-value">{todayStats?.hen_count || 0}</span>
           <span className="stat-label">Hönor</span>
-        </div>
-        <div className="stat-card egg-card">
+        </Link>
+        <div className="stat-card egg-card" data-testid="egg-count-card">
           <span className="stat-icon">🥚</span>
           <span className="stat-value">{todayStats?.egg_count || 0}</span>
           <span className="stat-label">Ägg idag</span>
@@ -126,7 +143,44 @@ export default function Dashboard() {
       
       {/* Quick Add */}
       <div className="quick-add-section">
-        <h3>Snabbregistrera ägg</h3>
+        <div className="quick-add-header">
+          <h3>Snabbregistrera ägg</h3>
+          {hens.length > 0 && (
+            <button 
+              className={`hen-toggle ${showHenPicker ? 'active' : ''}`}
+              onClick={() => setShowHenPicker(!showHenPicker)}
+              data-testid="hen-toggle-btn"
+            >
+              {selectedHen ? `🐔 ${hens.find(h => h.id === selectedHen)?.name}` : '🥚 Alla hönor'}
+              <span className="toggle-icon">{showHenPicker ? '▲' : '▼'}</span>
+            </button>
+          )}
+        </div>
+        
+        {showHenPicker && hens.length > 0 && (
+          <div className="hen-picker" data-testid="hen-picker">
+            <button 
+              className={`hen-option ${selectedHen === '' ? 'active' : ''}`}
+              onClick={() => { setSelectedHen(''); setShowHenPicker(false); }}
+              data-testid="hen-option-all"
+            >
+              <span>🥚</span>
+              <span>Alla hönor</span>
+            </button>
+            {hens.map(hen => (
+              <button
+                key={hen.id}
+                className={`hen-option ${selectedHen === hen.id ? 'active' : ''}`}
+                onClick={() => { setSelectedHen(hen.id); setShowHenPicker(false); }}
+                data-testid={`hen-option-${hen.id}`}
+              >
+                <span>🐔</span>
+                <span>{hen.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        
         <div className="quick-add-buttons">
           {[1, 2, 3, 5, 10].map(num => (
             <button
@@ -134,6 +188,7 @@ export default function Dashboard() {
               onClick={() => handleQuickAdd(num)}
               disabled={saving}
               className="quick-add-btn"
+              data-testid={`quick-add-${num}`}
             >
               +{num}
             </button>
@@ -146,11 +201,13 @@ export default function Dashboard() {
             value={eggCount}
             onChange={(e) => setEggCount(e.target.value)}
             min="0"
+            data-testid="custom-egg-count"
           />
           <button
             onClick={() => eggCount && handleQuickAdd(parseInt(eggCount))}
             disabled={!eggCount || saving}
             className="btn-primary"
+            data-testid="add-custom-eggs"
           >
             Lägg till
           </button>
@@ -208,7 +265,7 @@ export default function Dashboard() {
       
       {/* Premium Banner */}
       {!premium?.is_premium && (
-        <Link to="/premium" className="premium-banner">
+        <Link to="/premium" className="premium-banner" data-testid="premium-banner">
           <div className="premium-content">
             <span className="premium-icon">⭐</span>
             <div>
