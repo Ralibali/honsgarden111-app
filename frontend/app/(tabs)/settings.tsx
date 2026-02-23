@@ -27,7 +27,7 @@ const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 export default function SettingsScreen() {
   const router = useRouter();
   const { coopSettings, fetchCoopSettings, updateCoopSettings, loading } = useAppStore();
-  const { isPremium, plan, expiresAt } = usePremiumStore();
+  const { isPremium, plan, expiresAt, clearPremiumStatus } = usePremiumStore();
   const { colors, isDark, mode, setThemeMode } = useThemeStore();
   
   const [coopName, setCoopName] = useState('');
@@ -38,6 +38,18 @@ export default function SettingsScreen() {
   // Reminder states
   const [eggReminderEnabled, setEggReminderEnabled] = useState(false);
   const [feedReminderEnabled, setFeedReminderEnabled] = useState(false);
+  
+  // Feedback modal states
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackType, setFeedbackType] = useState<'feature' | 'improvement' | 'bug' | 'other'>('feature');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackEmail, setFeedbackEmail] = useState('');
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+  
+  // Cancel subscription modal states
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelling, setCancelling] = useState(false);
   
   const t = i18n.t.bind(i18n);
   const isSv = i18n.locale.startsWith('sv');
