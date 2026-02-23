@@ -266,7 +266,9 @@ async def exchange_session(session_req: SessionRequest, response: Response):
             "email": email,
             "name": name,
             "picture": picture,
-            "created_at": datetime.now(timezone.utc)
+            "created_at": datetime.now(timezone.utc),
+            "reminder_enabled": True,  # Enable reminders by default
+            "reminder_time": "18:00"   # Default reminder time
         })
         # Create default coop settings for new user
         await db.coop_settings.insert_one({
@@ -277,6 +279,16 @@ async def exchange_session(session_req: SessionRequest, response: Response):
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc)
         })
+        # Give 7 days FREE trial premium
+        trial_expires = datetime.now(timezone.utc) + timedelta(days=FREE_TRIAL_DAYS)
+        await db.subscriptions.insert_one({
+            "user_id": user_id,
+            "is_active": True,
+            "plan": "trial",
+            "expires_at": trial_expires,
+            "created_at": datetime.now(timezone.utc)
+        })
+        logger.info(f"New user {email} created with {FREE_TRIAL_DAYS}-day free trial")
     
     # Store session
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)
