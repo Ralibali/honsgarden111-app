@@ -12,10 +12,17 @@ interface ReminderSettings {
   time: string;
 }
 
+interface PremiumStatus {
+  is_premium: boolean;
+  plan: string | null;
+  expires_at: string | null;
+}
+
 export default function Settings() {
   const { user, logout } = useAuth();
   const [coop, setCoop] = useState<CoopSettings | null>(null);
   const [reminders, setReminders] = useState<ReminderSettings>({ enabled: true, time: '18:00' });
+  const [premium, setPremium] = useState<PremiumStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [coopName, setCoopName] = useState('');
   const [henCount, setHenCount] = useState(0);
@@ -26,6 +33,18 @@ export default function Settings() {
   const [sendingTest, setSendingTest] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [hasReminderChanges, setHasReminderChanges] = useState(false);
+  
+  // Feedback state
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackType, setFeedbackType] = useState('feature');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackEmail, setFeedbackEmail] = useState('');
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+  
+  // Cancel subscription state
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelling, setCancelling] = useState(false);
   
   useEffect(() => {
     loadSettings();
