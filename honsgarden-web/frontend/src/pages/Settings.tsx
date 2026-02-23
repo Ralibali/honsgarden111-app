@@ -242,6 +242,36 @@ export default function Settings() {
         </div>
       )}
       
+      {/* Premium Status */}
+      {premium && (
+        <div className="card premium-card">
+          <h3>⭐ Premium</h3>
+          <div className="premium-status">
+            <span className={`status-badge ${premium.is_premium ? 'active' : 'inactive'}`}>
+              {premium.is_premium ? 'Aktiv' : 'Inte aktiverad'}
+            </span>
+            {premium.is_premium && premium.plan && (
+              <span className="plan-info">
+                {premium.plan === 'yearly' ? 'Årsprenumeration' : 'Månadsprenumeration'}
+              </span>
+            )}
+          </div>
+          {premium.is_premium ? (
+            <button 
+              onClick={() => setShowCancelModal(true)} 
+              className="btn-danger cancel-btn"
+              data-testid="cancel-subscription-btn"
+            >
+              Avsluta prenumeration
+            </button>
+          ) : (
+            <a href="/premium" className="btn-primary upgrade-btn">
+              Uppgradera till Premium
+            </a>
+          )}
+        </div>
+      )}
+      
       {/* Reminder Settings */}
       <div className="card reminder-card">
         <h3>📧 E-postpåminnelser</h3>
