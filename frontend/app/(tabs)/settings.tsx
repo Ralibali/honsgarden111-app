@@ -250,6 +250,17 @@ export default function SettingsScreen() {
                 )}
               </View>
             </TouchableOpacity>
+            
+            {/* Cancel Subscription Button - Only for Premium users */}
+            {isPremium && (
+              <TouchableOpacity 
+                style={styles.cancelButton}
+                onPress={() => setShowCancelModal(true)}
+              >
+                <Ionicons name="close-circle-outline" size={20} color={colors.error} />
+                <Text style={styles.cancelButtonText}>{t('settings.cancelSubscription')}</Text>
+              </TouchableOpacity>
+            )}
           </View>
           
           {/* Coop Settings Section */}
