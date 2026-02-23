@@ -130,6 +130,78 @@ export default function SettingsScreen() {
     }
   };
   
+  // Handle cancel subscription
+  const handleCancelSubscription = async () => {
+    setCancelling(true);
+    try {
+      const response = await fetch(`${API_URL}/api/subscription/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason: cancelReason }),
+      });
+      
+      if (response.ok) {
+        clearPremiumStatus();
+        setShowCancelModal(false);
+        setCancelReason('');
+        Alert.alert(
+          isSv ? 'Prenumeration avslutad' : 'Subscription cancelled',
+          t('settings.subscriptionCancelled')
+        );
+      } else {
+        const error = await response.json();
+        Alert.alert(t('common.error'), error.detail || t('errors.networkError'));
+      }
+    } catch (error) {
+      Alert.alert(t('common.error'), t('errors.networkError'));
+    } finally {
+      setCancelling(false);
+    }
+  };
+  
+  // Handle send feedback
+  const handleSendFeedback = async () => {
+    if (!feedbackMessage.trim()) {
+      Alert.alert(t('common.error'), isSv ? 'Skriv ett meddelande' : 'Please write a message');
+      return;
+    }
+    
+    setSendingFeedback(true);
+    try {
+      const response = await fetch(`${API_URL}/api/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          type: feedbackType,
+          message: feedbackMessage,
+          email: feedbackEmail || undefined,
+        }),
+      });
+      
+      if (response.ok) {
+        setShowFeedbackModal(false);
+        setFeedbackMessage('');
+        setFeedbackEmail('');
+        Alert.alert(
+          isSv ? 'Tack!' : 'Thank you!',
+          t('settings.feedbackSent')
+        );
+      } else {
+        Alert.alert(t('common.error'), t('errors.networkError'));
+      }
+    } catch (error) {
+      Alert.alert(t('common.error'), t('errors.networkError'));
+    } finally {
+      setSendingFeedback(false);
+    }
+  };
+  
+  const handleContactSupport = () => {
+    Linking.openURL('mailto:support@honsgarden.se?subject=Support%20-%20H%C3%B6nsg%C3%A5rden');
+  };
+  
   const styles = createStyles(colors, isDark);
   
   return (
