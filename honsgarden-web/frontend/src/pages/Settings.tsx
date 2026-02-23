@@ -378,9 +378,118 @@ export default function Settings() {
         </p>
       </div>
       
+      {/* Feedback Section */}
+      <div className="card feedback-card">
+        <h3>💡 Skicka tips & feedback</h3>
+        <p className="card-desc">Har du förslag på förbättringar eller nya funktioner? Vi vill gärna höra från dig!</p>
+        <button 
+          onClick={() => setShowFeedbackModal(true)} 
+          className="btn-secondary"
+          data-testid="open-feedback-btn"
+        >
+          Skicka feedback
+        </button>
+      </div>
+      
+      {/* Support Section */}
+      <div className="card">
+        <h3>📧 Support</h3>
+        <p className="about-desc">Behöver du hjälp? Kontakta oss på:</p>
+        <a href="mailto:support@honsgarden.se" className="support-link">
+          support@honsgarden.se
+        </a>
+      </div>
+      
       <button onClick={logout} className="btn-secondary logout-btn" data-testid="logout-btn">
         Logga ut
       </button>
+      
+      {/* Cancel Subscription Modal */}
+      {showCancelModal && (
+        <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Avsluta prenumeration</h2>
+            <p>Vill du verkligen avsluta din prenumeration?</p>
+            <p className="modal-hint">Du behåller Premium-funktioner tills perioden går ut.</p>
+            
+            <label>Hjälp oss bli bättre - varför avslutar du? (valfritt)</label>
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="T.ex. för dyrt, saknar funktioner..."
+              rows={3}
+            />
+            
+            <div className="modal-buttons">
+              <button onClick={() => setShowCancelModal(false)} className="btn-secondary">
+                Avbryt
+              </button>
+              <button 
+                onClick={handleCancelSubscription} 
+                disabled={cancelling} 
+                className="btn-danger"
+                data-testid="confirm-cancel-btn"
+              >
+                {cancelling ? 'Avslutar...' : 'Ja, avsluta'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Feedback Modal */}
+      {showFeedbackModal && (
+        <div className="modal-overlay" onClick={() => setShowFeedbackModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>💡 Skicka feedback</h2>
+            <p>Vi uppskattar alla tips och förslag!</p>
+            
+            <label>Typ av feedback</label>
+            <select 
+              value={feedbackType} 
+              onChange={(e) => setFeedbackType(e.target.value)}
+              data-testid="feedback-type"
+            >
+              <option value="feature">🚀 Ny funktion</option>
+              <option value="improvement">✨ Förbättring</option>
+              <option value="bug">🐛 Buggrapport</option>
+              <option value="other">💬 Övrigt</option>
+            </select>
+            
+            <label>Ditt meddelande *</label>
+            <textarea
+              value={feedbackMessage}
+              onChange={(e) => setFeedbackMessage(e.target.value)}
+              placeholder="Beskriv din idé eller feedback..."
+              rows={4}
+              data-testid="feedback-message"
+            />
+            
+            <label>Din e-post (valfritt)</label>
+            <input
+              type="email"
+              value={feedbackEmail}
+              onChange={(e) => setFeedbackEmail(e.target.value)}
+              placeholder={user?.email || 'För att vi ska kunna svara dig'}
+              data-testid="feedback-email"
+            />
+            
+            <div className="modal-buttons">
+              <button onClick={() => setShowFeedbackModal(false)} className="btn-secondary">
+                Avbryt
+              </button>
+              <button 
+                onClick={handleSendFeedback} 
+                disabled={sendingFeedback || !feedbackMessage.trim()} 
+                className="btn-primary"
+                data-testid="send-feedback-btn"
+              >
+                {sendingFeedback ? 'Skickar...' : 'Skicka'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
