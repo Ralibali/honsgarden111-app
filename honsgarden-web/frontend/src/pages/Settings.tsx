@@ -18,6 +18,15 @@ interface PremiumStatus {
   expires_at: string | null;
 }
 
+interface FeaturePreferences {
+  flock_management: boolean;
+  health_log: boolean;
+  productivity_alerts: boolean;
+  hatching_module: boolean;
+  show_economy_insights: boolean;
+  can_customize: boolean;
+}
+
 export default function Settings() {
   const { user, logout } = useAuth();
   const [coop, setCoop] = useState<CoopSettings | null>(null);
