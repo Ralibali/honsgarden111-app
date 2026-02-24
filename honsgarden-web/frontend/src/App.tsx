@@ -13,6 +13,7 @@ import Premium from './pages/Premium';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import AuthCallback from './pages/AuthCallback';
 import Admin from './pages/Admin';
+import Feed from './pages/Feed';
 import Layout from './components/Layout';
 
 function AppRouter() {
