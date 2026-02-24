@@ -245,6 +245,11 @@ export default function Hens() {
   };
   
   const openHealthModal = (henId: string) => {
+    if (!isPremium) {
+      alert('🔒 Premium-funktion\n\nHälsologgen är en Premium-funktion. Uppgradera för att dokumentera dina hönors hälsa.');
+      navigate('/premium');
+      return;
+    }
     setHealthHenId(henId);
     setHealthType('note');
     setHealthDescription('');
