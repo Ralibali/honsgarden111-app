@@ -489,6 +489,17 @@ export default function FeedScreen() {
 
 const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
+  
+  // Premium required styles
+  backButton: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12 },
+  backText: { fontSize: 16, color: colors.text },
+  premiumRequired: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  premiumEmoji: { fontSize: 64, marginBottom: 16 },
+  premiumTitle: { fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: 12 },
+  premiumText: { fontSize: 16, color: colors.textSecondary, textAlign: 'center', lineHeight: 24, marginBottom: 24 },
+  upgradeBtn: { backgroundColor: '#f59e0b', paddingHorizontal: 24, paddingVertical: 14, borderRadius: 12 },
+  upgradeBtnText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
+  
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -496,7 +507,6 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  backButton: { padding: 8 },
   title: { flex: 1, fontSize: 20, fontWeight: 'bold', color: colors.text, marginLeft: 8 },
   addButton: {
     width: 40,
