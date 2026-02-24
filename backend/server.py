@@ -1261,6 +1261,212 @@ async def delete_health_log(log_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Log not found")
     return {"message": "Log deleted"}
 
+# ============ HATCHING/INCUBATION ENDPOINTS (ETAPP 3 - PREMIUM) ============
+@api_router.post("/hatching")
+async def create_hatching(hatching: HatchingCreate, request: Request):
+    """Create a new hatching/incubation record (Premium only)"""
+    user_id = await get_user_id(request)
+    
+    # Check premium status
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    if not is_premium:
+        raise HTTPException(status_code=403, detail="Premium krävs för kläckningsmodulen")
+    
+    # Calculate expected hatch date
+    start = datetime.strptime(hatching.start_date, '%Y-%m-%d').date()
+    expected_hatch = (start + timedelta(days=hatching.expected_hatch_days)).isoformat()
+    
+    new_hatching = Hatching(
+        user_id=user_id,
+        start_date=hatching.start_date,
+        expected_hatch_date=expected_hatch,
+        egg_count=hatching.egg_count,
+        hen_id=hatching.hen_id,
+        incubator_name=hatching.incubator_name,
+        notes=hatching.notes,
+        expected_hatch_days=hatching.expected_hatch_days
+    )
+    
+    await db.hatchings.insert_one(new_hatching.dict())
+    
+    return {
+        **new_hatching.dict(),
+        "message": f"Kläckning registrerad! Förväntat kläckningsdatum: {expected_hatch}",
+        "days_remaining": hatching.expected_hatch_days
+    }
+
+@api_router.get("/hatching")
+async def get_hatchings(request: Request, include_completed: bool = False):
+    """Get all hatching records"""
+    user_id = await get_user_id(request)
+    today = date.today()
+    
+    query = {"user_id": user_id}
+    if not include_completed:
+        query["status"] = "incubating"
+    
+    hatchings = await db.hatchings.find(query, {"_id": 0}).sort("expected_hatch_date", 1).to_list(100)
+    
+    # Calculate days remaining for each
+    result = []
+    for h in hatchings:
+        expected = datetime.strptime(h['expected_hatch_date'], '%Y-%m-%d').date()
+        days_remaining = (expected - today).days
+        
+        # Get hen name if linked
+        hen_name = None
+        if h.get('hen_id'):
+            hen = await db.hens.find_one({"id": h['hen_id']}, {"_id": 0, "name": 1})
+            hen_name = hen.get('name') if hen else None
+        
+        result.append({
+            **h,
+            "days_remaining": days_remaining,
+            "hen_name": hen_name,
+            "is_overdue": days_remaining < 0 and h['status'] == 'incubating',
+            "is_due_soon": 0 <= days_remaining <= 3 and h['status'] == 'incubating'
+        })
+    
+    return result
+
+@api_router.get("/hatching/{hatching_id}")
+async def get_hatching_detail(hatching_id: str, request: Request):
+    """Get detailed hatching record"""
+    user_id = await get_user_id(request)
+    
+    hatching = await db.hatchings.find_one({"id": hatching_id, "user_id": user_id}, {"_id": 0})
+    if not hatching:
+        raise HTTPException(status_code=404, detail="Kläckning hittades inte")
+    
+    today = date.today()
+    expected = datetime.strptime(hatching['expected_hatch_date'], '%Y-%m-%d').date()
+    start = datetime.strptime(hatching['start_date'], '%Y-%m-%d').date()
+    days_remaining = (expected - today).days
+    days_elapsed = (today - start).days
+    
+    # Get hen name if linked
+    hen_name = None
+    if hatching.get('hen_id'):
+        hen = await db.hens.find_one({"id": hatching['hen_id']}, {"_id": 0, "name": 1})
+        hen_name = hen.get('name') if hen else None
+    
+    return {
+        **hatching,
+        "days_remaining": days_remaining,
+        "days_elapsed": days_elapsed,
+        "hen_name": hen_name,
+        "progress_percent": min(100, int((days_elapsed / hatching.get('expected_hatch_days', 21)) * 100)),
+        "is_overdue": days_remaining < 0 and hatching['status'] == 'incubating',
+        "is_due_soon": 0 <= days_remaining <= 3 and hatching['status'] == 'incubating'
+    }
+
+@api_router.put("/hatching/{hatching_id}")
+async def update_hatching(hatching_id: str, update: HatchingUpdate, request: Request):
+    """Update a hatching record"""
+    user_id = await get_user_id(request)
+    
+    hatching = await db.hatchings.find_one({"id": hatching_id, "user_id": user_id})
+    if not hatching:
+        raise HTTPException(status_code=404, detail="Kläckning hittades inte")
+    
+    update_data = {k: v for k, v in update.dict().items() if v is not None}
+    update_data['updated_at'] = datetime.now(timezone.utc)
+    
+    # If marking as hatched and no actual hatch date, use today
+    if update.status == HatchingStatus.HATCHED and not update.actual_hatch_date:
+        update_data['actual_hatch_date'] = date.today().isoformat()
+    
+    await db.hatchings.update_one(
+        {"id": hatching_id, "user_id": user_id},
+        {"$set": update_data}
+    )
+    
+    updated = await db.hatchings.find_one({"id": hatching_id}, {"_id": 0})
+    
+    message = "Kläckning uppdaterad"
+    if update.status == HatchingStatus.HATCHED:
+        message = f"🐣 Grattis! {update.hatched_count or updated.get('egg_count', 0)} kycklingar har kläckts!"
+    elif update.status == HatchingStatus.FAILED:
+        message = "Kläckning markerad som misslyckad"
+    elif update.status == HatchingStatus.CANCELLED:
+        message = "Kläckning avbruten"
+    
+    return {**updated, "message": message}
+
+@api_router.delete("/hatching/{hatching_id}")
+async def delete_hatching(hatching_id: str, request: Request):
+    """Delete a hatching record"""
+    user_id = await get_user_id(request)
+    result = await db.hatchings.delete_one({"id": hatching_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Kläckning hittades inte")
+    return {"message": "Kläckning borttagen"}
+
+@api_router.get("/hatching-alerts")
+async def get_hatching_alerts(request: Request):
+    """Get upcoming hatching alerts (for notifications)"""
+    user_id = await get_user_id(request)
+    today = date.today()
+    
+    # Get active hatchings
+    hatchings = await db.hatchings.find(
+        {"user_id": user_id, "status": "incubating"},
+        {"_id": 0}
+    ).to_list(100)
+    
+    alerts = []
+    for h in hatchings:
+        expected = datetime.strptime(h['expected_hatch_date'], '%Y-%m-%d').date()
+        days_remaining = (expected - today).days
+        
+        # Get hen name if linked
+        hen_name = None
+        if h.get('hen_id'):
+            hen = await db.hens.find_one({"id": h['hen_id']}, {"_id": 0, "name": 1})
+            hen_name = hen.get('name') if hen else None
+        
+        source = hen_name or h.get('incubator_name', 'Kuvös')
+        
+        if days_remaining == 0:
+            alerts.append({
+                "hatching_id": h['id'],
+                "type": "hatch_day",
+                "priority": "high",
+                "message": f"🐣 Idag är kläckningsdag! {h['egg_count']} ägg i {source}",
+                "days_remaining": 0
+            })
+        elif days_remaining == 1:
+            alerts.append({
+                "hatching_id": h['id'],
+                "type": "one_day",
+                "priority": "high",
+                "message": f"🥚 Imorgon kläcks {h['egg_count']} ägg i {source}!",
+                "days_remaining": 1
+            })
+        elif days_remaining == 3:
+            alerts.append({
+                "hatching_id": h['id'],
+                "type": "three_days",
+                "priority": "medium",
+                "message": f"🥚 3 dagar kvar tills kläckning i {source}",
+                "days_remaining": 3
+            })
+        elif days_remaining < 0:
+            alerts.append({
+                "hatching_id": h['id'],
+                "type": "overdue",
+                "priority": "high",
+                "message": f"⚠️ Kläckning försenad: {source} ({abs(days_remaining)} dagar sedan förväntad)",
+                "days_remaining": days_remaining
+            })
+    
+    return {
+        "total_alerts": len(alerts),
+        "alerts": alerts
+    }
+
 # ============ EGG RECORD ENDPOINTS ============
 @api_router.post("/eggs", response_model=EggRecord)
 async def create_egg_record(record: EggRecordCreate, request: Request):
