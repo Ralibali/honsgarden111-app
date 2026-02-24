@@ -95,6 +95,18 @@ export default function HomeScreen() {
     }
   };
   
+  const loadHens = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/hens?active_only=true`);
+      if (res.ok) {
+        const data = await res.json();
+        setHens(data);
+      }
+    } catch (error) {
+      console.error('Failed to load hens:', error);
+    }
+  };
+  
   useEffect(() => {
     if (lastAction && lastAction.type === 'egg_record') {
       showUndoSnackbar(lastAction.data.count);
