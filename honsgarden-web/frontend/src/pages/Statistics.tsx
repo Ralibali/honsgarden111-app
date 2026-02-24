@@ -58,6 +58,13 @@ export default function Statistics() {
   const [activeTab, setActiveTab] = useState<'overview' | 'hens' | 'graphs'>('overview');
   const [isPremium, setIsPremium] = useState(false);
   
+  // Graph data
+  const [eggChartData, setEggChartData] = useState<any[]>([]);
+  const [economyChartData, setEconomyChartData] = useState<any[]>([]);
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('day');
+  const [perHenData, setPerHenData] = useState<any[]>([]);
+  const [expectedVsActualData, setExpectedVsActualData] = useState<any[]>([]);
+  
   // Demo data for new users without any data
   const DEMO_EGG_DATA = [
     { date: '1 Dec', eggs: 4 },
@@ -93,13 +100,6 @@ export default function Statistics() {
   // Check if user has real data
   const hasRealData = eggChartData.length > 0 && eggChartData.some(d => d.eggs > 0);
   const showDemoData = !hasRealData;
-  
-  // Graph data
-  const [eggChartData, setEggChartData] = useState<any[]>([]);
-  const [economyChartData, setEconomyChartData] = useState<any[]>([]);
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('day');
-  const [perHenData, setPerHenData] = useState<any[]>([]);
-  const [expectedVsActualData, setExpectedVsActualData] = useState<any[]>([]);
   
   const loadData = useCallback(async () => {
     setLoading(true);
