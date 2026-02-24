@@ -486,7 +486,7 @@ export default function Statistics() {
                     formatter={(value: number) => [`${value} kr`, '']}
                   />
                   <Legend />
-                </BarChart>
+                </PieChart>
               </ResponsiveContainer>
             </div>
           </div>
