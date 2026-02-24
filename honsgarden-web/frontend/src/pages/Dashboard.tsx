@@ -51,6 +51,22 @@ interface Insights {
   productivity_index: number;
   hen_count: number;
   hen_ranking: Array<{ id: string; name: string; eggs: number; lifecycle: string | null }>;
+  is_premium: boolean;
+  premium?: {
+    forecast_7_days: number;
+    daily_average: number;
+    production_status: string;
+    production_text: string;
+    deviation_percent: number;
+    deviating_hens: Array<{ id: string; name: string; alert: string }>;
+    economy: {
+      this_month: { costs: number; sales: number; profit: number };
+      last_month: { costs: number; sales: number; profit: number };
+      change: number;
+      change_percent: number;
+    };
+    summary: string;
+  };
 }
 
 export default function Dashboard() {
