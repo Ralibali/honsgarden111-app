@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Stack } from 'expo-router';
 import { useThemeStore, ThemeColors } from '../src/store/themeStore';
+import { usePremiumStore } from '../src/store/premiumStore';
 import { format, subDays } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
 import i18n from '../src/i18n';
