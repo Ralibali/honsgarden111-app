@@ -1291,8 +1291,17 @@ async def create_health_log(log: HealthLogCreate, request: Request):
 
 @api_router.get("/health-logs")
 async def get_health_logs(request: Request, hen_id: Optional[str] = None, limit: int = 50):
-    """Get health logs, optionally filtered by hen"""
+    """Get health logs, optionally filtered by hen (Premium only)"""
     user_id = await get_user_id(request)
+    
+    # Check premium status - Health log is premium only
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    if not is_premium:
+        # Return empty list for free users - they shouldn't see health logs
+        return []
+    
     query = {"user_id": user_id}
     if hen_id:
         query["hen_id"] = hen_id
