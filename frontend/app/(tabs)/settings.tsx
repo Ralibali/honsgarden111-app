@@ -1251,4 +1251,58 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontWeight: '600',
     color: '#FFF',
   },
+  // Feature toggle styles
+  premiumHint: {
+    backgroundColor: 'rgba(245,158,11,0.15)',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  premiumHintText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    flex: 1,
+  },
+  premiumHintLink: {
+    fontSize: 13,
+    color: '#f59e0b',
+    fontWeight: '600',
+  },
+  featureToggleCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+  },
+  featureToggleDisabled: {
+    opacity: 0.6,
+  },
+  featureToggleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  featureToggleEmoji: {
+    fontSize: 24,
+    width: 32,
+  },
+  featureToggleName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  featureToggleDesc: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
 });
