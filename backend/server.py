@@ -1361,6 +1361,164 @@ async def get_insights(request: Request, include_premium: bool = False):
     
     return response
 
+# ============ FREE TIER DATA LIMITS ============
+FREE_DATA_HISTORY_DAYS = 90
+
+@api_router.get("/account/data-limits")
+async def get_data_limits(request: Request):
+    """Get information about data limits and data that will be deleted for free users"""
+    user_id = await get_user_id(request)
+    today = date.today()
+    
+    # Check premium status
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    # Check if trial/premium is expiring soon
+    trial_warning = False
+    days_until_expiry = None
+    if subscription:
+        expires_at = subscription.get('expires_at')
+        if expires_at:
+            if isinstance(expires_at, str):
+                expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+            days_until_expiry = (expires_at.date() - today).days
+            if 0 < days_until_expiry <= 7:
+                trial_warning = True
+    
+    # If premium, no data limits apply
+    if is_premium:
+        return {
+            "is_premium": True,
+            "data_limit_days": None,
+            "oldest_allowed_date": None,
+            "data_at_risk": None,
+            "trial_warning": trial_warning,
+            "days_until_expiry": days_until_expiry,
+            "plan": subscription.get('plan') if subscription else None
+        }
+    
+    # Calculate oldest allowed date for free users
+    oldest_allowed = (today - timedelta(days=FREE_DATA_HISTORY_DAYS)).isoformat()
+    
+    # Count data at risk (older than 90 days)
+    eggs_at_risk = await db.egg_records.count_documents({
+        "user_id": user_id,
+        "date": {"$lt": oldest_allowed}
+    })
+    
+    transactions_at_risk = await db.transactions.count_documents({
+        "user_id": user_id,
+        "date": {"$lt": oldest_allowed}
+    })
+    
+    health_logs_at_risk = await db.health_logs.count_documents({
+        "user_id": user_id,
+        "date": {"$lt": oldest_allowed}
+    })
+    
+    total_at_risk = eggs_at_risk + transactions_at_risk + health_logs_at_risk
+    
+    # Check how soon data will be deleted (data between 83-90 days old)
+    warning_start = (today - timedelta(days=FREE_DATA_HISTORY_DAYS)).isoformat()
+    warning_end = (today - timedelta(days=FREE_DATA_HISTORY_DAYS - 7)).isoformat()
+    
+    eggs_warning = await db.egg_records.count_documents({
+        "user_id": user_id,
+        "date": {"$gte": warning_start, "$lt": warning_end}
+    })
+    
+    transactions_warning = await db.transactions.count_documents({
+        "user_id": user_id,
+        "date": {"$gte": warning_start, "$lt": warning_end}
+    })
+    
+    upcoming_deletion = eggs_warning + transactions_warning
+    
+    return {
+        "is_premium": False,
+        "data_limit_days": FREE_DATA_HISTORY_DAYS,
+        "oldest_allowed_date": oldest_allowed,
+        "data_at_risk": {
+            "total": total_at_risk,
+            "eggs": eggs_at_risk,
+            "transactions": transactions_at_risk,
+            "health_logs": health_logs_at_risk
+        },
+        "upcoming_deletion": {
+            "within_7_days": upcoming_deletion,
+            "eggs": eggs_warning,
+            "transactions": transactions_warning
+        },
+        "trial_warning": trial_warning,
+        "days_until_expiry": days_until_expiry,
+        "plan": subscription.get('plan') if subscription else None,
+        "message": f"Gratis-konton har {FREE_DATA_HISTORY_DAYS} dagars historik. Uppgradera till Premium för obegränsad historik!"
+    }
+
+@api_router.get("/hens/productivity-alerts")
+async def get_productivity_alerts(request: Request):
+    """Get hens with productivity issues (14+ days without eggs)"""
+    user_id = await get_user_id(request)
+    today = date.today()
+    
+    # Get all active hens
+    hens = await db.hens.find(
+        {"user_id": user_id, "is_active": True, "status": "active"},
+        {"_id": 0, "id": 1, "name": 1, "breed": 1, "flock_id": 1}
+    ).to_list(100)
+    
+    # Get all eggs for last 30 days
+    thirty_days_ago = (today - timedelta(days=30)).isoformat()
+    eggs = await db.egg_records.find(
+        {"user_id": user_id, "date": {"$gte": thirty_days_ago}},
+        {"_id": 0, "hen_id": 1, "date": 1, "count": 1}
+    ).to_list(10000)
+    
+    # Calculate last egg date per hen
+    last_egg_by_hen = {}
+    for egg in eggs:
+        hen_id = egg.get('hen_id')
+        if hen_id:
+            egg_date = egg.get('date', '')
+            if hen_id not in last_egg_by_hen or egg_date > last_egg_by_hen[hen_id]:
+                last_egg_by_hen[hen_id] = egg_date
+    
+    # Find hens with 14+ days without eggs
+    alerts = []
+    fourteen_days_ago = (today - timedelta(days=14)).isoformat()
+    
+    for hen in hens:
+        hen_id = hen['id']
+        last_egg = last_egg_by_hen.get(hen_id)
+        
+        if not last_egg or last_egg < fourteen_days_ago:
+            days_since = None
+            if last_egg:
+                last_date = datetime.strptime(last_egg, '%Y-%m-%d').date()
+                days_since = (today - last_date).days
+            
+            alerts.append({
+                "hen_id": hen_id,
+                "hen_name": hen['name'],
+                "breed": hen.get('breed'),
+                "flock_id": hen.get('flock_id'),
+                "last_egg_date": last_egg,
+                "days_since_egg": days_since,
+                "alert_level": "high" if (days_since and days_since >= 21) else "medium"
+            })
+    
+    # Sort by days since egg (most concerning first)
+    alerts.sort(key=lambda x: x['days_since_egg'] if x['days_since_egg'] else 999, reverse=True)
+    
+    return {
+        "total_alerts": len(alerts),
+        "hens_with_issues": alerts,
+        "threshold_days": 14
+    }
+
 # ============ STATISTICS ENDPOINTS ============
 @api_router.get("/statistics/today")
 async def get_today_statistics(request: Request):
