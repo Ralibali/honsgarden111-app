@@ -28,9 +28,9 @@ try {
   console.log('RevenueCatUI not available (likely on web)');
 }
 
-const MONTHLY_PRICE = '19 kr';
-const YEARLY_PRICE = '149 kr';
-const YEARLY_SAVINGS = 35;
+const MONTHLY_PRICE = '29 kr';
+const YEARLY_PRICE = '249 kr';
+const YEARLY_SAVINGS = 30;
 
 export default function PaywallScreen() {
   const router = useRouter();
