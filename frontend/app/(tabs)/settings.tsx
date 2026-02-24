@@ -65,7 +65,9 @@ export default function SettingsScreen() {
   
   const loadFeaturePreferences = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/feature-preferences`);
+      const res = await fetch(`${API_URL}/api/feature-preferences`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setFeaturePrefs(data);
@@ -83,6 +85,7 @@ export default function SettingsScreen() {
       const res = await fetch(`${API_URL}/api/feature-preferences`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ [key]: value })
       });
       
