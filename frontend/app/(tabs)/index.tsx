@@ -223,47 +223,36 @@ export default function HomeScreen() {
           <Text style={styles.date}>{dateString}</Text>
         </View>
         
-        {/* Data Limits Banner for Free Users */}
-        {dataLimits && !dataLimits.is_premium && !dismissedBanner && (
-          (dataLimits.upcoming_deletion?.within_7_days > 0 || dataLimits.data_at_risk?.total > 0) && (
-            <View style={[
-              styles.dataLimitsBanner,
-              dataLimits.upcoming_deletion?.within_7_days > 0 ? styles.urgentBanner : styles.warningBanner
-            ]}>
-              <Text style={styles.bannerEmoji}>
-                {dataLimits.upcoming_deletion?.within_7_days > 0 ? '⚠️' : '📊'}
-              </Text>
-              <View style={styles.bannerContent}>
-                {dataLimits.upcoming_deletion?.within_7_days > 0 ? (
-                  <>
-                    <Text style={styles.bannerTitle}>Data raderas snart!</Text>
-                    <Text style={styles.bannerText}>
-                      {dataLimits.upcoming_deletion.within_7_days} poster raderas inom 7 dagar
-                    </Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.bannerTitle}>Gratis: {dataLimits.data_limit_days} dagars historik</Text>
-                    <Text style={styles.bannerText}>{dataLimits.message}</Text>
-                  </>
-                )}
-                <View style={styles.bannerActions}>
-                  <TouchableOpacity 
-                    style={styles.upgradeBannerBtn}
-                    onPress={() => router.push('/paywall')}
-                  >
-                    <Text style={styles.upgradeBannerText}>🌟 Premium</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.dismissBtn}
-                    onPress={() => setDismissedBanner(true)}
-                  >
-                    <Text style={styles.dismissText}>Avfärda</Text>
-                  </TouchableOpacity>
-                </View>
+        {/* Data Limits Banner for Free Users - Hidden Data Card */}
+        {dataLimits && !dataLimits.is_premium && !dismissedBanner && dataLimits.hidden_data?.months_of_history > 0 && (
+          <TouchableOpacity 
+            style={styles.hiddenDataCard}
+            onPress={() => router.push('/paywall')}
+            activeOpacity={0.9}
+          >
+            <View style={styles.hiddenDataOverlay}>
+              <View style={styles.hiddenDataLock}>
+                <Ionicons name="lock-closed" size={24} color="#FFF" />
+              </View>
+              <View style={styles.hiddenDataContent}>
+                <Text style={styles.hiddenDataTitle}>🔒 Gömd statistik</Text>
+                <Text style={styles.hiddenDataMessage}>
+                  Du har {dataLimits.hidden_data.months_of_history} månaders data sparad
+                </Text>
+                <Text style={styles.hiddenDataSubtext}>
+                  Uppgradera till Premium för att låsa upp all din historik
+                </Text>
               </View>
             </View>
-          )
+            <View style={styles.hiddenDataBlur}>
+              <Text style={styles.blurredText}>██ ägg</Text>
+              <Text style={styles.blurredText}>██ kr</Text>
+            </View>
+            <View style={styles.unlockButton}>
+              <Ionicons name="star" size={16} color="#FFF" />
+              <Text style={styles.unlockButtonText}>Lås upp</Text>
+            </View>
+          </TouchableOpacity>
         )}
         
         {/* Productivity Alerts */}
