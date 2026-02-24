@@ -65,6 +65,7 @@ const FEED_TYPES: { value: FeedType; label: string; labelEn: string; icon: strin
 export default function FeedScreen() {
   const router = useRouter();
   const { colors, isDark } = useThemeStore();
+  const { isPremium } = usePremiumStore();
   const styles = createStyles(colors);
   
   const isSv = i18n.locale.startsWith('sv');
@@ -86,6 +87,35 @@ export default function FeedScreen() {
   const [brand, setBrand] = useState('');
   const [notes, setNotes] = useState('');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  
+  // Show premium paywall if not premium
+  if (!isPremium) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Text style={styles.backText}>{isSv ? 'Tillbaka' : 'Back'}</Text>
+        </TouchableOpacity>
+        <View style={styles.premiumRequired}>
+          <Text style={styles.premiumEmoji}>🌾</Text>
+          <Text style={styles.premiumTitle}>{isSv ? 'Premium-funktion' : 'Premium Feature'}</Text>
+          <Text style={styles.premiumText}>
+            {isSv 
+              ? 'Foderhantering hjälper dig hålla koll på foderlager, förbrukning och kostnader.'
+              : 'Feed management helps you track feed inventory, consumption and costs.'
+            }
+          </Text>
+          <TouchableOpacity 
+            style={styles.upgradeBtn}
+            onPress={() => router.push('/paywall')}
+          >
+            <Text style={styles.upgradeBtnText}>🌟 {isSv ? 'Uppgradera till Premium' : 'Upgrade to Premium'}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
   
   const loadData = useCallback(async () => {
     try {
