@@ -27,14 +27,22 @@
 | ✓ 1 flock | ✓ Allt i Gratis | ✓ Allt i Gratis |
 | ✓ 30 dagars historik | ✓ Obegränsad historik | ✓ Obegränsad historik |
 | ✓ Grundläggande statistik | ✓ Obegränsade flockar | ✓ Obegränsade flockar |
-| ✓ Ägg- och ekonomilogg | ✓ AI-genererad dagsrapport | ✓ AI-genererad dagsrapport |
-| ✓ Hälsologg | ✓ Äggprognos 7 dagar | ✓ Äggprognos 7 dagar |
-| ✓ Äggproduktionsgraf | ✓ Avvikelsedetektion | ✓ Avvikelsedetektion |
-| ✓ Ekonomigraf | ✓ Ekonomijämförelse m/m | ✓ Ekonomijämförelse m/m |
+| ✓ Ägg- och ekonomilogg | ✓ **Hälsologg** | ✓ **Hälsologg** |
+| ✓ Äggproduktionsgraf | ✓ AI-genererad dagsrapport | ✓ AI-genererad dagsrapport |
+| ✓ Ekonomigraf | ✓ Äggprognos 7 dagar | ✓ Äggprognos 7 dagar |
+| | ✓ Avvikelsedetektion | ✓ Avvikelsedetektion |
+| | ✓ Ekonomijämförelse m/m | ✓ Ekonomijämförelse m/m |
 | | ✓ Kläckningsmodul | ✓ Kläckningsmodul |
 | | ✓ Anpassningsbara funktioner | ✓ Anpassningsbara funktioner |
 | | **Flexibelt, avsluta när som helst** | **Badge: "Bäst värde"** |
 | | | **12,40 kr/mån – spara 79 kr!** |
+
+### **Final CTA:**
+- Text: "Gå med andra hönsgårdsägare som redan använder Hönsgården." (borttaget "tusentals")
+
+### **Hälsologg - Premium-funktion:**
+- Låst för gratisanvändare i både mobilapp och webbapp
+- Visar 🔒 ikon och uppmaning att uppgradera
 
 ### **Cookie-banner (lagkrav):**
 - Text: "Vi använder cookies för att förbättra din upplevelse. Genom att fortsätta godkänner du vår användning av cookies."
