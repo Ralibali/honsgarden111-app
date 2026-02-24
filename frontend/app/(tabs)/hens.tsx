@@ -310,6 +310,17 @@ export default function HensScreen() {
   
   // Health log functions
   const openHealthModal = (henId: string) => {
+    if (!isPremium) {
+      Alert.alert(
+        isSv ? '🔒 Premium-funktion' : '🔒 Premium Feature',
+        isSv ? 'Hälsologgen är en Premium-funktion. Uppgradera för att dokumentera dina hönors hälsa.' : 'Health log is a Premium feature. Upgrade to document your hens\' health.',
+        [
+          { text: isSv ? 'Avbryt' : 'Cancel', style: 'cancel' },
+          { text: isSv ? 'Uppgradera' : 'Upgrade', onPress: () => router.push('/paywall') }
+        ]
+      );
+      return;
+    }
     setHealthHenId(henId);
     setHealthType('note');
     setHealthDescription('');
