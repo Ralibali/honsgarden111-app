@@ -45,6 +45,11 @@ interface Hen {
   breed?: string;
 }
 
+interface Flock {
+  id: string;
+  name: string;
+}
+
 interface Insights {
   cost_per_egg: number;
   total_eggs: number;
