@@ -941,6 +941,45 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontWeight: '600',
   },
   // Insights styles
+  insightsScrollView: {
+    marginTop: 12,
+    marginHorizontal: -16,
+    paddingHorizontal: 16,
+  },
+  insightsScrollContent: {
+    gap: 12,
+    paddingRight: 16,
+  },
+  insightCard: {
+    width: 140,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+  },
+  insightTopHenCard: {
+    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.2)',
+  },
+  insightIcon: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  insightValueLarge: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  insightLabelFull: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  // Legacy insight styles (keeping for compatibility)
   insightsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -961,9 +1000,6 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     backgroundColor: 'rgba(251, 191, 36, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(251, 191, 36, 0.2)',
-  },
-  insightIcon: {
-    fontSize: 22,
   },
   insightData: {
     flex: 1,
