@@ -1051,6 +1051,138 @@ export default function HensScreen() {
           </View>
         </View>
       </Modal>
+      
+      {/* Quick Action Bottom Sheet */}
+      <Modal
+        visible={showQuickAction}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowQuickAction(false)}
+      >
+        <TouchableOpacity 
+          style={styles.bottomSheetOverlay}
+          activeOpacity={1}
+          onPress={() => setShowQuickAction(false)}
+        >
+          <TouchableOpacity activeOpacity={1} style={styles.bottomSheetContent}>
+            {quickActionHen && (
+              <>
+                {/* Hen Header */}
+                <View style={styles.quickActionHeader}>
+                  <View style={[
+                    styles.quickActionAvatar,
+                    { backgroundColor: getColorStyle(quickActionHen.color || 'brown') + '33' }
+                  ]}>
+                    <Text style={styles.quickActionAvatarText}>
+                      {quickActionHen.name.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.quickActionInfo}>
+                    <Text style={styles.quickActionName}>{quickActionHen.name}</Text>
+                    {quickActionHen.breed && (
+                      <Text style={styles.quickActionBreed}>{quickActionHen.breed}</Text>
+                    )}
+                    <Text style={styles.quickActionEggs}>
+                      {henStats[quickActionHen.id] || 0} {isSv ? 'ägg totalt' : 'eggs total'}
+                    </Text>
+                  </View>
+                </View>
+                
+                {/* Quick Egg Registration */}
+                {quickActionHen.status === 'active' && (
+                  <View style={styles.quickEggSection}>
+                    <Text style={styles.quickEggTitle}>🥚 {isSv ? 'Registrera ägg' : 'Register eggs'}</Text>
+                    <View style={styles.quickEggButtons}>
+                      <TouchableOpacity 
+                        style={[styles.quickEggBtn, addingEgg && styles.quickEggBtnDisabled]}
+                        onPress={() => handleQuickAddEgg(1)}
+                        disabled={addingEgg}
+                      >
+                        <Text style={styles.quickEggBtnText}>+1</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.quickEggBtn, addingEgg && styles.quickEggBtnDisabled]}
+                        onPress={() => handleQuickAddEgg(2)}
+                        disabled={addingEgg}
+                      >
+                        <Text style={styles.quickEggBtnText}>+2</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.quickEggBtn, addingEgg && styles.quickEggBtnDisabled]}
+                        onPress={() => handleQuickAddEgg(3)}
+                        disabled={addingEgg}
+                      >
+                        <Text style={styles.quickEggBtnText}>+3</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+                
+                {/* More Actions */}
+                <Text style={styles.moreActionsTitle}>{isSv ? 'Fler alternativ' : 'More options'}</Text>
+                <View style={styles.moreActionsGrid}>
+                  <TouchableOpacity 
+                    style={styles.moreActionBtn}
+                    onPress={() => {
+                      setShowQuickAction(false);
+                      openHealthModal(quickActionHen.id);
+                    }}
+                  >
+                    <Text style={styles.moreActionEmoji}>🩺</Text>
+                    <Text style={styles.moreActionText}>{isSv ? 'Hälsa' : 'Health'}</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.moreActionBtn}
+                    onPress={() => {
+                      setShowQuickAction(false);
+                      openStatusModal(quickActionHen);
+                    }}
+                  >
+                    <Text style={styles.moreActionEmoji}>📋</Text>
+                    <Text style={styles.moreActionText}>Status</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.moreActionBtn}
+                    onPress={() => {
+                      setShowQuickAction(false);
+                      openEditModal(quickActionHen);
+                    }}
+                  >
+                    <Text style={styles.moreActionEmoji}>✏️</Text>
+                    <Text style={styles.moreActionText}>{isSv ? 'Ändra' : 'Edit'}</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.moreActionBtn}
+                    onPress={() => {
+                      setShowQuickAction(false);
+                      openHenProfile(quickActionHen);
+                    }}
+                  >
+                    <Text style={styles.moreActionEmoji}>📊</Text>
+                    <Text style={styles.moreActionText}>{isSv ? 'Profil' : 'Profile'}</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Mark as seen */}
+                {quickActionHen.status === 'active' && (
+                  <TouchableOpacity 
+                    style={styles.markSeenFullBtn}
+                    onPress={() => {
+                      handleMarkSeen(quickActionHen.id);
+                      setShowQuickAction(false);
+                    }}
+                  >
+                    <Text style={styles.markSeenFullText}>✓ {isSv ? 'Markera som sedd idag' : 'Mark as seen today'}</Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
