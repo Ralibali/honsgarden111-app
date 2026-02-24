@@ -1,139 +1,146 @@
-# Hönsgården - PRD (Product Requirements Document)
+# Hönsgården - Product Requirements Document
 
-## Projektöversikt
-**Hönsgården** är en digital assistent för hönsgårdsägare som hjälper dem att hålla koll på äggproduktion, ekonomi och individuella hönaprofiler.
+## Original Problem Statement
+En digital assistent för hönsgårdsägare som hjälper till att hantera höns, äggproduktion, ekonomi och hälsa. Applikationen ska finnas tillgänglig som webbapp och mobilapp (iOS/Android via Expo).
 
-**Live URL:** https://hen-dashboard.preview.emergentagent.com/api/web/
+## User Personas
+1. **Hobby-hönsägare** - Privatpersoner som har 3-15 höns i trädgården
+2. **Småskalig producent** - Säljer ägg till grannar/lokala marknader
 
-## Vad appen erbjuder
+## Core Requirements
+- Äggregistrering med snabbknappar (+1, +2, +3, +5, +10) och valfri hönavalare
+- Flockhantering med flera flockar och hönor
+- Hälsospårning per höna
+- Ekonomiuppföljning (kostnader, intäkter)
+- Produktivitetsanalys per höna
+- Premium-funktioner för avancerade användare
 
-### 🥚 Äggloggning
-- Registrera ägg enkelt med snabbknappar (+1, +2, +3, +5, +10)
-- **Välj vilken höna som la äggen**
-- Se historik per dag och per höna
-- Anteckningar för varje registrering
+## Tech Stack
+- **Backend**: FastAPI (Python), MongoDB
+- **Frontend Web**: React, Vite, TypeScript
+- **Frontend Mobile**: React Native, Expo
+- **Payments**: Stripe
+- **Auth**: Google OAuth2
 
-### 🐔 Hönsprofiler
-- Döp dina hönor (t.ex. Greta, Saga, Malin)
-- Lägg till ras, färg och födelsedatum
-- **Se statistik per höna** - hur många ägg har varje höna lagt?
-- Redigera och ta bort hönaprofiler
+## Pricing
+- **Gratis**: 30 dagars datahistorik
+- **Premium Månatlig**: 19 kr/mån
+- **Premium Årlig**: 149 kr/år (12,42 kr/mån)
 
-### 📊 Statistik
-- Daglig, månatlig och årlig översikt
-- **Topplista: Vilken höna lägger mest?** 🏆
-- Trendanalys ("Greta lade 15% mer än förra månaden!")
-- Stapeldiagram för daglig produktion
+---
 
-### 💰 Ekonomi
-- Logga kostnader (foder, utrustning, medicin, övrigt)
-- Logga försäljning (ägg, höns, övrigt)
-- Se netto och vinst/förlust per månad
-- Transaktionshistorik
+## Completed Features (February 2026)
 
-### 📧 E-postpåminnelser (Premium)
-- Daglig påminnelse att registrera ägg
-- Välj tid (07:00, 12:00, 17:00, 18:00, 20:00)
-- Snyggt formaterade HTML-mail
-- Aktivera/inaktivera i inställningar
+### P0 - Critical (Done)
+- [x] **Fix vit skärm på webappen** - Vite base path uppdaterad till /api/web/
+- [x] **Förena äggregistrerings-UI** - Alla tre platser (Dashboard, Eggs-sida, Höna-profil) har nu +1,+2,+3,+5,+10 snabbknappar + fritext + höna-väljare
 
-### ⭐ Premium
-- **7 dagars GRATIS provperiod** för alla nya användare!
-- Obegränsad statistikhistorik
-- PDF-export av rapporter
-- E-postpåminnelser
-- Statistik per höna med trendanalys
+### P1 - High Priority (Done)
+- [x] **Logga ut-knapp** - Finns redan i webappen
+- [x] **Feature toggles bug** - Fixat credentials i API-anrop
+- [x] **Insikter-sektion förbättrad** - Scrollbar rad med stora siffror och tydliga etiketter
+- [x] **Data holdback Premium-funktion** - Gratis-användare ser 30 dagar, all data sparas i bakgrunden
+- [x] **Stripe-priser uppdaterade** - 19 kr/mån, 149 kr/år
 
-## Prissättning
-| Plan | Pris | Beskrivning |
-|------|------|-------------|
-| Gratis | 0 kr | Grundfunktioner |
-| Provperiod | 0 kr | 7 dagar premium gratis |
-| Månatlig | 19 kr/månad | Flexibelt, avsluta när som helst |
-| Årlig | 149 kr/år | Spara 79 kr (över 30%!) |
+### Etapper (Completed Earlier)
+- [x] **Etapp 1**: Flockhantering + Hälsologg per höna
+- [x] **Etapp 2**: Produktivitetsanalys + Datgräns-varningar
+- [x] **Etapp 3**: Kläckningsmodul för Premium
 
-## Teknisk arkitektur
+---
 
-```
-/app
-├── backend/
-│   ├── server.py          # FastAPI (1000+ rader)
-│   ├── webapp_dist/       # Byggd React-app
-│   └── .env               # Secrets
-├── webapp/                # React webbapp
-│   └── src/
-│       ├── pages/         # 9 sidor
-│       ├── components/    # Layout
-│       └── context/       # AuthContext
-└── frontend/              # Expo mobilapp (under utveckling)
-```
+## P2 - Future/Backlog
+
+### High Priority
+- [ ] **Push-notiser** - Påminnelser för kläckning, hälsokontroller
+- [ ] **Feature-parity audit** - Slutlig kontroll webb vs mobil
+- [ ] **Typsnitt i mobilappen** - Ladda Playfair Display och Inter
+
+### Medium Priority
+- [ ] **Etapp 4: Foderhantering** - Spåra foderförbrukning och kostnader
+
+### Low Priority
+- [ ] Inga fler etapper planerade (Etapp 5 Väderdata borttagen)
+
+---
 
 ## API Endpoints
 
-### Auth
-- `POST /api/auth/session` - Google OAuth callback
-- `GET /api/auth/me` - Aktuell användare
-- `POST /api/auth/logout` - Logga ut
+### Core
+- `GET /api/eggs` - Hämta äggregistreringar
+- `POST /api/eggs` - Registrera ägg (med optional hen_id)
+- `GET /api/hens` - Hämta hönor
+- `GET /api/flocks` - Hämta flockar
 
-### Data
-- `GET/POST /api/hens` - Hönor CRUD
-- `GET/POST /api/eggs` - Äggregistreringar (med hen_id)
-- `GET/POST /api/transactions` - Ekonomi
-- `GET/PUT /api/coop` - Hönsgårdsinställningar
+### Premium/Account
+- `GET /api/account/data-limits` - Visa gömd data för gratis-användare
+- `GET /api/premium/status` - Premiumstatus
+- `GET /api/feature-preferences` - Anpassningsbara funktioner
 
-### Statistik
-- `GET /api/statistics/today`
-- `GET /api/statistics/month/{year}/{month}`
-- `GET /api/statistics/summary`
+### Statistics
+- `GET /api/statistics/today` - Dagens statistik
+- `GET /api/statistics/summary` - Månads/total sammanfattning
+- `GET /api/insights` - Insikter (kostnad/ägg, toppvärpare, produktivitet)
 
-### Premium & Betalning
-- `GET /api/premium/status`
-- `POST /api/checkout/create` - Stripe checkout
-- `GET /api/checkout/status/{session_id}`
+---
 
-### E-postpåminnelser
-- `GET /api/reminders/settings` - Hämta inställningar
-- `PUT /api/reminders/settings` - Uppdatera inställningar
-- `POST /api/reminders/send-test` - Skicka testmail
-- `POST /api/reminders/send-all` - Trigger för cron
+## Database Schema
 
-## Integrationer
+### users
+```json
+{
+  "email": "string",
+  "name": "string",
+  "feature_preferences": {
+    "flock_management": true,
+    "show_economy_insights": true
+  }
+}
+```
 
-| Tjänst | Användning | Status |
-|--------|------------|--------|
-| Google OAuth | Inloggning | ✅ Live |
-| Stripe | Betalningar | ✅ Live |
-| Resend | E-postpåminnelser | ✅ Live |
-| MongoDB | Databas | ✅ Live |
+### eggs
+```json
+{
+  "date": "2026-02-24",
+  "count": 5,
+  "user_id": "string",
+  "hen_id": "string (optional)"
+}
+```
 
-## Ändringslogg
+### subscriptions
+```json
+{
+  "user_id": "string",
+  "plan": "monthly|yearly",
+  "is_active": true,
+  "expires_at": "datetime"
+}
+```
 
-### 2026-02-23 (Session 3)
-- ✅ Lagt till 7 dagars gratis provperiod för nya användare
-- ✅ Implementerat e-postpåminnelser via Resend
-- ✅ Uppdaterat Settings-sidan med påminnelse-toggle
-- ✅ Premium-sidan visar trial-banner och dagar kvar
+---
 
-### 2026-02-23 (Session 2)
-- ✅ Bytt hero-bild till kvinna med höns
-- ✅ Implementerat höna-val vid äggregistrering
-- ✅ Lagt till "Per höna"-statistik med topplista
+## Architecture Notes
 
-### 2026-02-22 (Session 1)
-- ✅ Grundläggande webbapp skapad
-- ✅ Google OAuth integrerat
-- ✅ Stripe-integration för premium
+### Web App Routing
+- Webappen serveras från `/api/web/` (pga Kubernetes ingress)
+- Vite base path konfigurerad till `/api/web/`
+- Assets serveras från `/api/web/assets/`
 
-## Stripe-konfiguration
-- **Publishable Key:** `pk_live_51IQzC3...`
-- **Price ID (Månad):** `price_1T3joGHzffTezY82dRQc7GTO`
-- **Price ID (År):** `price_1T3jwRHzffTezY829aWQVXZr`
+### Data Holdback Logic
+- All data sparas alltid för alla användare
+- Gratis-användare kan endast SE senaste 30 dagarna
+- Vid Premium-uppgradering låses all historisk data upp direkt
+- API `/api/account/data-limits` returnerar `hidden_data.months_of_history`
 
-## Kända problem
-- Mobilappens ngrok-tunnel är instabil (miljöproblem, ej kodbug)
+---
 
-## Framtida utveckling
-- [ ] PDF-export av statistik
-- [ ] Mobilapp (React Native/Expo)
-- [ ] Hälsospårning per höna
-- [ ] AI-driven statistikanalys
+## Known Issues / Technical Debt
+- ESLint parser stöder inte TypeScript syntax (visar fel men påverkar ej runtime)
+- Web och mobil har olika designspråk (bör harmoniseras)
+
+---
+
+## Test Files
+- `/app/backend/tests/test_iteration2.py` - Backend API-tester
+- `/app/test_reports/iteration_2.json` - Senaste testrapport
