@@ -409,6 +409,54 @@ export default function Dashboard() {
         </div>
       )}
       
+      {/* AI Premium Features Section - Shown to everyone, blurred for free */}
+      <div className={`card ai-premium-section ${!premium?.is_premium ? 'blurred' : ''}`}>
+        <div className="ai-section-header">
+          <h3>🤖 AI-funktioner</h3>
+          {!premium?.is_premium && (
+            <span className="premium-badge-small">
+              <span className="lock-icon">🔒</span> Premium
+            </span>
+          )}
+        </div>
+        
+        <div className="ai-features-grid">
+          <div className={`ai-feature-card ${!premium?.is_premium ? 'locked' : ''}`}>
+            <div className="ai-feature-icon">📋</div>
+            <div className="ai-feature-content">
+              <h4>AI Dagsrapport</h4>
+              <p>{premium?.is_premium 
+                ? 'Personlig sammanfattning och tips baserat på din data'
+                : 'Uppgradera för daglig AI-analys...'
+              }</p>
+            </div>
+            {!premium?.is_premium && (
+              <Link to="/premium" className="unlock-btn">Lås upp</Link>
+            )}
+          </div>
+          
+          <div className={`ai-feature-card ${!premium?.is_premium ? 'locked' : ''}`}>
+            <div className="ai-feature-icon">📈</div>
+            <div className="ai-feature-content">
+              <h4>Äggprognos 7 dagar</h4>
+              <p>{premium?.is_premium 
+                ? 'Förutsäg produktion baserat på historik'
+                : 'Se vad du kan förvänta dig...'
+              }</p>
+            </div>
+            {!premium?.is_premium && (
+              <Link to="/premium" className="unlock-btn">Lås upp</Link>
+            )}
+          </div>
+        </div>
+        
+        {!premium?.is_premium && (
+          <Link to="/premium" className="ai-upgrade-hint">
+            <span>✨</span> Uppgradera för full AI-upplevelse
+          </Link>
+        )}
+      </div>
+      
       {/* Quick Actions */}
       <div className="quick-actions-section">
         <h3>⚡ Snabbåtgärder</h3>
