@@ -403,15 +403,18 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
-  run_ui: false
+  test_sequence: 2
+  run_ui: true
 
 test_plan:
   current_focus:
-    - "All backend APIs and premium endpoints successfully tested"
+    - "Settings Screen with Premium/Feedback/Support"
+    - "Hens Screen"
+    - "Login Page with Google OAuth"
+    - "Admin Page"
   stuck_tasks: []
   test_all: false
-  test_priority: "completed"
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
@@ -420,3 +423,5 @@ agent_communication:
     message: "🎉 ALL BACKEND TESTS PASSED! Comprehensive testing completed with 30/30 tests successful. All API endpoints working correctly: Coop settings, Egg records CRUD, Transactions CRUD, and Statistics (today/month/year/summary). Verified realistic Swedish data handling, proper calculations, delete operations, and error handling. Backend is production-ready."
   - agent: "testing"
     message: "✅ HÖNSGÅRDEN PREMIUM ENDPOINTS TESTED! Successfully tested all requested premium features: Health check (/api/health), Premium insights with forecast/economy/summary (/api/insights?include_premium=true), Health logs CRUD (/api/health-logs), Feedback submission (/api/feedback), and Subscription cancellation (/api/subscription/cancel). All 9 tests passed. Premium insights correctly calculate 7-day forecasts, production status, deviating hens, economy comparisons, and AI summaries. Backend is fully functional and production-ready."
+  - agent: "testing"
+    message: "🔍 FRONTEND UI TESTING COMPLETED at https://web-deploy-35.preview.emergentagent.com. CRITICAL FINDINGS: Several features from review request are MISSING or INCOMPLETE. ✅ WORKING: Dashboard (insights, quick add eggs, monthly/all-time stats), Paywall modal (all premium features listed, correct pricing 29kr/mån & 249kr/år), Tab navigation (6 tabs). ❌ MISSING/BROKEN: (1) Login page (/login) returns 404 - NO Google OAuth implementation despite backend auth endpoints existing, (2) Admin page (/admin) returns 404 - NOT IMPLEMENTED, (3) Settings page missing 'Skicka tips & feedback' and Support sections - handlers exist but UI not rendered, (4) Hens page missing 'Logga hälsa' button per hen and egg tracking per hen. App URL https://github-sync-47.preview.emergentagent.com shows 'Preview Unavailable' due to Expo tunnel inactivity - use backend URL instead."
