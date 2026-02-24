@@ -54,7 +54,9 @@ export default function EggsScreen() {
   
   const loadHens = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/hens?active_only=true`);
+      const res = await fetch(`${API_URL}/api/hens?active_only=true`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setHens(data);
