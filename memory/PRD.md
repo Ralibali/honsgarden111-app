@@ -189,6 +189,14 @@
 - [x] Tillbaka-knapp på Hatching-modulen
 - [x] Grafer verifierade - fungerar med recharts
 
+### Session 5 - Premium-begränsningar (February 24, 2026)
+- [x] Backend: Hälsologg API kräver nu Premium (POST returnerar 403, GET returnerar tom array)
+- [x] Backend: Flock-begränsning (max 1 för gratis) fungerar
+- [x] Backend: Kläckningsmodul kräver Premium (403 för gratis)
+- [x] Backend: Feature-preferences kräver Premium för anpassning
+- [x] Webb Frontend: Hälsologg-knapp visar låst tillstånd för gratisanvändare
+- [x] Webb Frontend: Flock-sparning visar premium-popup vid 403
+
 ---
 
 ## P2 - Future/Backlog
