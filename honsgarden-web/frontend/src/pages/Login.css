@@ -262,6 +262,13 @@
   color: var(--text-secondary);
 }
 
+.price-monthly {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  margin-bottom: 20px;
+}
+
 .pricing-card ul {
   list-style: none;
   text-align: left;
