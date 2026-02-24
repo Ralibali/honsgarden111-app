@@ -599,16 +599,28 @@ export default function Hens() {
                 
                 {hen.notes && <p className="hen-notes">{hen.notes}</p>}
                 
-                {/* Health log button */}
-                <button 
-                  onClick={() => openHealthModal(hen.id)}
-                  className="health-btn"
-                >
-                  🩺 Logga hälsa
-                </button>
+                {/* Health log button - Premium only */}
+                {isPremium ? (
+                  <button 
+                    onClick={() => openHealthModal(hen.id)}
+                    className="health-btn"
+                  >
+                    🩺 Logga hälsa
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      alert('🔒 Premium-funktion\n\nHälsologgen är en Premium-funktion. Uppgradera för att dokumentera dina hönors hälsa.');
+                      navigate('/premium');
+                    }}
+                    className="health-btn locked"
+                  >
+                    🔒 Hälsologg (Premium)
+                  </button>
+                )}
                 
-                {/* Recent health logs */}
-                {healthLogs[hen.id] && healthLogs[hen.id].length > 0 && (
+                {/* Recent health logs - Only show for premium users */}
+                {isPremium && healthLogs[hen.id] && healthLogs[hen.id].length > 0 && (
                   <div className="health-summary">
                     <div 
                       className="health-summary-header"
