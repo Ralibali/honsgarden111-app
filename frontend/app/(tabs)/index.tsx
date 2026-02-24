@@ -721,6 +721,17 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     padding: 16,
     marginBottom: 16,
   },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  scrollHint: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontStyle: 'italic',
+  },
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
