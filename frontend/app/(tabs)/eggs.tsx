@@ -526,6 +526,53 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   dateButtonTextActive: {
     color: '#FFF',
   },
+  quickButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  quickButton: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  quickButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  henSelectScroll: {
+    marginBottom: 16,
+  },
+  henSelectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    gap: 6,
+  },
+  henSelectBtnActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '20',
+  },
+  henSelectEmoji: {
+    fontSize: 16,
+  },
+  henSelectText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  henSelectTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
