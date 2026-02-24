@@ -409,6 +409,40 @@ export default function Dashboard() {
         </div>
       )}
       
+      {/* Quick Actions */}
+      <div className="quick-actions-section">
+        <h3>⚡ Snabbåtgärder</h3>
+        <div className="quick-actions-grid">
+          <Link to="/feed" className="quick-action-card">
+            <span className="quick-action-icon" style={{ background: '#f59e0b' }}>🌾</span>
+            <span className="quick-action-label">Foder</span>
+          </Link>
+          <Link to="/hatching" className="quick-action-card">
+            <span className="quick-action-icon" style={{ background: '#ec4899' }}>🐣</span>
+            <span className="quick-action-label">Kläckning</span>
+          </Link>
+          <button 
+            className="quick-action-card"
+            onClick={() => {
+              const text = `🐔 ${coop?.coop_name || 'Min Hönsgård'} - Statistik\n\n🥚 ${summary?.this_month.eggs || 0} ägg denna månad\n📊 ${summary?.total_eggs_all_time || 0} ägg totalt\n💪 ${insights?.productivity_index || 0}% produktivitet\n🐓 ${today?.hen_count || 0} hönor\n\nSpåra din hönsgård med Hönsgården-appen! 🌾`;
+              if (navigator.share) {
+                navigator.share({ title: 'Min hönsgårdsstatistik', text });
+              } else {
+                navigator.clipboard.writeText(text);
+                alert('Kopierat till urklipp!');
+              }
+            }}
+          >
+            <span className="quick-action-icon" style={{ background: '#3b82f6' }}>📤</span>
+            <span className="quick-action-label">Dela</span>
+          </button>
+          <Link to="/statistics" className="quick-action-card">
+            <span className="quick-action-icon" style={{ background: '#8b5cf6' }}>📊</span>
+            <span className="quick-action-label">Statistik</span>
+          </Link>
+        </div>
+      </div>
+      
       {/* Premium Banner - Show if NOT premium */}
       {!premium?.is_premium && (
         <Link to="/premium" className="premium-banner" data-testid="premium-banner">
