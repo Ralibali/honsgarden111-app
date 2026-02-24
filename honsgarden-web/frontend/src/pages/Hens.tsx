@@ -188,6 +188,50 @@ export default function Hens() {
                 <span className="egg-label">ägg totalt</span>
               </div>
               
+              {/* Quick add egg for this hen */}
+              {addingEggForHen === hen.id ? (
+                <div className="quick-egg-add">
+                  <div className="egg-counter">
+                    <button 
+                      onClick={() => setEggCount(c => Math.max(1, c - 1))}
+                      className="counter-btn"
+                    >
+                      -
+                    </button>
+                    <span className="counter-value">{eggCount}</span>
+                    <button 
+                      onClick={() => setEggCount(c => c + 1)}
+                      className="counter-btn"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="egg-add-buttons">
+                    <button 
+                      onClick={() => { setAddingEggForHen(null); setEggCount(1); }}
+                      className="btn-secondary"
+                    >
+                      Avbryt
+                    </button>
+                    <button 
+                      onClick={() => handleAddEgg(hen.id)}
+                      disabled={savingEgg}
+                      className="btn-primary"
+                    >
+                      {savingEgg ? '...' : '🥚 Lägg till'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setAddingEggForHen(hen.id)}
+                  className="add-egg-btn"
+                  data-testid={`add-egg-${hen.id}`}
+                >
+                  🥚 {hen.name} la ett ägg
+                </button>
+              )}
+              
               {hen.notes && <p className="hen-notes">{hen.notes}</p>}
               
               <div className="hen-actions">
