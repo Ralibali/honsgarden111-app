@@ -533,7 +533,7 @@ export default function HomeScreen() {
             {/* Quick Add Buttons */}
             <Text style={styles.quickAddLabel}>{t('eggs.quickAdd')}</Text>
             <View style={styles.quickButtonsRow}>
-              {[1, 2, 3, 5].map((num) => (
+              {[1, 2, 3, 5, 10].map((num) => (
                 <TouchableOpacity
                   key={num}
                   style={styles.quickButton}
@@ -546,34 +546,21 @@ export default function HomeScreen() {
             
             {/* Custom Amount */}
             <Text style={styles.quickAddLabel}>{t('eggs.customAmount')}</Text>
-            <View style={styles.inputRow}>
-              <TouchableOpacity
-                style={styles.countButton}
-                onPress={() => {
-                  const current = parseInt(eggCount) || 0;
-                  if (current > 0) setEggCount((current - 1).toString());
-                }}
-              >
-                <Ionicons name="remove" size={28} color="#FFF" />
-              </TouchableOpacity>
-              
+            <View style={styles.customInputRow}>
               <TextInput
-                style={styles.countInput}
+                style={styles.customEggInput}
                 value={eggCount}
                 onChangeText={setEggCount}
                 keyboardType="number-pad"
-                placeholder="0"
+                placeholder={isSv ? 'Eget antal...' : 'Custom amount...'}
                 placeholderTextColor={colors.textMuted}
               />
-              
               <TouchableOpacity
-                style={styles.countButton}
-                onPress={() => {
-                  const current = parseInt(eggCount) || 0;
-                  setEggCount((current + 1).toString());
-                }}
+                style={[styles.customAddButton, !eggCount && styles.customAddButtonDisabled]}
+                onPress={handleCustomAdd}
+                disabled={!eggCount || loading}
               >
-                <Ionicons name="add" size={28} color="#FFF" />
+                <Text style={styles.customAddButtonText}>{isSv ? 'Lägg till' : 'Add'}</Text>
               </TouchableOpacity>
             </View>
             
