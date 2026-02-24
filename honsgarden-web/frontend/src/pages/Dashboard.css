@@ -427,3 +427,246 @@
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+/* Premium Insights Card */
+.premium-insights-card {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.premium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.premium-header h3 {
+  margin: 0;
+}
+
+.premium-badge {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a2e;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.premium-summary {
+  background-color: var(--bg-secondary);
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.premium-summary p {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.premium-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.status-card {
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.status-card.status-normal {
+  background-color: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.status-card.status-low {
+  background-color: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.status-card.status-high {
+  background-color: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.status-text {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.status-detail {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.forecast-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.forecast-icon {
+  font-size: 28px;
+}
+
+.forecast-data {
+  display: flex;
+  flex-direction: column;
+}
+
+.forecast-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.forecast-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Alert Section */
+.alert-section {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.alert-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #ef4444;
+}
+
+.hen-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background-color: var(--bg-surface);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.hen-alert:last-child {
+  margin-bottom: 0;
+}
+
+.alert-icon {
+  font-size: 20px;
+}
+
+.alert-text {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.alert-action {
+  font-size: 13px;
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.alert-action:hover {
+  text-decoration: underline;
+}
+
+/* Economy Comparison */
+.economy-comparison {
+  margin-top: 16px;
+}
+
+.economy-comparison h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.economy-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.economy-card {
+  background-color: var(--bg-secondary);
+  padding: 14px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.economy-card.faded {
+  opacity: 0.6;
+}
+
+.economy-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.economy-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.economy-value.positive {
+  color: #4ade80;
+}
+
+.economy-value.negative {
+  color: #ef4444;
+}
+
+.economy-breakdown {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.economy-change {
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.economy-change.positive {
+  background-color: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+.economy-change.negative {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+@media (max-width: 480px) {
+  .premium-stats-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .economy-cards {
+    grid-template-columns: 1fr;
+  }
+}
