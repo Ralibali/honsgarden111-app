@@ -134,6 +134,49 @@ class FeaturePreferencesUpdate(BaseModel):
     show_productivity_alerts: Optional[bool] = None
     show_economy_insights: Optional[bool] = None
 
+# ============ HATCHING/INCUBATION MODELS (ETAPP 3) ============
+class HatchingStatus(str, Enum):
+    INCUBATING = "incubating"
+    HATCHED = "hatched"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+class HatchingCreate(BaseModel):
+    """Create a new hatching/incubation record"""
+    start_date: str  # YYYY-MM-DD
+    egg_count: int
+    hen_id: Optional[str] = None  # The broody hen, if natural
+    incubator_name: Optional[str] = None  # Name of incubator if using one
+    notes: Optional[str] = None
+    expected_hatch_days: int = 21  # Default chicken incubation period
+
+class HatchingUpdate(BaseModel):
+    egg_count: Optional[int] = None
+    notes: Optional[str] = None
+    status: Optional[HatchingStatus] = None
+    hatched_count: Optional[int] = None  # How many actually hatched
+    actual_hatch_date: Optional[str] = None
+
+class Hatching(BaseModel):
+    """A hatching/incubation record"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    start_date: str
+    expected_hatch_date: str  # Calculated from start_date + expected_hatch_days
+    egg_count: int
+    hen_id: Optional[str] = None
+    incubator_name: Optional[str] = None
+    notes: Optional[str] = None
+    status: str = "incubating"
+    hatched_count: Optional[int] = None
+    actual_hatch_date: Optional[str] = None
+    expected_hatch_days: int = 21
+    notification_sent_3_days: bool = False
+    notification_sent_1_day: bool = False
+    notification_sent_hatch_day: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class Hen(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str = "default_user"
