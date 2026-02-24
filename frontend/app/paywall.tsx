@@ -225,18 +225,15 @@ export default function PaywallScreen() {
     },
   ];
   
-  // Get prices from offerings if available
+  // Get prices - always use SEK
   const getPrice = (plan: 'monthly' | 'yearly'): string => {
-    if (offerings?.availablePackages) {
-      const packageType = plan === 'yearly' ? '$rc_annual' : '$rc_monthly';
-      const pkg = offerings.availablePackages.find(
-        (p: any) => p.packageType === packageType || p.identifier === packageType
-      );
-      if (pkg?.product?.priceString) {
-        return pkg.product.priceString;
-      }
-    }
+    // Always return SEK prices regardless of RevenueCat
     return plan === 'yearly' ? YEARLY_PRICE : MONTHLY_PRICE;
+  };
+  
+  // Get monthly equivalent for yearly plan
+  const getMonthlyEquivalent = (): string => {
+    return '12,42 kr/mån';
   };
   
   if (loadingOfferings) {
