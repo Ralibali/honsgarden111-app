@@ -569,7 +569,7 @@ export default function HensScreen() {
                     hen.status !== 'active' && styles.henCardInactive,
                     lastSeenWarning && styles.henCardWarning
                   ]}
-                  onPress={() => openHenProfile(hen)}
+                  onPress={() => openQuickAction(hen)}
                   onLongPress={() => handleDelete(hen)}
                 >
                   {/* Status Badge */}
