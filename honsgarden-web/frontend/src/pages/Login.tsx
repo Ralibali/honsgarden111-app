@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
@@ -10,6 +10,37 @@ const PREVIEW_IMAGES = {
 
 export default function Login() {
   const { login } = useAuth();
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactSent, setContactSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  
+  const handleContactSubmit = async () => {
+    if (!contactMessage.trim()) return;
+    setSending(true);
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: contactMessage,
+          email: contactEmail || 'anonymous',
+          source: 'landing_page'
+        })
+      });
+      setContactSent(true);
+      setTimeout(() => {
+        setShowContactModal(false);
+        setContactSent(false);
+        setContactMessage('');
+        setContactEmail('');
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to send feedback:', error);
+    }
+    setSending(false);
+  };
   
   return (
     <div className="landing-page">
@@ -18,9 +49,24 @@ export default function Login() {
         <div className="hero-overlay"></div>
         <img src={PREVIEW_IMAGES.hero} alt="Kvinna som tar hand om sina höns" className="hero-image" />
         <div className="hero-content">
-          <div className="logo-badge">🥚</div>
-          <h1>Hönsgården</h1>
-          <p className="tagline">Din digitala assistent för hönsgården</p>
+          {/* New Logo */}
+          <div className="logo-container">
+            <div className="logo-icon">
+              <svg viewBox="0 0 100 100" width="80" height="80">
+                {/* Stylized hen silhouette */}
+                <circle cx="50" cy="50" r="45" fill="#D97706" opacity="0.15"/>
+                <path d="M30 65 Q35 45 50 40 Q65 35 70 50 Q75 65 65 75 Q50 85 35 75 Q25 70 30 65" fill="#D97706"/>
+                <circle cx="60" cy="48" r="4" fill="#1F2937"/>
+                <path d="M68 45 Q75 42 72 50 Q70 55 68 52" fill="#EF4444"/>
+                <path d="M55 58 Q58 62 52 62 Q48 62 50 58" fill="#F59E0B"/>
+                {/* Egg accent */}
+                <ellipse cx="35" cy="72" rx="8" ry="10" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1.5"/>
+              </svg>
+            </div>
+            <h1>Hönsgården</h1>
+          </div>
+          <p className="tagline-main">För dig som vet att Gun-Britt la tre ägg igår</p>
+          <p className="tagline-sub">Spåra ägg, hälsa och ekonomi – för dig med egna hönor.</p>
           <button onClick={login} className="cta-button">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -43,19 +89,29 @@ export default function Login() {
             <p>Registrera ägg snabbt och enkelt. Se trender och jämför med tidigare perioder.</p>
           </div>
           <div className="feature-card">
+            <div className="feature-icon">🐔</div>
+            <h3>Hönsprofiler</h3>
+            <p>Ge dina hönor namn och följ varje hönas äggläggning och hälsa individuellt.</p>
+          </div>
+          <div className="feature-card">
             <div className="feature-icon">📊</div>
-            <h3>Statistik</h3>
-            <p>Tydliga grafer och översikter. Dag, månad och år – allt på ett ställe.</p>
+            <h3>Statistik & Insikter</h3>
+            <p>Tydliga grafer, produktivitetsvarningar och smarta prognoser.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">💰</div>
             <h3>Ekonomi</h3>
-            <p>Håll koll på foder, utrustning och försäljning. Se om hönsgården går plus eller minus.</p>
+            <p>Håll koll på foder, utrustning och försäljning. Se kostnad per ägg.</p>
           </div>
           <div className="feature-card">
-            <div className="feature-icon">🐔</div>
-            <h3>Hönsprofiler</h3>
-            <p>Ge dina hönor namn och följ varje hönas äggläggning individuellt.</p>
+            <div className="feature-icon">🩺</div>
+            <h3>Hälsologg</h3>
+            <p>Dokumentera vaccinationer, veterinärbesök och sjukdomar för varje höna.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🏠</div>
+            <h3>Flockhantering</h3>
+            <p>Organisera dina hönor i flockar och hönshus. Filtrera statistik per flock.</p>
           </div>
         </div>
       </section>
@@ -69,8 +125,9 @@ export default function Login() {
             <ul className="preview-list">
               <li>✓ Snabbregistrera ägg med ett klick</li>
               <li>✓ Automatiska beräkningar och trender</li>
+              <li>✓ Varningar när hönor inte värper</li>
+              <li>✓ "Senast sedd"-funktion för säkerhet</li>
               <li>✓ Synka mellan mobil och dator</li>
-              <li>✓ Exportera rapporter som PDF</li>
             </ul>
           </div>
           <div className="preview-image-container">
@@ -88,10 +145,11 @@ export default function Login() {
             <h3>Gratis</h3>
             <div className="price">0 kr</div>
             <ul>
-              <li>✓ 1 hönsgård</li>
-              <li>✓ 30 dagars historik</li>
+              <li>✓ 1 flock</li>
+              <li>✓ 90 dagars historik</li>
               <li>✓ Grundläggande statistik</li>
               <li>✓ Ägg- och ekonomilogg</li>
+              <li>✓ Hälsologg</li>
             </ul>
             <button onClick={login} className="pricing-btn secondary">Kom igång</button>
           </div>
@@ -102,10 +160,12 @@ export default function Login() {
             <ul>
               <li>✓ Allt i Gratis</li>
               <li>✓ Obegränsad historik</li>
-              <li>✓ Årsstatistik</li>
-              <li>✓ PDF-export</li>
-              <li>✓ Hönsprofiler</li>
-              <li>✓ Påminnelser</li>
+              <li>✓ Obegränsade flockar</li>
+              <li>✓ 7-dagars prognos</li>
+              <li>✓ Produktivitetsvarningar</li>
+              <li>✓ Ekonomijämförelse</li>
+              <li>✓ Kläckningsmodul</li>
+              <li>✓ Push-notiser</li>
             </ul>
             <button onClick={login} className="pricing-btn primary">Prova gratis först</button>
           </div>
@@ -132,8 +192,88 @@ export default function Login() {
       
       {/* Footer */}
       <footer className="landing-footer">
-        <p>© 2024 Hönsgården. Gjord med ❤️ för hönsälskare.</p>
+        <div className="footer-content">
+          <div className="footer-brand">
+            <div className="footer-logo">
+              <svg viewBox="0 0 100 100" width="32" height="32">
+                <circle cx="50" cy="50" r="45" fill="#D97706" opacity="0.15"/>
+                <path d="M30 65 Q35 45 50 40 Q65 35 70 50 Q75 65 65 75 Q50 85 35 75 Q25 70 30 65" fill="#D97706"/>
+                <circle cx="60" cy="48" r="4" fill="#1F2937"/>
+                <ellipse cx="35" cy="72" rx="8" ry="10" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1.5"/>
+              </svg>
+              <span>Hönsgården</span>
+            </div>
+            <p>Gjord med ❤️ för hönsälskare</p>
+          </div>
+          <div className="footer-links">
+            <button onClick={() => setShowContactModal(true)} className="footer-link">
+              💬 Kontakta oss
+            </button>
+            <button onClick={() => setShowContactModal(true)} className="footer-link">
+              💡 Skicka förslag
+            </button>
+          </div>
+        </div>
+        <p className="copyright">© 2024 Hönsgården. Alla rättigheter förbehållna.</p>
       </footer>
+      
+      {/* Floating Contact Button */}
+      <button 
+        className="floating-contact-btn"
+        onClick={() => setShowContactModal(true)}
+        title="Kontakta oss"
+      >
+        💬
+      </button>
+      
+      {/* Contact Modal */}
+      {showContactModal && (
+        <div className="contact-modal-overlay" onClick={() => setShowContactModal(false)}>
+          <div className="contact-modal" onClick={e => e.stopPropagation()}>
+            {contactSent ? (
+              <div className="contact-success">
+                <span className="success-icon">✅</span>
+                <h3>Tack för ditt meddelande!</h3>
+                <p>Vi återkommer så snart vi kan.</p>
+              </div>
+            ) : (
+              <>
+                <h3>💬 Kontakta oss</h3>
+                <p>Har du frågor, förslag eller feedback? Vi älskar att höra från dig!</p>
+                
+                <label>E-post (valfritt)</label>
+                <input
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="din@email.se"
+                />
+                
+                <label>Meddelande</label>
+                <textarea
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  placeholder="Skriv ditt meddelande här..."
+                  rows={4}
+                />
+                
+                <div className="contact-buttons">
+                  <button onClick={() => setShowContactModal(false)} className="cancel-btn">
+                    Avbryt
+                  </button>
+                  <button 
+                    onClick={handleContactSubmit} 
+                    disabled={!contactMessage.trim() || sending}
+                    className="send-btn"
+                  >
+                    {sending ? 'Skickar...' : 'Skicka'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
