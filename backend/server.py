@@ -1617,6 +1617,223 @@ async def delete_transaction(transaction_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Transaction not found")
     return {"message": "Transaction deleted"}
 
+# ============ FEED MANAGEMENT API (ETAPP 4) ============
+@api_router.post("/feed", response_model=dict)
+async def create_feed_record(record: FeedRecordCreate, request: Request):
+    """Create a new feed record (consumption or purchase)"""
+    user_id = await get_user_id(request)
+    
+    feed_record = FeedRecord(
+        user_id=user_id,
+        date=record.date,
+        feed_type=record.feed_type,
+        amount_kg=record.amount_kg,
+        cost=record.cost,
+        is_purchase=record.is_purchase,
+        brand=record.brand,
+        notes=record.notes
+    )
+    
+    await db.feed_records.insert_one(feed_record.model_dump())
+    
+    # Update inventory
+    if record.is_purchase:
+        # Add to inventory
+        await db.feed_inventory.update_one(
+            {"user_id": user_id, "feed_type": record.feed_type.value},
+            {
+                "$inc": {"current_stock_kg": record.amount_kg},
+                "$set": {
+                    "updated_at": datetime.now(timezone.utc),
+                    "brand": record.brand
+                },
+                "$setOnInsert": {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "feed_type": record.feed_type.value,
+                    "low_stock_threshold_kg": 5.0
+                }
+            },
+            upsert=True
+        )
+    else:
+        # Remove from inventory (consumption)
+        await db.feed_inventory.update_one(
+            {"user_id": user_id, "feed_type": record.feed_type.value},
+            {
+                "$inc": {"current_stock_kg": -record.amount_kg},
+                "$set": {"updated_at": datetime.now(timezone.utc)}
+            }
+        )
+    
+    result = feed_record.model_dump()
+    result.pop('_id', None)
+    return result
+
+@api_router.get("/feed")
+async def get_feed_records(
+    request: Request,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    feed_type: Optional[str] = None,
+    is_purchase: Optional[bool] = None,
+    limit: int = 100
+):
+    """Get feed records with optional filters"""
+    user_id = await get_user_id(request)
+    
+    query = {"user_id": user_id}
+    if start_date:
+        query["date"] = {"$gte": start_date}
+    if end_date:
+        if "date" in query:
+            query["date"]["$lte"] = end_date
+        else:
+            query["date"] = {"$lte": end_date}
+    if feed_type:
+        query["feed_type"] = feed_type
+    if is_purchase is not None:
+        query["is_purchase"] = is_purchase
+    
+    cursor = db.feed_records.find(query, {"_id": 0}).sort("date", -1).limit(limit)
+    records = await cursor.to_list(length=limit)
+    return records
+
+@api_router.delete("/feed/{record_id}")
+async def delete_feed_record(record_id: str, request: Request):
+    """Delete a feed record"""
+    user_id = await get_user_id(request)
+    
+    # Get record first to update inventory
+    record = await db.feed_records.find_one({"id": record_id, "user_id": user_id})
+    if not record:
+        raise HTTPException(status_code=404, detail="Feed record not found")
+    
+    # Reverse inventory change
+    if record.get("is_purchase"):
+        await db.feed_inventory.update_one(
+            {"user_id": user_id, "feed_type": record["feed_type"]},
+            {"$inc": {"current_stock_kg": -record["amount_kg"]}}
+        )
+    else:
+        await db.feed_inventory.update_one(
+            {"user_id": user_id, "feed_type": record["feed_type"]},
+            {"$inc": {"current_stock_kg": record["amount_kg"]}}
+        )
+    
+    await db.feed_records.delete_one({"id": record_id, "user_id": user_id})
+    return {"message": "Feed record deleted"}
+
+@api_router.get("/feed/inventory")
+async def get_feed_inventory(request: Request):
+    """Get current feed inventory and alerts"""
+    user_id = await get_user_id(request)
+    
+    cursor = db.feed_inventory.find({"user_id": user_id}, {"_id": 0})
+    inventory = await cursor.to_list(length=100)
+    
+    # Check for low stock alerts
+    alerts = []
+    for item in inventory:
+        if item["current_stock_kg"] <= item.get("low_stock_threshold_kg", 5.0):
+            alerts.append({
+                "feed_type": item["feed_type"],
+                "current_stock_kg": item["current_stock_kg"],
+                "threshold_kg": item.get("low_stock_threshold_kg", 5.0),
+                "brand": item.get("brand")
+            })
+    
+    return {
+        "inventory": inventory,
+        "low_stock_alerts": alerts,
+        "total_stock_kg": sum(i["current_stock_kg"] for i in inventory)
+    }
+
+@api_router.put("/feed/inventory/{feed_type}")
+async def update_inventory_settings(feed_type: str, request: Request):
+    """Update inventory settings like low stock threshold"""
+    user_id = await get_user_id(request)
+    body = await request.json()
+    
+    update_fields = {"updated_at": datetime.now(timezone.utc)}
+    if "low_stock_threshold_kg" in body:
+        update_fields["low_stock_threshold_kg"] = body["low_stock_threshold_kg"]
+    if "current_stock_kg" in body:
+        update_fields["current_stock_kg"] = body["current_stock_kg"]
+    
+    result = await db.feed_inventory.update_one(
+        {"user_id": user_id, "feed_type": feed_type},
+        {"$set": update_fields}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    return {"message": "Inventory updated"}
+
+@api_router.get("/feed/statistics")
+async def get_feed_statistics(request: Request, days: int = 30):
+    """Get feed consumption and cost statistics"""
+    user_id = await get_user_id(request)
+    today = date.today()
+    start_date = (today - timedelta(days=days)).isoformat()
+    
+    # Get consumption records
+    cursor = db.feed_records.find({
+        "user_id": user_id,
+        "date": {"$gte": start_date},
+        "is_purchase": False
+    }, {"_id": 0})
+    consumption_records = await cursor.to_list(length=1000)
+    
+    # Get purchase records
+    cursor = db.feed_records.find({
+        "user_id": user_id,
+        "date": {"$gte": start_date},
+        "is_purchase": True
+    }, {"_id": 0})
+    purchase_records = await cursor.to_list(length=1000)
+    
+    # Calculate statistics
+    total_consumed_kg = sum(r["amount_kg"] for r in consumption_records)
+    total_purchased_kg = sum(r["amount_kg"] for r in purchase_records)
+    total_cost = sum(r.get("cost", 0) or 0 for r in purchase_records)
+    
+    # Get hen count for feed per hen
+    hen_count = await db.hens.count_documents({"user_id": user_id, "status": "active"})
+    
+    # Daily consumption average
+    daily_avg = total_consumed_kg / days if days > 0 else 0
+    
+    # Cost per kg
+    cost_per_kg = total_cost / total_purchased_kg if total_purchased_kg > 0 else 0
+    
+    # By feed type
+    by_type = {}
+    for r in consumption_records:
+        ft = r["feed_type"]
+        if ft not in by_type:
+            by_type[ft] = {"consumed_kg": 0, "cost": 0}
+        by_type[ft]["consumed_kg"] += r["amount_kg"]
+    
+    for r in purchase_records:
+        ft = r["feed_type"]
+        if ft not in by_type:
+            by_type[ft] = {"consumed_kg": 0, "cost": 0}
+        by_type[ft]["cost"] += r.get("cost", 0) or 0
+    
+    return {
+        "period_days": days,
+        "total_consumed_kg": round(total_consumed_kg, 2),
+        "total_purchased_kg": round(total_purchased_kg, 2),
+        "total_cost": round(total_cost, 2),
+        "daily_consumption_avg_kg": round(daily_avg, 3),
+        "cost_per_kg": round(cost_per_kg, 2),
+        "feed_per_hen_per_day_g": round((daily_avg * 1000 / hen_count), 1) if hen_count > 0 else 0,
+        "hen_count": hen_count,
+        "by_feed_type": by_type
+    }
+
 # ============ INSIGHTS ENDPOINT ============
 @api_router.get("/insights")
 async def get_insights(request: Request, include_premium: bool = False):
