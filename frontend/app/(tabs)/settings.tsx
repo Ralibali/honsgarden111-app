@@ -650,6 +650,21 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontSize: 16,
     fontWeight: '600',
   },
+  cancelButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 12,
+    gap: 8,
+  },
+  cancelButtonText: {
+    color: colors.error,
+    fontSize: 15,
+    fontWeight: '500',
+  },
   themeContainer: {
     flexDirection: 'row',
     gap: 12,
