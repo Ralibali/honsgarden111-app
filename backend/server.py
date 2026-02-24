@@ -739,6 +739,74 @@ async def update_coop_settings(update: CoopSettingsUpdate, request: Request):
     updated = await db.coop_settings.find_one({"user_id": user_id})
     return CoopSettings(**updated)
 
+# ============ FLOCK ENDPOINTS ============
+@api_router.post("/flocks", response_model=Flock)
+async def create_flock(flock: FlockCreate, request: Request):
+    """Create a new flock (Premium: unlimited, Free: max 1)"""
+    user_id = await get_user_id(request)
+    
+    # Check premium status for flock limits
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    existing_flocks = await db.flocks.count_documents({"user_id": user_id})
+    if not is_premium and existing_flocks >= 1:
+        raise HTTPException(status_code=403, detail="Gratis-konto tillåter endast 1 flock. Uppgradera till Premium för obegränsat antal.")
+    
+    new_flock = Flock(user_id=user_id, **flock.dict())
+    await db.flocks.insert_one(new_flock.dict())
+    return new_flock
+
+@api_router.get("/flocks")
+async def get_flocks(request: Request):
+    """Get all flocks for the user"""
+    user_id = await get_user_id(request)
+    flocks = await db.flocks.find({"user_id": user_id}, {"_id": 0}).sort("name", 1).to_list(50)
+    return flocks
+
+@api_router.get("/flocks/{flock_id}")
+async def get_flock(flock_id: str, request: Request):
+    """Get a specific flock with its hens"""
+    user_id = await get_user_id(request)
+    flock = await db.flocks.find_one({"id": flock_id, "user_id": user_id}, {"_id": 0})
+    if not flock:
+        raise HTTPException(status_code=404, detail="Flock not found")
+    
+    # Get hens in this flock
+    hens = await db.hens.find({"user_id": user_id, "flock_id": flock_id, "is_active": True}, {"_id": 0}).to_list(100)
+    flock["hens"] = hens
+    flock["hen_count"] = len(hens)
+    
+    return flock
+
+@api_router.put("/flocks/{flock_id}")
+async def update_flock(flock_id: str, flock: FlockCreate, request: Request):
+    """Update a flock"""
+    user_id = await get_user_id(request)
+    result = await db.flocks.update_one(
+        {"id": flock_id, "user_id": user_id},
+        {"$set": {"name": flock.name, "description": flock.description}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Flock not found")
+    return {"message": "Flock uppdaterad"}
+
+@api_router.delete("/flocks/{flock_id}")
+async def delete_flock(flock_id: str, request: Request):
+    """Delete a flock (moves hens to no flock)"""
+    user_id = await get_user_id(request)
+    
+    # Remove flock_id from all hens in this flock
+    await db.hens.update_many(
+        {"user_id": user_id, "flock_id": flock_id},
+        {"$set": {"flock_id": None}}
+    )
+    
+    result = await db.flocks.delete_one({"id": flock_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Flock not found")
+    return {"message": "Flock borttagen"}
+
 # ============ HEN ENDPOINTS ============
 @api_router.post("/hens", response_model=Hen)
 async def create_hen(hen: HenCreate, request: Request):
