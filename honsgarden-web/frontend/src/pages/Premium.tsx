@@ -189,7 +189,7 @@ export default function Premium() {
         <div className="pricing-card">
           <h3>Månatlig</h3>
           <div className="price">
-            <span className="amount">29</span>
+            <span className="amount">19</span>
             <span className="currency">kr/månad</span>
           </div>
           <p>Flexibelt, avsluta när som helst</p>
@@ -204,13 +204,13 @@ export default function Premium() {
         </div>
         
         <div className="pricing-card popular">
-          <div className="popular-badge">Spara 30%</div>
+          <div className="popular-badge">Spara 35%</div>
           <h3>Årlig</h3>
           <div className="price">
-            <span className="amount">249</span>
+            <span className="amount">149</span>
             <span className="currency">kr/år</span>
           </div>
-          <p>Bara 20,75 kr/månad!</p>
+          <p>Bara 12,42 kr/månad!</p>
           <button
             onClick={() => handlePurchase('yearly')}
             disabled={purchasing}
