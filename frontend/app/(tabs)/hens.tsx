@@ -1340,4 +1340,133 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   noDataText: { fontSize: 14, color: colors.textMuted, textAlign: 'center', paddingVertical: 20 },
   closeProfileBtn: { backgroundColor: colors.primary, padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 16 },
   closeProfileBtnText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
+  
+  // Quick Action Bottom Sheet
+  bottomSheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  bottomSheetContent: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  quickActionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  quickActionAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  quickActionAvatarText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  quickActionInfo: {
+    flex: 1,
+  },
+  quickActionName: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  quickActionBreed: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  quickActionEggs: {
+    fontSize: 16,
+    color: '#f59e0b',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  quickEggSection: {
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  quickEggTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  quickEggButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  quickEggBtn: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  quickEggBtnDisabled: {
+    opacity: 0.5,
+  },
+  quickEggBtnText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFF',
+  },
+  moreActionsTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textMuted,
+    marginBottom: 12,
+  },
+  moreActionsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  moreActionBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 12,
+    marginHorizontal: 4,
+  },
+  moreActionEmoji: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  moreActionText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  markSeenFullBtn: {
+    backgroundColor: '#4ade80',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  markSeenFullText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
