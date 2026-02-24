@@ -786,6 +786,51 @@ async def delete_hen(hen_id: str, request: Request):
     
     return {"message": "Hen removed"}
 
+# ============ HEALTH LOG ENDPOINTS ============
+@api_router.post("/health-logs", response_model=HealthLog)
+async def create_health_log(log: HealthLogCreate, request: Request):
+    """Create a health log entry for a hen"""
+    user_id = await get_user_id(request)
+    
+    # Verify hen exists
+    hen = await db.hens.find_one({"id": log.hen_id, "user_id": user_id})
+    if not hen:
+        raise HTTPException(status_code=404, detail="Hen not found")
+    
+    health_log = HealthLog(user_id=user_id, **log.dict())
+    await db.health_logs.insert_one(health_log.dict())
+    return health_log
+
+@api_router.get("/health-logs")
+async def get_health_logs(request: Request, hen_id: Optional[str] = None, limit: int = 50):
+    """Get health logs, optionally filtered by hen"""
+    user_id = await get_user_id(request)
+    query = {"user_id": user_id}
+    if hen_id:
+        query["hen_id"] = hen_id
+    
+    logs = await db.health_logs.find(query, {"_id": 0}).sort("date", -1).limit(limit).to_list(limit)
+    return logs
+
+@api_router.get("/health-logs/{hen_id}")
+async def get_hen_health_logs(hen_id: str, request: Request, limit: int = 20):
+    """Get health logs for a specific hen"""
+    user_id = await get_user_id(request)
+    logs = await db.health_logs.find(
+        {"user_id": user_id, "hen_id": hen_id}, 
+        {"_id": 0}
+    ).sort("date", -1).limit(limit).to_list(limit)
+    return logs
+
+@api_router.delete("/health-logs/{log_id}")
+async def delete_health_log(log_id: str, request: Request):
+    """Delete a health log entry"""
+    user_id = await get_user_id(request)
+    result = await db.health_logs.delete_one({"id": log_id, "user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Log not found")
+    return {"message": "Log deleted"}
+
 # ============ EGG RECORD ENDPOINTS ============
 @api_router.post("/eggs", response_model=EggRecord)
 async def create_egg_record(record: EggRecordCreate, request: Request):
