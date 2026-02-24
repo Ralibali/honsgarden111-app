@@ -72,10 +72,11 @@ export default function Settings() {
   
   const loadSettings = async () => {
     try {
-      const [coopRes, reminderRes, premiumRes] = await Promise.all([
+      const [coopRes, reminderRes, premiumRes, featureRes] = await Promise.all([
         fetch('/api/coop', { credentials: 'include' }),
         fetch('/api/reminders/settings', { credentials: 'include' }),
-        fetch('/api/premium/status', { credentials: 'include' })
+        fetch('/api/premium/status', { credentials: 'include' }),
+        fetch('/api/feature-preferences', { credentials: 'include' })
       ]);
       
       if (coopRes.ok) {
@@ -96,10 +97,33 @@ export default function Settings() {
         const data = await premiumRes.json();
         setPremium(data);
       }
+      
+      if (featureRes.ok) {
+        const data = await featureRes.json();
+        setFeaturePrefs(data);
+      }
     } catch (error) {
       console.error('Failed to load settings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const updateFeaturePreference = async (key: string, value: boolean) => {
+    if (!featurePrefs?.can_customize) return;
+    try {
+      const res = await fetch('/api/feature-preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ [key]: value })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFeaturePrefs(data);
+      }
+    } catch (error) {
+      console.error('Failed to update preference:', error);
     }
   };
   
