@@ -72,9 +72,10 @@ export default function Hens() {
   
   const loadData = async () => {
     try {
-      const [hensRes, eggsRes] = await Promise.all([
+      const [hensRes, eggsRes, logsRes] = await Promise.all([
         fetch('/api/hens', { credentials: 'include' }),
-        fetch('/api/eggs?limit=1000', { credentials: 'include' })
+        fetch('/api/eggs?limit=1000', { credentials: 'include' }),
+        fetch('/api/health-logs', { credentials: 'include' })
       ]);
       
       if (hensRes.ok) {
@@ -92,6 +93,16 @@ export default function Hens() {
           }
         });
         setHenStats(stats);
+      }
+      
+      if (logsRes.ok) {
+        const logs: HealthLog[] = await logsRes.json();
+        const logsMap: Record<string, HealthLog[]> = {};
+        logs.forEach(log => {
+          if (!logsMap[log.hen_id]) logsMap[log.hen_id] = [];
+          logsMap[log.hen_id].push(log);
+        });
+        setHealthLogs(logsMap);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
