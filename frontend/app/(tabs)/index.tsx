@@ -546,7 +546,87 @@ export default function HomeScreen() {
           </View>
         )}
         
-        {/* Premium Banner (if not premium) */}
+        {/* AI Premium Features Section - Blurred for free users */}
+        <View style={styles.aiPremiumSection}>
+          <View style={styles.aiSectionHeader}>
+            <Text style={styles.aiSectionTitle}>🤖 AI-funktioner</Text>
+            {!isPremium && (
+              <View style={styles.premiumBadgeSmall}>
+                <Ionicons name="lock-closed" size={12} color="#f59e0b" />
+                <Text style={styles.premiumBadgeSmallText}>Premium</Text>
+              </View>
+            )}
+          </View>
+          
+          {/* AI Daily Report Card */}
+          <View style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}>
+            <View style={styles.aiCardIcon}>
+              <Ionicons name="document-text" size={24} color={isPremium ? colors.primary : '#9ca3af'} />
+            </View>
+            <View style={styles.aiCardContent}>
+              <Text style={styles.aiCardTitle}>{isSv ? 'AI Dagsrapport' : 'AI Daily Report'}</Text>
+              {isPremium ? (
+                <Text style={styles.aiCardDescription}>
+                  {isSv ? 'Personlig sammanfattning och tips baserat på din data' : 'Personal summary and tips based on your data'}
+                </Text>
+              ) : (
+                <Text style={styles.aiCardDescriptionBlurred}>
+                  {isSv ? 'Uppgradera för daglig AI-analys...' : 'Upgrade for daily AI analysis...'}
+                </Text>
+              )}
+            </View>
+            {!isPremium && (
+              <TouchableOpacity 
+                style={styles.unlockButton}
+                onPress={() => router.push('/paywall')}
+              >
+                <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {/* Egg Forecast Card */}
+          <View style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}>
+            <View style={styles.aiCardIcon}>
+              <Ionicons name="trending-up" size={24} color={isPremium ? colors.success : '#9ca3af'} />
+            </View>
+            <View style={styles.aiCardContent}>
+              <Text style={styles.aiCardTitle}>{isSv ? 'Äggprognos 7 dagar' : '7-Day Egg Forecast'}</Text>
+              {isPremium ? (
+                <Text style={styles.aiCardDescription}>
+                  {isSv ? 'Förutsäg produktion baserat på historik' : 'Predict production based on history'}
+                </Text>
+              ) : (
+                <Text style={styles.aiCardDescriptionBlurred}>
+                  {isSv ? 'Se vad du kan förvänta dig...' : 'See what to expect...'}
+                </Text>
+              )}
+            </View>
+            {!isPremium && (
+              <TouchableOpacity 
+                style={styles.unlockButton}
+                onPress={() => router.push('/paywall')}
+              >
+                <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {/* Blurred overlay hint for free users */}
+          {!isPremium && (
+            <TouchableOpacity 
+              style={styles.aiUpgradeHint}
+              onPress={() => router.push('/paywall')}
+            >
+              <Ionicons name="sparkles" size={16} color="#f59e0b" />
+              <Text style={styles.aiUpgradeHintText}>
+                {isSv ? 'Uppgradera för full AI-upplevelse' : 'Upgrade for full AI experience'}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        
+        {/* Premium Banner (if not premium) - simplified version */}
         {!isPremium && (
           <TouchableOpacity 
             style={styles.premiumBanner}
@@ -556,7 +636,7 @@ export default function HomeScreen() {
               <Ionicons name="star" size={24} color={colors.warning} />
               <View style={styles.premiumBannerText}>
                 <Text style={styles.premiumBannerTitle}>{t('common.upgrade')} till Premium</Text>
-                <Text style={styles.premiumBannerSubtitle}>Prognos, varningar, ekonomijämförelse</Text>
+                <Text style={styles.premiumBannerSubtitle}>AI-rapporter, prognos, hälsologg & mer</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
