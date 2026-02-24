@@ -507,8 +507,171 @@ export default function SettingsScreen() {
               </Text>
             </View>
           </View>
+          
+          {/* Contact & Support Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{isSv ? 'Kontakt & Support' : 'Contact & Support'}</Text>
+            
+            <TouchableOpacity 
+              style={styles.contactCard}
+              onPress={() => setShowFeedbackModal(true)}
+            >
+              <View style={styles.contactIcon}>
+                <Ionicons name="chatbubble-ellipses" size={22} color={colors.primary} />
+              </View>
+              <View style={styles.contactContent}>
+                <Text style={styles.contactTitle}>{isSv ? 'Skicka feedback' : 'Send feedback'}</Text>
+                <Text style={styles.contactDesc}>{isSv ? 'Förslag, idéer eller problem' : 'Suggestions, ideas or issues'}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.contactCard}
+              onPress={handleContactSupport}
+            >
+              <View style={styles.contactIcon}>
+                <Ionicons name="mail" size={22} color={colors.success} />
+              </View>
+              <View style={styles.contactContent}>
+                <Text style={styles.contactTitle}>{isSv ? 'E-posta oss' : 'Email us'}</Text>
+                <Text style={styles.contactDesc}>support@honsgarden.se</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      
+      {/* Feedback Modal */}
+      <Modal
+        visible={showFeedbackModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowFeedbackModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>💬 {isSv ? 'Skicka feedback' : 'Send feedback'}</Text>
+            <Text style={styles.modalSubtitle}>
+              {isSv ? 'Vi älskar att höra från dig! Hjälp oss göra appen bättre.' : 'We love hearing from you! Help us improve.'}
+            </Text>
+            
+            <Text style={styles.inputLabel}>{isSv ? 'Typ av feedback' : 'Feedback type'}</Text>
+            <View style={styles.feedbackTypeContainer}>
+              {[
+                { value: 'feature', label: isSv ? '💡 Ny funktion' : '💡 New feature', color: colors.warning },
+                { value: 'improvement', label: isSv ? '✨ Förbättring' : '✨ Improvement', color: colors.primary },
+                { value: 'bug', label: isSv ? '🐛 Problem' : '🐛 Bug', color: colors.error },
+                { value: 'other', label: isSv ? '📝 Övrigt' : '📝 Other', color: colors.textSecondary },
+              ].map(type => (
+                <TouchableOpacity
+                  key={type.value}
+                  style={[
+                    styles.feedbackTypeBtn,
+                    feedbackType === type.value && { borderColor: type.color, backgroundColor: type.color + '15' }
+                  ]}
+                  onPress={() => setFeedbackType(type.value as any)}
+                >
+                  <Text style={[
+                    styles.feedbackTypeText,
+                    feedbackType === type.value && { color: type.color }
+                  ]}>{type.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            <Text style={styles.inputLabel}>{isSv ? 'Ditt meddelande' : 'Your message'} *</Text>
+            <TextInput
+              style={styles.feedbackInput}
+              value={feedbackMessage}
+              onChangeText={setFeedbackMessage}
+              placeholder={isSv ? 'Beskriv din feedback...' : 'Describe your feedback...'}
+              placeholderTextColor={colors.textMuted}
+              multiline
+              numberOfLines={4}
+            />
+            
+            <Text style={styles.inputLabel}>{isSv ? 'E-post (valfritt)' : 'Email (optional)'}</Text>
+            <TextInput
+              style={styles.emailInput}
+              value={feedbackEmail}
+              onChangeText={setFeedbackEmail}
+              placeholder={isSv ? 'din@email.se' : 'your@email.com'}
+              placeholderTextColor={colors.textMuted}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => setShowFeedbackModal(false)}
+              >
+                <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalSaveBtn, sendingFeedback && { opacity: 0.5 }]}
+                onPress={handleSendFeedback}
+                disabled={sendingFeedback || !feedbackMessage.trim()}
+              >
+                <Text style={styles.modalSaveText}>
+                  {sendingFeedback ? (isSv ? 'Skickar...' : 'Sending...') : (isSv ? 'Skicka' : 'Send')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      
+      {/* Cancel Subscription Modal */}
+      <Modal
+        visible={showCancelModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCancelModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>😢 {isSv ? 'Avsluta prenumeration' : 'Cancel subscription'}</Text>
+            <Text style={styles.modalSubtitle}>
+              {isSv 
+                ? 'Vi är ledsna att se dig gå. Berätta gärna varför så vi kan bli bättre.'
+                : 'We\'re sad to see you go. Please tell us why so we can improve.'
+              }
+            </Text>
+            
+            <Text style={styles.inputLabel}>{isSv ? 'Anledning (valfritt)' : 'Reason (optional)'}</Text>
+            <TextInput
+              style={styles.feedbackInput}
+              value={cancelReason}
+              onChangeText={setCancelReason}
+              placeholder={isSv ? 'Berätta varför du avslutar...' : 'Tell us why you\'re cancelling...'}
+              placeholderTextColor={colors.textMuted}
+              multiline
+              numberOfLines={3}
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => setShowCancelModal(false)}
+              >
+                <Text style={styles.modalCancelText}>{isSv ? 'Avbryt' : 'Go back'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalDangerBtn, cancelling && { opacity: 0.5 }]}
+                onPress={handleCancelSubscription}
+                disabled={cancelling}
+              >
+                <Text style={styles.modalDangerText}>
+                  {cancelling ? (isSv ? 'Avslutar...' : 'Cancelling...') : t('settings.cancelSubscription')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
