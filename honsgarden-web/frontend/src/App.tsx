@@ -7,6 +7,7 @@ import Eggs from './pages/Eggs';
 import Finance from './pages/Finance';
 import Statistics from './pages/Statistics';
 import Hens from './pages/Hens';
+import HenProfile from './pages/HenProfile';
 import Settings from './pages/Settings';
 import Premium from './pages/Premium';
 import CheckoutSuccess from './pages/CheckoutSuccess';
