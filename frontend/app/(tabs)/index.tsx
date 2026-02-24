@@ -1128,4 +1128,96 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontWeight: '500',
     color: colors.text,
   },
+  // Data Limits Banner Styles
+  dataLimitsBanner: {
+    flexDirection: 'row',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 16,
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  warningBanner: {
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+  },
+  urgentBanner: {
+    backgroundColor: '#fee2e2',
+    borderWidth: 1,
+    borderColor: '#ef4444',
+  },
+  bannerEmoji: {
+    fontSize: 24,
+  },
+  bannerContent: {
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  bannerText: {
+    fontSize: 13,
+    color: '#374151',
+    lineHeight: 18,
+    marginBottom: 10,
+  },
+  bannerActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  upgradeBannerBtn: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  upgradeBannerText: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  dismissBtn: {
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+  },
+  dismissText: {
+    color: '#6b7280',
+    fontSize: 13,
+  },
+  // Productivity Alert Banner Styles
+  productivityAlertBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    backgroundColor: '#fef3c7',
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+    gap: 12,
+  },
+  alertBannerEmoji: {
+    fontSize: 28,
+  },
+  alertBannerContent: {
+    flex: 1,
+  },
+  alertBannerTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#92400e',
+    marginBottom: 2,
+  },
+  alertBannerText: {
+    fontSize: 13,
+    color: '#78350f',
+  },
 });
