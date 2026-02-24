@@ -282,6 +282,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "Shows hen count, eggs today, monthly summary, all-time totals, and quick add eggs modal"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Dashboard fully functional at https://web-deploy-35.preview.emergentagent.com. Shows: 18 Hönor, 50 Ägg idag, insights section (kostnad/ägg: 1.44 kr, produktivitet: 24.1%), monthly summary (104 ägg, 150kr costs, 420kr sales, +270kr net), all-time totals, 'Registrera ägg idag' button, and 'Uppgradera till Premium' banner. All core dashboard features working correctly."
 
   - task: "Egg Log Screen"
     implemented: true
@@ -319,9 +322,9 @@ frontend:
         agent: "main"
         comment: "Shows month/year toggle, period navigation, egg charts, financial summary"
 
-  - task: "Settings Screen"
+  - task: "Settings Screen with Premium/Feedback/Support"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/app/(tabs)/settings.tsx"
     stuck_count: 0
     priority: "high"
@@ -330,6 +333,57 @@ frontend:
       - working: true
         agent: "main"
         comment: "Shows coop name editing, hen count adjustment, app info and tips"
+      - working: false
+        agent: "testing"
+        comment: "❌ PARTIAL - Settings page accessible and shows: Premium status section ('Status: Inte aktiverad'), coop settings (name, hen count), theme selection (Ljust/Mörkt/System), language selection, reminders section. CRITICAL MISSING: (1) 'Skicka tips & feedback' section/button - handlers exist (feedbackType, feedbackMessage, handleSendFeedback) but NO UI rendered, (2) Support section - handleContactSupport exists but NO UI button/section rendered, (3) Cancel subscription button only for premium users (correct). Code has state management but missing JSX rendering for feedback and support sections."
+
+  - task: "Hens Screen"
+    implemented: true
+    working: false
+    file: "/app/frontend/app/(tabs)/hens.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "❌ INCOMPLETE - Hens page exists with 'Lägg till höna' button and hen list, but MISSING requested features: (1) 'Logga hälsa' (Health log) button per hen - NOT FOUND in UI, (2) Egg tracking per hen functionality - NOT VISIBLE. Backend has /api/health-logs endpoint but frontend doesn't show health log buttons on hen cards. No per-hen egg production tracking visible."
+
+  - task: "Premium/Paywall Modal"
+    implemented: true
+    working: true
+    file: "/app/frontend/app/paywall.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Paywall modal fully functional. Shows all premium features: 🔮 7-dagars prognos, 📊 Produktionsstatus, ⚠️ Avvikelsedetektion, 💰 Ekonomijämförelse, 📝 Daglig sammanfattning, 📧 E-postpåminnelser, 📈 Obegränsad historik. Correct pricing displayed: Årsprenumeration 249 kr/år (~12 kr/mån) with 'Spara 30%' badge, Månadsprenumeration 29 kr/månad. 'Starta Premium' purchase button working. Modal accessible via 'Uppgradera till Premium' banner."
+
+  - task: "Login Page with Google OAuth"
+    implemented: false
+    working: false
+    file: "NOT IMPLEMENTED"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ NOT IMPLEMENTED - /login route returns 404 'Unmatched Route - Page could not be found'. Backend has auth endpoints (/api/auth/session, /api/auth/me, /api/auth/logout) and Google OAuth integration via Emergent backend, but frontend login page/component doesn't exist. No Google OAuth button in frontend."
+
+  - task: "Admin Page"
+    implemented: false
+    working: false
+    file: "NOT IMPLEMENTED"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ NOT IMPLEMENTED - /admin route returns 404 'Unmatched Route - Page could not be found'. No admin interface exists in frontend, though backend has ADMIN_EMAILS configuration."
 
   - task: "Tab Navigation"
     implemented: true
@@ -342,6 +396,9 @@ frontend:
       - working: true
         agent: "main"
         comment: "5-tab navigation: Hem, Ägg, Ekonomi, Statistik, Inställningar - all working"
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Tab navigation fully functional with 6 tabs visible: Hem (home icon), Ägg (egg icon), Hönor (heart icon), Ekonomi (wallet icon), Statistik (stats-chart icon), Inställningar (settings icon). All tabs clickable and navigate correctly."
 
 metadata:
   created_by: "main_agent"
