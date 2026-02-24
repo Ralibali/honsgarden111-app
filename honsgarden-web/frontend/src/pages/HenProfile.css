@@ -1,0 +1,379 @@
+.hen-profile-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--accent-primary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.profile-header h1 {
+  flex: 1;
+  font-size: 28px;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-badge.status-active {
+  background-color: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+}
+
+.status-badge.status-sold {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.status-badge.status-deceased {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Warning Banners */
+.warning-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.last-seen-warning {
+  background-color: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+}
+
+.no-eggs-warning {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.warning-banner button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Cards */
+.card {
+  background-color: var(--bg-surface);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+/* Info Card */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.info-value {
+  font-size: 15px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seen-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  background-color: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.hen-notes {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Stats Card */
+.stats-card h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 14px;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Egg Graph */
+.egg-graph h3 {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.graph-container {
+  display: flex;
+  align-items: flex-end;
+  height: 100px;
+  gap: 2px;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.graph-bar-container {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.graph-bar {
+  width: 100%;
+  min-height: 2px;
+  background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+  border-radius: 2px 2px 0 0;
+  transition: height 0.3s;
+}
+
+.graph-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Timeline Card */
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.timeline-header h2 {
+  font-size: 18px;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.add-health-btn {
+  padding: 10px 16px;
+  background-color: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.timeline {
+  position: relative;
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 24px;
+  padding-bottom: 20px;
+  border-left: 3px solid;
+  margin-left: 8px;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.timeline-content {
+  background-color: var(--bg-secondary);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.timeline-type {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.timeline-desc {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.no-data {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 30px;
+}
+
+/* Loading/Error */
+.loading, .error {
+  text-align: center;
+  padding: 60px;
+  color: var(--text-secondary);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background-color: var(--bg-surface);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.modal h2 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.modal p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.modal label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  margin-top: 16px;
+}
+
+.modal select,
+.modal input,
+.modal textarea {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-primary {
+  background-color: var(--accent-primary);
+  border: none;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
