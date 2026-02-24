@@ -240,7 +240,7 @@ export default function Login() {
             </button>
           </div>
         </div>
-        <p className="copyright">© 2024 Hönsgården. Alla rättigheter förbehållna.</p>
+        <p className="copyright">© 2026 Hönsgården. Alla rättigheter förbehållna.</p>
       </footer>
       
       {/* Floating Contact Button */}
