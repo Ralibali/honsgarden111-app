@@ -382,10 +382,13 @@ export default function HomeScreen() {
         {/* Insights Section */}
         {insights && (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>📊 {t('home.insights', { defaultValue: 'Insikter' })}</Text>
+            <View style={styles.cardHeaderRow}>
+              <Text style={styles.cardTitle}>📊 {t('home.insights', { defaultValue: 'Insikter' })}</Text>
+              <Text style={styles.scrollHint}>← svep →</Text>
+            </View>
             <ScrollView 
               horizontal 
-              showsHorizontalScrollIndicator={false} 
+              showsHorizontalScrollIndicator={true} 
               style={styles.insightsScrollView}
               contentContainerStyle={styles.insightsScrollContent}
             >
