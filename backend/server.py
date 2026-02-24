@@ -932,31 +932,40 @@ async def delete_transaction(transaction_id: str, request: Request):
 
 # ============ INSIGHTS ENDPOINT ============
 @api_router.get("/insights")
-async def get_insights(request: Request):
-    """Get productivity insights: cost per egg, top hen, productivity index"""
+async def get_insights(request: Request, include_premium: bool = False):
+    """Get productivity insights: cost per egg, top hen, productivity index + Premium features"""
     user_id = await get_user_id(request)
+    today = date.today()
     
-    # Get all eggs
+    # Check premium status
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    # Get all eggs with dates
     all_eggs = await db.egg_records.find({"user_id": user_id}, {"_id": 0, "count": 1, "hen_id": 1, "date": 1}).to_list(10000)
     total_eggs = sum(e['count'] for e in all_eggs)
     
-    # Get all costs
-    all_costs = await db.transactions.find({"user_id": user_id, "type": "cost"}, {"_id": 0, "amount": 1}).to_list(10000)
-    total_costs = sum(t['amount'] for t in all_costs)
+    # Get all transactions
+    all_transactions = await db.transactions.find({"user_id": user_id}, {"_id": 0, "amount": 1, "type": 1, "date": 1}).to_list(10000)
+    total_costs = sum(t['amount'] for t in all_transactions if t['type'] == 'cost')
+    total_sales = sum(t['amount'] for t in all_transactions if t['type'] == 'sale')
     
     # Cost per egg
     cost_per_egg = total_costs / total_eggs if total_eggs > 0 else 0
     
     # Get eggs per hen
     eggs_per_hen = {}
+    eggs_by_date = {}
     for egg in all_eggs:
         hen_id = egg.get('hen_id')
+        egg_date = egg.get('date')
         if hen_id:
             eggs_per_hen[hen_id] = eggs_per_hen.get(hen_id, 0) + egg['count']
+        if egg_date:
+            eggs_by_date[egg_date] = eggs_by_date.get(egg_date, 0) + egg['count']
     
     # Find top hen
     top_hen = None
-    top_hen_eggs = 0
     if eggs_per_hen:
         top_hen_id = max(eggs_per_hen, key=eggs_per_hen.get)
         top_hen_eggs = eggs_per_hen[top_hen_id]
@@ -968,13 +977,8 @@ async def get_insights(request: Request):
     settings = await db.coop_settings.find_one({"user_id": user_id})
     hen_count = settings['hen_count'] if settings else 0
     
-    today = date.today()
     month_start = f"{today.year:04d}-{today.month:02d}-01"
-    month_eggs = await db.egg_records.find({
-        "user_id": user_id,
-        "date": {"$gte": month_start}
-    }, {"_id": 0, "count": 1, "date": 1}).to_list(1000)
-    
+    month_eggs = [e for e in all_eggs if e.get('date', '') >= month_start]
     month_total = sum(e['count'] for e in month_eggs)
     days_this_month = today.day
     
@@ -982,7 +986,7 @@ async def get_insights(request: Request):
     if hen_count > 0 and days_this_month > 0:
         productivity_index = round((month_total / hen_count / days_this_month) * 100, 1)
     
-    # Hen ranking
+    # Hen ranking with lifecycle
     hen_ranking = []
     hens = await db.hens.find({"user_id": user_id, "is_active": True}, {"_id": 0, "id": 1, "name": 1, "birth_date": 1}).to_list(100)
     for hen in hens:
@@ -993,7 +997,6 @@ async def get_insights(request: Request):
             try:
                 birth = datetime.strptime(hen['birth_date'], '%Y-%m-%d').date()
                 age_days = (today - birth).days
-                # Lifecycle phase
                 if age_days < 140:
                     lifecycle = "unghöna"
                 elif age_days < 365:
@@ -1011,19 +1014,166 @@ async def get_insights(request: Request):
             "age_days": age_days,
             "lifecycle": lifecycle
         })
-    
-    # Sort by eggs (descending)
     hen_ranking.sort(key=lambda x: x['eggs'], reverse=True)
     
-    return {
+    # Base response (free tier)
+    response = {
         "cost_per_egg": round(cost_per_egg, 2),
         "total_eggs": total_eggs,
         "total_costs": total_costs,
         "top_hen": top_hen,
         "productivity_index": productivity_index,
         "hen_count": hen_count,
-        "hen_ranking": hen_ranking[:10]  # Top 10
+        "hen_ranking": hen_ranking[:10],
+        "is_premium": is_premium
     }
+    
+    # ============ PREMIUM FEATURES ============
+    if is_premium or include_premium:
+        
+        # 1. 7-DAY FORECAST (based on 14-day moving average)
+        forecast_days = 14
+        forecast_start = (today - timedelta(days=forecast_days)).isoformat()
+        recent_eggs = [e for e in all_eggs if e.get('date', '') >= forecast_start]
+        recent_total = sum(e['count'] for e in recent_eggs)
+        daily_avg = recent_total / forecast_days if forecast_days > 0 else 0
+        forecast_7_days = round(daily_avg * 7)
+        
+        response["premium"] = {
+            "forecast_7_days": forecast_7_days,
+            "daily_average": round(daily_avg, 1)
+        }
+        
+        # 2. FLOCK PRODUCTION STATUS (30-day baseline)
+        baseline_days = 30
+        baseline_start = (today - timedelta(days=baseline_days)).isoformat()
+        baseline_eggs = [e for e in all_eggs if e.get('date', '') >= baseline_start]
+        baseline_total = sum(e['count'] for e in baseline_eggs)
+        baseline_daily = baseline_total / baseline_days if baseline_days > 0 else 0
+        
+        # Compare last 7 days to baseline
+        week_start = (today - timedelta(days=7)).isoformat()
+        week_eggs = [e for e in all_eggs if e.get('date', '') >= week_start]
+        week_total = sum(e['count'] for e in week_eggs)
+        week_daily = week_total / 7
+        
+        if baseline_daily > 0:
+            deviation_percent = ((week_daily - baseline_daily) / baseline_daily) * 100
+        else:
+            deviation_percent = 0
+        
+        if deviation_percent < -15:
+            production_status = "low"
+            production_text = "🟡 Låg produktion"
+        elif deviation_percent > 15:
+            production_status = "high"
+            production_text = "🔵 Hög produktion"
+        else:
+            production_status = "normal"
+            production_text = "🟢 Normal produktion"
+        
+        response["premium"]["production_status"] = production_status
+        response["premium"]["production_text"] = production_text
+        response["premium"]["deviation_percent"] = round(deviation_percent, 1)
+        
+        # 3. HEN DEVIATION DETECTION
+        deviating_hens = []
+        for hen in hens:
+            hen_id = hen['id']
+            hen_name = hen['name']
+            
+            # Eggs last 7 days for this hen
+            week_hen_eggs = [e for e in all_eggs 
+                           if e.get('hen_id') == hen_id and e.get('date', '') >= week_start]
+            eggs_last_7 = sum(e['count'] for e in week_hen_eggs)
+            
+            # Eggs last 3 days for this hen
+            three_days_start = (today - timedelta(days=3)).isoformat()
+            three_day_hen_eggs = [e for e in all_eggs 
+                                  if e.get('hen_id') == hen_id and e.get('date', '') >= three_days_start]
+            eggs_last_3 = sum(e['count'] for e in three_day_hen_eggs)
+            
+            # Trigger: ≥1 egg last 7 days AND 0 eggs last 3 days
+            if eggs_last_7 >= 1 and eggs_last_3 == 0:
+                deviating_hens.append({
+                    "id": hen_id,
+                    "name": hen_name,
+                    "eggs_last_7_days": eggs_last_7,
+                    "eggs_last_3_days": eggs_last_3,
+                    "alert": f"{hen_name} har inte värpt på 3 dagar"
+                })
+        
+        response["premium"]["deviating_hens"] = deviating_hens
+        
+        # 4. ECONOMY COMPARISON (this month vs last month)
+        # This month
+        this_month_start = month_start
+        this_month_transactions = [t for t in all_transactions if t.get('date', '') >= this_month_start]
+        this_month_costs = sum(t['amount'] for t in this_month_transactions if t['type'] == 'cost')
+        this_month_sales = sum(t['amount'] for t in this_month_transactions if t['type'] == 'sale')
+        this_month_profit = this_month_sales - this_month_costs
+        
+        # Last month
+        if today.month == 1:
+            last_month_start = f"{today.year-1:04d}-12-01"
+            last_month_end = f"{today.year:04d}-01-01"
+        else:
+            last_month_start = f"{today.year:04d}-{today.month-1:02d}-01"
+            last_month_end = this_month_start
+        
+        last_month_transactions = [t for t in all_transactions 
+                                   if last_month_start <= t.get('date', '') < last_month_end]
+        last_month_costs = sum(t['amount'] for t in last_month_transactions if t['type'] == 'cost')
+        last_month_sales = sum(t['amount'] for t in last_month_transactions if t['type'] == 'sale')
+        last_month_profit = last_month_sales - last_month_costs
+        
+        # Comparison
+        profit_change = this_month_profit - last_month_profit
+        if last_month_profit != 0:
+            profit_change_percent = (profit_change / abs(last_month_profit)) * 100
+        else:
+            profit_change_percent = 0 if this_month_profit == 0 else 100
+        
+        response["premium"]["economy"] = {
+            "this_month": {
+                "costs": this_month_costs,
+                "sales": this_month_sales,
+                "profit": this_month_profit
+            },
+            "last_month": {
+                "costs": last_month_costs,
+                "sales": last_month_sales,
+                "profit": last_month_profit
+            },
+            "change": profit_change,
+            "change_percent": round(profit_change_percent, 1)
+        }
+        
+        # 5. INSIGHT SUMMARY (rule-based text)
+        summary_parts = []
+        
+        # Production status
+        summary_parts.append(f"Produktionen är {production_status.replace('low', 'låg').replace('high', 'hög').replace('normal', 'normal')}.")
+        
+        # Forecast
+        summary_parts.append(f"Prognos: ~{forecast_7_days} ägg kommande vecka.")
+        
+        # Deviating hens
+        if deviating_hens:
+            hen_names = ", ".join([h['name'] for h in deviating_hens[:2]])
+            if len(deviating_hens) > 2:
+                hen_names += f" +{len(deviating_hens)-2} till"
+            summary_parts.append(f"{hen_names} avviker från sitt snitt.")
+        
+        # Economy
+        if profit_change > 0:
+            summary_parts.append(f"Ekonomin är {profit_change:.0f} kr bättre än förra månaden.")
+        elif profit_change < 0:
+            summary_parts.append(f"Ekonomin är {abs(profit_change):.0f} kr sämre än förra månaden.")
+        
+        response["premium"]["summary"] = " ".join(summary_parts)
+    
+    return response
 
 # ============ STATISTICS ENDPOINTS ============
 @api_router.get("/statistics/today")
