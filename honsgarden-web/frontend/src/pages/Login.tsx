@@ -157,6 +157,7 @@ export default function Login() {
             <div className="popular-badge">Populärast</div>
             <h3>Premium</h3>
             <div className="price">149 kr<span>/år</span></div>
+            <p className="price-monthly">eller 19 kr/mån</p>
             <ul>
               <li>✓ Allt i Gratis</li>
               <li>✓ Obegränsad historik</li>
