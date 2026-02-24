@@ -16,8 +16,14 @@ from enum import Enum
 import httpx
 import resend
 
+# AI Integration
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# AI Key
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 
 # Webapp static files path
 WEBAPP_DIR = ROOT_DIR / 'webapp_dist'
