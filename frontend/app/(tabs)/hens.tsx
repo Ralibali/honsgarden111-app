@@ -82,6 +82,7 @@ const STATUS_OPTIONS = [
 
 export default function HensScreen() {
   const { colors, isDark } = useThemeStore();
+  const { isPremium } = usePremiumStore();
   const router = useRouter();
   const [hens, setHens] = useState<Hen[]>([]);
   const [flocks, setFlocks] = useState<Flock[]>([]);
