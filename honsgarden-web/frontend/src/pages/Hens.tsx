@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import './Hens.css';
 
 interface Hen {
@@ -28,6 +29,11 @@ export default function Hens() {
   const [birthDate, setBirthDate] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  
+  // For adding eggs per hen
+  const [addingEggForHen, setAddingEggForHen] = useState<string | null>(null);
+  const [eggCount, setEggCount] = useState(1);
+  const [savingEgg, setSavingEgg] = useState(false);
   
   useEffect(() => {
     loadData();
