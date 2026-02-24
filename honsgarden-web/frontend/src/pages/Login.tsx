@@ -43,9 +43,9 @@ export default function Login() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+          type: 'contact',
           message: contactMessage,
-          email: contactEmail || 'anonymous',
-          source: 'landing_page'
+          email: contactEmail || undefined
         })
       });
       setContactSent(true);
