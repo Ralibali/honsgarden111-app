@@ -1,7 +1,7 @@
 # Hönsgården - Product Requirements Document
 
 ## Original Problem Statement
-En digital assistent för hönsgårdsägare som hjälper till att hantera höns, äggproduktion, ekonomi och hälsa. Applikationen ska finnas tillgänglig som webbapp och mobilapp (iOS/Android via Expo).
+En digital assistent för hönsgårdsägare som hjälper till att hantera höns, äggproduktion, ekonomi, foder och hälsa. Applikationen finns tillgänglig som webbapp och mobilapp (iOS/Android via Expo).
 
 ## User Personas
 1. **Hobby-hönsägare** - Privatpersoner som har 3-15 höns i trädgården
@@ -13,17 +13,19 @@ En digital assistent för hönsgårdsägare som hjälper till att hantera höns,
 - Hälsospårning per höna
 - Ekonomiuppföljning (kostnader, intäkter)
 - Produktivitetsanalys per höna
+- Foderhantering (Etapp 4) - Lager, förbrukning, inköp
+- Dela statistik på sociala medier
 - Premium-funktioner för avancerade användare
 
 ## Tech Stack
 - **Backend**: FastAPI (Python), MongoDB
 - **Frontend Web**: React, Vite, TypeScript
-- **Frontend Mobile**: React Native, Expo
+- **Frontend Mobile**: React Native, Expo, Playfair Display + Inter fonts
 - **Payments**: Stripe
 - **Auth**: Google OAuth2
 
 ## Pricing
-- **Gratis**: 30 dagars datahistorik
+- **Gratis**: 30 dagars datahistorik (all data sparas, bara 30 dagar visas)
 - **Premium Månatlig**: 19 kr/mån
 - **Premium Årlig**: 149 kr/år (12,42 kr/mån)
 
@@ -31,21 +33,28 @@ En digital assistent för hönsgårdsägare som hjälper till att hantera höns,
 
 ## Completed Features (February 2026)
 
-### P0 - Critical (Done)
-- [x] **Fix vit skärm på webappen** - Vite base path uppdaterad till /api/web/
-- [x] **Förena äggregistrerings-UI** - Alla tre platser (Dashboard, Eggs-sida, Höna-profil) har nu +1,+2,+3,+5,+10 snabbknappar + fritext + höna-väljare
-
-### P1 - High Priority (Done)
-- [x] **Logga ut-knapp** - Finns redan i webappen
-- [x] **Feature toggles bug** - Fixat credentials i API-anrop
-- [x] **Insikter-sektion förbättrad** - Scrollbar rad med stora siffror och tydliga etiketter
-- [x] **Data holdback Premium-funktion** - Gratis-användare ser 30 dagar, all data sparas i bakgrunden
-- [x] **Stripe-priser uppdaterade** - 19 kr/mån, 149 kr/år
-
-### Etapper (Completed Earlier)
+### Tidigare etapper (Done)
 - [x] **Etapp 1**: Flockhantering + Hälsologg per höna
-- [x] **Etapp 2**: Produktivitetsanalys + Datgräns-varningar
+- [x] **Etapp 2**: Produktivitetsanalys + Datavarningar
 - [x] **Etapp 3**: Kläckningsmodul för Premium
+
+### Session 1 - P0/P1 (Done)
+- [x] **Fix vit skärm på webappen** - Vite base path uppdaterad till /api/web/
+- [x] **Förena äggregistrerings-UI** - +1,+2,+3,+5,+10 snabbknappar + fritext + höna-väljare
+- [x] **Feature toggles bug** - Fixat credentials i API-anrop
+- [x] **Insikter-sektion förbättrad** - Scrollbar rad med stora siffror
+- [x] **Data holdback Premium-funktion** - 30 dagars visning för gratis, all data sparas
+
+### Session 2 - Nya funktioner (Done)
+- [x] **Typsnitt i mobilappen** - Playfair Display (rubriker) + Inter (brödtext) via expo-font
+- [x] **Etapp 4: Foderhantering** - Komplett modul för båda plattformar:
+  - Lagerhantering med lågt-lager-varningar
+  - Registrering av förbrukning och inköp
+  - Statistik (kg/dag, g/höna/dag, kostnad)
+  - 7 fodertyper stöds
+- [x] **Dela statistik-funktion** - Mobil: Share API för att dela äggproduktion
+- [x] **Quick Actions på Dashboard** - Genvägar till Foder, Kläckning, Dela, Statistik
+- [x] **Feature-parity audit** - Feed-sida och routing tillagd på webappen
 
 ---
 
@@ -53,68 +62,68 @@ En digital assistent för hönsgårdsägare som hjälper till att hantera höns,
 
 ### High Priority
 - [ ] **Push-notiser** - Påminnelser för kläckning, hälsokontroller
-- [ ] **Feature-parity audit** - Slutlig kontroll webb vs mobil
-- [ ] **Typsnitt i mobilappen** - Ladda Playfair Display och Inter
+- [ ] **Hatching på webben** - Kläckningsmodul finns bara på mobil
 
 ### Medium Priority
-- [ ] **Etapp 4: Foderhantering** - Spåra foderförbrukning och kostnader
+- [ ] **Dela statistik på webben** - Web Share API eller sociala knappar
+- [ ] **Förbättrad Analytics** - Grafer och trender
 
 ### Low Priority
-- [ ] Inga fler etapper planerade (Etapp 5 Väderdata borttagen)
+- [ ] Inga fler etapper planerade
 
 ---
 
 ## API Endpoints
 
 ### Core
-- `GET /api/eggs` - Hämta äggregistreringar
-- `POST /api/eggs` - Registrera ägg (med optional hen_id)
-- `GET /api/hens` - Hämta hönor
-- `GET /api/flocks` - Hämta flockar
+- `GET/POST /api/eggs` - Äggregistreringar
+- `GET/POST /api/hens` - Hönor
+- `GET/POST /api/flocks` - Flockar
+
+### Feed Management (NEW - Etapp 4)
+- `GET/POST /api/feed` - Foderregistreringar
+- `DELETE /api/feed/{id}` - Ta bort registrering
+- `GET /api/feed/inventory` - Lagerstatus + varningar
+- `PUT /api/feed/inventory/{type}` - Uppdatera lagertrösklar
+- `GET /api/feed/statistics?days=30` - Foderstatistik
 
 ### Premium/Account
 - `GET /api/account/data-limits` - Visa gömd data för gratis-användare
 - `GET /api/premium/status` - Premiumstatus
-- `GET /api/feature-preferences` - Anpassningsbara funktioner
+- `GET/PUT /api/feature-preferences` - Anpassningsbara funktioner
 
 ### Statistics
 - `GET /api/statistics/today` - Dagens statistik
 - `GET /api/statistics/summary` - Månads/total sammanfattning
-- `GET /api/insights` - Insikter (kostnad/ägg, toppvärpare, produktivitet)
+- `GET /api/insights` - Insikter
 
 ---
 
 ## Database Schema
 
-### users
+### feed_records (NEW)
 ```json
 {
-  "email": "string",
-  "name": "string",
-  "feature_preferences": {
-    "flock_management": true,
-    "show_economy_insights": true
-  }
+  "id": "uuid",
+  "user_id": "string",
+  "date": "YYYY-MM-DD",
+  "feed_type": "layer_feed|grower_feed|starter_feed|scratch_grain|treats|supplements|other",
+  "amount_kg": 1.5,
+  "cost": 150,
+  "is_purchase": true,
+  "brand": "Granngården",
+  "notes": "optional"
 }
 ```
 
-### eggs
-```json
-{
-  "date": "2026-02-24",
-  "count": 5,
-  "user_id": "string",
-  "hen_id": "string (optional)"
-}
-```
-
-### subscriptions
+### feed_inventory (NEW)
 ```json
 {
   "user_id": "string",
-  "plan": "monthly|yearly",
-  "is_active": true,
-  "expires_at": "datetime"
+  "feed_type": "layer_feed",
+  "current_stock_kg": 15.5,
+  "low_stock_threshold_kg": 5.0,
+  "brand": "Granngården"
 }
 ```
 
@@ -123,24 +132,54 @@ En digital assistent för hönsgårdsägare som hjälper till att hantera höns,
 ## Architecture Notes
 
 ### Web App Routing
-- Webappen serveras från `/api/web/` (pga Kubernetes ingress)
-- Vite base path konfigurerad till `/api/web/`
-- Assets serveras från `/api/web/assets/`
+- Webappen serveras från `/api/web/`
+- Vite base path: `/api/web/`
+- Assets: `/api/web/assets/`
 
 ### Data Holdback Logic
 - All data sparas alltid för alla användare
 - Gratis-användare kan endast SE senaste 30 dagarna
 - Vid Premium-uppgradering låses all historisk data upp direkt
-- API `/api/account/data-limits` returnerar `hidden_data.months_of_history`
+- `hidden_data.months_of_history` visar hur mycket gömd data som finns
+
+### Font Configuration (Mobile)
+- Fonts loaded via expo-font + @expo-google-fonts
+- Playfair Display: headings, titles, logo
+- Inter: body text, UI elements
+- Font config exported from `/app/frontend/src/config/fonts.ts`
+
+---
+
+## Feature Parity Status (Webb vs Mobil)
+
+| Feature | Mobile | Web |
+|---------|--------|-----|
+| Dashboard | ✅ | ✅ |
+| Eggs | ✅ | ✅ |
+| Hens | ✅ | ✅ |
+| Finance | ✅ | ✅ |
+| Statistics | ✅ | ✅ |
+| Settings | ✅ | ✅ |
+| Feed (Etapp 4) | ✅ | ✅ |
+| Share Stats | ✅ | ❌ |
+| Hatching | ✅ | ❌ |
+| Quick Actions | ✅ | ❌ |
+
+---
+
+## Files Modified This Session
+- `/app/frontend/app/_layout.tsx` - Font loading
+- `/app/frontend/app/(tabs)/index.tsx` - Quick Actions, Share, Insights
+- `/app/frontend/app/feed.tsx` - NEW: Feed management screen
+- `/app/frontend/src/config/fonts.ts` - NEW: Font configuration
+- `/app/backend/server.py` - Feed API endpoints
+- `/app/honsgarden-web/frontend/src/pages/Feed.tsx` - NEW: Web feed page
+- `/app/honsgarden-web/frontend/src/pages/Feed.css` - NEW: Web feed styles
+- `/app/honsgarden-web/frontend/src/App.tsx` - Feed route
 
 ---
 
 ## Known Issues / Technical Debt
-- ESLint parser stöder inte TypeScript syntax (visar fel men påverkar ej runtime)
-- Web och mobil har olika designspråk (bör harmoniseras)
-
----
-
-## Test Files
-- `/app/backend/tests/test_iteration2.py` - Backend API-tester
-- `/app/test_reports/iteration_2.json` - Senaste testrapport
+- ESLint parser stöder inte TypeScript syntax (varningar, ej runtime-fel)
+- Shadow props deprecated warnings i Expo (web)
+- react-native-svg version mismatch (15.15.3 vs expected 15.12.1)
