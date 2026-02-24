@@ -158,6 +158,12 @@ export default function Dashboard() {
   
   return (
     <div className="dashboard" data-testid="dashboard">
+      {/* Data Limits Banner for Free Users */}
+      <DataLimitsBanner />
+      
+      {/* Productivity Alerts */}
+      <ProductivityAlerts flocks={flocks} />
+      
       <header className="dashboard-header">
         <div>
           <h1>{coop?.coop_name || 'Min Hönsgård'}</h1>
