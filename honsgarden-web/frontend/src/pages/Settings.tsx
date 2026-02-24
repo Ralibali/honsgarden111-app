@@ -32,6 +32,7 @@ export default function Settings() {
   const [coop, setCoop] = useState<CoopSettings | null>(null);
   const [reminders, setReminders] = useState<ReminderSettings>({ enabled: true, time: '18:00' });
   const [premium, setPremium] = useState<PremiumStatus | null>(null);
+  const [featurePrefs, setFeaturePrefs] = useState<FeaturePreferences | null>(null);
   const [loading, setLoading] = useState(true);
   const [coopName, setCoopName] = useState('');
   const [henCount, setHenCount] = useState(0);
