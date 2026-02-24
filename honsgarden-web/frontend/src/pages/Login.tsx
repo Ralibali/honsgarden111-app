@@ -140,7 +140,8 @@ export default function Login() {
       <section className="pricing-section">
         <h2>Enkel prissättning</h2>
         <p className="pricing-subtitle">Börja gratis – uppgradera när du vill ha mer</p>
-        <div className="pricing-cards">
+        <div className="pricing-cards three-cards">
+          {/* Gratis */}
           <div className="pricing-card">
             <h3>Gratis</h3>
             <div className="price">0 kr</div>
@@ -153,24 +154,46 @@ export default function Login() {
               <li>✓ Äggproduktionsgraf</li>
               <li>✓ Ekonomigraf</li>
             </ul>
-            <button onClick={login} className="pricing-btn secondary">Kom igång</button>
+            <button onClick={login} className="pricing-btn secondary">Kom igång gratis</button>
           </div>
-          <div className="pricing-card popular">
-            <div className="popular-badge">Populärast</div>
-            <h3>Premium</h3>
-            <div className="price">149 kr<span>/år</span></div>
-            <p className="price-monthly">eller 19 kr/mån</p>
+          
+          {/* Premium Månadsvis */}
+          <div className="pricing-card">
+            <h3>Premium Månadsvis</h3>
+            <div className="price">19 kr<span>/mån</span></div>
+            <p className="price-note">Flexibelt, avsluta när som helst</p>
             <ul>
               <li>✓ Allt i Gratis</li>
               <li>✓ Obegränsad historik</li>
               <li>✓ Obegränsade flockar</li>
-              <li>✓ Förväntad vs faktisk produktion</li>
-              <li>✓ Per-höna-statistik</li>
-              <li>✓ Produktivitetsvarningar</li>
+              <li>✓ AI-genererad dagsrapport</li>
+              <li>✓ Äggprognos 7 dagar framåt</li>
+              <li>✓ Avvikelsedetektion</li>
+              <li>✓ Ekonomijämförelse månad för månad</li>
               <li>✓ Kläckningsmodul</li>
               <li>✓ Anpassningsbara funktioner</li>
             </ul>
-            <button onClick={login} className="pricing-btn primary">Prova gratis först</button>
+            <button onClick={login} className="pricing-btn secondary">Välj månadsvis</button>
+          </div>
+          
+          {/* Premium Årsvis - Bäst värde */}
+          <div className="pricing-card popular">
+            <div className="popular-badge">Bäst värde</div>
+            <h3>Premium Årsvis</h3>
+            <div className="price">149 kr<span>/år</span></div>
+            <p className="price-note savings">Motsvarar 12,40 kr/mån – spara 79 kr!</p>
+            <ul>
+              <li>✓ Allt i Gratis</li>
+              <li>✓ Obegränsad historik</li>
+              <li>✓ Obegränsade flockar</li>
+              <li>✓ AI-genererad dagsrapport</li>
+              <li>✓ Äggprognos 7 dagar framåt</li>
+              <li>✓ Avvikelsedetektion</li>
+              <li>✓ Ekonomijämförelse månad för månad</li>
+              <li>✓ Kläckningsmodul</li>
+              <li>✓ Anpassningsbara funktioner</li>
+            </ul>
+            <button onClick={login} className="pricing-btn primary">Välj årsvis</button>
           </div>
         </div>
       </section>
