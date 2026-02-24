@@ -313,6 +313,36 @@ export default function HensScreen() {
     setShowHealthModal(true);
   };
   
+  // Quick action functions
+  const openQuickAction = (hen: Hen) => {
+    setQuickActionHen(hen);
+    setShowQuickAction(true);
+  };
+  
+  const handleQuickAddEgg = async (count: number) => {
+    if (!quickActionHen) return;
+    setAddingEgg(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      await fetch(`${API_URL}/api/eggs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: today,
+          count,
+          hen_id: quickActionHen.id
+        })
+      });
+      await loadData();
+      // Keep modal open to allow adding more
+      Alert.alert('🥚', `${count} ägg registrerat för ${quickActionHen.name}!`);
+    } catch (error) {
+      console.error('Failed to add egg:', error);
+      Alert.alert(isSv ? 'Fel' : 'Error', isSv ? 'Kunde inte registrera ägg' : 'Could not register egg');
+    }
+    setAddingEgg(false);
+  };
+  
   const handleSaveHealth = async () => {
     if (!healthHenId) return;
     setSaving(true);
