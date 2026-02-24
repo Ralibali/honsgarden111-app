@@ -232,6 +232,10 @@ export default function HatchingScreen() {
   if (!isPremium) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Text style={styles.backText}>{isSv ? 'Tillbaka' : 'Back'}</Text>
+        </TouchableOpacity>
         <View style={styles.premiumRequired}>
           <Text style={styles.premiumEmoji}>🥚</Text>
           <Text style={styles.premiumTitle}>{isSv ? 'Premium-funktion' : 'Premium Feature'}</Text>
@@ -261,12 +265,17 @@ export default function HatchingScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{isSv ? 'Kläckning' : 'Hatching'}</Text>
-          <Text style={styles.subtitle}>
-            {isSv ? 'Håll koll på ruvande ägg' : 'Track incubating eggs'}
-          </Text>
+        {/* Header with Back Button */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity style={styles.backButtonSmall} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <Text style={styles.title}>{isSv ? 'Kläckning' : 'Hatching'}</Text>
+            <Text style={styles.subtitle}>
+              {isSv ? 'Håll koll på ruvande ägg' : 'Track incubating eggs'}
+            </Text>
+          </View>
         </View>
         
         {/* Add Button */}
