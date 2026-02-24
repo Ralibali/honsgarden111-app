@@ -48,6 +48,7 @@ export default function Feed() {
   const [stats, setStats] = useState<FeedStats | null>(null);
   const [lowStockAlerts, setLowStockAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -57,6 +58,22 @@ export default function Feed() {
   const [cost, setCost] = useState('');
   const [brand, setBrand] = useState('');
   const [saving, setSaving] = useState(false);
+  
+  // Check premium status on mount
+  useEffect(() => {
+    const checkPremium = async () => {
+      try {
+        const res = await fetch('/api/premium/status', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setIsPremium(data.is_premium);
+        }
+      } catch (error) {
+        console.error('Failed to check premium status:', error);
+      }
+    };
+    checkPremium();
+  }, []);
   
   const loadData = useCallback(async () => {
     try {
