@@ -1255,6 +1255,37 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontSize: 13,
     color: '#78350f',
   },
+  // Custom egg input styles
+  customInputRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  customEggInput: {
+    flex: 1,
+    height: 50,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 18,
+    color: colors.text,
+  },
+  customAddButton: {
+    height: 50,
+    paddingHorizontal: 24,
+    backgroundColor: colors.success,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  customAddButtonDisabled: {
+    opacity: 0.5,
+  },
+  customAddButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFF',
+  },
   // Hen Select styles
   henSelectScroll: {
     marginBottom: 16,
