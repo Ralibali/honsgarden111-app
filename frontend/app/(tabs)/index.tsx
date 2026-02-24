@@ -203,6 +203,7 @@ export default function HomeScreen() {
   const today = new Date();
   const dateString = format(today, 'EEEE d MMMM yyyy', { locale: getLocale() });
   const t = i18n.t.bind(i18n);
+  const isSv = i18n.locale.startsWith('sv');
   
   const styles = createStyles(colors, isDark);
   
