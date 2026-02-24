@@ -1094,26 +1094,39 @@ export default function HensScreen() {
                   <View style={styles.quickEggSection}>
                     <Text style={styles.quickEggTitle}>🥚 {isSv ? 'Registrera ägg' : 'Register eggs'}</Text>
                     <View style={styles.quickEggButtons}>
-                      <TouchableOpacity 
-                        style={[styles.quickEggBtn, addingEgg && styles.quickEggBtnDisabled]}
-                        onPress={() => handleQuickAddEgg(1)}
-                        disabled={addingEgg}
+                      {[1, 2, 3, 5, 10].map((num) => (
+                        <TouchableOpacity 
+                          key={num}
+                          style={[styles.quickEggBtn, addingEgg && styles.quickEggBtnDisabled]}
+                          onPress={() => handleQuickAddEgg(num)}
+                          disabled={addingEgg}
+                        >
+                          <Text style={styles.quickEggBtnText}>+{num}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                    {/* Custom Amount Input */}
+                    <View style={styles.customEggRow}>
+                      <TextInput
+                        style={styles.customEggInputSmall}
+                        value={customEggCount}
+                        onChangeText={setCustomEggCount}
+                        keyboardType="number-pad"
+                        placeholder={isSv ? 'Eget antal...' : 'Custom...'}
+                        placeholderTextColor={colors.textMuted}
+                      />
+                      <TouchableOpacity
+                        style={[styles.customEggAddBtn, (!customEggCount || addingEgg) && styles.quickEggBtnDisabled]}
+                        onPress={() => {
+                          const count = parseInt(customEggCount);
+                          if (!isNaN(count) && count > 0) {
+                            handleQuickAddEgg(count);
+                            setCustomEggCount('');
+                          }
+                        }}
+                        disabled={!customEggCount || addingEgg}
                       >
-                        <Text style={styles.quickEggBtnText}>+1</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={[styles.quickEggBtn, addingEgg && styles.quickEggBtnDisabled]}
-                        onPress={() => handleQuickAddEgg(2)}
-                        disabled={addingEgg}
-                      >
-                        <Text style={styles.quickEggBtnText}>+2</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={[styles.quickEggBtn, addingEgg && styles.quickEggBtnDisabled]}
-                        onPress={() => handleQuickAddEgg(3)}
-                        disabled={addingEgg}
-                      >
-                        <Text style={styles.quickEggBtnText}>+3</Text>
+                        <Text style={styles.customEggAddBtnText}>{isSv ? 'Lägg till' : 'Add'}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
