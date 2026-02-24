@@ -11,6 +11,7 @@ import Settings from './pages/Settings';
 import Premium from './pages/Premium';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import AuthCallback from './pages/AuthCallback';
+import Admin from './pages/Admin';
 import Layout from './components/Layout';
 
 function AppRouter() {
@@ -34,6 +35,7 @@ function AppRouter() {
         <Route path="/hens" element={<Hens />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/premium" element={<Premium />} />
+        <Route path="/admin" element={<Admin />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
