@@ -349,14 +349,248 @@
 
 /* Footer */
 .landing-footer {
-  padding: 32px 20px;
-  text-align: center;
+  padding: 40px 20px;
   border-top: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
 }
 
-.landing-footer p {
-  color: var(--text-muted);
+.footer-content {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.footer-brand p {
   font-size: 14px;
+  color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 16px;
+}
+
+.footer-link {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.footer-link:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.copyright {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* New Logo Styles */
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo-icon {
+  margin-bottom: 12px;
+  filter: drop-shadow(0 4px 12px rgba(217, 119, 6, 0.4));
+}
+
+.tagline-main {
+  font-size: 26px;
+  color: rgba(255,255,255,0.95);
+  margin-bottom: 12px;
+  font-weight: 500;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.tagline-sub {
+  font-size: 18px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 32px;
+  font-weight: 400;
+}
+
+/* Floating Contact Button */
+.floating-contact-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+  transition: all 0.3s;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.floating-contact-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(245, 158, 11, 0.5);
+}
+
+/* Contact Modal */
+.contact-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.contact-modal {
+  background-color: var(--bg-surface);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.contact-modal h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.contact-modal p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.contact-modal label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.contact-modal input,
+.contact-modal textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  resize: none;
+}
+
+.contact-modal input:focus,
+.contact-modal textarea:focus {
+  border-color: var(--accent-primary);
+  outline: none;
+}
+
+.contact-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.contact-buttons .cancel-btn {
+  flex: 1;
+  padding: 14px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.contact-buttons .cancel-btn:hover {
+  border-color: var(--text-secondary);
+}
+
+.contact-buttons .send-btn {
+  flex: 1;
+  padding: 14px;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.contact-buttons .send-btn:hover {
+  transform: translateY(-1px);
+}
+
+.contact-buttons .send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.contact-success {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.success-icon {
+  font-size: 64px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.contact-success h3 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.contact-success p {
+  text-align: center;
+  margin-bottom: 0;
 }
 
 /* Responsive */
