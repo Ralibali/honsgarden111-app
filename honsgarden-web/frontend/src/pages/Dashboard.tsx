@@ -82,6 +82,7 @@ export default function Dashboard() {
   const [coop, setCoop] = useState<CoopSettings | null>(null);
   const [premium, setPremium] = useState<PremiumStatus | null>(null);
   const [hens, setHens] = useState<Hen[]>([]);
+  const [flocks, setFlocks] = useState<Flock[]>([]);
   const [insights, setInsights] = useState<Insights | null>(null);
   const [loading, setLoading] = useState(true);
   const [eggCount, setEggCount] = useState('');
@@ -95,13 +96,14 @@ export default function Dashboard() {
   
   const loadData = async () => {
     try {
-      const [todayRes, summaryRes, coopRes, premiumRes, hensRes, insightsRes] = await Promise.all([
+      const [todayRes, summaryRes, coopRes, premiumRes, hensRes, insightsRes, flocksRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
         fetch('/api/premium/status', { credentials: 'include' }),
         fetch('/api/hens', { credentials: 'include' }),
-        fetch('/api/insights', { credentials: 'include' })
+        fetch('/api/insights', { credentials: 'include' }),
+        fetch('/api/flocks', { credentials: 'include' })
       ]);
       
       if (todayRes.ok) setTodayStats(await todayRes.json());
@@ -110,6 +112,7 @@ export default function Dashboard() {
       if (premiumRes.ok) setPremium(await premiumRes.json());
       if (hensRes.ok) setHens(await hensRes.json());
       if (insightsRes.ok) setInsights(await insightsRes.json());
+      if (flocksRes.ok) setFlocks(await flocksRes.json());
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
