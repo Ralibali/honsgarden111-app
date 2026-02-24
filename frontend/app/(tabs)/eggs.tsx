@@ -29,6 +29,10 @@ export default function EggsScreen() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [eggCount, setEggCount] = useState('');
   const [notes, setNotes] = useState('');
+  const [hens, setHens] = useState<any[]>([]);
+  const [selectedHenId, setSelectedHenId] = useState('');
+  
+  const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
   
   const t = i18n.t.bind(i18n);
   const getLocale = () => i18n.locale.startsWith('sv') ? sv : enUS;
