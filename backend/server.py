@@ -1270,8 +1270,15 @@ async def get_hen_profile(hen_id: str, request: Request):
 # ============ HEALTH LOG ENDPOINTS ============
 @api_router.post("/health-logs", response_model=HealthLog)
 async def create_health_log(log: HealthLogCreate, request: Request):
-    """Create a health log entry for a hen"""
+    """Create a health log entry for a hen (Premium only)"""
     user_id = await get_user_id(request)
+    
+    # Check premium status - Health log is premium only
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    if not is_premium:
+        raise HTTPException(status_code=403, detail="Premium krävs för hälsologgen. Uppgradera för att spåra hälsa per höna.")
     
     # Verify hen exists
     hen = await db.hens.find_one({"id": log.hen_id, "user_id": user_id})
