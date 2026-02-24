@@ -267,45 +267,18 @@ export default function PaywallScreen() {
           <Text style={styles.subtitle}>{t('premium.subtitle')}</Text>
         </View>
         
-        {/* Features Comparison */}
+        {/* Features List */}
         <View style={styles.featuresCard}>
-          <View style={styles.featuresHeader}>
-            <View style={styles.featureColumn} />
-            <View style={styles.planColumn}>
-              <Text style={styles.planLabel}>{t('common.free')}</Text>
-            </View>
-            <View style={styles.planColumn}>
-              <Text style={[styles.planLabel, styles.premiumLabel]}>{t('common.premium')}</Text>
-            </View>
-          </View>
+          <Text style={styles.featuresTitle}>Premium innehåller:</Text>
           
           {features.map((feature) => (
             <View key={feature.key} style={styles.featureRow}>
-              <View style={styles.featureColumn}>
-                <Ionicons name={feature.icon as any} size={18} color="#8E8E93" />
+              <View style={styles.featureIconContainer}>
+                <Ionicons name={feature.icon as any} size={22} color="#fbbf24" />
+              </View>
+              <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
-              </View>
-              <View style={styles.planColumn}>
-                {typeof feature.free === 'boolean' ? (
-                  <Ionicons
-                    name={feature.free ? 'checkmark-circle' : 'close-circle'}
-                    size={20}
-                    color={feature.free ? '#4CAF50' : '#666'}
-                  />
-                ) : (
-                  <Text style={styles.featureValue}>{feature.free}</Text>
-                )}
-              </View>
-              <View style={styles.planColumn}>
-                {typeof feature.premium === 'boolean' ? (
-                  <Ionicons
-                    name={feature.premium ? 'checkmark-circle' : 'close-circle'}
-                    size={20}
-                    color={feature.premium ? '#4CAF50' : '#666'}
-                  />
-                ) : (
-                  <Text style={[styles.featureValue, styles.premiumValue]}>{feature.premium}</Text>
-                )}
+                <Text style={styles.featureDescription}>{feature.description}</Text>
               </View>
             </View>
           ))}
@@ -322,7 +295,7 @@ export default function PaywallScreen() {
           >
             <View style={styles.savingsBadge}>
               <Text style={styles.savingsText}>
-                {t('premium.yearlySavings', { percent: YEARLY_SAVINGS })}
+                Spara {YEARLY_SAVINGS}%
               </Text>
             </View>
             <View style={styles.planRadio}>
