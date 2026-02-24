@@ -306,6 +306,99 @@ export default function Settings() {
         </div>
       )}
       
+      {/* Feature Preferences - Premium Only */}
+      {featurePrefs && (
+        <div className="card feature-prefs-card">
+          <h3>🎛️ Anpassa funktioner</h3>
+          {featurePrefs.can_customize ? (
+            <>
+              <p className="card-desc">Välj vilka funktioner du vill visa i appen</p>
+              
+              <div className="toggle-row">
+                <div className="toggle-info">
+                  <span>🏠 Flockhantering</span>
+                  <small>Organisera hönor i flockar</small>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={featurePrefs.flock_management}
+                    onChange={(e) => updateFeaturePreference('flock_management', e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+              
+              <div className="toggle-row">
+                <div className="toggle-info">
+                  <span>🩺 Hälsologg</span>
+                  <small>Spåra hälsa per höna</small>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={featurePrefs.health_log}
+                    onChange={(e) => updateFeaturePreference('health_log', e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+              
+              <div className="toggle-row">
+                <div className="toggle-info">
+                  <span>⚠️ Produktivitetsvarningar</span>
+                  <small>Varningar när hönor inte värper</small>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={featurePrefs.productivity_alerts}
+                    onChange={(e) => updateFeaturePreference('productivity_alerts', e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+              
+              <div className="toggle-row">
+                <div className="toggle-info">
+                  <span>🐣 Kläckningsmodul</span>
+                  <small>Spåra kläckning av ägg</small>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={featurePrefs.hatching_module}
+                    onChange={(e) => updateFeaturePreference('hatching_module', e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+              
+              <div className="toggle-row">
+                <div className="toggle-info">
+                  <span>💰 Ekonomiinsikter</span>
+                  <small>Visa kostnad per ägg m.m.</small>
+                </div>
+                <label className="toggle">
+                  <input
+                    type="checkbox"
+                    checked={featurePrefs.show_economy_insights}
+                    onChange={(e) => updateFeaturePreference('show_economy_insights', e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+            </>
+          ) : (
+            <div className="premium-lock">
+              <span className="lock-icon">🔒</span>
+              <p>Uppgradera till Premium för att anpassa funktioner</p>
+              <a href="/premium" className="btn-secondary">Uppgradera</a>
+            </div>
+          )}
+        </div>
+      )}
+      
       {/* Reminder Settings */}
       <div className="card reminder-card">
         <h3>📧 E-postpåminnelser</h3>
