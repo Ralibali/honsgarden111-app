@@ -248,6 +248,13 @@ async def require_user(request: Request) -> User:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
 
+async def require_admin(request: Request) -> User:
+    """Require admin user, raise 401/403 if not"""
+    user = await require_user(request)
+    if user.email not in ADMIN_EMAILS:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
 # ============ AUTH ENDPOINTS ============
 @api_router.post("/auth/session")
 async def exchange_session(session_req: SessionRequest, response: Response):
