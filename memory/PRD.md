@@ -183,6 +183,12 @@
 - **Auth**: Google OAuth2
 - **Fonts**: Playfair Display, Inter (Google Fonts)
 
+### Session 4 - P0 Bug Fixes (February 24, 2026)
+- [x] Valutafix mobilapp: Betalväggen visar nu SEK (19 kr, 149 kr) istället för USD
+- [x] "Anpassa funktioner" på webb: Fixat nyckelnamn (preferences.show_flock_management)
+- [x] Tillbaka-knapp på Hatching-modulen
+- [x] Grafer verifierade - fungerar med recharts
+
 ---
 
 ## P2 - Future/Backlog
