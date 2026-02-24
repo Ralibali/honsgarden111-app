@@ -210,6 +210,66 @@ backend:
         agent: "testing"
         comment: "✅ VERIFIED - Summary stats working perfectly. All-time totals: 31 eggs, 700.5kr costs, 485kr sales, -215.5kr net. This month breakdown matches monthly endpoint data. Calculations mathematically verified."
 
+  - task: "Health Check API (/api/health)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Health check endpoint working correctly. Returns {'status': 'healthy'} with 200 status code."
+
+  - task: "Premium Insights API (/api/insights with premium features)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Premium insights working correctly. Returns cost_per_egg, top_hen, productivity_index. Premium features include: forecast_7_days, production_status, deviating_hens, economy comparison, and AI summary. All calculations verified."
+
+  - task: "Health Logs API (/api/health-logs GET/POST)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Health logs CRUD working correctly. Can POST new health logs for hens, GET all logs, GET logs filtered by hen_id. All endpoints returning proper data structure."
+
+  - task: "Feedback Submission API (/api/feedback)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Feedback submission working correctly. Accepts feedback with type, message, and email. Returns confirmation message in Swedish."
+
+  - task: "Subscription Cancellation API (/api/subscription/cancel)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED - Subscription cancel endpoint properly implemented. Correctly handles authentication requirements (returns 401 for unauthenticated users). Endpoint exists and responds appropriately."
+
 frontend:
   - task: "Home Dashboard Screen"
     implemented: true
