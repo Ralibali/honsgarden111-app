@@ -17,9 +17,29 @@ interface HenStats {
   total_eggs: number;
 }
 
+interface HealthLog {
+  id: string;
+  hen_id: string;
+  date: string;
+  type: string;
+  description?: string;
+}
+
+const HEALTH_TYPES = [
+  { value: 'sick', label: '🤒 Sjuk', color: '#ef4444' },
+  { value: 'molting', label: '🪶 Ruggning', color: '#f59e0b' },
+  { value: 'vet_visit', label: '🏥 Veterinärbesök', color: '#6366f1' },
+  { value: 'vaccination', label: '💉 Vaccination', color: '#10b981' },
+  { value: 'deworming', label: '💊 Avmaskning', color: '#8b5cf6' },
+  { value: 'injury', label: '🩹 Skada', color: '#ef4444' },
+  { value: 'recovered', label: '✅ Frisk', color: '#22c55e' },
+  { value: 'note', label: '📝 Anteckning', color: '#64748b' },
+];
+
 export default function Hens() {
   const [hens, setHens] = useState<Hen[]>([]);
   const [henStats, setHenStats] = useState<Record<string, number>>({});
+  const [healthLogs, setHealthLogs] = useState<Record<string, HealthLog[]>>({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingHen, setEditingHen] = useState<Hen | null>(null);
@@ -34,6 +54,17 @@ export default function Hens() {
   const [addingEggForHen, setAddingEggForHen] = useState<string | null>(null);
   const [eggCount, setEggCount] = useState(1);
   const [savingEgg, setSavingEgg] = useState(false);
+  
+  // Health log modal
+  const [showHealthModal, setShowHealthModal] = useState(false);
+  const [healthHenId, setHealthHenId] = useState<string>('');
+  const [healthType, setHealthType] = useState('note');
+  const [healthDescription, setHealthDescription] = useState('');
+  const [healthDate, setHealthDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [savingHealth, setSavingHealth] = useState(false);
+  
+  // Expanded hen for health history
+  const [expandedHen, setExpandedHen] = useState<string | null>(null);
   
   useEffect(() => {
     loadData();
