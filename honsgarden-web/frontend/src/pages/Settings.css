@@ -284,6 +284,51 @@
   background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(99, 102, 241, 0.05) 100%);
 }
 
+/* Feature Preferences Card */
+.feature-prefs-card {
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.feature-prefs-card .toggle-row {
+  padding: 16px 0;
+}
+
+.feature-prefs-card .toggle-row:last-of-type {
+  border-bottom: none;
+}
+
+.toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toggle-info span {
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.toggle-info small {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.premium-lock {
+  text-align: center;
+  padding: 24px;
+}
+
+.lock-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.premium-lock p {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
 .support-link {
   display: inline-block;
   color: var(--accent-primary);
