@@ -312,10 +312,7 @@ export default function Eggs() {
             
             <div className="modal-buttons">
               <button onClick={closeModal} className="btn-secondary" data-testid="cancel-egg-btn">
-                Avbryt
-              </button>
-              <button onClick={handleSubmit} disabled={!eggCount || saving} className="btn-primary" data-testid="save-egg-btn">
-                {saving ? 'Sparar...' : 'Spara'}
+                Stäng
               </button>
             </div>
           </div>
