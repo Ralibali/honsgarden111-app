@@ -244,26 +244,62 @@ export default function Eggs() {
             )}
             
             <label>Antal ägg</label>
-            <div className="egg-count-selector">
-              {[1, 2, 3, 4, 5].map(num => (
-                <button
-                  key={num}
-                  className={`count-btn ${eggCount === String(num) ? 'active' : ''}`}
-                  onClick={() => setEggCount(String(num))}
-                  data-testid={`count-btn-${num}`}
-                >
-                  {num}
-                </button>
-              ))}
+            <div className="quick-add-section">
+              <div className="quick-buttons">
+                {[1, 2, 3, 5, 10].map(num => (
+                  <button
+                    key={num}
+                    className="quick-btn"
+                    onClick={async () => {
+                      setSaving(true);
+                      try {
+                        await fetch('/api/eggs', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({
+                            date: selectedDate,
+                            count: num,
+                            hen_id: selectedHen || undefined
+                          })
+                        });
+                        await loadData();
+                        closeModal();
+                      } catch (error) {
+                        console.error('Failed to save:', error);
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                    disabled={saving}
+                    data-testid={`quick-add-${num}`}
+                  >
+                    +{num}
+                  </button>
+                ))}
+              </div>
+              <p className="hint">Klicka för snabbregistrering</p>
+            </div>
+            
+            <label>Eller ange eget antal</label>
+            <div className="custom-count-row">
               <input
                 type="number"
                 value={eggCount}
                 onChange={(e) => setEggCount(e.target.value)}
-                placeholder="Annat"
+                placeholder="Antal"
                 min="0"
                 className="count-input"
                 data-testid="egg-count-input"
               />
+              <button 
+                onClick={handleSubmit} 
+                disabled={!eggCount || saving} 
+                className="btn-add"
+                data-testid="add-custom-count"
+              >
+                Lägg till
+              </button>
             </div>
             
             <label>Anteckningar (valfritt)</label>
