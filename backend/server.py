@@ -1636,8 +1636,15 @@ async def delete_transaction(transaction_id: str, request: Request):
 # ============ FEED MANAGEMENT API (ETAPP 4) ============
 @api_router.post("/feed", response_model=dict)
 async def create_feed_record(record: FeedRecordCreate, request: Request):
-    """Create a new feed record (consumption or purchase)"""
+    """Create a new feed record (Premium only)"""
     user_id = await get_user_id(request)
+    
+    # Check premium status - Feed management is premium only
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    if not is_premium:
+        raise HTTPException(status_code=403, detail="Premium krävs för foderhantering. Uppgradera för att spåra foder och kostnader.")
     
     feed_record = FeedRecord(
         user_id=user_id,
