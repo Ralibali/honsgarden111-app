@@ -260,6 +260,104 @@
   color: var(--text-secondary);
 }
 
+/* Health Button */
+.health-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.health-btn:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: var(--text-primary);
+}
+
+/* Health Summary */
+.health-summary {
+  margin-top: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.health-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.health-summary-header:hover {
+  background-color: var(--bg-surface);
+}
+
+.expand-icon {
+  font-size: 10px;
+}
+
+.health-log-list {
+  padding: 8px;
+}
+
+.health-log-item {
+  padding: 8px 10px;
+  border-left: 3px solid;
+  background-color: var(--bg-secondary);
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.health-log-item:last-child {
+  margin-bottom: 0;
+}
+
+.log-type {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.log-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.log-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Health Modal */
+.health-modal .modal-desc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.health-modal select {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
 /* Add Egg per Hen */
 .add-egg-btn {
   width: 100%;
