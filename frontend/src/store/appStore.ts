@@ -350,4 +350,15 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ error: error.message });
     }
   },
+  
+  fetchInsights: async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/insights`);
+      if (!response.ok) throw new Error('Failed to fetch insights');
+      const data = await response.json();
+      set({ insights: data });
+    } catch (error: any) {
+      set({ error: error.message });
+    }
+  },
 }));
