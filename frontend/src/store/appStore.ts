@@ -147,6 +147,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   transactions: [],
   todayStats: null,
   summaryStats: null,
+  insights: null,
   lastAction: null,
   loading: false,
   error: null,
