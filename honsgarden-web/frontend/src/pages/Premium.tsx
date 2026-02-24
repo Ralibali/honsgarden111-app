@@ -143,20 +143,30 @@ export default function Premium() {
       )}
       
       <div className="features-grid">
-        <div className="feature-item">
-          <span className="feature-icon">📈</span>
-          <h3>Obegränsad historik</h3>
-          <p>Se all din statistik utan begränsningar</p>
+        <div className="feature-item highlight">
+          <span className="feature-icon">🔮</span>
+          <h3>7-dagars prognos</h3>
+          <p>Se hur många ägg du kan förvänta dig kommande vecka</p>
+        </div>
+        <div className="feature-item highlight">
+          <span className="feature-icon">📊</span>
+          <h3>Produktionsstatus</h3>
+          <p>Se om flocken producerar normalt, lågt eller högt</p>
+        </div>
+        <div className="feature-item highlight">
+          <span className="feature-icon">⚠️</span>
+          <h3>Avvikelsedetektion</h3>
+          <p>Varning när en höna slutar värpa oväntat</p>
+        </div>
+        <div className="feature-item highlight">
+          <span className="feature-icon">💰</span>
+          <h3>Ekonomijämförelse</h3>
+          <p>Jämför vinst/förlust månad för månad</p>
         </div>
         <div className="feature-item">
-          <span className="feature-icon">📅</span>
-          <h3>Årsstatistik</h3>
-          <p>Jämför år för år</p>
-        </div>
-        <div className="feature-item">
-          <span className="feature-icon">📄</span>
-          <h3>PDF-export</h3>
-          <p>Exportera rapporter som PDF</p>
+          <span className="feature-icon">📝</span>
+          <h3>AI-sammanfattning</h3>
+          <p>Daglig sammanfattning av din gårds status</p>
         </div>
         <div className="feature-item">
           <span className="feature-icon">📧</span>
@@ -164,14 +174,14 @@ export default function Premium() {
           <p>Daglig påminnelse att registrera ägg</p>
         </div>
         <div className="feature-item">
-          <span className="feature-icon">🐔</span>
-          <h3>Per höna</h3>
-          <p>Följ varje hönas produktion</p>
+          <span className="feature-icon">📈</span>
+          <h3>Obegränsad historik</h3>
+          <p>Spara all statistik för alltid</p>
         </div>
         <div className="feature-item">
           <span className="feature-icon">❤️</span>
           <h3>Stöd utvecklingen</h3>
-          <p>Hjälp oss göra appen bättre</p>
+          <p>Hjälp oss göra appen ännu bättre</p>
         </div>
       </div>
       
@@ -179,7 +189,7 @@ export default function Premium() {
         <div className="pricing-card">
           <h3>Månatlig</h3>
           <div className="price">
-            <span className="amount">19</span>
+            <span className="amount">29</span>
             <span className="currency">kr/månad</span>
           </div>
           <p>Flexibelt, avsluta när som helst</p>
@@ -194,13 +204,13 @@ export default function Premium() {
         </div>
         
         <div className="pricing-card popular">
-          <div className="popular-badge">Populärast</div>
+          <div className="popular-badge">Spara 30%</div>
           <h3>Årlig</h3>
           <div className="price">
-            <span className="amount">149</span>
+            <span className="amount">249</span>
             <span className="currency">kr/år</span>
           </div>
-          <p>Spara 79 kr (över 30%!)</p>
+          <p>Bara 20,75 kr/månad!</p>
           <button
             onClick={() => handlePurchase('yearly')}
             disabled={purchasing}
