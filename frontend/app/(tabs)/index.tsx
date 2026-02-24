@@ -1072,6 +1072,35 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     color: colors.textSecondary,
     marginTop: 2,
   },
+  // Quick Actions Section
+  quickActionsSection: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  quickActionsScroll: {
+    marginTop: 12,
+    marginHorizontal: -8,
+  },
+  quickActionCard: {
+    alignItems: 'center',
+    marginHorizontal: 8,
+    width: 70,
+  },
+  quickActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  quickActionLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
   // Premium Insights Card
   premiumInsightsCard: {
     backgroundColor: colors.surface,
