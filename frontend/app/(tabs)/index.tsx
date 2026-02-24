@@ -54,6 +54,10 @@ export default function HomeScreen() {
   const [productivityAlerts, setProductivityAlerts] = useState<any>(null);
   const [dismissedBanner, setDismissedBanner] = useState(false);
   
+  // Hens for egg registration
+  const [hens, setHens] = useState<any[]>([]);
+  const [selectedHenId, setSelectedHenId] = useState<string>('');
+  
   // Animation refs
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const undoOpacity = useRef(new Animated.Value(0)).current;
