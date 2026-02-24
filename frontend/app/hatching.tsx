@@ -14,10 +14,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeStore } from '../../src/store/themeStore';
-import { usePremiumStore } from '../../src/store/premiumStore';
+import { useThemeStore } from '../src/store/themeStore';
+import { usePremiumStore } from '../src/store/premiumStore';
 import { useRouter } from 'expo-router';
-import i18n from '../../src/i18n';
+import i18n from '../src/i18n';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
