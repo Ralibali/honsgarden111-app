@@ -204,6 +204,23 @@
 - [x] Feature parity audit: Webb och mobil har paritet i kärnfunktioner
 - [x] Premium grafer: "Expected vs Actual" och "Per-Hen" låsta med blur för gratisanvändare
 
+### Session 7 - Foderhantering Premium (February 24, 2026)
+- [x] Backend: Feed API kräver nu Premium (POST returnerar 403, GET returnerar tom array)
+- [x] Mobil Frontend: Feed-skärmen visar premium-lås för gratisanvändare
+- [x] Webb Frontend: Feed-sidan visar premium-lås för gratisanvändare
+
+---
+
+## Komplett Premium-funktionslista
+| Funktion | Backend | Webb | Mobil |
+|----------|---------|------|-------|
+| Obegränsade flockar | ✅ | ✅ | ✅ |
+| Hälsologg | ✅ | ✅ | ✅ |
+| Kläckningsmodul | ✅ | ✅ | ✅ |
+| Anpassa funktioner | ✅ | ✅ | ✅ |
+| Foderhantering | ✅ | ✅ | ✅ |
+| Obegränsad historik | ✅ | ✅ | ✅ |
+
 ---
 
 ## P2 - Future/Backlog
