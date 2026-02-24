@@ -312,6 +312,41 @@ export default function Hens() {
               
               {hen.notes && <p className="hen-notes">{hen.notes}</p>}
               
+              {/* Health log button */}
+              <button 
+                onClick={() => openHealthModal(hen.id)}
+                className="health-btn"
+              >
+                🩺 Logga hälsa
+              </button>
+              
+              {/* Recent health logs */}
+              {healthLogs[hen.id] && healthLogs[hen.id].length > 0 && (
+                <div className="health-summary">
+                  <div 
+                    className="health-summary-header"
+                    onClick={() => setExpandedHen(expandedHen === hen.id ? null : hen.id)}
+                  >
+                    <span>📋 Hälsohistorik ({healthLogs[hen.id].length})</span>
+                    <span className="expand-icon">{expandedHen === hen.id ? '▲' : '▼'}</span>
+                  </div>
+                  {expandedHen === hen.id && (
+                    <div className="health-log-list">
+                      {healthLogs[hen.id].slice(0, 5).map(log => {
+                        const typeInfo = getHealthTypeInfo(log.type);
+                        return (
+                          <div key={log.id} className="health-log-item" style={{ borderLeftColor: typeInfo.color }}>
+                            <span className="log-type">{typeInfo.label}</span>
+                            <span className="log-date">{log.date}</span>
+                            {log.description && <p className="log-desc">{log.description}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div className="hen-actions">
                 <button onClick={() => handleEdit(hen)} className="edit-btn" data-testid={`edit-hen-${hen.id}`}>
                   Redigera
