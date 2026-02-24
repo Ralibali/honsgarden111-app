@@ -403,6 +403,16 @@ export default function Statistics() {
       {/* Graphs Tab */}
       {activeTab === 'graphs' && (
         <div className="graphs-section">
+          {/* Demo data notice */}
+          {showDemoData && (
+            <div className="demo-data-notice">
+              <span>📊</span>
+              <p>
+                <strong>Exempeldata visas</strong> - Börja logga ägg för att se din egen statistik!
+              </p>
+            </div>
+          )}
+          
           {/* FREE: Egg Production Graph */}
           <div className="graph-card">
             <div className="graph-header">
@@ -430,7 +440,7 @@ export default function Statistics() {
             </div>
             <div className="chart-container">
               <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={eggChartData}>
+                <LineChart data={showDemoData ? DEMO_EGG_DATA : eggChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
                   <YAxis stroke="#9ca3af" fontSize={12} />
@@ -456,17 +466,26 @@ export default function Statistics() {
             <h3>💰 Ekonomi</h3>
             <div className="chart-container">
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={economyChartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
-                  <YAxis stroke="#9ca3af" fontSize={12} />
+                <PieChart>
+                  <Pie
+                    data={showDemoData ? DEMO_ECONOMY_DATA : economyChartData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={70}
+                    label={({ name, value }) => `${name}: ${value} kr`}
+                  >
+                    {(showDemoData ? DEMO_ECONOMY_DATA : economyChartData).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
                   <Tooltip
                     contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }}
                     labelStyle={{ color: '#fff' }}
+                    formatter={(value: number) => [`${value} kr`, '']}
                   />
                   <Legend />
-                  <Bar dataKey="intäkter" fill="#4ade80" name="Intäkter" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="kostnader" fill="#f87171" name="Kostnader" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
