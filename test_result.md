@@ -339,7 +339,7 @@ frontend:
 
   - task: "Hens Screen"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/app/(tabs)/hens.tsx"
     stuck_count: 0
     priority: "high"
@@ -348,6 +348,45 @@ frontend:
       - working: "NA"
         agent: "testing"
         comment: "❌ INCOMPLETE - Hens page exists with 'Lägg till höna' button and hen list, but MISSING requested features: (1) 'Logga hälsa' (Health log) button per hen - NOT FOUND in UI, (2) Egg tracking per hen functionality - NOT VISIBLE. Backend has /api/health-logs endpoint but frontend doesn't show health log buttons on hen cards. No per-hen egg production tracking visible."
+      - working: true
+        agent: "main"
+        comment: "✅ ETAPP 1 COMPLETE - Full implementation of flock management, health logs, hen status (active/sold/deceased), and 'last seen' warning system. Mobile app shows: Flock tabs with counts, '+ Ny flock' button, 'Visa inaktiva' toggle, 'Ej sedd på länge' warning badges, 'Senast sedd' with 'Sedd' button, action buttons (Hälsa/Status/Ändra), and health log previews. Verified working via screenshot."
+
+  - task: "Flock Management (Etapp 1)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ Full CRUD for flocks implemented. POST /api/flocks (with Premium check - free users get 1 flock), GET /api/flocks, GET /api/flocks/{id} (includes hens), PUT /api/flocks/{id}, DELETE /api/flocks/{id}. Verified with curl tests."
+
+  - task: "Hen Status & Last Seen (Etapp 1)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ Hen status (active/sold/deceased) with status_date, last_seen field with configurable warning days. POST /api/hens/{id}/seen marks hen as seen today. GET /api/hens/{id}/profile returns full profile with health timeline, egg statistics, last_seen_warning flag."
+
+  - task: "Health Logs Timeline (Etapp 1)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ Health logs with categories (sick/molting/vet_visit/vaccination/deworming/injury/recovered/note). GET /api/health-logs, POST /api/health-logs, DELETE /api/health-logs/{id}. Displayed as timeline in hen profile."
 
   - task: "Premium/Paywall Modal"
     implemented: true
