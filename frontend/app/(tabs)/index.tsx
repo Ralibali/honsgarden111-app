@@ -802,4 +802,226 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontSize: 16,
     fontWeight: '600',
   },
+  // Insights styles
+  insightsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 12,
+  },
+  insightItem: {
+    flex: 1,
+    minWidth: '30%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 12,
+    padding: 12,
+  },
+  insightTopHen: {
+    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.2)',
+  },
+  insightIcon: {
+    fontSize: 22,
+  },
+  insightData: {
+    flex: 1,
+  },
+  insightValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  insightLabel: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  // Premium Insights Card
+  premiumInsightsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.3)',
+  },
+  premiumCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  premiumBadge: {
+    backgroundColor: '#fbbf24',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  premiumBadgeText: {
+    color: '#1a1a2e',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  premiumSummary: {
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+  },
+  premiumSummaryText: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  premiumStatsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  statusCard: {
+    flex: 1,
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+  },
+  statusNormal: {
+    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(74, 222, 128, 0.3)',
+  },
+  statusLow: {
+    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(251, 191, 36, 0.3)',
+  },
+  statusHigh: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.3)',
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  statusDetail: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  forecastCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 12,
+    padding: 14,
+  },
+  forecastIcon: {
+    fontSize: 26,
+  },
+  forecastData: {
+    flex: 1,
+  },
+  forecastValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  forecastLabel: {
+    fontSize: 11,
+    color: colors.textSecondary,
+  },
+  alertSection: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
+  },
+  alertTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#ef4444',
+    marginBottom: 8,
+  },
+  henAlert: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 6,
+  },
+  alertIcon: {
+    fontSize: 18,
+  },
+  alertText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.text,
+  },
+  economySection: {
+    marginTop: 4,
+  },
+  economyTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  economyCards: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+  },
+  economyCard: {
+    flex: 1,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 10,
+    padding: 12,
+    alignItems: 'center',
+  },
+  economyCardFaded: {
+    opacity: 0.6,
+  },
+  economyLabel: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  economyValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  economyPositive: {
+    color: '#4ade80',
+  },
+  economyNegative: {
+    color: '#ef4444',
+  },
+  economyChange: {
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+  },
+  economyChangePositive: {
+    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+  },
+  economyChangeNegative: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  economyChangeText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.text,
+  },
 });
