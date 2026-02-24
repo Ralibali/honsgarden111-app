@@ -576,12 +576,41 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
             
+            {/* Per-Hen Selection (Optional) */}
+            {hens.length > 0 && (
+              <>
+                <Text style={styles.quickAddLabel}>Vilken höna la äggen? (valfritt)</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.henSelectScroll}>
+                  <TouchableOpacity
+                    style={[styles.henSelectBtn, !selectedHenId && styles.henSelectBtnActive]}
+                    onPress={() => setSelectedHenId('')}
+                  >
+                    <Text style={styles.henSelectEmoji}>🥚</Text>
+                    <Text style={[styles.henSelectText, !selectedHenId && styles.henSelectTextActive]}>Okänd</Text>
+                  </TouchableOpacity>
+                  {hens.map((hen) => (
+                    <TouchableOpacity
+                      key={hen.id}
+                      style={[styles.henSelectBtn, selectedHenId === hen.id && styles.henSelectBtnActive]}
+                      onPress={() => setSelectedHenId(hen.id)}
+                    >
+                      <Text style={styles.henSelectEmoji}>🐔</Text>
+                      <Text style={[styles.henSelectText, selectedHenId === hen.id && styles.henSelectTextActive]}>
+                        {hen.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+            
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => {
                   setShowQuickAdd(false);
                   setEggCount('');
+                  setSelectedHenId('');
                 }}
               >
                 <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
