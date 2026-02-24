@@ -40,6 +40,9 @@ APP_URL = os.environ.get('APP_URL', 'https://github-sync-47.preview.emergentagen
 if RESEND_API_KEY:
     resend.api_key = RESEND_API_KEY
 
+# Admin config - comma-separated list of admin emails
+ADMIN_EMAILS = [email.strip() for email in os.environ.get('ADMIN_EMAILS', '').split(',') if email.strip()]
+
 # Free trial period (days)
 FREE_TRIAL_DAYS = 7
 
