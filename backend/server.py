@@ -1812,11 +1812,13 @@ async def get_insights(request: Request, include_premium: bool = False):
     return response
 
 # ============ FREE TIER DATA LIMITS ============
-FREE_DATA_HISTORY_DAYS = 90
+# Free users can only VIEW the last 30 days. ALL data is always saved.
+# When they upgrade to Premium, all historical data is unlocked.
+FREE_DATA_HISTORY_DAYS = 30
 
 @api_router.get("/account/data-limits")
 async def get_data_limits(request: Request):
-    """Get information about data limits and data that will be deleted for free users"""
+    """Get information about data limits and hidden data for free users"""
     user_id = await get_user_id(request)
     today = date.today()
     
@@ -1844,68 +1846,64 @@ async def get_data_limits(request: Request):
             "is_premium": True,
             "data_limit_days": None,
             "oldest_allowed_date": None,
-            "data_at_risk": None,
+            "hidden_data": None,
             "trial_warning": trial_warning,
             "days_until_expiry": days_until_expiry,
             "plan": subscription.get('plan') if subscription else None
         }
     
-    # Calculate oldest allowed date for free users
-    oldest_allowed = (today - timedelta(days=FREE_DATA_HISTORY_DAYS)).isoformat()
+    # Calculate cutoff date for free users (30 days visibility)
+    cutoff_date = (today - timedelta(days=FREE_DATA_HISTORY_DAYS)).isoformat()
     
-    # Count data at risk (older than 90 days)
-    eggs_at_risk = await db.egg_records.count_documents({
+    # Find oldest data to calculate months of hidden history
+    oldest_egg = await db.egg_records.find_one(
+        {"user_id": user_id},
+        sort=[("date", 1)]
+    )
+    
+    # Count hidden data (older than 30 days, but NOT deleted)
+    eggs_hidden = await db.egg_records.count_documents({
         "user_id": user_id,
-        "date": {"$lt": oldest_allowed}
+        "date": {"$lt": cutoff_date}
     })
     
-    transactions_at_risk = await db.transactions.count_documents({
+    transactions_hidden = await db.transactions.count_documents({
         "user_id": user_id,
-        "date": {"$lt": oldest_allowed}
+        "date": {"$lt": cutoff_date}
     })
     
-    health_logs_at_risk = await db.health_logs.count_documents({
+    health_logs_hidden = await db.health_logs.count_documents({
         "user_id": user_id,
-        "date": {"$lt": oldest_allowed}
+        "date": {"$lt": cutoff_date}
     })
     
-    total_at_risk = eggs_at_risk + transactions_at_risk + health_logs_at_risk
+    total_hidden = eggs_hidden + transactions_hidden + health_logs_hidden
     
-    # Check how soon data will be deleted (data between 83-90 days old)
-    warning_start = (today - timedelta(days=FREE_DATA_HISTORY_DAYS)).isoformat()
-    warning_end = (today - timedelta(days=FREE_DATA_HISTORY_DAYS - 7)).isoformat()
-    
-    eggs_warning = await db.egg_records.count_documents({
-        "user_id": user_id,
-        "date": {"$gte": warning_start, "$lt": warning_end}
-    })
-    
-    transactions_warning = await db.transactions.count_documents({
-        "user_id": user_id,
-        "date": {"$gte": warning_start, "$lt": warning_end}
-    })
-    
-    upcoming_deletion = eggs_warning + transactions_warning
+    # Calculate months of hidden data
+    months_hidden = 0
+    if oldest_egg and oldest_egg.get('date'):
+        oldest_date_str = oldest_egg['date']
+        oldest_date = date.fromisoformat(oldest_date_str)
+        cutoff = date.fromisoformat(cutoff_date)
+        if oldest_date < cutoff:
+            days_hidden = (cutoff - oldest_date).days
+            months_hidden = max(1, days_hidden // 30)
     
     return {
         "is_premium": False,
         "data_limit_days": FREE_DATA_HISTORY_DAYS,
-        "oldest_allowed_date": oldest_allowed,
-        "data_at_risk": {
-            "total": total_at_risk,
-            "eggs": eggs_at_risk,
-            "transactions": transactions_at_risk,
-            "health_logs": health_logs_at_risk
-        },
-        "upcoming_deletion": {
-            "within_7_days": upcoming_deletion,
-            "eggs": eggs_warning,
-            "transactions": transactions_warning
+        "oldest_allowed_date": cutoff_date,
+        "hidden_data": {
+            "total": total_hidden,
+            "eggs": eggs_hidden,
+            "transactions": transactions_hidden,
+            "health_logs": health_logs_hidden,
+            "months_of_history": months_hidden
         },
         "trial_warning": trial_warning,
         "days_until_expiry": days_until_expiry,
         "plan": subscription.get('plan') if subscription else None,
-        "message": f"Gratis-konton har {FREE_DATA_HISTORY_DAYS} dagars historik. Uppgradera till Premium för obegränsad historik!"
+        "message": f"Du har {months_hidden} månaders statistik sparad – uppgradera till Premium för att låsa upp den!" if months_hidden > 0 else None
     }
 
 # ============ STATISTICS ENDPOINTS ============
