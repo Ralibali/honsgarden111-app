@@ -119,6 +119,11 @@ class Hen(BaseModel):
     birth_date: Optional[str] = None
     notes: Optional[str] = None
     is_active: bool = True
+    flock_id: Optional[str] = None
+    status: str = "active"  # active, sold, deceased
+    status_date: Optional[str] = None
+    last_seen: Optional[str] = None
+    last_seen_warning_days: int = 3  # Default warning after 3 days
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
