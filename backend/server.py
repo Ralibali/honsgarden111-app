@@ -122,12 +122,32 @@ class Hen(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+# ============ FLOCK MODELS ============
+class FlockCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class Flock(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    description: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# ============ HEN STATUS ENUM ============
+class HenStatus(str, Enum):
+    ACTIVE = "active"
+    SOLD = "sold"
+    DECEASED = "deceased"
+
+# ============ HEN MODELS ============
 class HenCreate(BaseModel):
     name: str
     breed: Optional[str] = None
     color: Optional[str] = None
     birth_date: Optional[str] = None
     notes: Optional[str] = None
+    flock_id: Optional[str] = None
 
 class HenUpdate(BaseModel):
     name: Optional[str] = None
@@ -136,6 +156,11 @@ class HenUpdate(BaseModel):
     birth_date: Optional[str] = None
     notes: Optional[str] = None
     is_active: Optional[bool] = None
+    flock_id: Optional[str] = None
+    status: Optional[HenStatus] = None
+    status_date: Optional[str] = None
+    last_seen: Optional[str] = None
+    last_seen_warning_days: Optional[int] = None
 
 class EggRecord(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
