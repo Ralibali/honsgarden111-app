@@ -49,14 +49,47 @@ export default function HomeScreen() {
   const [showUndo, setShowUndo] = useState(false);
   const [lastRegisteredCount, setLastRegisteredCount] = useState(0);
   
+  // Data limits state
+  const [dataLimits, setDataLimits] = useState<any>(null);
+  const [productivityAlerts, setProductivityAlerts] = useState<any>(null);
+  const [dismissedBanner, setDismissedBanner] = useState(false);
+  
   // Animation refs
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const undoOpacity = useRef(new Animated.Value(0)).current;
   const undoTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
+  const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+  
   useEffect(() => {
     loadData();
+    loadDataLimits();
+    loadProductivityAlerts();
   }, []);
+  
+  const loadDataLimits = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/account/data-limits`);
+      if (res.ok) {
+        const data = await res.json();
+        setDataLimits(data);
+      }
+    } catch (error) {
+      console.error('Failed to load data limits:', error);
+    }
+  };
+  
+  const loadProductivityAlerts = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/hens/productivity-alerts`);
+      if (res.ok) {
+        const data = await res.json();
+        setProductivityAlerts(data);
+      }
+    } catch (error) {
+      console.error('Failed to load productivity alerts:', error);
+    }
+  };
   
   useEffect(() => {
     if (lastAction && lastAction.type === 'egg_record') {
