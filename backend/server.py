@@ -2214,8 +2214,8 @@ async def get_admin_stats(request: Request):
     yearly_subs = await db.subscriptions.count_documents({"is_active": True, "plan": "yearly"})
     
     # Calculate MRR (Monthly Recurring Revenue)
-    monthly_price = 29  # SEK
-    yearly_price = 249  # SEK per year = 20.75/month
+    monthly_price = 19  # SEK
+    yearly_price = 149  # SEK per year = 12.42/month
     mrr = (monthly_subs * monthly_price) + (yearly_subs * (yearly_price / 12))
     
     # Recent signups (last 7 days)
