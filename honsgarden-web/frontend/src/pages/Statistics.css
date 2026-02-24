@@ -3,6 +3,32 @@
   margin: 0 auto;
 }
 
+/* Demo data notice banner */
+.demo-data-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #f59e0b22, #f59e0b11);
+  border: 1px solid #f59e0b44;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+
+.demo-data-notice span {
+  font-size: 24px;
+}
+
+.demo-data-notice p {
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.demo-data-notice strong {
+  color: #f59e0b;
+}
+
 .page-header {
   margin-bottom: 24px;
 }
