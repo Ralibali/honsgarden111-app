@@ -58,6 +58,42 @@ export default function Statistics() {
   const [activeTab, setActiveTab] = useState<'overview' | 'hens' | 'graphs'>('overview');
   const [isPremium, setIsPremium] = useState(false);
   
+  // Demo data for new users without any data
+  const DEMO_EGG_DATA = [
+    { date: '1 Dec', eggs: 4 },
+    { date: '2 Dec', eggs: 5 },
+    { date: '3 Dec', eggs: 3 },
+    { date: '4 Dec', eggs: 6 },
+    { date: '5 Dec', eggs: 5 },
+    { date: '6 Dec', eggs: 4 },
+    { date: '7 Dec', eggs: 5 },
+    { date: '8 Dec', eggs: 6 },
+    { date: '9 Dec', eggs: 4 },
+    { date: '10 Dec', eggs: 5 },
+  ];
+  
+  const DEMO_ECONOMY_DATA = [
+    { name: 'Intäkter', value: 450, fill: '#22c55e' },
+    { name: 'Kostnader', value: 180, fill: '#ef4444' },
+  ];
+  
+  const DEMO_EXPECTED_VS_ACTUAL = [
+    { week: 'V1', expected: 35, actual: 32 },
+    { week: 'V2', expected: 35, actual: 38 },
+    { week: 'V3', expected: 35, actual: 33 },
+    { week: 'V4', expected: 35, actual: 36 },
+  ];
+  
+  const DEMO_PER_HEN_DATA = [
+    { name: 'Guldis', eggs: 28, color: '#f59e0b' },
+    { name: 'Snövit', eggs: 24, color: '#ef4444' },
+    { name: 'Brunhilda', eggs: 22, color: '#8b5a2b' },
+  ];
+  
+  // Check if user has real data
+  const hasRealData = eggChartData.length > 0 && eggChartData.some(d => d.eggs > 0);
+  const showDemoData = !hasRealData;
+  
   // Graph data
   const [eggChartData, setEggChartData] = useState<any[]>([]);
   const [economyChartData, setEconomyChartData] = useState<any[]>([]);
