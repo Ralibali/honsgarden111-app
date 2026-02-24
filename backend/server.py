@@ -1688,6 +1688,7 @@ if WEBAPP_DIR.exists():
     @app.get("/statistics")
     @app.get("/settings")
     @app.get("/premium")
+    @app.get("/admin")
     @app.get("/checkout-success")
     async def serve_webapp_routes(request: Request):
         """Serve the React webapp for SPA routes"""
