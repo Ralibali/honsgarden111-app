@@ -65,8 +65,8 @@ export default function Login() {
             </div>
             <h1>Hönsgården</h1>
           </div>
-          <p className="tagline-main">För dig som vet att Gun-Britt la tre ägg igår</p>
-          <p className="tagline-sub">Spåra ägg, hälsa och ekonomi – för dig med egna hönor.</p>
+          <p className="tagline-main">Din digitala assistent för din hönsgård</p>
+          <p className="tagline-sub">Håll koll på dina hönor, ägg och ekonomi – på ett enkelt sätt.</p>
           <button onClick={login} className="cta-button">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
