@@ -259,3 +259,75 @@
   height: 200px;
   color: var(--text-secondary);
 }
+
+/* Add Egg per Hen */
+.add-egg-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(251, 191, 36, 0.15) 100%);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 10px;
+  color: var(--accent-success);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s;
+}
+
+.add-egg-btn:hover {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.25) 0%, rgba(251, 191, 36, 0.25) 100%);
+  transform: scale(1.02);
+}
+
+.quick-egg-add {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.egg-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.egg-counter .counter-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.egg-counter .counter-btn:hover {
+  background-color: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.egg-counter .counter-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 50px;
+  text-align: center;
+}
+
+.egg-add-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.egg-add-buttons button {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+}
