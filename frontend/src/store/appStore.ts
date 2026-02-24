@@ -205,13 +205,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
   
-  addEggRecord: async (date: string, count: number, notes?: string) => {
+  addEggRecord: async (date: string, count: number, notes?: string, henId?: string) => {
     try {
       set({ loading: true, error: null });
       const response = await fetch(`${API_URL}/api/eggs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, count, notes }),
+        body: JSON.stringify({ date, count, notes, hen_id: henId }),
       });
       if (!response.ok) throw new Error('Failed to add egg record');
       const newRecord = await response.json();
@@ -221,7 +221,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         lastAction: {
           type: 'egg_record',
           recordId: newRecord.id,
-          data: { date, count, notes },
+          data: { date, count, notes, hen_id: henId },
           timestamp: Date.now(),
         },
       });
