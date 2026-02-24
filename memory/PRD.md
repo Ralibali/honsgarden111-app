@@ -209,6 +209,13 @@
 - [x] Mobil Frontend: Feed-skärmen visar premium-lås för gratisanvändare
 - [x] Webb Frontend: Feed-sidan visar premium-lås för gratisanvändare
 
+### Session 8 - AI-funktioner & Blurrad Premium (February 24, 2026)
+- [x] Backend: AI Daily Report endpoint (/api/ai/daily-report) - Premium only, blurred preview for free
+- [x] Backend: Egg Forecast endpoint (/api/ai/egg-forecast) - Premium only, blurred preview for free
+- [x] Mobil Dashboard: AI-sektion med blurrade kort för gratisanvändare + "Lås upp" knappar
+- [x] Webb Dashboard: AI-sektion med blurrade kort för gratisanvändare + "Lås upp" knappar
+- [x] Integration: emergentintegrations + OpenAI GPT-4o för AI-rapporter
+
 ---
 
 ## Komplett Premium-funktionslista
