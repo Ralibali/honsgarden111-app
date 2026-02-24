@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
@@ -15,6 +15,25 @@ export default function Login() {
   const [contactEmail, setContactEmail] = useState('');
   const [contactSent, setContactSent] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showCookieBanner, setShowCookieBanner] = useState(false);
+  
+  useEffect(() => {
+    // Check if user has already accepted cookies
+    const cookieConsent = localStorage.getItem('cookie_consent');
+    if (!cookieConsent) {
+      setShowCookieBanner(true);
+    }
+  }, []);
+  
+  const acceptAllCookies = () => {
+    localStorage.setItem('cookie_consent', 'all');
+    setShowCookieBanner(false);
+  };
+  
+  const acceptNecessaryCookies = () => {
+    localStorage.setItem('cookie_consent', 'necessary');
+    setShowCookieBanner(false);
+  };
   
   const handleContactSubmit = async () => {
     if (!contactMessage.trim()) return;
