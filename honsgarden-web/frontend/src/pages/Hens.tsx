@@ -105,7 +105,20 @@ export default function Hens() {
   
   useEffect(() => {
     loadData();
+    checkPremiumStatus();
   }, [showInactive]);
+  
+  const checkPremiumStatus = async () => {
+    try {
+      const res = await fetch('/api/premium/status', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setIsPremium(data.is_premium);
+      }
+    } catch (error) {
+      console.error('Failed to check premium status:', error);
+    }
+  };
   
   const loadData = async () => {
     try {
