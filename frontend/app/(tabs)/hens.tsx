@@ -122,6 +122,11 @@ export default function HensScreen() {
   const [selectedHen, setSelectedHen] = useState<Hen | null>(null);
   const [henProfile, setHenProfile] = useState<any>(null);
   
+  // Quick action bottom sheet
+  const [showQuickAction, setShowQuickAction] = useState(false);
+  const [quickActionHen, setQuickActionHen] = useState<Hen | null>(null);
+  const [addingEgg, setAddingEgg] = useState(false);
+  
   const t = i18n.t.bind(i18n);
   const isSv = i18n.locale.startsWith('sv');
   
