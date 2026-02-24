@@ -1,185 +1,171 @@
 # Hönsgården - Product Requirements Document
 
-## Original Problem Statement
-En digital assistent för hönsgårdsägare som hjälper till att hantera höns, äggproduktion, ekonomi, foder och hälsa. Applikationen finns tillgänglig som webbapp och mobilapp (iOS/Android via Expo).
+## Landningssida (Login.tsx) - KOMPLETT BESKRIVNING
 
-## User Personas
-1. **Hobby-hönsägare** - Privatpersoner som har 3-15 höns i trädgården
-2. **Småskalig producent** - Säljer ägg till grannar/lokala marknader
+### **Hero-sektion:**
+- **Bakgrundsbild**: Kvinna som tar hand om höns (Pexels)
+- **Logo**: SVG med stiliserad höna + ägg (orange/gul färgschema)
+- **Rubrik**: "Hönsgården" (Playfair Display, 56px, vit, bold)
+- **Tagline**: "Din digitala assistent för din hönsgård"
+- **Undertitel**: "Håll koll på dina hönor, ägg och ekonomi – på ett enkelt sätt."
+- **CTA-knapp**: "Kom igång gratis med Google" (vit med Google-logga)
+- **Typsnitt Web**: Playfair Display (rubriker), Inter (brödtext)
+- **Typsnitt Mobil**: Playfair Display + Inter (via expo-font)
 
-## Core Requirements
-- Äggregistrering med snabbknappar (+1, +2, +3, +5, +10) och valfri hönavalare
-- Flockhantering med flera flockar och hönor
-- Hälsospårning per höna
-- Ekonomiuppföljning (kostnader, intäkter)
-- Produktivitetsanalys per höna
-- Foderhantering (Etapp 4) - Lager, förbrukning, inköp
-- Dela statistik på sociala medier
-- Premium-funktioner för avancerade användare
+### **Features-sektion (6 kort i grid):**
+1. 🥚 Äggdagbok - Registrera ägg snabbt och enkelt
+2. 🐔 Hönsprofiler - Håll koll på varje höna
+3. 📊 Statistik & Insikter - Se trender och analyser
+4. 💰 Ekonomi - Spåra kostnader och intäkter
+5. 🩺 Hälsologg - Dokumentera hälsoproblem
+6. 🏠 Flockhantering - Organisera flera flockar
 
-## Tech Stack
-- **Backend**: FastAPI (Python), MongoDB
-- **Frontend Web**: React, Vite, TypeScript
-- **Frontend Mobile**: React Native, Expo, Playfair Display + Inter fonts
-- **Payments**: Stripe
-- **Auth**: Google OAuth2
+### **Pristabell (2 kort):**
 
-## Pricing
-- **Gratis**: 30 dagars datahistorik (all data sparas, bara 30 dagar visas)
-- **Premium Månatlig**: 19 kr/mån
-- **Premium Årlig**: 149 kr/år (12,42 kr/mån)
+| **GRATIS (0 kr)** | **PREMIUM (149 kr/år eller 19 kr/mån)** |
+|-------------------|----------------------------------------|
+| ✓ 1 flock | ✓ Allt i Gratis |
+| ✓ 30 dagars historik | ✓ Obegränsad historik |
+| ✓ Grundläggande statistik | ✓ Obegränsade flockar |
+| ✓ Ägg- och ekonomilogg | ✓ Förväntad vs faktisk produktion |
+| ✓ Hälsologg | ✓ Per-höna-statistik |
+| ✓ Äggproduktionsgraf | ✓ Produktivitetsvarningar |
+| ✓ Ekonomigraf | ✓ Kläckningsmodul |
+| | ✓ Anpassningsbara funktioner |
 
----
-
-## Completed Features (February 2026)
-
-### Tidigare etapper (Done)
-- [x] **Etapp 1**: Flockhantering + Hälsologg per höna
-- [x] **Etapp 2**: Produktivitetsanalys + Datavarningar
-- [x] **Etapp 3**: Kläckningsmodul för Premium
-
-### Session 1 - P0/P1 (Done)
-- [x] **Fix vit skärm på webappen** - Vite base path uppdaterad till /api/web/
-- [x] **Förena äggregistrerings-UI** - +1,+2,+3,+5,+10 snabbknappar + fritext + höna-väljare
-- [x] **Feature toggles bug** - Fixat credentials i API-anrop
-- [x] **Insikter-sektion förbättrad** - Scrollbar rad med stora siffror
-- [x] **Data holdback Premium-funktion** - 30 dagars visning för gratis, all data sparas
-
-### Session 2 - Nya funktioner (Done)
-- [x] **Typsnitt i mobilappen** - Playfair Display (rubriker) + Inter (brödtext) via expo-font
-- [x] **Etapp 4: Foderhantering** - Komplett modul för båda plattformar:
-  - Lagerhantering med lågt-lager-varningar
-  - Registrering av förbrukning och inköp
-  - Statistik (kg/dag, g/höna/dag, kostnad)
-  - 7 fodertyper stöds
-- [x] **Dela statistik-funktion** - Mobil: Share API för att dela äggproduktion
-- [x] **Quick Actions på Dashboard** - Genvägar till Foder, Kläckning, Dela, Statistik
-- [x] **Feature-parity audit** - Feed-sida och routing tillagd på webappen
+### **Övrigt på landningssidan:**
+- Final CTA med kyckling-bild
+- Footer med "Kontakta oss" och "Skicka förslag"
+- Flytande kontaktknapp (💬)
 
 ---
 
-## P2 - Future/Backlog
+## Feature-parity (Webb vs Mobil)
 
-### High Priority
-- [ ] **Push-notiser** - Påminnelser för kläckning, hälsokontroller
-- [ ] **Hatching på webben** - Kläckningsmodul finns bara på mobil
-
-### Medium Priority
-- [ ] **Dela statistik på webben** - Web Share API eller sociala knappar
-- [ ] **Förbättrad Analytics** - Grafer och trender
-
-### Low Priority
-- [ ] Inga fler etapper planerade
+| Feature | Mobil | Webb |
+|---------|-------|------|
+| Dashboard | ✅ | ✅ |
+| Äggregistrering (+1,+2,+3,+5,+10) | ✅ | ✅ |
+| Ägg-sida | ✅ | ✅ |
+| Hönor-sida | ✅ | ✅ |
+| Ekonomi/Finance | ✅ | ✅ |
+| Statistik med grafer | ✅ | ✅ |
+| Inställningar | ✅ | ✅ |
+| **Anpassa funktioner** | ✅ | ✅ (FIXAT) |
+| **Foderhantering (Etapp 4)** | ✅ | ✅ |
+| **Kläckning** | ✅ | ✅ (FIXAT) |
+| **Dela statistik** | ✅ | ✅ (FIXAT) |
+| **Quick Actions** | ✅ | ✅ (FIXAT) |
+| **Grafer på Statistik** | ✅ | ✅ (NYTT) |
+| Premium-betalning | ✅ | ✅ |
 
 ---
 
-## API Endpoints
+## Grafer på Statistik-sidan
+
+### **GRATIS:**
+1. **Äggproduktion över tid** (Linjegraf)
+   - Filter: Dag / Vecka / Månad
+   - Visar antal ägg per tidsperiod
+   - Grön linje (#4ade80)
+
+2. **Ekonomigraf** (Stapeldiagram)
+   - Visar intäkter vs kostnader per månad
+   - Gröna staplar = intäkter
+   - Röda staplar = kostnader
+
+### **PREMIUM (låsta för gratis):**
+3. **Förväntad vs faktisk produktion** (Stapeldiagram)
+   - Två linjer: Förväntat (lila) vs Faktiskt (grön)
+   - Baserat på ras och ålder
+   - Veckovis visning
+
+4. **Per-höna-produktion** (Horisontellt stapeldiagram)
+   - Varje höna = en stapel
+   - Stjärnan i flocken markeras gul
+   - Sorterat efter produktion
+
+**Låst-kort för gratis-användare:**
+- Visar suddigt innehåll (blur 8px)
+- Låssymbol 🔒
+- Text: "Uppgradera till Premium för att se denna graf"
+- Knapp: "Uppgradera"
+
+---
+
+## API Endpoints (Komplett)
 
 ### Core
 - `GET/POST /api/eggs` - Äggregistreringar
 - `GET/POST /api/hens` - Hönor
 - `GET/POST /api/flocks` - Flockar
+- `GET/POST /api/transactions` - Ekonomitransaktioner
 
-### Feed Management (NEW - Etapp 4)
+### Statistik
+- `GET /api/statistics/today` - Dagens statistik
+- `GET /api/statistics/summary` - Månads/total sammanfattning
+- `GET /api/statistics/month/{year}/{month}` - Månadsstatistik med daglig breakdown
+- `GET /api/insights` - Insikter (kostnad/ägg, toppvärpare, produktivitet)
+
+### Feed Management (Etapp 4)
 - `GET/POST /api/feed` - Foderregistreringar
-- `DELETE /api/feed/{id}` - Ta bort registrering
+- `DELETE /api/feed/{id}` - Ta bort
 - `GET /api/feed/inventory` - Lagerstatus + varningar
-- `PUT /api/feed/inventory/{type}` - Uppdatera lagertrösklar
+- `PUT /api/feed/inventory/{type}` - Uppdatera trösklar
 - `GET /api/feed/statistics?days=30` - Foderstatistik
 
+### Hatching (Kläckning)
+- `GET/POST /api/hatching` - Kläckningar
+- `POST /api/hatching/{id}/complete` - Avsluta kläckning
+- `DELETE /api/hatching/{id}` - Ta bort
+
 ### Premium/Account
-- `GET /api/account/data-limits` - Visa gömd data för gratis-användare
+- `GET /api/account/data-limits` - Gömd data för gratis
 - `GET /api/premium/status` - Premiumstatus
 - `GET/PUT /api/feature-preferences` - Anpassningsbara funktioner
 
-### Statistics
-- `GET /api/statistics/today` - Dagens statistik
-- `GET /api/statistics/summary` - Månads/total sammanfattning
-- `GET /api/insights` - Insikter
+---
+
+## Completed Features (February 2026)
+
+### Session 1 - P0/P1
+- [x] Fix vit skärm på webappen (Vite base path)
+- [x] Förena äggregistrerings-UI (+1,+2,+3,+5,+10 + fritext + höna-väljare)
+- [x] Feature toggles credentials-bug
+- [x] Insikter-sektion visuell förbättring
+- [x] Data holdback Premium-funktion (30 dagar för gratis)
+
+### Session 2 - Typsnitt & Etapp 4
+- [x] Typsnitt i mobilappen (Playfair Display + Inter)
+- [x] Etapp 4: Foderhantering (båda plattformar)
+- [x] Dela statistik-funktion
+- [x] Quick Actions på Dashboard
+
+### Session 3 - Feature Parity & Grafer
+- [x] Uppdatera pristabell (30 dagar, inte 90)
+- [x] Anpassa funktioner på webb (Settings)
+- [x] Hatching-modul på webb
+- [x] Dela statistik på webb
+- [x] Quick Actions på webb Dashboard
+- [x] Insikter scroll-indikator (← svep →)
+- [x] Grafer på Statistik-sidan:
+  - Äggproduktion över tid (GRATIS)
+  - Ekonomigraf (GRATIS)
+  - Förväntad vs faktisk (PREMIUM)
+  - Per-höna-graf (PREMIUM)
 
 ---
 
-## Database Schema
-
-### feed_records (NEW)
-```json
-{
-  "id": "uuid",
-  "user_id": "string",
-  "date": "YYYY-MM-DD",
-  "feed_type": "layer_feed|grower_feed|starter_feed|scratch_grain|treats|supplements|other",
-  "amount_kg": 1.5,
-  "cost": 150,
-  "is_purchase": true,
-  "brand": "Granngården",
-  "notes": "optional"
-}
-```
-
-### feed_inventory (NEW)
-```json
-{
-  "user_id": "string",
-  "feed_type": "layer_feed",
-  "current_stock_kg": 15.5,
-  "low_stock_threshold_kg": 5.0,
-  "brand": "Granngården"
-}
-```
+## Teknisk Stack
+- **Backend**: FastAPI (Python), MongoDB
+- **Frontend Web**: React, Vite, TypeScript, Recharts
+- **Frontend Mobile**: React Native, Expo, expo-font
+- **Payments**: Stripe
+- **Auth**: Google OAuth2
+- **Fonts**: Playfair Display, Inter (Google Fonts)
 
 ---
 
-## Architecture Notes
-
-### Web App Routing
-- Webappen serveras från `/api/web/`
-- Vite base path: `/api/web/`
-- Assets: `/api/web/assets/`
-
-### Data Holdback Logic
-- All data sparas alltid för alla användare
-- Gratis-användare kan endast SE senaste 30 dagarna
-- Vid Premium-uppgradering låses all historisk data upp direkt
-- `hidden_data.months_of_history` visar hur mycket gömd data som finns
-
-### Font Configuration (Mobile)
-- Fonts loaded via expo-font + @expo-google-fonts
-- Playfair Display: headings, titles, logo
-- Inter: body text, UI elements
-- Font config exported from `/app/frontend/src/config/fonts.ts`
-
----
-
-## Feature Parity Status (Webb vs Mobil)
-
-| Feature | Mobile | Web |
-|---------|--------|-----|
-| Dashboard | ✅ | ✅ |
-| Eggs | ✅ | ✅ |
-| Hens | ✅ | ✅ |
-| Finance | ✅ | ✅ |
-| Statistics | ✅ | ✅ |
-| Settings | ✅ | ✅ |
-| Feed (Etapp 4) | ✅ | ✅ |
-| Share Stats | ✅ | ❌ |
-| Hatching | ✅ | ❌ |
-| Quick Actions | ✅ | ❌ |
-
----
-
-## Files Modified This Session
-- `/app/frontend/app/_layout.tsx` - Font loading
-- `/app/frontend/app/(tabs)/index.tsx` - Quick Actions, Share, Insights
-- `/app/frontend/app/feed.tsx` - NEW: Feed management screen
-- `/app/frontend/src/config/fonts.ts` - NEW: Font configuration
-- `/app/backend/server.py` - Feed API endpoints
-- `/app/honsgarden-web/frontend/src/pages/Feed.tsx` - NEW: Web feed page
-- `/app/honsgarden-web/frontend/src/pages/Feed.css` - NEW: Web feed styles
-- `/app/honsgarden-web/frontend/src/App.tsx` - Feed route
-
----
-
-## Known Issues / Technical Debt
-- ESLint parser stöder inte TypeScript syntax (varningar, ej runtime-fel)
-- Shadow props deprecated warnings i Expo (web)
-- react-native-svg version mismatch (15.15.3 vs expected 15.12.1)
+## P2 - Future/Backlog
+- [ ] Push-notiser för kläckning/hälsokontroller
+- [ ] Etapp 5 (borttagen från plan)
