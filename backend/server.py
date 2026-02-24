@@ -815,9 +815,37 @@ async def delete_flock(flock_id: str, request: Request):
 # ============ HEN ENDPOINTS ============
 @api_router.get("/hens/productivity-alerts")
 async def get_productivity_alerts(request: Request):
-    """Get hens with productivity issues (14+ days without eggs)"""
+    """Get hens with productivity issues (14+ days without eggs).
+    Only shows alerts if user actively uses per-hen egg tracking.
+    """
     user_id = await get_user_id(request)
     today = date.today()
+    
+    # First check: Does the user use per-hen egg tracking at all?
+    # Count eggs with hen_id in the last 90 days
+    ninety_days_ago = (today - timedelta(days=90)).isoformat()
+    eggs_with_hen = await db.egg_records.count_documents({
+        "user_id": user_id,
+        "date": {"$gte": ninety_days_ago},
+        "hen_id": {"$exists": True, "$ne": None}
+    })
+    
+    total_eggs = await db.egg_records.count_documents({
+        "user_id": user_id,
+        "date": {"$gte": ninety_days_ago}
+    })
+    
+    # If user doesn't use per-hen tracking (less than 10% of eggs linked to hens), don't show alerts
+    uses_per_hen_tracking = eggs_with_hen > 0 and (eggs_with_hen / max(total_eggs, 1)) >= 0.1
+    
+    if not uses_per_hen_tracking:
+        return {
+            "total_alerts": 0,
+            "hens_with_issues": [],
+            "threshold_days": 14,
+            "tracking_enabled": False,
+            "message": "Produktivitetsvarningar visas när du registrerar ägg per höna"
+        }
     
     # Get all active hens
     hens = await db.hens.find(
@@ -841,19 +869,26 @@ async def get_productivity_alerts(request: Request):
             if hen_id not in last_egg_by_hen or egg_date > last_egg_by_hen[hen_id]:
                 last_egg_by_hen[hen_id] = egg_date
     
-    # Find hens with 14+ days without eggs
+    # Only check hens that have at least one egg registered (active tracking)
+    # This avoids false positives for newly added hens
+    tracked_hen_ids = set(last_egg_by_hen.keys())
+    
+    # Find hens with 14+ days without eggs (only among tracked hens)
     alerts = []
     fourteen_days_ago = (today - timedelta(days=14)).isoformat()
     
     for hen in hens:
         hen_id = hen['id']
+        
+        # Only alert for hens that have been tracked before
+        if hen_id not in tracked_hen_ids:
+            continue
+            
         last_egg = last_egg_by_hen.get(hen_id)
         
-        if not last_egg or last_egg < fourteen_days_ago:
-            days_since = None
-            if last_egg:
-                last_date = datetime.strptime(last_egg, '%Y-%m-%d').date()
-                days_since = (today - last_date).days
+        if last_egg and last_egg < fourteen_days_ago:
+            last_date = datetime.strptime(last_egg, '%Y-%m-%d').date()
+            days_since = (today - last_date).days
             
             alerts.append({
                 "hen_id": hen_id,
@@ -862,16 +897,17 @@ async def get_productivity_alerts(request: Request):
                 "flock_id": hen.get('flock_id'),
                 "last_egg_date": last_egg,
                 "days_since_egg": days_since,
-                "alert_level": "high" if (days_since and days_since >= 21) else "medium"
+                "alert_level": "high" if days_since >= 21 else "medium"
             })
     
     # Sort by days since egg (most concerning first)
-    alerts.sort(key=lambda x: x['days_since_egg'] if x['days_since_egg'] else 999, reverse=True)
+    alerts.sort(key=lambda x: x['days_since_egg'], reverse=True)
     
     return {
         "total_alerts": len(alerts),
         "hens_with_issues": alerts,
-        "threshold_days": 14
+        "threshold_days": 14,
+        "tracking_enabled": True
     }
 
 @api_router.post("/hens", response_model=Hen)
