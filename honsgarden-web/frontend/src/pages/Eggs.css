@@ -309,6 +309,70 @@
   margin-top: 8px;
 }
 
+/* Quick Add Section */
+.quick-add-section {
+  margin-bottom: 16px;
+}
+
+.quick-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.quick-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 14px 8px;
+  background-color: var(--accent-primary);
+  color: white;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.quick-btn:hover {
+  background-color: var(--accent-primary-hover, #3a9d6a);
+  transform: translateY(-2px);
+}
+
+.quick-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.custom-count-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.custom-count-row .count-input {
+  flex: 1;
+  min-width: 80px;
+}
+
+.btn-add {
+  padding: 12px 20px;
+  background-color: var(--accent-warning);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-add:hover:not(:disabled) {
+  background-color: #d97706;
+}
+
+.btn-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Egg count selector */
 .egg-count-selector {
   display: flex;
