@@ -169,7 +169,6 @@ export default function Login() {
               <li>✓ 30 dagars historik</li>
               <li>✓ Grundläggande statistik</li>
               <li>✓ Ägg- och ekonomilogg</li>
-              <li>✓ Hälsologg</li>
               <li>✓ Äggproduktionsgraf</li>
               <li>✓ Ekonomigraf</li>
             </ul>
@@ -185,6 +184,7 @@ export default function Login() {
               <li>✓ Allt i Gratis</li>
               <li>✓ Obegränsad historik</li>
               <li>✓ Obegränsade flockar</li>
+              <li>✓ Hälsologg</li>
               <li>✓ AI-genererad dagsrapport</li>
               <li>✓ Äggprognos 7 dagar framåt</li>
               <li>✓ Avvikelsedetektion</li>
@@ -205,6 +205,7 @@ export default function Login() {
               <li>✓ Allt i Gratis</li>
               <li>✓ Obegränsad historik</li>
               <li>✓ Obegränsade flockar</li>
+              <li>✓ Hälsologg</li>
               <li>✓ AI-genererad dagsrapport</li>
               <li>✓ Äggprognos 7 dagar framåt</li>
               <li>✓ Avvikelsedetektion</li>
