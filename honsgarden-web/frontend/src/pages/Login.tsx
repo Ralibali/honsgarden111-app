@@ -146,10 +146,12 @@ export default function Login() {
             <div className="price">0 kr</div>
             <ul>
               <li>✓ 1 flock</li>
-              <li>✓ 90 dagars historik</li>
+              <li>✓ 30 dagars historik</li>
               <li>✓ Grundläggande statistik</li>
               <li>✓ Ägg- och ekonomilogg</li>
               <li>✓ Hälsologg</li>
+              <li>✓ Äggproduktionsgraf</li>
+              <li>✓ Ekonomigraf</li>
             </ul>
             <button onClick={login} className="pricing-btn secondary">Kom igång</button>
           </div>
@@ -162,11 +164,11 @@ export default function Login() {
               <li>✓ Allt i Gratis</li>
               <li>✓ Obegränsad historik</li>
               <li>✓ Obegränsade flockar</li>
-              <li>✓ 7-dagars prognos</li>
+              <li>✓ Förväntad vs faktisk produktion</li>
+              <li>✓ Per-höna-statistik</li>
               <li>✓ Produktivitetsvarningar</li>
-              <li>✓ Ekonomijämförelse</li>
               <li>✓ Kläckningsmodul</li>
-              <li>✓ Push-notiser</li>
+              <li>✓ Anpassningsbara funktioner</li>
             </ul>
             <button onClick={login} className="pricing-btn primary">Prova gratis först</button>
           </div>
