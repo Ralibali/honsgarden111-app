@@ -371,31 +371,30 @@ export default function HomeScreen() {
         {insights && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>📊 {t('home.insights', { defaultValue: 'Insikter' })}</Text>
-            <View style={styles.insightsGrid}>
-              <View style={styles.insightItem}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              style={styles.insightsScrollView}
+              contentContainerStyle={styles.insightsScrollContent}
+            >
+              <View style={styles.insightCard}>
                 <Text style={styles.insightIcon}>💰</Text>
-                <View style={styles.insightData}>
-                  <Text style={styles.insightValue}>{insights.cost_per_egg} kr</Text>
-                  <Text style={styles.insightLabel}>{t('home.costPerEgg', { defaultValue: 'Kostnad/ägg' })}</Text>
-                </View>
+                <Text style={styles.insightValueLarge}>{insights.cost_per_egg} kr</Text>
+                <Text style={styles.insightLabelFull}>{t('home.costPerEgg', { defaultValue: 'Kostnad per ägg' })}</Text>
               </View>
               {insights.top_hen && (
-                <View style={[styles.insightItem, styles.insightTopHen]}>
+                <View style={[styles.insightCard, styles.insightTopHenCard]}>
                   <Text style={styles.insightIcon}>🏆</Text>
-                  <View style={styles.insightData}>
-                    <Text style={styles.insightValue}>{insights.top_hen.name}</Text>
-                    <Text style={styles.insightLabel}>{t('home.topHen', { defaultValue: 'Toppvärpare' })} ({insights.top_hen.eggs})</Text>
-                  </View>
+                  <Text style={styles.insightValueLarge}>{insights.top_hen.name}</Text>
+                  <Text style={styles.insightLabelFull}>Toppvärpare ({insights.top_hen.eggs} ägg)</Text>
                 </View>
               )}
-              <View style={styles.insightItem}>
+              <View style={styles.insightCard}>
                 <Text style={styles.insightIcon}>📈</Text>
-                <View style={styles.insightData}>
-                  <Text style={styles.insightValue}>{insights.productivity_index}%</Text>
-                  <Text style={styles.insightLabel}>{t('home.productivity', { defaultValue: 'Produktivitet' })}</Text>
-                </View>
+                <Text style={styles.insightValueLarge}>{insights.productivity_index}%</Text>
+                <Text style={styles.insightLabelFull}>{t('home.productivity', { defaultValue: 'Produktivitet' })}</Text>
               </View>
-            </View>
+            </ScrollView>
           </View>
         )}
         
