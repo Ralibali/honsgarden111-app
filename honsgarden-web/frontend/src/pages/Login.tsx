@@ -319,6 +319,24 @@ export default function Login() {
           </div>
         </div>
       )}
+      
+      {/* Cookie Banner */}
+      {showCookieBanner && (
+        <div className="cookie-banner">
+          <div className="cookie-content">
+            <span className="cookie-icon">🍪</span>
+            <p>Vi använder cookies för att förbättra din upplevelse. Genom att fortsätta godkänner du vår användning av cookies.</p>
+          </div>
+          <div className="cookie-buttons">
+            <button onClick={acceptNecessaryCookies} className="cookie-btn secondary">
+              Endast nödvändiga
+            </button>
+            <button onClick={acceptAllCookies} className="cookie-btn primary">
+              Godkänn alla
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
