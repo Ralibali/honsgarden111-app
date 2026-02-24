@@ -768,6 +768,86 @@ async def update_coop_settings(update: CoopSettingsUpdate, request: Request):
     updated = await db.coop_settings.find_one({"user_id": user_id})
     return CoopSettings(**updated)
 
+# ============ FEATURE PREFERENCES ENDPOINTS ============
+@api_router.get("/feature-preferences")
+async def get_feature_preferences(request: Request):
+    """Get user's feature preferences (Premium feature)"""
+    user_id = await get_user_id(request)
+    
+    # Check premium status
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    prefs = await db.feature_preferences.find_one({"user_id": user_id})
+    
+    if not prefs:
+        # Return defaults
+        default_prefs = FeaturePreferences(user_id=user_id)
+        return {
+            "is_premium": is_premium,
+            "can_customize": is_premium,
+            "preferences": default_prefs.dict()
+        }
+    
+    return {
+        "is_premium": is_premium,
+        "can_customize": is_premium,
+        "preferences": {
+            "show_flock_management": prefs.get("show_flock_management", True),
+            "show_health_log": prefs.get("show_health_log", True),
+            "show_feed_management": prefs.get("show_feed_management", True),
+            "show_weather_data": prefs.get("show_weather_data", True),
+            "show_hatching_module": prefs.get("show_hatching_module", True),
+            "show_productivity_alerts": prefs.get("show_productivity_alerts", True),
+            "show_economy_insights": prefs.get("show_economy_insights", True),
+        }
+    }
+
+@api_router.put("/feature-preferences")
+async def update_feature_preferences(update: FeaturePreferencesUpdate, request: Request):
+    """Update user's feature preferences (Premium only)"""
+    user_id = await get_user_id(request)
+    
+    # Check premium status
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    if not is_premium:
+        raise HTTPException(status_code=403, detail="Premium krävs för att anpassa funktioner")
+    
+    prefs = await db.feature_preferences.find_one({"user_id": user_id})
+    
+    if not prefs:
+        # Create new preferences
+        new_prefs = FeaturePreferences(user_id=user_id, **update.dict(exclude_none=True))
+        await db.feature_preferences.insert_one(new_prefs.dict())
+        prefs = new_prefs.dict()
+    else:
+        # Update existing
+        update_data = {k: v for k, v in update.dict().items() if v is not None}
+        update_data['updated_at'] = datetime.now(timezone.utc)
+        
+        await db.feature_preferences.update_one(
+            {"user_id": user_id},
+            {"$set": update_data}
+        )
+        prefs = await db.feature_preferences.find_one({"user_id": user_id})
+    
+    return {
+        "is_premium": True,
+        "can_customize": True,
+        "preferences": {
+            "show_flock_management": prefs.get("show_flock_management", True),
+            "show_health_log": prefs.get("show_health_log", True),
+            "show_feed_management": prefs.get("show_feed_management", True),
+            "show_weather_data": prefs.get("show_weather_data", True),
+            "show_hatching_module": prefs.get("show_hatching_module", True),
+            "show_productivity_alerts": prefs.get("show_productivity_alerts", True),
+            "show_economy_insights": prefs.get("show_economy_insights", True),
+        },
+        "message": "Inställningar sparade!"
+    }
+
 # ============ FLOCK ENDPOINTS ============
 @api_router.post("/flocks", response_model=Flock)
 async def create_flock(flock: FlockCreate, request: Request):
