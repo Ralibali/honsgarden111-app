@@ -1702,8 +1702,15 @@ async def get_feed_records(
     is_purchase: Optional[bool] = None,
     limit: int = 100
 ):
-    """Get feed records with optional filters"""
+    """Get feed records with optional filters (Premium only)"""
     user_id = await get_user_id(request)
+    
+    # Check premium status - Feed management is premium only
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    if not is_premium:
+        return []  # Return empty array for free users
     
     query = {"user_id": user_id}
     if start_date:
