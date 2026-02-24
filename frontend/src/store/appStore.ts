@@ -114,6 +114,7 @@ interface AppState {
   transactions: Transaction[];
   todayStats: TodayStats | null;
   summaryStats: SummaryStats | null;
+  insights: Insights | null;
   
   // Undo state
   lastAction: UndoAction | null;
@@ -126,7 +127,7 @@ interface AppState {
   fetchCoopSettings: () => Promise<void>;
   updateCoopSettings: (data: { coop_name?: string; hen_count?: number }) => Promise<void>;
   fetchEggRecords: (startDate?: string, endDate?: string) => Promise<void>;
-  addEggRecord: (date: string, count: number, notes?: string) => Promise<EggRecord | null>;
+  addEggRecord: (date: string, count: number, notes?: string, henId?: string) => Promise<EggRecord | null>;
   deleteEggRecord: (id: string) => Promise<void>;
   undoLastAction: () => Promise<boolean>;
   fetchTransactions: (startDate?: string, endDate?: string, type?: TransactionType) => Promise<void>;
@@ -134,6 +135,7 @@ interface AppState {
   deleteTransaction: (id: string) => Promise<void>;
   fetchTodayStats: () => Promise<void>;
   fetchSummaryStats: () => Promise<void>;
+  fetchInsights: () => Promise<void>;
   clearError: () => void;
   setLastAction: (action: UndoAction | null) => void;
 }
