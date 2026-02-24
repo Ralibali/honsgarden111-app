@@ -69,6 +69,7 @@ export default function HomeScreen() {
     loadData();
     loadDataLimits();
     loadProductivityAlerts();
+    loadHens();
   }, []);
   
   const loadDataLimits = async () => {
