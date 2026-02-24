@@ -930,6 +930,101 @@ async def delete_transaction(transaction_id: str, request: Request):
         raise HTTPException(status_code=404, detail="Transaction not found")
     return {"message": "Transaction deleted"}
 
+# ============ INSIGHTS ENDPOINT ============
+@api_router.get("/insights")
+async def get_insights(request: Request):
+    """Get productivity insights: cost per egg, top hen, productivity index"""
+    user_id = await get_user_id(request)
+    
+    # Get all eggs
+    all_eggs = await db.egg_records.find({"user_id": user_id}, {"_id": 0, "count": 1, "hen_id": 1, "date": 1}).to_list(10000)
+    total_eggs = sum(e['count'] for e in all_eggs)
+    
+    # Get all costs
+    all_costs = await db.transactions.find({"user_id": user_id, "type": "cost"}, {"_id": 0, "amount": 1}).to_list(10000)
+    total_costs = sum(t['amount'] for t in all_costs)
+    
+    # Cost per egg
+    cost_per_egg = total_costs / total_eggs if total_eggs > 0 else 0
+    
+    # Get eggs per hen
+    eggs_per_hen = {}
+    for egg in all_eggs:
+        hen_id = egg.get('hen_id')
+        if hen_id:
+            eggs_per_hen[hen_id] = eggs_per_hen.get(hen_id, 0) + egg['count']
+    
+    # Find top hen
+    top_hen = None
+    top_hen_eggs = 0
+    if eggs_per_hen:
+        top_hen_id = max(eggs_per_hen, key=eggs_per_hen.get)
+        top_hen_eggs = eggs_per_hen[top_hen_id]
+        hen_doc = await db.hens.find_one({"id": top_hen_id}, {"_id": 0, "name": 1, "id": 1})
+        if hen_doc:
+            top_hen = {"id": hen_doc['id'], "name": hen_doc['name'], "eggs": top_hen_eggs}
+    
+    # Productivity index (eggs per hen per day this month)
+    settings = await db.coop_settings.find_one({"user_id": user_id})
+    hen_count = settings['hen_count'] if settings else 0
+    
+    today = date.today()
+    month_start = f"{today.year:04d}-{today.month:02d}-01"
+    month_eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": month_start}
+    }, {"_id": 0, "count": 1, "date": 1}).to_list(1000)
+    
+    month_total = sum(e['count'] for e in month_eggs)
+    days_this_month = today.day
+    
+    productivity_index = 0
+    if hen_count > 0 and days_this_month > 0:
+        productivity_index = round((month_total / hen_count / days_this_month) * 100, 1)
+    
+    # Hen ranking
+    hen_ranking = []
+    hens = await db.hens.find({"user_id": user_id, "is_active": True}, {"_id": 0, "id": 1, "name": 1, "birth_date": 1}).to_list(100)
+    for hen in hens:
+        hen_eggs = eggs_per_hen.get(hen['id'], 0)
+        age_days = None
+        lifecycle = None
+        if hen.get('birth_date'):
+            try:
+                birth = datetime.strptime(hen['birth_date'], '%Y-%m-%d').date()
+                age_days = (today - birth).days
+                # Lifecycle phase
+                if age_days < 140:
+                    lifecycle = "unghöna"
+                elif age_days < 365:
+                    lifecycle = "peak"
+                elif age_days < 730:
+                    lifecycle = "normal"
+                else:
+                    lifecycle = "senior"
+            except:
+                pass
+        hen_ranking.append({
+            "id": hen['id'],
+            "name": hen['name'],
+            "eggs": hen_eggs,
+            "age_days": age_days,
+            "lifecycle": lifecycle
+        })
+    
+    # Sort by eggs (descending)
+    hen_ranking.sort(key=lambda x: x['eggs'], reverse=True)
+    
+    return {
+        "cost_per_egg": round(cost_per_egg, 2),
+        "total_eggs": total_eggs,
+        "total_costs": total_costs,
+        "top_hen": top_hen,
+        "productivity_index": productivity_index,
+        "hen_count": hen_count,
+        "hen_ranking": hen_ranking[:10]  # Top 10
+    }
+
 # ============ STATISTICS ENDPOINTS ============
 @api_router.get("/statistics/today")
 async def get_today_statistics(request: Request):
