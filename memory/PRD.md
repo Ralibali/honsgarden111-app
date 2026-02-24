@@ -20,18 +20,29 @@
 5. 🩺 Hälsologg - Dokumentera hälsoproblem
 6. 🏠 Flockhantering - Organisera flera flockar
 
-### **Pristabell (2 kort):**
+### **Pristabell (3 kort):**
 
-| **GRATIS (0 kr)** | **PREMIUM (149 kr/år eller 19 kr/mån)** |
-|-------------------|----------------------------------------|
-| ✓ 1 flock | ✓ Allt i Gratis |
-| ✓ 30 dagars historik | ✓ Obegränsad historik |
-| ✓ Grundläggande statistik | ✓ Obegränsade flockar |
-| ✓ Ägg- och ekonomilogg | ✓ Förväntad vs faktisk produktion |
-| ✓ Hälsologg | ✓ Per-höna-statistik |
-| ✓ Äggproduktionsgraf | ✓ Produktivitetsvarningar |
-| ✓ Ekonomigraf | ✓ Kläckningsmodul |
-| | ✓ Anpassningsbara funktioner |
+| **GRATIS (0 kr)** | **PREMIUM MÅNADSVIS (19 kr/mån)** | **PREMIUM ÅRSVIS (149 kr/år)** |
+|-------------------|-----------------------------------|--------------------------------|
+| ✓ 1 flock | ✓ Allt i Gratis | ✓ Allt i Gratis |
+| ✓ 30 dagars historik | ✓ Obegränsad historik | ✓ Obegränsad historik |
+| ✓ Grundläggande statistik | ✓ Obegränsade flockar | ✓ Obegränsade flockar |
+| ✓ Ägg- och ekonomilogg | ✓ AI-genererad dagsrapport | ✓ AI-genererad dagsrapport |
+| ✓ Hälsologg | ✓ Äggprognos 7 dagar | ✓ Äggprognos 7 dagar |
+| ✓ Äggproduktionsgraf | ✓ Avvikelsedetektion | ✓ Avvikelsedetektion |
+| ✓ Ekonomigraf | ✓ Ekonomijämförelse m/m | ✓ Ekonomijämförelse m/m |
+| | ✓ Kläckningsmodul | ✓ Kläckningsmodul |
+| | ✓ Anpassningsbara funktioner | ✓ Anpassningsbara funktioner |
+| | **Flexibelt, avsluta när som helst** | **Badge: "Bäst värde"** |
+| | | **12,40 kr/mån – spara 79 kr!** |
+
+### **Cookie-banner (lagkrav):**
+- Text: "Vi använder cookies för att förbättra din upplevelse. Genom att fortsätta godkänner du vår användning av cookies."
+- Knappar: "Endast nödvändiga" | "Godkänn alla"
+- Valet sparas i localStorage så bannern inte visas igen
+
+### **Footer:**
+- © 2026 Hönsgården (uppdaterat från 2024)
 
 ### **Övrigt på landningssidan:**
 - Final CTA med kyckling-bild
