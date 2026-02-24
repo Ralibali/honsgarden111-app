@@ -410,6 +410,52 @@ export default function HomeScreen() {
           </View>
         )}
         
+        {/* Quick Actions */}
+        <View style={styles.quickActionsSection}>
+          <Text style={styles.cardTitle}>⚡ {isSv ? 'Snabbåtgärder' : 'Quick Actions'}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickActionsScroll}>
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={() => router.push('/feed')}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: '#f59e0b' }]}>
+                <Ionicons name="nutrition" size={20} color="#FFF" />
+              </View>
+              <Text style={styles.quickActionLabel}>{isSv ? 'Foder' : 'Feed'}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={() => router.push('/hatching')}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: '#ec4899' }]}>
+                <Ionicons name="egg" size={20} color="#FFF" />
+              </View>
+              <Text style={styles.quickActionLabel}>{isSv ? 'Kläckning' : 'Hatching'}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={handleShareStatistics}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: '#3b82f6' }]}>
+                <Ionicons name="share-social" size={20} color="#FFF" />
+              </View>
+              <Text style={styles.quickActionLabel}>{isSv ? 'Dela' : 'Share'}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={() => router.push('/(tabs)/statistics')}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: '#8b5cf6' }]}>
+                <Ionicons name="stats-chart" size={20} color="#FFF" />
+              </View>
+              <Text style={styles.quickActionLabel}>{isSv ? 'Statistik' : 'Stats'}</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+        
         {/* Premium Insights */}
         {isPremium && insights?.premium && (
           <View style={styles.premiumInsightsCard}>
