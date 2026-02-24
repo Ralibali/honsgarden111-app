@@ -96,11 +96,13 @@ export default function Premium() {
           <div className="features-list">
             <h3>Dina förmåner:</h3>
             <ul>
-              <li>✅ Obegränsad statistikhistorik</li>
-              <li>✅ Årsstatistik</li>
-              <li>✅ PDF-export</li>
+              <li>✅ 7-dagars äggprognos</li>
+              <li>✅ Produktionsstatus (Normal/Låg/Hög)</li>
+              <li>✅ Avvikelsedetektion per höna</li>
+              <li>✅ Ekonomijämförelse (månad för månad)</li>
+              <li>✅ AI-sammanfattning av din gård</li>
               <li>✅ E-postpåminnelser</li>
-              <li>✅ Statistik per höna</li>
+              <li>✅ Obegränsad statistikhistorik</li>
             </ul>
           </div>
         </div>
