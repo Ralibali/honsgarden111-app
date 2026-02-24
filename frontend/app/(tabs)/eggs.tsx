@@ -40,6 +40,7 @@ export default function EggsScreen() {
   
   useEffect(() => {
     loadData();
+    loadHens();
   }, []);
   
   const loadData = async () => {
@@ -49,6 +50,18 @@ export default function EggsScreen() {
       format(start, 'yyyy-MM-dd'),
       format(end, 'yyyy-MM-dd')
     );
+  };
+  
+  const loadHens = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/hens?active_only=true`);
+      if (res.ok) {
+        const data = await res.json();
+        setHens(data);
+      }
+    } catch (error) {
+      console.error('Failed to load hens:', error);
+    }
   };
   
   const onRefresh = async () => {
