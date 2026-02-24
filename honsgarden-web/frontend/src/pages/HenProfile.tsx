@@ -260,13 +260,21 @@ export default function HenProfile() {
       <div className="card timeline-card">
         <div className="timeline-header">
           <h2>🩺 Hälsohistorik</h2>
-          <button className="add-health-btn" onClick={() => setShowHealthModal(true)}>
+          <button className={`add-health-btn ${!isPremium ? 'locked' : ''}`} onClick={openHealthModal}>
+            {!isPremium && <span className="lock-icon">🔒</span>}
             + Ny anteckning
           </button>
         </div>
         
+        {!isPremium && (
+          <div className="premium-lock-banner">
+            <span>🔒 Hälsologgen är en Premium-funktion</span>
+            <a href="/premium">Uppgradera</a>
+          </div>
+        )}
+        
         {hen.health_logs.length === 0 ? (
-          <p className="no-data">Ingen hälsohistorik ännu</p>
+          <p className="no-data">{isPremium ? 'Ingen hälsohistorik ännu' : 'Uppgradera till Premium för att logga hälsa'}</p>
         ) : (
           <div className="timeline">
             {hen.health_logs.map((log) => {
