@@ -233,8 +233,53 @@ export default function EggsScreen() {
               ))}
             </ScrollView>
             
-            {/* Egg Count */}
-            <Text style={styles.inputLabel}>{t('eggs.eggCount')}</Text>
+            {/* Quick Add Buttons */}
+            <Text style={styles.inputLabel}>{isSv ? 'Snabbregistrering' : 'Quick add'}</Text>
+            <View style={styles.quickButtonsRow}>
+              {[1, 2, 3, 5, 10].map((num) => (
+                <TouchableOpacity
+                  key={num}
+                  style={styles.quickButton}
+                  onPress={() => handleQuickAdd(num)}
+                  disabled={loading}
+                >
+                  <Text style={styles.quickButtonText}>+{num}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            {/* Per-Hen Selection (Optional) */}
+            {hens.length > 0 && (
+              <>
+                <Text style={styles.inputLabel}>{isSv ? 'Vilken höna? (valfritt)' : 'Which hen? (optional)'}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.henSelectScroll}>
+                  <TouchableOpacity
+                    style={[styles.henSelectBtn, !selectedHenId && styles.henSelectBtnActive]}
+                    onPress={() => setSelectedHenId('')}
+                  >
+                    <Text style={styles.henSelectEmoji}>🥚</Text>
+                    <Text style={[styles.henSelectText, !selectedHenId && styles.henSelectTextActive]}>
+                      {isSv ? 'Okänd' : 'Unknown'}
+                    </Text>
+                  </TouchableOpacity>
+                  {hens.map((hen) => (
+                    <TouchableOpacity
+                      key={hen.id}
+                      style={[styles.henSelectBtn, selectedHenId === hen.id && styles.henSelectBtnActive]}
+                      onPress={() => setSelectedHenId(hen.id)}
+                    >
+                      <Text style={styles.henSelectEmoji}>🐔</Text>
+                      <Text style={[styles.henSelectText, selectedHenId === hen.id && styles.henSelectTextActive]}>
+                        {hen.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+            
+            {/* Custom Amount */}
+            <Text style={styles.inputLabel}>{isSv ? 'Eget antal' : 'Custom amount'}</Text>
             <View style={styles.inputRow}>
               <TouchableOpacity
                 style={styles.countButton}
