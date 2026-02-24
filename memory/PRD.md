@@ -227,6 +227,8 @@
 | Anpassa funktioner | ✅ | ✅ | ✅ |
 | Foderhantering | ✅ | ✅ | ✅ |
 | Obegränsad historik | ✅ | ✅ | ✅ |
+| AI Dagsrapport | ✅ | ✅ | ✅ |
+| Äggprognos 7 dagar | ✅ | ✅ | ✅ |
 
 ---
 
