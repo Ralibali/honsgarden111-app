@@ -34,6 +34,7 @@ function AppRouter() {
         <Route path="/finance" element={<Finance />} />
         <Route path="/statistics" element={<Statistics />} />
         <Route path="/hens" element={<Hens />} />
+        <Route path="/hens/:henId" element={<HenProfile />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/premium" element={<Premium />} />
         <Route path="/admin" element={<Admin />} />
