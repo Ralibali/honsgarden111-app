@@ -322,8 +322,8 @@ export default function Settings() {
                 <label className="toggle">
                   <input
                     type="checkbox"
-                    checked={featurePrefs.flock_management}
-                    onChange={(e) => updateFeaturePreference('flock_management', e.target.checked)}
+                    checked={featurePrefs.preferences?.show_flock_management ?? true}
+                    onChange={(e) => updateFeaturePreference('show_flock_management', e.target.checked)}
                   />
                   <span className="toggle-slider"></span>
                 </label>
@@ -337,8 +337,8 @@ export default function Settings() {
                 <label className="toggle">
                   <input
                     type="checkbox"
-                    checked={featurePrefs.health_log}
-                    onChange={(e) => updateFeaturePreference('health_log', e.target.checked)}
+                    checked={featurePrefs.preferences?.show_health_log ?? true}
+                    onChange={(e) => updateFeaturePreference('show_health_log', e.target.checked)}
                   />
                   <span className="toggle-slider"></span>
                 </label>
@@ -352,8 +352,8 @@ export default function Settings() {
                 <label className="toggle">
                   <input
                     type="checkbox"
-                    checked={featurePrefs.productivity_alerts}
-                    onChange={(e) => updateFeaturePreference('productivity_alerts', e.target.checked)}
+                    checked={featurePrefs.preferences?.show_productivity_alerts ?? true}
+                    onChange={(e) => updateFeaturePreference('show_productivity_alerts', e.target.checked)}
                   />
                   <span className="toggle-slider"></span>
                 </label>
@@ -367,8 +367,8 @@ export default function Settings() {
                 <label className="toggle">
                   <input
                     type="checkbox"
-                    checked={featurePrefs.hatching_module}
-                    onChange={(e) => updateFeaturePreference('hatching_module', e.target.checked)}
+                    checked={featurePrefs.preferences?.show_hatching_module ?? true}
+                    onChange={(e) => updateFeaturePreference('show_hatching_module', e.target.checked)}
                   />
                   <span className="toggle-slider"></span>
                 </label>
@@ -382,7 +382,7 @@ export default function Settings() {
                 <label className="toggle">
                   <input
                     type="checkbox"
-                    checked={featurePrefs.show_economy_insights}
+                    checked={featurePrefs.preferences?.show_economy_insights ?? true}
                     onChange={(e) => updateFeaturePreference('show_economy_insights', e.target.checked)}
                   />
                   <span className="toggle-slider"></span>
