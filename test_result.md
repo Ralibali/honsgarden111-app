@@ -412,6 +412,66 @@ frontend:
         agent: "main"
         comment: "✅ GET /api/account/data-limits returns free account limits (90 days), data at risk, upcoming deletion counts, trial warnings. DataLimitsBanner component added to web Dashboard and mobile HomeScreen. Shows upsell to Premium with dismiss option."
 
+  - task: "Hatching Module (Etapp 3 - Premium)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ Full CRUD for hatchings: POST /api/hatching, GET /api/hatching, PUT /api/hatching/{id}, DELETE /api/hatching/{id}. GET /api/hatching-alerts for notifications. Progress bar, days remaining, due soon/overdue badges. Mobile app hatching.tsx with Premium gate. Supports both broody hen and incubator tracking."
+
+  - task: "Feature Preferences (Premium Customization)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ GET/PUT /api/feature-preferences allows Premium users to toggle visibility of features (flock management, health log, hatching module, productivity alerts, economy insights). Settings page shows toggle switches (disabled for free users with upsell prompt)."
+
+  - task: "Productivity Alerts Fix"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ Fixed: Productivity alerts now only show for users who actively use per-hen egg tracking (>10% of eggs linked to hens). Only alerts for hens that have been tracked before. Avoids false positives for quick-register users."
+
+  - task: "Landing Page Redesign"
+    implemented: true
+    working: true
+    file: "/app/honsgarden-web/frontend/src/pages/Login.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ New SVG logo (stylized hen with egg), new tagline 'För dig som vet att Gun-Britt la tre ägg igår', 6 feature cards, pricing section, floating contact button, contact modal with feedback form."
+
+  - task: "Contact & Support"
+    implemented: true
+    working: true
+    file: "/app/frontend/app/(tabs)/settings.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ Settings > 'Kontakt & Support' section with 'Skicka feedback' and 'E-posta oss' buttons. Feedback modal with type selector (feature/improvement/bug/other). Cancel subscription modal. Floating contact button on web landing page."
+
   - task: "Premium/Paywall Modal"
     implemented: true
     working: true
