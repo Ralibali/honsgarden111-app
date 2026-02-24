@@ -77,10 +77,20 @@ export default function EggsScreen() {
       return;
     }
     
-    await addEggRecord(selectedDate, count, notes || undefined);
+    await addEggRecord(selectedDate, count, notes || undefined, selectedHenId || undefined);
     setShowAddModal(false);
     setEggCount('');
     setNotes('');
+    setSelectedHenId('');
+    setSelectedDate(format(new Date(), 'yyyy-MM-dd'));
+  };
+  
+  const handleQuickAdd = async (count: number) => {
+    await addEggRecord(selectedDate, count, undefined, selectedHenId || undefined);
+    setShowAddModal(false);
+    setEggCount('');
+    setNotes('');
+    setSelectedHenId('');
     setSelectedDate(format(new Date(), 'yyyy-MM-dd'));
   };
   
