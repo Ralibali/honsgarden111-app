@@ -2675,6 +2675,183 @@ async def update_user_subscription(request: Request, user_id: str, is_active: bo
     
     return {"message": "Prenumeration uppdaterad", "user_id": user_id, "is_active": is_active}
 
+# ============ AI PREMIUM FEATURES ============
+@api_router.get("/ai/daily-report")
+async def get_ai_daily_report(request: Request):
+    """Generate AI daily report - Premium only
+    Returns a blurred preview for free users"""
+    user_id = await get_user_id(request)
+    
+    # Check premium status
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    # Get today's data
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    eggs_today = await db.eggs.find({"user_id": user_id, "date": today}).to_list(100)
+    total_eggs = sum(e.get('count', 0) for e in eggs_today)
+    hens = await db.hens.find({"user_id": user_id, "is_active": True}).to_list(100)
+    hen_count = len(hens)
+    
+    # Get recent health logs
+    health_logs = await db.health_logs.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).sort("date", -1).limit(5).to_list(5)
+    
+    # Get productivity alerts
+    alerts = []
+    for hen in hens:
+        hen_eggs = await db.eggs.find(
+            {"user_id": user_id, "hen_id": hen.get("id")}
+        ).sort("date", -1).limit(7).to_list(7)
+        if len(hen_eggs) < 2:
+            alerts.append(f"{hen.get('name', 'Okänd höna')} har inte värpt på länge")
+    
+    if not is_premium:
+        # Return blurred/preview data for free users
+        return {
+            "is_premium": False,
+            "preview": True,
+            "report": {
+                "summary": "🔒 Din AI-genererade dagsrapport är klar! Uppgradera till Premium för att läsa den.",
+                "blurred_preview": f"Idag har du samlat {total_eggs} ägg från {hen_count} höns. [Uppgradera för full rapport med rekommendationer och analys...]",
+                "eggs_today": total_eggs,
+                "hen_count": hen_count,
+                "alerts_count": len(alerts)
+            }
+        }
+    
+    # Generate AI report for premium users
+    try:
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"daily-report-{user_id}-{today}",
+            system_message="Du är en hjälpsam assistent för en hönsägare. Skriv korta, personliga och uppmuntrande rapporter på svenska. Använd emojis sparsamt."
+        ).with_model("openai", "gpt-4o")
+        
+        prompt = f"""Skriv en kort daglig rapport för en hönsägare baserat på följande data:
+
+- Datum: {today}
+- Antal ägg idag: {total_eggs}
+- Antal aktiva höns: {hen_count}
+- Produktivitetsvarningar: {', '.join(alerts) if alerts else 'Inga'}
+- Senaste hälsoanteckningar: {len(health_logs)} loggade
+
+Rapporten ska innehålla:
+1. En kort sammanfattning av dagen (1-2 meningar)
+2. En observation eller uppmuntran
+3. Ett tips eller påminnelse (om relevant)
+
+Håll det under 100 ord och personligt."""
+        
+        message = UserMessage(text=prompt)
+        ai_response = await chat.send_message(message)
+        
+        return {
+            "is_premium": True,
+            "preview": False,
+            "report": {
+                "summary": ai_response,
+                "eggs_today": total_eggs,
+                "hen_count": hen_count,
+                "alerts": alerts,
+                "generated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    except Exception as e:
+        logging.error(f"AI report generation failed: {e}")
+        return {
+            "is_premium": True,
+            "preview": False,
+            "report": {
+                "summary": f"🐔 Daglig sammanfattning: {total_eggs} ägg från {hen_count} höns. " + 
+                          (f"⚠️ {len(alerts)} varningar kräver uppmärksamhet." if alerts else "Allt ser bra ut!"),
+                "eggs_today": total_eggs,
+                "hen_count": hen_count,
+                "alerts": alerts,
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "fallback": True
+            }
+        }
+
+
+@api_router.get("/ai/egg-forecast")
+async def get_egg_forecast(request: Request):
+    """7-day egg production forecast - Premium only
+    Returns a blurred preview for free users"""
+    user_id = await get_user_id(request)
+    
+    # Check premium status
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    # Get historical data (last 30 days)
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime('%Y-%m-%d')
+    eggs_history = await db.eggs.find(
+        {"user_id": user_id, "date": {"$gte": thirty_days_ago}}
+    ).to_list(1000)
+    
+    # Calculate daily totals
+    daily_totals = {}
+    for egg in eggs_history:
+        date_str = egg.get('date')
+        if date_str:
+            daily_totals[date_str] = daily_totals.get(date_str, 0) + egg.get('count', 0)
+    
+    # Calculate average
+    if daily_totals:
+        avg_daily = sum(daily_totals.values()) / len(daily_totals)
+    else:
+        avg_daily = 0
+    
+    # Get active hen count
+    hens = await db.hens.count_documents({"user_id": user_id, "is_active": True})
+    
+    # Simple forecast (with slight variation)
+    import random
+    forecast = []
+    for i in range(7):
+        date_future = (datetime.now(timezone.utc) + timedelta(days=i+1)).strftime('%Y-%m-%d')
+        # Add some realistic variation
+        variation = random.uniform(0.85, 1.15)
+        predicted = round(avg_daily * variation)
+        forecast.append({
+            "date": date_future,
+            "predicted_eggs": max(0, predicted),
+            "confidence": "medium" if len(daily_totals) > 7 else "low"
+        })
+    
+    total_forecast = sum(f['predicted_eggs'] for f in forecast)
+    
+    if not is_premium:
+        # Return blurred preview for free users
+        return {
+            "is_premium": False,
+            "preview": True,
+            "forecast": {
+                "message": "🔒 Din 7-dagars prognos är klar! Uppgradera till Premium för att se den.",
+                "blurred_preview": f"Förväntat antal ägg nästa vecka: ~{total_forecast} ägg baserat på historik.",
+                "avg_daily": round(avg_daily, 1),
+                "hen_count": hens,
+                "days_of_data": len(daily_totals)
+            }
+        }
+    
+    return {
+        "is_premium": True,
+        "preview": False,
+        "forecast": {
+            "daily_predictions": forecast,
+            "total_predicted": total_forecast,
+            "avg_daily": round(avg_daily, 1),
+            "hen_count": hens,
+            "days_of_data": len(daily_totals),
+            "generated_at": datetime.now(timezone.utc).isoformat()
+        }
+    }
+
+
 # ============ BASIC ROUTES ============
 @api_router.get("/")
 async def root():
