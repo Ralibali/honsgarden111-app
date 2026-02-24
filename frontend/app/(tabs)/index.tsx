@@ -255,6 +255,125 @@ export default function HomeScreen() {
           </View>
         </View>
         
+        {/* Insights Section */}
+        {insights && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>📊 {t('home.insights', { defaultValue: 'Insikter' })}</Text>
+            <View style={styles.insightsGrid}>
+              <View style={styles.insightItem}>
+                <Text style={styles.insightIcon}>💰</Text>
+                <View style={styles.insightData}>
+                  <Text style={styles.insightValue}>{insights.cost_per_egg} kr</Text>
+                  <Text style={styles.insightLabel}>{t('home.costPerEgg', { defaultValue: 'Kostnad/ägg' })}</Text>
+                </View>
+              </View>
+              {insights.top_hen && (
+                <View style={[styles.insightItem, styles.insightTopHen]}>
+                  <Text style={styles.insightIcon}>🏆</Text>
+                  <View style={styles.insightData}>
+                    <Text style={styles.insightValue}>{insights.top_hen.name}</Text>
+                    <Text style={styles.insightLabel}>{t('home.topHen', { defaultValue: 'Toppvärpare' })} ({insights.top_hen.eggs})</Text>
+                  </View>
+                </View>
+              )}
+              <View style={styles.insightItem}>
+                <Text style={styles.insightIcon}>📈</Text>
+                <View style={styles.insightData}>
+                  <Text style={styles.insightValue}>{insights.productivity_index}%</Text>
+                  <Text style={styles.insightLabel}>{t('home.productivity', { defaultValue: 'Produktivitet' })}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+        
+        {/* Premium Insights */}
+        {isPremium && insights?.premium && (
+          <View style={styles.premiumInsightsCard}>
+            <View style={styles.premiumCardHeader}>
+              <Text style={styles.cardTitle}>⭐ Premium Insikter</Text>
+              <View style={styles.premiumBadge}>
+                <Text style={styles.premiumBadgeText}>Premium</Text>
+              </View>
+            </View>
+            
+            {/* Summary */}
+            <View style={styles.premiumSummary}>
+              <Text style={styles.premiumSummaryText}>{insights.premium.summary}</Text>
+            </View>
+            
+            {/* Status + Forecast Row */}
+            <View style={styles.premiumStatsRow}>
+              <View style={[
+                styles.statusCard, 
+                insights.premium.production_status === 'normal' && styles.statusNormal,
+                insights.premium.production_status === 'low' && styles.statusLow,
+                insights.premium.production_status === 'high' && styles.statusHigh,
+              ]}>
+                <Text style={styles.statusText}>{insights.premium.production_text}</Text>
+                <Text style={styles.statusDetail}>
+                  {insights.premium.deviation_percent > 0 ? '+' : ''}{insights.premium.deviation_percent}%
+                </Text>
+              </View>
+              <View style={styles.forecastCard}>
+                <Text style={styles.forecastIcon}>🔮</Text>
+                <View style={styles.forecastData}>
+                  <Text style={styles.forecastValue}>~{insights.premium.forecast_7_days}</Text>
+                  <Text style={styles.forecastLabel}>ägg nästa 7d</Text>
+                </View>
+              </View>
+            </View>
+            
+            {/* Deviating Hens Alert */}
+            {insights.premium.deviating_hens.length > 0 && (
+              <View style={styles.alertSection}>
+                <Text style={styles.alertTitle}>⚠️ Avvikelser</Text>
+                {insights.premium.deviating_hens.map(hen => (
+                  <TouchableOpacity 
+                    key={hen.id} 
+                    style={styles.henAlert}
+                    onPress={() => router.push('/hens')}
+                  >
+                    <Text style={styles.alertIcon}>🐔</Text>
+                    <Text style={styles.alertText}>{hen.alert}</Text>
+                    <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            
+            {/* Economy Comparison */}
+            <View style={styles.economySection}>
+              <Text style={styles.economyTitle}>💰 Ekonomi</Text>
+              <View style={styles.economyCards}>
+                <View style={styles.economyCard}>
+                  <Text style={styles.economyLabel}>Denna månad</Text>
+                  <Text style={[
+                    styles.economyValue,
+                    insights.premium.economy.this_month.profit >= 0 ? styles.economyPositive : styles.economyNegative
+                  ]}>
+                    {insights.premium.economy.this_month.profit >= 0 ? '+' : ''}{insights.premium.economy.this_month.profit} kr
+                  </Text>
+                </View>
+                <View style={[styles.economyCard, styles.economyCardFaded]}>
+                  <Text style={styles.economyLabel}>Förra månaden</Text>
+                  <Text style={styles.economyValue}>
+                    {insights.premium.economy.last_month.profit >= 0 ? '+' : ''}{insights.premium.economy.last_month.profit} kr
+                  </Text>
+                </View>
+              </View>
+              <View style={[
+                styles.economyChange,
+                insights.premium.economy.change >= 0 ? styles.economyChangePositive : styles.economyChangeNegative
+              ]}>
+                <Text style={styles.economyChangeText}>
+                  {insights.premium.economy.change >= 0 ? '📈' : '📉'} {insights.premium.economy.change >= 0 ? '+' : ''}{insights.premium.economy.change} kr ({insights.premium.economy.change_percent}%)
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+        
         {/* Premium Banner (if not premium) */}
         {!isPremium && (
           <TouchableOpacity 
@@ -265,7 +384,7 @@ export default function HomeScreen() {
               <Ionicons name="star" size={24} color={colors.warning} />
               <View style={styles.premiumBannerText}>
                 <Text style={styles.premiumBannerTitle}>{t('common.upgrade')} till Premium</Text>
-                <Text style={styles.premiumBannerSubtitle}>Obegränsad historik, PDF-export, påminnelser</Text>
+                <Text style={styles.premiumBannerSubtitle}>Prognos, varningar, ekonomijämförelse</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
