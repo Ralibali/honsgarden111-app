@@ -612,6 +612,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   scrollView: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 32 },
   header: { marginBottom: 20 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, gap: 12 },
+  headerContent: { flex: 1 },
+  backButton: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 12 },
+  backButtonSmall: { padding: 8 },
+  backText: { fontSize: 16, color: colors.text },
   title: { fontSize: 28, fontWeight: 'bold', color: colors.text },
   subtitle: { fontSize: 14, color: colors.textSecondary, marginTop: 4 },
   
