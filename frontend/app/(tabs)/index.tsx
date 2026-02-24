@@ -187,9 +187,10 @@ export default function HomeScreen() {
     ]).start();
     
     const today = format(new Date(), 'yyyy-MM-dd');
-    await addEggRecord(today, count);
+    await addEggRecord(today, count, undefined, selectedHenId || undefined);
     setShowQuickAdd(false);
     setEggCount('');
+    setSelectedHenId('');
   };
   
   const handleCustomAdd = async () => {
