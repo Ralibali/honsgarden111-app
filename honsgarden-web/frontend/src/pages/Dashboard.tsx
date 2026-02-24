@@ -276,6 +276,38 @@ export default function Dashboard() {
         </div>
       </div>
       
+      {/* Insights Card */}
+      {insights && (
+        <div className="card insights-card">
+          <h3>📊 Insikter</h3>
+          <div className="insights-grid">
+            <div className="insight-item">
+              <span className="insight-icon">💰</span>
+              <div className="insight-data">
+                <span className="insight-value">{insights.cost_per_egg} kr</span>
+                <span className="insight-label">Kostnad per ägg</span>
+              </div>
+            </div>
+            {insights.top_hen && (
+              <div className="insight-item top-hen">
+                <span className="insight-icon">🏆</span>
+                <div className="insight-data">
+                  <span className="insight-value">{insights.top_hen.name}</span>
+                  <span className="insight-label">Toppvärpare ({insights.top_hen.eggs} ägg)</span>
+                </div>
+              </div>
+            )}
+            <div className="insight-item">
+              <span className="insight-icon">📈</span>
+              <div className="insight-data">
+                <span className="insight-value">{insights.productivity_index}%</span>
+                <span className="insight-label">Produktivitet denna månad</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Premium Banner */}
       {!premium?.is_premium && (
         <Link to="/premium" className="premium-banner" data-testid="premium-banner">
