@@ -35,6 +35,7 @@ function AppRouter() {
         <Route path="/eggs" element={<Eggs />} />
         <Route path="/finance" element={<Finance />} />
         <Route path="/feed" element={<Feed />} />
+        <Route path="/hatching" element={<Hatching />} />
         <Route path="/statistics" element={<Statistics />} />
         <Route path="/hens" element={<Hens />} />
         <Route path="/hens/:henId" element={<HenProfile />} />
