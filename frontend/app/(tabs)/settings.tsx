@@ -51,12 +51,50 @@ export default function SettingsScreen() {
   const [cancelReason, setCancelReason] = useState('');
   const [cancelling, setCancelling] = useState(false);
   
+  // Feature preferences (Premium only)
+  const [featurePrefs, setFeaturePrefs] = useState<any>(null);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+  
   const t = i18n.t.bind(i18n);
   const isSv = i18n.locale.startsWith('sv');
   
   useEffect(() => {
     fetchCoopSettings();
+    loadFeaturePreferences();
   }, []);
+  
+  const loadFeaturePreferences = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/feature-preferences`);
+      if (res.ok) {
+        const data = await res.json();
+        setFeaturePrefs(data);
+      }
+    } catch (error) {
+      console.error('Failed to load feature preferences:', error);
+    }
+  };
+  
+  const updateFeaturePreference = async (key: string, value: boolean) => {
+    if (!featurePrefs?.can_customize) return;
+    
+    setSavingPrefs(true);
+    try {
+      const res = await fetch(`${API_URL}/api/feature-preferences`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setFeaturePrefs(data);
+      }
+    } catch (error) {
+      console.error('Failed to update preference:', error);
+    }
+    setSavingPrefs(false);
+  };
   
   useEffect(() => {
     if (coopSettings) {
