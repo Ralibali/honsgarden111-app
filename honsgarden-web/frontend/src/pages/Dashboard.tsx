@@ -324,14 +324,83 @@ export default function Dashboard() {
         </div>
       )}
       
-      {/* Premium Banner */}
+      {/* PREMIUM INSIGHTS SECTION */}
+      {insights?.premium && (
+        <div className="card premium-insights-card">
+          <div className="premium-header">
+            <h3>⭐ Premium Insikter</h3>
+            <span className="premium-badge">Premium</span>
+          </div>
+          
+          {/* Summary */}
+          <div className="premium-summary">
+            <p>{insights.premium.summary}</p>
+          </div>
+          
+          {/* Production Status + Forecast */}
+          <div className="premium-stats-row">
+            <div className={`status-card status-${insights.premium.production_status}`}>
+              <span className="status-text">{insights.premium.production_text}</span>
+              <span className="status-detail">{insights.premium.deviation_percent > 0 ? '+' : ''}{insights.premium.deviation_percent}% vs snitt</span>
+            </div>
+            <div className="forecast-card">
+              <span className="forecast-icon">🔮</span>
+              <div className="forecast-data">
+                <span className="forecast-value">~{insights.premium.forecast_7_days} ägg</span>
+                <span className="forecast-label">Prognos nästa 7 dagar</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Deviating Hens Alert */}
+          {insights.premium.deviating_hens.length > 0 && (
+            <div className="alert-section">
+              <h4>⚠️ Avvikelser upptäckta</h4>
+              {insights.premium.deviating_hens.map(hen => (
+                <div key={hen.id} className="hen-alert">
+                  <span className="alert-icon">🐔</span>
+                  <span className="alert-text">{hen.alert}</span>
+                  <Link to="/hens" className="alert-action">Logga hälsa →</Link>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Economy Comparison */}
+          <div className="economy-comparison">
+            <h4>💰 Ekonomijämförelse</h4>
+            <div className="economy-cards">
+              <div className="economy-card">
+                <span className="economy-label">Denna månad</span>
+                <span className={`economy-value ${insights.premium.economy.this_month.profit >= 0 ? 'positive' : 'negative'}`}>
+                  {insights.premium.economy.this_month.profit >= 0 ? '+' : ''}{insights.premium.economy.this_month.profit} kr
+                </span>
+                <span className="economy-breakdown">
+                  ↑ {insights.premium.economy.this_month.sales} kr  ↓ {insights.premium.economy.this_month.costs} kr
+                </span>
+              </div>
+              <div className="economy-card faded">
+                <span className="economy-label">Förra månaden</span>
+                <span className="economy-value">
+                  {insights.premium.economy.last_month.profit >= 0 ? '+' : ''}{insights.premium.economy.last_month.profit} kr
+                </span>
+              </div>
+            </div>
+            <div className={`economy-change ${insights.premium.economy.change >= 0 ? 'positive' : 'negative'}`}>
+              {insights.premium.economy.change >= 0 ? '📈' : '📉'} {insights.premium.economy.change >= 0 ? '+' : ''}{insights.premium.economy.change} kr ({insights.premium.economy.change_percent}%)
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Premium Banner - Show if NOT premium */}
       {!premium?.is_premium && (
         <Link to="/premium" className="premium-banner" data-testid="premium-banner">
           <div className="premium-content">
             <span className="premium-icon">⭐</span>
             <div>
               <strong>Uppgradera till Premium</strong>
-              <p>Obegränsad historik, PDF-export, påminnelser</p>
+              <p>Prognos, produktionsstatus, varningar & ekonomijämförelse</p>
             </div>
           </div>
           <span className="premium-arrow">›</span>
