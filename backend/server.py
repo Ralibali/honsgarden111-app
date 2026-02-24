@@ -1756,8 +1756,15 @@ async def delete_feed_record(record_id: str, request: Request):
 
 @api_router.get("/feed/inventory")
 async def get_feed_inventory(request: Request):
-    """Get current feed inventory and alerts"""
+    """Get current feed inventory and alerts (Premium only)"""
     user_id = await get_user_id(request)
+    
+    # Check premium status - Feed management is premium only
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    if not is_premium:
+        return {"inventory": [], "low_stock_alerts": [], "total_stock_kg": 0}
     
     cursor = db.feed_inventory.find({"user_id": user_id}, {"_id": 0})
     inventory = await cursor.to_list(length=100)
