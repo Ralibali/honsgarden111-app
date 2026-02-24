@@ -732,3 +732,134 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* AI Premium Features Section */
+.ai-premium-section {
+  position: relative;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  overflow: hidden;
+}
+
+.ai-premium-section.blurred .ai-features-grid {
+  filter: blur(2px);
+  opacity: 0.7;
+}
+
+.ai-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ai-section-header h3 {
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.premium-badge-small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(245, 158, 11, 0.15);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.lock-icon {
+  font-size: 11px;
+}
+
+.ai-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ai-feature-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  transition: opacity 0.2s;
+}
+
+.ai-feature-card.locked {
+  opacity: 0.7;
+}
+
+.ai-feature-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-size: 20px;
+}
+
+.ai-feature-content {
+  flex: 1;
+}
+
+.ai-feature-content h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.ai-feature-content p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.ai-feature-card.locked p {
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.unlock-btn {
+  background: #f59e0b;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.unlock-btn:hover {
+  background: #d97706;
+}
+
+.ai-upgrade-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px;
+  color: #f59e0b;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.ai-upgrade-hint:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .ai-features-grid {
+    grid-template-columns: 1fr;
+  }
+}
