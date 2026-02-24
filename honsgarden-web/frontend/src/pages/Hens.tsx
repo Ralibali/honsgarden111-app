@@ -187,6 +187,42 @@ export default function Hens() {
     }
   };
   
+  const openHealthModal = (henId: string) => {
+    setHealthHenId(henId);
+    setHealthType('note');
+    setHealthDescription('');
+    setHealthDate(format(new Date(), 'yyyy-MM-dd'));
+    setShowHealthModal(true);
+  };
+  
+  const handleSaveHealth = async () => {
+    if (!healthHenId) return;
+    setSavingHealth(true);
+    try {
+      await fetch('/api/health-logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          hen_id: healthHenId,
+          date: healthDate,
+          type: healthType,
+          description: healthDescription || undefined
+        })
+      });
+      await loadData();
+      setShowHealthModal(false);
+    } catch (error) {
+      console.error('Failed to save health log:', error);
+    } finally {
+      setSavingHealth(false);
+    }
+  };
+  
+  const getHealthTypeInfo = (type: string) => {
+    return HEALTH_TYPES.find(t => t.value === type) || HEALTH_TYPES[7];
+  };
+  
   const closeModal = () => {
     setShowModal(false);
     setEditingHen(null);
