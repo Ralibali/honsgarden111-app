@@ -168,6 +168,32 @@ class Transaction(BaseModel):
     quantity: Optional[int] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+# ============ HEALTH LOG MODELS ============
+class HealthLogType(str, Enum):
+    SICK = "sick"
+    MOLTING = "molting"
+    VET_VISIT = "vet_visit"
+    VACCINATION = "vaccination"
+    DEWORMING = "deworming"
+    INJURY = "injury"
+    RECOVERED = "recovered"
+    NOTE = "note"
+
+class HealthLog(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    hen_id: str
+    date: str
+    type: HealthLogType
+    description: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class HealthLogCreate(BaseModel):
+    hen_id: str
+    date: str
+    type: HealthLogType
+    description: Optional[str] = None
+
 class TransactionCreate(BaseModel):
     date: str
     type: TransactionType
