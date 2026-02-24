@@ -110,6 +110,30 @@ class CoopSettingsUpdate(BaseModel):
     coop_name: Optional[str] = None
     hen_count: Optional[int] = None
 
+# ============ FEATURE PREFERENCES MODEL ============
+class FeaturePreferences(BaseModel):
+    """User preferences for which features to show/hide"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    # Feature toggles (all on by default)
+    show_flock_management: bool = True
+    show_health_log: bool = True
+    show_feed_management: bool = True
+    show_weather_data: bool = True
+    show_hatching_module: bool = True
+    show_productivity_alerts: bool = True
+    show_economy_insights: bool = True
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class FeaturePreferencesUpdate(BaseModel):
+    show_flock_management: Optional[bool] = None
+    show_health_log: Optional[bool] = None
+    show_feed_management: Optional[bool] = None
+    show_weather_data: Optional[bool] = None
+    show_hatching_module: Optional[bool] = None
+    show_productivity_alerts: Optional[bool] = None
+    show_economy_insights: Optional[bool] = None
+
 class Hen(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str = "default_user"
