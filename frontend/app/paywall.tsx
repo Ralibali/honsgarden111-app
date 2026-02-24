@@ -92,21 +92,10 @@ export default function PaywallScreen() {
   const handlePurchase = async () => {
     setPurchasing(true);
     
-    // Try to use RevenueCat's built-in paywall first (if configured in dashboard)
-    if (isNative && RevenueCatUI) {
-      const success = await presentRevenueCatPaywall();
-      if (success) {
-        setPurchasing(false);
-        Alert.alert(
-          t('common.success'),
-          t('premium.purchaseSuccess'),
-          [{ text: 'OK', onPress: () => router.back() }]
-        );
-        return;
-      }
-    }
+    // Always use our custom paywall to ensure SEK prices are shown
+    // The RevenueCat built-in paywall shows USD by default
     
-    // Fallback: Manual package purchase
+    // Manual package purchase
     if (isNative && offerings) {
       try {
         const packageId = selectedPlan === 'yearly' ? '$rc_annual' : '$rc_monthly';
