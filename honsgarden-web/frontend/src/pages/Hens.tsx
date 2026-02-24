@@ -59,6 +59,9 @@ export default function Hens() {
   const [showModal, setShowModal] = useState(false);
   const [editingHen, setEditingHen] = useState<Hen | null>(null);
   
+  // Premium status
+  const [isPremium, setIsPremium] = useState(false);
+  
   // Flock modal
   const [showFlockModal, setShowFlockModal] = useState(false);
   const [editingFlock, setEditingFlock] = useState<Flock | null>(null);
