@@ -43,12 +43,23 @@ interface Hen {
   breed?: string;
 }
 
+interface Insights {
+  cost_per_egg: number;
+  total_eggs: number;
+  total_costs: number;
+  top_hen: { id: string; name: string; eggs: number } | null;
+  productivity_index: number;
+  hen_count: number;
+  hen_ranking: Array<{ id: string; name: string; eggs: number; lifecycle: string | null }>;
+}
+
 export default function Dashboard() {
   const [todayStats, setTodayStats] = useState<TodayStats | null>(null);
   const [summary, setSummary] = useState<SummaryStats | null>(null);
   const [coop, setCoop] = useState<CoopSettings | null>(null);
   const [premium, setPremium] = useState<PremiumStatus | null>(null);
   const [hens, setHens] = useState<Hen[]>([]);
+  const [insights, setInsights] = useState<Insights | null>(null);
   const [loading, setLoading] = useState(true);
   const [eggCount, setEggCount] = useState('');
   const [selectedHen, setSelectedHen] = useState<string>('');
