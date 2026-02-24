@@ -169,6 +169,28 @@ export default function HomeScreen() {
     hideUndoSnackbar();
   };
   
+  // Share Statistics function
+  const handleShareStatistics = async () => {
+    try {
+      const coopName = coopSettings?.coop_name || 'Min Hönsgård';
+      const henCount = todayStats?.hen_count || 0;
+      const monthEggs = summaryStats?.this_month.eggs || 0;
+      const totalEggs = summaryStats?.total_eggs_all_time || 0;
+      const productivity = insights?.productivity_index || 0;
+      
+      const message = isSv 
+        ? `🐔 ${coopName} - Statistik\n\n🥚 ${monthEggs} ägg denna månad\n📊 ${totalEggs} ägg totalt\n💪 ${productivity}% produktivitet\n🐓 ${henCount} hönor\n\nSpåra din hönsgård med Hönsgården-appen! 🌾`
+        : `🐔 ${coopName} - Statistics\n\n🥚 ${monthEggs} eggs this month\n📊 ${totalEggs} eggs total\n💪 ${productivity}% productivity\n🐓 ${henCount} hens\n\nTrack your chicken coop with Hönsgården app! 🌾`;
+      
+      await Share.share({
+        message,
+        title: isSv ? 'Min hönsgårdsstatistik' : 'My chicken coop statistics',
+      });
+    } catch (error) {
+      console.error('Share failed:', error);
+    }
+  };
+  
   const handleQuickAdd = async (count: number) => {
     // Trigger haptic feedback
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
