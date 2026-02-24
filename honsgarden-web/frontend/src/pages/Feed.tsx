@@ -156,6 +156,31 @@ export default function Feed() {
     return <div className="feed-page loading">Laddar...</div>;
   }
   
+  // Show premium paywall for free users
+  if (!isPremium) {
+    return (
+      <div className="feed-page">
+        <header className="feed-header">
+          <button className="back-btn" onClick={() => navigate(-1)}>
+            ← Tillbaka
+          </button>
+          <h1>Foderhantering</h1>
+        </header>
+        
+        <div className="premium-required">
+          <span className="premium-emoji">🌾</span>
+          <h2>Premium-funktion</h2>
+          <p>
+            Foderhantering hjälper dig hålla koll på foderlager, förbrukning och kostnader.
+          </p>
+          <button className="upgrade-btn" onClick={() => navigate('/premium')}>
+            🌟 Uppgradera till Premium
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="feed-page">
       <header className="feed-header">
