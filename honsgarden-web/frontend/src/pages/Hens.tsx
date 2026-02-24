@@ -417,6 +417,48 @@ export default function Hens() {
           </div>
         </div>
       )}
+      
+      {/* Health Log Modal */}
+      {showHealthModal && (
+        <div className="modal-overlay" onClick={() => setShowHealthModal(false)}>
+          <div className="modal-content health-modal" onClick={e => e.stopPropagation()}>
+            <h2>🩺 Logga hälsa</h2>
+            <p className="modal-desc">Registrera hälsoobservation för {hens.find(h => h.id === healthHenId)?.name}</p>
+            
+            <label>Typ</label>
+            <select 
+              value={healthType} 
+              onChange={(e) => setHealthType(e.target.value)}
+            >
+              {HEALTH_TYPES.map(type => (
+                <option key={type.value} value={type.value}>{type.label}</option>
+              ))}
+            </select>
+            
+            <label>Datum</label>
+            <input
+              type="date"
+              value={healthDate}
+              onChange={(e) => setHealthDate(e.target.value)}
+            />
+            
+            <label>Beskrivning (valfritt)</label>
+            <textarea
+              value={healthDescription}
+              onChange={(e) => setHealthDescription(e.target.value)}
+              placeholder="T.ex. Hängande vinge, lite matt..."
+              rows={3}
+            />
+            
+            <div className="modal-buttons">
+              <button onClick={() => setShowHealthModal(false)} className="btn-secondary">Avbryt</button>
+              <button onClick={handleSaveHealth} disabled={savingHealth} className="btn-primary">
+                {savingHealth ? 'Sparar...' : 'Spara'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
