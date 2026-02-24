@@ -280,6 +280,17 @@
   color: var(--text-primary);
 }
 
+.health-btn.locked {
+  background-color: rgba(100, 116, 139, 0.1);
+  border-color: rgba(100, 116, 139, 0.3);
+  color: var(--text-tertiary);
+  opacity: 0.8;
+}
+
+.health-btn.locked:hover {
+  background-color: rgba(100, 116, 139, 0.2);
+}
+
 /* Health Summary */
 .health-summary {
   margin-top: 12px;
