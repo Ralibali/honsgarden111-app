@@ -1519,67 +1519,6 @@ async def get_data_limits(request: Request):
         "message": f"Gratis-konton har {FREE_DATA_HISTORY_DAYS} dagars historik. Uppgradera till Premium för obegränsad historik!"
     }
 
-@api_router.get("/hens/productivity-alerts")
-async def get_productivity_alerts(request: Request):
-    """Get hens with productivity issues (14+ days without eggs)"""
-    user_id = await get_user_id(request)
-    today = date.today()
-    
-    # Get all active hens
-    hens = await db.hens.find(
-        {"user_id": user_id, "is_active": True, "status": "active"},
-        {"_id": 0, "id": 1, "name": 1, "breed": 1, "flock_id": 1}
-    ).to_list(100)
-    
-    # Get all eggs for last 30 days
-    thirty_days_ago = (today - timedelta(days=30)).isoformat()
-    eggs = await db.egg_records.find(
-        {"user_id": user_id, "date": {"$gte": thirty_days_ago}},
-        {"_id": 0, "hen_id": 1, "date": 1, "count": 1}
-    ).to_list(10000)
-    
-    # Calculate last egg date per hen
-    last_egg_by_hen = {}
-    for egg in eggs:
-        hen_id = egg.get('hen_id')
-        if hen_id:
-            egg_date = egg.get('date', '')
-            if hen_id not in last_egg_by_hen or egg_date > last_egg_by_hen[hen_id]:
-                last_egg_by_hen[hen_id] = egg_date
-    
-    # Find hens with 14+ days without eggs
-    alerts = []
-    fourteen_days_ago = (today - timedelta(days=14)).isoformat()
-    
-    for hen in hens:
-        hen_id = hen['id']
-        last_egg = last_egg_by_hen.get(hen_id)
-        
-        if not last_egg or last_egg < fourteen_days_ago:
-            days_since = None
-            if last_egg:
-                last_date = datetime.strptime(last_egg, '%Y-%m-%d').date()
-                days_since = (today - last_date).days
-            
-            alerts.append({
-                "hen_id": hen_id,
-                "hen_name": hen['name'],
-                "breed": hen.get('breed'),
-                "flock_id": hen.get('flock_id'),
-                "last_egg_date": last_egg,
-                "days_since_egg": days_since,
-                "alert_level": "high" if (days_since and days_since >= 21) else "medium"
-            })
-    
-    # Sort by days since egg (most concerning first)
-    alerts.sort(key=lambda x: x['days_since_egg'] if x['days_since_egg'] else 999, reverse=True)
-    
-    return {
-        "total_alerts": len(alerts),
-        "hens_with_issues": alerts,
-        "threshold_days": 14
-    }
-
 # ============ STATISTICS ENDPOINTS ============
 @api_router.get("/statistics/today")
 async def get_today_statistics(request: Request):
