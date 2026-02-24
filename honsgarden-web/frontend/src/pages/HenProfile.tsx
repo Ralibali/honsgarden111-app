@@ -66,10 +66,24 @@ export default function HenProfile() {
   const [healthDate, setHealthDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [healthDescription, setHealthDescription] = useState('');
   const [saving, setSaving] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     loadProfile();
+    checkPremium();
   }, [henId]);
+  
+  const checkPremium = async () => {
+    try {
+      const res = await fetch('/api/premium/status', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setIsPremium(data.is_premium);
+      }
+    } catch (error) {
+      console.error('Failed to check premium:', error);
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -91,6 +105,16 @@ export default function HenProfile() {
     } catch (error) {
       alert('Kunde inte uppdatera');
     }
+  };
+  
+  const openHealthModal = () => {
+    if (!isPremium) {
+      if (window.confirm('🔒 Hälsologgen är en Premium-funktion.\n\nUppgradera för att dokumentera dina hönors hälsa.\n\nVill du gå till uppgraderingssidan?')) {
+        navigate('/premium');
+      }
+      return;
+    }
+    setShowHealthModal(true);
   };
 
   const saveHealthLog = async () => {
