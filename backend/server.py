@@ -299,6 +299,57 @@ class TransactionCreate(BaseModel):
     description: Optional[str] = None
     quantity: Optional[int] = None
 
+# ============ FEED MANAGEMENT MODELS (ETAPP 4) ============
+class FeedType(str, Enum):
+    LAYER_FEED = "layer_feed"          # Värpfoder
+    GROWER_FEED = "grower_feed"        # Tillväxtfoder
+    STARTER_FEED = "starter_feed"      # Startfoder
+    SCRATCH_GRAIN = "scratch_grain"    # Korn/vete
+    TREATS = "treats"                  # Godis/belöningar
+    SUPPLEMENTS = "supplements"        # Tillskott
+    OTHER = "other"
+
+class FeedRecord(BaseModel):
+    """Feed consumption/purchase record"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    date: str  # YYYY-MM-DD
+    feed_type: FeedType
+    amount_kg: float  # Amount in kg
+    cost: Optional[float] = None  # Cost in SEK
+    is_purchase: bool = False  # True = purchase, False = consumption
+    brand: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class FeedRecordCreate(BaseModel):
+    date: str
+    feed_type: FeedType
+    amount_kg: float
+    cost: Optional[float] = None
+    is_purchase: bool = False
+    brand: Optional[str] = None
+    notes: Optional[str] = None
+
+class FeedRecordUpdate(BaseModel):
+    date: Optional[str] = None
+    feed_type: Optional[FeedType] = None
+    amount_kg: Optional[float] = None
+    cost: Optional[float] = None
+    is_purchase: Optional[bool] = None
+    brand: Optional[str] = None
+    notes: Optional[str] = None
+
+class FeedInventory(BaseModel):
+    """Current feed inventory"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    feed_type: FeedType
+    current_stock_kg: float = 0.0
+    low_stock_threshold_kg: float = 5.0  # Alert when below this
+    brand: Optional[str] = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============ SUBSCRIPTION MODELS ============
 class PremiumStatusResponse(BaseModel):
     is_premium: bool
