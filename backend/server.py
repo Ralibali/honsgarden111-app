@@ -884,6 +884,94 @@ async def delete_hen(hen_id: str, request: Request):
     
     return {"message": "Hen removed"}
 
+@api_router.post("/hens/{hen_id}/seen")
+async def mark_hen_seen(hen_id: str, request: Request):
+    """Mark a hen as seen today"""
+    user_id = await get_user_id(request)
+    today = date.today().isoformat()
+    
+    result = await db.hens.update_one(
+        {"id": hen_id, "user_id": user_id},
+        {"$set": {"last_seen": today, "updated_at": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Hen not found")
+    
+    return {"message": f"Markerad som sedd {today}", "last_seen": today}
+
+@api_router.get("/hens/{hen_id}/profile")
+async def get_hen_profile(hen_id: str, request: Request):
+    """Get full hen profile with health logs and egg statistics"""
+    user_id = await get_user_id(request)
+    
+    hen = await db.hens.find_one({"id": hen_id, "user_id": user_id}, {"_id": 0})
+    if not hen:
+        raise HTTPException(status_code=404, detail="Hen not found")
+    
+    # Get health logs for timeline
+    health_logs = await db.health_logs.find(
+        {"user_id": user_id, "hen_id": hen_id}, {"_id": 0}
+    ).sort("date", -1).limit(50).to_list(50)
+    
+    # Get egg statistics
+    all_eggs = await db.egg_records.find(
+        {"user_id": user_id, "hen_id": hen_id}, {"_id": 0, "count": 1, "date": 1}
+    ).to_list(10000)
+    
+    total_eggs = sum(e['count'] for e in all_eggs)
+    
+    # Calculate weekly and monthly averages
+    today = date.today()
+    week_ago = (today - timedelta(days=7)).isoformat()
+    month_ago = (today - timedelta(days=30)).isoformat()
+    
+    week_eggs = sum(e['count'] for e in all_eggs if e.get('date', '') >= week_ago)
+    month_eggs = sum(e['count'] for e in all_eggs if e.get('date', '') >= month_ago)
+    
+    # Last egg date
+    eggs_sorted = sorted([e for e in all_eggs if e.get('date')], key=lambda x: x['date'], reverse=True)
+    last_egg_date = eggs_sorted[0]['date'] if eggs_sorted else None
+    
+    # Days since last egg
+    days_since_egg = None
+    if last_egg_date:
+        last_egg = datetime.strptime(last_egg_date, '%Y-%m-%d').date()
+        days_since_egg = (today - last_egg).days
+    
+    # Check last_seen warning
+    last_seen_warning = False
+    days_since_seen = None
+    if hen.get('last_seen'):
+        last_seen_date = datetime.strptime(hen['last_seen'], '%Y-%m-%d').date()
+        days_since_seen = (today - last_seen_date).days
+        warning_days = hen.get('last_seen_warning_days', 3)
+        last_seen_warning = days_since_seen >= warning_days
+    
+    # Egg data for graph (last 30 days)
+    egg_graph_data = []
+    for i in range(30):
+        d = (today - timedelta(days=29-i)).isoformat()
+        day_eggs = sum(e['count'] for e in all_eggs if e.get('date') == d)
+        egg_graph_data.append({"date": d, "count": day_eggs})
+    
+    return {
+        **hen,
+        "health_logs": health_logs,
+        "statistics": {
+            "total_eggs": total_eggs,
+            "eggs_this_week": week_eggs,
+            "eggs_this_month": month_eggs,
+            "weekly_average": round(week_eggs / 7, 1),
+            "monthly_average": round(month_eggs / 30, 1),
+            "last_egg_date": last_egg_date,
+            "days_since_egg": days_since_egg,
+            "no_eggs_warning": days_since_egg is not None and days_since_egg >= 14
+        },
+        "last_seen_warning": last_seen_warning,
+        "days_since_seen": days_since_seen,
+        "egg_graph_data": egg_graph_data
+    }
+
 # ============ HEALTH LOG ENDPOINTS ============
 @api_router.post("/health-logs", response_model=HealthLog)
 async def create_health_log(log: HealthLogCreate, request: Request):
