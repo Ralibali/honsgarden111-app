@@ -1142,6 +1142,181 @@ async def trigger_all_reminders():
     
     return {"message": f"Skickade {sent_count} påminnelser", "total_users": len(users)}
 
+# ============ ADMIN ENDPOINTS ============
+@api_router.get("/admin/check")
+async def check_admin_status(request: Request):
+    """Check if current user is an admin"""
+    user = await get_current_user(request)
+    if not user:
+        return {"is_admin": False}
+    return {"is_admin": user.email in ADMIN_EMAILS, "email": user.email}
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(request: Request):
+    """Get dashboard statistics for admin"""
+    await require_admin(request)
+    
+    # Count users
+    total_users = await db.users.count_documents({})
+    
+    # Count active subscriptions
+    active_subs = await db.subscriptions.count_documents({"is_active": True})
+    
+    # Count by plan
+    monthly_subs = await db.subscriptions.count_documents({"is_active": True, "plan": "monthly"})
+    yearly_subs = await db.subscriptions.count_documents({"is_active": True, "plan": "yearly"})
+    
+    # Calculate MRR (Monthly Recurring Revenue)
+    monthly_price = 29  # SEK
+    yearly_price = 249  # SEK per year = 20.75/month
+    mrr = (monthly_subs * monthly_price) + (yearly_subs * (yearly_price / 12))
+    
+    # Recent signups (last 7 days)
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    recent_users = await db.users.count_documents({"created_at": {"$gte": week_ago}})
+    
+    # Feedback count
+    new_feedback = await db.feedback.count_documents({"status": "new"})
+    total_feedback = await db.feedback.count_documents({})
+    
+    # Cancellations last 30 days
+    month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    recent_cancellations = await db.cancellations.count_documents({"cancelled_at": {"$gte": month_ago}})
+    
+    return {
+        "users": {
+            "total": total_users,
+            "new_last_7_days": recent_users
+        },
+        "subscriptions": {
+            "active": active_subs,
+            "monthly": monthly_subs,
+            "yearly": yearly_subs,
+            "mrr": round(mrr, 2)
+        },
+        "feedback": {
+            "new": new_feedback,
+            "total": total_feedback
+        },
+        "cancellations": {
+            "last_30_days": recent_cancellations
+        }
+    }
+
+@api_router.get("/admin/users")
+async def get_admin_users(request: Request, skip: int = 0, limit: int = 50):
+    """Get all users for admin"""
+    await require_admin(request)
+    
+    users = await db.users.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.users.count_documents({})
+    
+    # Enrich with subscription data
+    enriched_users = []
+    for u in users:
+        sub = await db.subscriptions.find_one({"user_id": u.get("user_id")}, {"_id": 0})
+        enriched_users.append({
+            "user_id": u.get("user_id"),
+            "email": u.get("email"),
+            "name": u.get("name"),
+            "picture": u.get("picture"),
+            "created_at": u.get("created_at"),
+            "is_premium": sub.get("is_active", False) if sub else False,
+            "plan": sub.get("plan") if sub else None,
+            "reminder_enabled": u.get("reminder_enabled", False)
+        })
+    
+    return {"users": enriched_users, "total": total, "skip": skip, "limit": limit}
+
+@api_router.get("/admin/subscriptions")
+async def get_admin_subscriptions(request: Request, active_only: bool = False):
+    """Get all subscriptions for admin"""
+    await require_admin(request)
+    
+    query = {"is_active": True} if active_only else {}
+    subs = await db.subscriptions.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    
+    # Enrich with user data
+    enriched_subs = []
+    for s in subs:
+        user = await db.users.find_one({"user_id": s.get("user_id")}, {"_id": 0, "email": 1, "name": 1})
+        enriched_subs.append({
+            "user_id": s.get("user_id"),
+            "email": user.get("email") if user else "Unknown",
+            "name": user.get("name") if user else "Unknown",
+            "plan": s.get("plan"),
+            "is_active": s.get("is_active"),
+            "created_at": s.get("created_at"),
+            "expires_at": s.get("expires_at"),
+            "cancelled_at": s.get("cancelled_at")
+        })
+    
+    return {"subscriptions": enriched_subs, "total": len(enriched_subs)}
+
+@api_router.get("/admin/feedback")
+async def get_admin_feedback(request: Request, status: str = None):
+    """Get all feedback for admin"""
+    await require_admin(request)
+    
+    query = {"status": status} if status else {}
+    feedback_list = await db.feedback.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    return {"feedback": feedback_list, "total": len(feedback_list)}
+
+@api_router.put("/admin/feedback/{feedback_id}")
+async def update_feedback_status(request: Request, feedback_id: str, status: str):
+    """Update feedback status"""
+    await require_admin(request)
+    
+    result = await db.feedback.update_one(
+        {"id": feedback_id},
+        {"$set": {"status": status, "updated_at": datetime.now(timezone.utc)}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Feedback not found")
+    
+    return {"message": "Status uppdaterad", "feedback_id": feedback_id, "status": status}
+
+@api_router.delete("/admin/users/{user_id}")
+async def delete_user(request: Request, user_id: str):
+    """Delete a user and all their data (admin only)"""
+    await require_admin(request)
+    
+    # Delete user data from all collections
+    await db.users.delete_one({"user_id": user_id})
+    await db.subscriptions.delete_one({"user_id": user_id})
+    await db.user_sessions.delete_many({"user_id": user_id})
+    await db.coop_settings.delete_one({"user_id": user_id})
+    await db.egg_records.delete_many({"user_id": user_id})
+    await db.transactions.delete_many({"user_id": user_id})
+    
+    logger.info(f"Admin deleted user {user_id}")
+    
+    return {"message": "Användare raderad", "user_id": user_id}
+
+@api_router.put("/admin/subscriptions/{user_id}")
+async def update_user_subscription(request: Request, user_id: str, is_active: bool, plan: str = None):
+    """Update a user's subscription (admin only)"""
+    await require_admin(request)
+    
+    update_data = {"is_active": is_active, "updated_at": datetime.now(timezone.utc)}
+    if plan:
+        update_data["plan"] = plan
+    if is_active:
+        # Set expiry to 1 year from now for manual activation
+        update_data["expires_at"] = datetime.now(timezone.utc) + timedelta(days=365)
+    
+    result = await db.subscriptions.update_one(
+        {"user_id": user_id},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    logger.info(f"Admin updated subscription for user {user_id}: active={is_active}")
+    
+    return {"message": "Prenumeration uppdaterad", "user_id": user_id, "is_active": is_active}
+
 # ============ BASIC ROUTES ============
 @api_router.get("/")
 async def root():
