@@ -1440,8 +1440,35 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     opacity: 0.5,
   },
   quickEggBtnText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
+    color: '#FFF',
+  },
+  customEggRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 14,
+  },
+  customEggInputSmall: {
+    flex: 1,
+    height: 44,
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    fontSize: 16,
+    color: colors.text,
+  },
+  customEggAddBtn: {
+    height: 44,
+    paddingHorizontal: 20,
+    backgroundColor: colors.success,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  customEggAddBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
     color: '#FFF',
   },
   moreActionsTitle: {
