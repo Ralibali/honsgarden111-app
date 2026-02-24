@@ -351,7 +351,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "All backend APIs successfully tested"
+    - "All backend APIs and premium endpoints successfully tested"
   stuck_tasks: []
   test_all: false
   test_priority: "completed"
