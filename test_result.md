@@ -388,6 +388,30 @@ frontend:
         agent: "main"
         comment: "✅ Health logs with categories (sick/molting/vet_visit/vaccination/deworming/injury/recovered/note). GET /api/health-logs, POST /api/health-logs, DELETE /api/health-logs/{id}. Displayed as timeline in hen profile."
 
+  - task: "Productivity Alerts (Etapp 2)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ GET /api/hens/productivity-alerts returns hens with 14+ days without eggs. Shows hen name, breed, flock, days since last egg, alert level (medium/high). Integrated into Dashboard (web) and HomeScreen (mobile) with clickable warning banners."
+
+  - task: "Data Limits Banner (Etapp 2)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ GET /api/account/data-limits returns free account limits (90 days), data at risk, upcoming deletion counts, trial warnings. DataLimitsBanner component added to web Dashboard and mobile HomeScreen. Shows upsell to Premium with dismiss option."
+
   - task: "Premium/Paywall Modal"
     implemented: true
     working: true
