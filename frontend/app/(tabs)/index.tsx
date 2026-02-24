@@ -1267,4 +1267,35 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontSize: 13,
     color: '#78350f',
   },
+  // Hen Select styles
+  henSelectScroll: {
+    marginBottom: 16,
+  },
+  henSelectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    gap: 6,
+  },
+  henSelectBtnActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '20',
+  },
+  henSelectEmoji: {
+    fontSize: 18,
+  },
+  henSelectText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  henSelectTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
 });
