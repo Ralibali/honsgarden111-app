@@ -120,6 +120,31 @@ export default function Hens() {
     }
   };
   
+  const handleAddEgg = async (henId: string) => {
+    if (eggCount < 1) return;
+    setSavingEgg(true);
+    try {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      await fetch('/api/eggs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          date: today, 
+          count: eggCount,
+          hen_id: henId
+        })
+      });
+      await loadData();
+      setAddingEggForHen(null);
+      setEggCount(1);
+    } catch (error) {
+      console.error('Failed to add egg:', error);
+    } finally {
+      setSavingEgg(false);
+    }
+  };
+  
   const closeModal = () => {
     setShowModal(false);
     setEditingHen(null);
