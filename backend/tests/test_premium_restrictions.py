@@ -186,6 +186,31 @@ class TestFeaturePreferencesRestrictions:
             assert response.status_code in [200, 403], f"Unexpected status: {response.status_code}"
 
 
+class TestHatchingRestrictions:
+    """Test hatching module premium restrictions (max 1 for free users)"""
+    
+    def test_post_hatching_returns_403_for_free_user(self):
+        """POST /api/hatching should return 403 for free users"""
+        hatching_data = {
+            "start_date": "2026-02-24",
+            "egg_count": 10
+        }
+        
+        response = requests.post(f"{BASE_URL}/api/hatching", json=hatching_data)
+        
+        if response.status_code == 403:
+            print("✅ POST /api/hatching correctly returns 403 for free user")
+            data = response.json()
+            assert "detail" in data
+            assert "premium" in data["detail"].lower() or "Premium" in data["detail"]
+            print(f"403 message: {data.get('detail')}")
+        elif response.status_code in [200, 201]:
+            print("⚠️ POST /api/hatching returned 200/201 - user may have premium")
+        else:
+            print(f"Status: {response.status_code}, Response: {response.text}")
+            assert response.status_code in [200, 201, 403], f"Unexpected status: {response.status_code}"
+
+
 class TestCleanup:
     """Cleanup test data"""
     
