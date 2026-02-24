@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import './Dashboard.css';
+import DataLimitsBanner from '../components/DataLimitsBanner';
+import ProductivityAlerts from '../components/ProductivityAlerts';
 
 interface TodayStats {
   date: string;
