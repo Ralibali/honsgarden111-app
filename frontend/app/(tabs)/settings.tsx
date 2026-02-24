@@ -546,6 +546,117 @@ export default function SettingsScreen() {
             </View>
           </View>
           
+          {/* Feature Preferences Section (Premium Only) */}
+          {featurePrefs && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                {isSv ? 'Anpassa funktioner' : 'Customize features'} 
+                {!featurePrefs.can_customize && ' 🔒'}
+              </Text>
+              
+              {!featurePrefs.can_customize && (
+                <View style={styles.premiumHint}>
+                  <Text style={styles.premiumHintText}>
+                    {isSv 
+                      ? 'Uppgradera till Premium för att dölja funktioner du inte använder'
+                      : 'Upgrade to Premium to hide features you don\'t use'
+                    }
+                  </Text>
+                  <TouchableOpacity onPress={() => router.push('/paywall')}>
+                    <Text style={styles.premiumHintLink}>
+                      🌟 {isSv ? 'Uppgradera' : 'Upgrade'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              <View style={[styles.featureToggleCard, !featurePrefs.can_customize && styles.featureToggleDisabled]}>
+                <View style={styles.featureToggleInfo}>
+                  <Text style={styles.featureToggleEmoji}>🏠</Text>
+                  <View>
+                    <Text style={styles.featureToggleName}>{isSv ? 'Flockhantering' : 'Flock management'}</Text>
+                    <Text style={styles.featureToggleDesc}>{isSv ? 'Organisera hönor i flockar' : 'Organize hens in flocks'}</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={featurePrefs.preferences?.show_flock_management ?? true}
+                  onValueChange={(v) => updateFeaturePreference('show_flock_management', v)}
+                  disabled={!featurePrefs.can_customize || savingPrefs}
+                  trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                  thumbColor={featurePrefs.preferences?.show_flock_management ? colors.primary : colors.textMuted}
+                />
+              </View>
+              
+              <View style={[styles.featureToggleCard, !featurePrefs.can_customize && styles.featureToggleDisabled]}>
+                <View style={styles.featureToggleInfo}>
+                  <Text style={styles.featureToggleEmoji}>🩺</Text>
+                  <View>
+                    <Text style={styles.featureToggleName}>{isSv ? 'Hälsologg' : 'Health log'}</Text>
+                    <Text style={styles.featureToggleDesc}>{isSv ? 'Dokumentera hälsa per höna' : 'Document health per hen'}</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={featurePrefs.preferences?.show_health_log ?? true}
+                  onValueChange={(v) => updateFeaturePreference('show_health_log', v)}
+                  disabled={!featurePrefs.can_customize || savingPrefs}
+                  trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                  thumbColor={featurePrefs.preferences?.show_health_log ? colors.primary : colors.textMuted}
+                />
+              </View>
+              
+              <View style={[styles.featureToggleCard, !featurePrefs.can_customize && styles.featureToggleDisabled]}>
+                <View style={styles.featureToggleInfo}>
+                  <Text style={styles.featureToggleEmoji}>🥚</Text>
+                  <View>
+                    <Text style={styles.featureToggleName}>{isSv ? 'Kläckningsmodul' : 'Hatching module'}</Text>
+                    <Text style={styles.featureToggleDesc}>{isSv ? 'Spåra ruvande ägg' : 'Track incubating eggs'}</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={featurePrefs.preferences?.show_hatching_module ?? true}
+                  onValueChange={(v) => updateFeaturePreference('show_hatching_module', v)}
+                  disabled={!featurePrefs.can_customize || savingPrefs}
+                  trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                  thumbColor={featurePrefs.preferences?.show_hatching_module ? colors.primary : colors.textMuted}
+                />
+              </View>
+              
+              <View style={[styles.featureToggleCard, !featurePrefs.can_customize && styles.featureToggleDisabled]}>
+                <View style={styles.featureToggleInfo}>
+                  <Text style={styles.featureToggleEmoji}>📊</Text>
+                  <View>
+                    <Text style={styles.featureToggleName}>{isSv ? 'Produktivitetsvarningar' : 'Productivity alerts'}</Text>
+                    <Text style={styles.featureToggleDesc}>{isSv ? 'Varning om höns ej värper' : 'Alerts for non-laying hens'}</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={featurePrefs.preferences?.show_productivity_alerts ?? true}
+                  onValueChange={(v) => updateFeaturePreference('show_productivity_alerts', v)}
+                  disabled={!featurePrefs.can_customize || savingPrefs}
+                  trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                  thumbColor={featurePrefs.preferences?.show_productivity_alerts ? colors.primary : colors.textMuted}
+                />
+              </View>
+              
+              <View style={[styles.featureToggleCard, !featurePrefs.can_customize && styles.featureToggleDisabled]}>
+                <View style={styles.featureToggleInfo}>
+                  <Text style={styles.featureToggleEmoji}>💰</Text>
+                  <View>
+                    <Text style={styles.featureToggleName}>{isSv ? 'Ekonomiinsikter' : 'Economy insights'}</Text>
+                    <Text style={styles.featureToggleDesc}>{isSv ? 'Kostnad per ägg m.m.' : 'Cost per egg etc.'}</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={featurePrefs.preferences?.show_economy_insights ?? true}
+                  onValueChange={(v) => updateFeaturePreference('show_economy_insights', v)}
+                  disabled={!featurePrefs.can_customize || savingPrefs}
+                  trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                  thumbColor={featurePrefs.preferences?.show_economy_insights ? colors.primary : colors.textMuted}
+                />
+              </View>
+            </View>
+          )}
+          
           {/* Contact & Support Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{isSv ? 'Kontakt & Support' : 'Contact & Support'}</Text>
