@@ -197,6 +197,13 @@
 - [x] Webb Frontend: Hälsologg-knapp visar låst tillstånd för gratisanvändare
 - [x] Webb Frontend: Flock-sparning visar premium-popup vid 403
 
+### Session 6 - Demo-data & Feature Parity (February 24, 2026)
+- [x] Statistikgrafer: Demo-data visas för nya användare utan äggdata
+- [x] Demo-data banner: "Exempeldata visas - Börja logga ägg för att se din egen statistik!"
+- [x] Ekonomigraf: Ändrat från BarChart till PieChart för bättre visualisering
+- [x] Feature parity audit: Webb och mobil har paritet i kärnfunktioner
+- [x] Premium grafer: "Expected vs Actual" och "Per-Hen" låsta med blur för gratisanvändare
+
 ---
 
 ## P2 - Future/Backlog
