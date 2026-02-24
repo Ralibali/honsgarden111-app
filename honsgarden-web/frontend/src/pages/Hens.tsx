@@ -289,7 +289,7 @@ export default function Hens() {
       const url = editingFlock ? `/api/flocks/${editingFlock.id}` : '/api/flocks';
       const method = editingFlock ? 'PUT' : 'POST';
       
-      await fetch(url, {
+      const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -298,6 +298,17 @@ export default function Hens() {
           description: flockDescription || undefined
         })
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        if (response.status === 403) {
+          alert('🔒 Premium-funktion\n\n' + (error.detail || 'Gratis-konto tillåter endast 1 flock. Uppgradera till Premium för obegränsat antal.'));
+          navigate('/premium');
+          return;
+        }
+        throw new Error(error.detail || 'Unknown error');
+      }
+      
       await loadData();
       setShowFlockModal(false);
       setFlockName('');
@@ -305,7 +316,7 @@ export default function Hens() {
       setEditingFlock(null);
     } catch (error) {
       console.error('Failed to save flock:', error);
-      alert('Kunde inte spara flocken. Kontrollera om du har Premium för obegränsat antal flockar.');
+      alert('Kunde inte spara flocken. Försök igen.');
     } finally {
       setSaving(false);
     }
