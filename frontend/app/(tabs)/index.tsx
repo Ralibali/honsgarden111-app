@@ -204,6 +204,66 @@ export default function HomeScreen() {
           <Text style={styles.date}>{dateString}</Text>
         </View>
         
+        {/* Data Limits Banner for Free Users */}
+        {dataLimits && !dataLimits.is_premium && !dismissedBanner && (
+          (dataLimits.upcoming_deletion?.within_7_days > 0 || dataLimits.data_at_risk?.total > 0) && (
+            <View style={[
+              styles.dataLimitsBanner,
+              dataLimits.upcoming_deletion?.within_7_days > 0 ? styles.urgentBanner : styles.warningBanner
+            ]}>
+              <Text style={styles.bannerEmoji}>
+                {dataLimits.upcoming_deletion?.within_7_days > 0 ? '⚠️' : '📊'}
+              </Text>
+              <View style={styles.bannerContent}>
+                {dataLimits.upcoming_deletion?.within_7_days > 0 ? (
+                  <>
+                    <Text style={styles.bannerTitle}>Data raderas snart!</Text>
+                    <Text style={styles.bannerText}>
+                      {dataLimits.upcoming_deletion.within_7_days} poster raderas inom 7 dagar
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.bannerTitle}>Gratis: {dataLimits.data_limit_days} dagars historik</Text>
+                    <Text style={styles.bannerText}>{dataLimits.message}</Text>
+                  </>
+                )}
+                <View style={styles.bannerActions}>
+                  <TouchableOpacity 
+                    style={styles.upgradeBannerBtn}
+                    onPress={() => router.push('/paywall')}
+                  >
+                    <Text style={styles.upgradeBannerText}>🌟 Premium</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.dismissBtn}
+                    onPress={() => setDismissedBanner(true)}
+                  >
+                    <Text style={styles.dismissText}>Avfärda</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )
+        )}
+        
+        {/* Productivity Alerts */}
+        {productivityAlerts && productivityAlerts.total_alerts > 0 && (
+          <TouchableOpacity 
+            style={styles.productivityAlertBanner}
+            onPress={() => router.push('/(tabs)/hens')}
+          >
+            <Text style={styles.alertBannerEmoji}>🥚</Text>
+            <View style={styles.alertBannerContent}>
+              <Text style={styles.alertBannerTitle}>Produktivitetsvarning</Text>
+              <Text style={styles.alertBannerText}>
+                {productivityAlerts.total_alerts} höna{productivityAlerts.total_alerts === 1 ? '' : 'r'} har ej värpt på {productivityAlerts.threshold_days}+ dagar
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#92400e" />
+          </TouchableOpacity>
+        )}
+        
         {/* Quick Stats Cards */}
         <View style={styles.statsRow}>
           <View style={[styles.statCard, styles.henCard]}>
