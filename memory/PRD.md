@@ -3,7 +3,7 @@
 ## Projektöversikt
 **Hönsgården** är en digital assistent för hönsgårdsägare som hjälper dem att hålla koll på äggproduktion, ekonomi och individuella hönaprofiler.
 
-**Live URL:** https://flock-health-logs.preview.emergentagent.com/api/web/
+**Live URL:** https://hen-dashboard.preview.emergentagent.com/api/web/
 
 ## Vad appen erbjuder
 

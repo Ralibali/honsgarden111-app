@@ -1,188 +1,223 @@
 <analysis>
 
 **original_problem_statement**:
-The user wants to implement a large set of new features for the Hönsgården (The Chicken Coop) application, based on detailed feedback. The work is to be done in stages (Etapper).
+The user wants to finalize the Hönsgården application for deployment by implementing a series of features and bug fixes. The primary goal is to achieve feature parity and a consistent user experience across the web and mobile (iOS/Android) platforms.
 
-**PRODUCT REQUIREMENTS (Etapp 1 - Highest Priority):**
-1.  **Hälsologg per höna (Hen Health Log):**
-    *   A health tab on each hen's profile.
-    *   Log observations with date and category (general well-being, symptoms, vaccination/deworming, vet visit).
-    *   Display as a timeline.
-    *   Add a manually updated last seen field with a configurable warning (default 3 days) if not updated.
-2.  **Flockhantering (Flock Management):**
-    *   Ability to create multiple flocks (e.g., Hönshus 1). Free users get 1 flock, Premium users get unlimited flocks.
-    *   Each hen must belong to a flock.
-    *   Statistics should be filterable by flock.
-    *   Add a status field to each hen: , , , with a date, to keep active lists clean while preserving history.
+**PRODUCT REQUIREMENTS (Consolidated from recent requests):**
+
+1.  **Feature Parity & Consistency:**
+    *   Ensure all features on the web app are present and work identically on the mobile apps.
+    *   Unify the egg registration flow across all three entry points (Dashboard quick-add, Add Egg page, Hen Profile bottom sheet). This unified UI must include:
+        *   Quick-add buttons: +1, +2, +3, +5, +10.
+        *   A free-text field for custom amounts.
+        *   An optional dropdown to select the hen.
+        *   Default to unknown hen if none is selected.
+
+2.  **UI/UX & Branding Updates:**
+    *   **Fonts:** Change all fonts to  for headings/logo and  for body/UI text.
+    *   **Tagline:** Change the tagline back to Hönsgården with the subtitle Din digitala assistent för din hönsgård.
+    *   **Logo:** A new, more professional logo and tagline were implemented on the landing page.
+    *   **Logout Button (Web):** Add a Logga ut button to the web application.
+
+3.  **New Features & Bug Fixes:**
+    *   **Hen Profile Quick Add:** Implement a bottom sheet on the mobile app that appears when a user taps a hen, allowing for quick egg registration (+1, +2, +3) and access to other options (More options).
+    *   **BUG - Customizable Features:** The Anpassa funktioner (Customize Features) toggles under settings do not work, even for Premium accounts. This needs to be fixed.
+    *   **Productivity Warning Logic:** The warning for a hen not laying eggs should only appear if the user actively registers eggs on a per-hen basis (to avoid false positives from quick-add).
+    *   **Push Notifications:** Implement push notifications for key events (e.g., hatching reminders).
+    *   **Contact/Feedback:** A Contact Us or feedback mechanism should be available on both web and mobile.
+
+4.  **Pricing & Deployment:**
+    *   **Price Change:** Update Premium pricing to **19 kr/month** and **149 kr/year** everywhere, including the Stripe backend configuration.
 
 **User's preferred language**: Swedish (Svenska). The next agent MUST respond in Swedish.
 
 **what currently exists?**
-A full-stack application called Hönsgården for chicken coop management.
--   **Backend:** FastAPI (Python) serving a REST API and the built React web app.
--   **Database:** MongoDB.
--   **Web App (Primary):** A React application located in  which gets built and served from . It includes user login (Google OAuth), hen/egg/finance tracking, a Stripe-integrated premium subscription, an admin panel, and advanced Premium Insights features.
--   **Mobile App (Secondary):** An Expo (React Native) application in . It shares the same backend but has fewer features than the web app. Some of the latest Premium Insights and other features have been ported, but it is not at feature parity with the web app.
+A full-stack application with a FastAPI backend, MongoDB database, a React web app, and an Expo mobile app. The agent has implemented several major feature stages (Etapper):
+-   **Etapp 1 (Completed):** Flock Management and a detailed Health Log for each hen.
+-   **Etapp 2 (Completed):** Productivity analysis per hen and warnings for free-tier data limits (90-day history).
+-   **Etapp 3 (Completed):** A Hatching module for premium users to track egg incubation.
+-   **Other Features (Completed):** A new logo/tagline on the web landing page, a contact/feedback form, and feature toggles in settings for Premium users (though this is buggy). Optional per-hen selection was added to egg registration.
 
 **Last working item**:
--   Last item agent was working: Implementing **Etapp 1** of the new feature request. The agent started updating the backend by modifying the Pydantic models in  to support **Flock Management** and an extended **Hen model** (with , , , etc.). The agent added models for  and , updated the  model, and was in the process of adding the corresponding API endpoints.
+-   Last item agent was working: Unifying the egg registration UI to be consistent across the app, as per user request. The agent started by updating the quick-add modal on the mobile app's dashboard () to include more quick-add buttons (+1, +2, +3, +5, +10) and a custom input field.
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? **backend testing agent** to test the new and updated endpoints after backend implementation is complete. Then, use the **frontend testing agent** for both the web app and the mobile app once the UI is implemented.
+-   Which testing method agent to use? **frontend testing agent** to verify the UI and functionality of the egg registration flow on all three entry points (Dashboard, Add Egg page, Hen Profile sheet) on the mobile app. Then, use the **screenshot tool** to verify the same on the web app.
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1 (P0): Complete the implementation of Etapp 1 features.**
-    -   **Description**: The agent has started the backend work but needs to complete it and then implement the full functionality on both the web and mobile frontends.
+-   **Issue 1 (P0): Unify Egg Registration UI.**
+    -   **Description**: The user wants the egg registration flow to be identical in three places: Dashboard quick-add, the dedicated Add Egg page, and the new Hen Profile bottom sheet. The agent updated the Dashboard modal but not the other two locations.
     -   **Next debug checklist**:
-        1.  Resume work in . Finish adding and updating all necessary FastAPI endpoints for Flocks, Health Logs, and Hen status/last-seen functionality.
-        2.  Thoroughly test the new backend endpoints using the backend testing agent.
-        3.  Implement the frontend for Flock Management and Health Logs on the **web app** ().
-        4.  Implement the same frontend features on the **mobile app** () to maintain feature parity.
-        5.  Test both frontends.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the user's highest priority request to add significant value and biological intelligence to the application.
+        1.  Refactor the mobile app to use a single, reusable component (like the started ) for all three egg registration points.
+        2.  Ensure this component includes: +1, +2, +3, +5, +10 buttons, a custom text input, and the optional hen selector.
+        3.  Verify the same consistency on the web app's registration flows.
+    -   **Why fix this issue and what will be achieved with the fix?**: Creates a consistent and less confusing user experience, which is a critical requirement before deployment.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
--   **Issue 2 (P2): Unresolved TypeScript errors in the mobile app.**
-    -   **Description**: The agent noted several TypeScript errors in the mobile app codebase (e.g., in ) but dismissed them as pre-existing and non-critical. This assumption should be verified.
+-   **Issue 2 (P1): BUG - Web App Landing Page is Blank.**
+    -   **Description**: The web app's public landing/login page () renders as a completely white screen. This prevents any new or logged-out user from using the web application.
+    -   **Attempted fixes**: The agent noted the issue twice (Msg 172, 362) but did not investigate, instead moving on to other tasks. It checked the CSS and HTML, which seemed correct, suggesting a JavaScript rendering or build issue.
     -   **Next debug checklist**:
-        1.  Run src/i18n/index.ts(12,35): error TS2339: Property 'locale' does not exist on type 'typeof import("/app/frontend/node_modules/expo-localization/build/Localization")'.
-src/services/revenuecat.ts(164,25): error TS2339: Property 'remove' does not exist on type 'void'. inside .
-        2.  Analyze the remaining errors reported by the TypeScript compiler.
-        3.  Fix the errors, which likely relate to missing or incorrect style properties or component props.
-    -   **Why fix this issue and what will be achieved with the fix?**: Ensures code quality, prevents potential runtime errors, and makes future development easier.
+        1.  Start the web app in dev mode ().
+        2.  Open the browser's developer console and check for any JavaScript errors that are preventing React from rendering.
+        3.  Review recent changes to  and its CSS, as the issue appeared after these were modified.
+        4.  Check the Vite build configuration and output.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical, blocking bug that makes the web app unusable for non-authenticated users.
     -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y (The agent has encountered and fixed similar TS errors during the session).
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on other issue**: None
+
+-   **Issue 3 (P2): BUG - Anpassa funktioner Toggles Not Working.**
+    -   **Description**: The feature toggles in the settings menu are not functional, even for Premium users.
+    -   **Attempted fixes**: The agent checked the user's subscription status in the dev environment and found they were not Premium. The agent assumed the code was correct and the problem was just the user's status. This is an unverified assumption.
+    -   **Next debug checklist**:
+        1.  Temporarily grant the test user () Premium status in the database or via a backend script.
+        2.  Test the feature toggles on the mobile app's settings screen.
+        3.  Debug the state management and API calls in  to see why the toggles are not saving or reflecting the user's choices.
+    -   **Why fix this issue and what will be achieved with the fix?**: Fulfills a specific user requirement for Premium users to customize their interface.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: None
 
 **In progress Task List**:
--   **Task 1: Implement Etapp 1: Health Logs and Flock Management (P0)**
-    -   **Where to resume**: In , continue adding the API endpoints for the new models. The agent just added the  endpoints before the  section and was about to modify the Hen endpoints.
-    -   **What will be achieved with this?**: The application will support multi-flock management and detailed health tracking for each hen, which is a core part of the user's new requirements.
+-   **Task 1: Unify Egg Registration UI (P0)**
+    -   **Where to resume**: In the mobile app codebase (), apply the new unified egg registration logic (from the Dashboard modal) to the dedicated Add Egg page and the Hen Profile bottom sheet ().
+    -   **What will be achieved with this?**: A consistent and intuitive core user flow, ready for deployment.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on something**: No
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks (P1):**
-    -   **Etapp 2:**
-        -   **Produktivitetsanalys per höna**: Show total eggs, avg/week, avg/month, and a simple graph on the hen's profile. Clearly flag hens that haven't laid an egg in 14+ days.
-        -   **Tydliga gratis-begränsningar**: Clearly communicate that free accounts have a 90-day data history limit. Add in-app notifications when data is about to be deleted, with an upsell to Premium.
-    -   **Etapp 3:**
-        -   **Ruggsättning & kläckning (Hatching Module - Premium)**: A module to register start date, number of eggs, and hen/incubator. Automatically calculate and send push notifications for the expected hatch date (21 days).
--   **Future Tasks (P2):**
-    -   **Etapp 4: Foderhantering (Feed Management)**: Log feed refills (date, kg, type). Calculate daily average consumption and show estimated stock levels. Integrate with the economy module.
-    -   **Etapp 5: Väderdata-integration (Weather Integration)**: Automatically fetch and log daily weather (temperature, sunlight hours) via Open-Meteo API based on user location. Show a correlation graph between weather and egg production.
+-   **Upcoming Tasks (Pre-Deploy, P1):**
+    -   **Add Logout Button to Web App:** Implement a Logga ut button on the authenticated web app interface. (File:  or a header component).
+    -   **Update Stripe Prices (Backend):** The agent only updated the displayed price on the frontend. The actual Stripe Price IDs used in the backend ( in the  endpoint) must be updated or replaced with new ones corresponding to 19 kr/mo and 149 kr/yr.
+    -   **Implement Push Notifications:** A requested feature that has not been started. This will likely involve using Expo's push notification service and creating backend logic to trigger notifications (e.g., for hatching).
+    -   **Final Feature Parity Audit:** A final check to confirm that all features are identical across web and mobile, as requested by the user.
+
+-   **Future Tasks (Post-Deploy, P2):**
+    -   **Etapp 4: Foderhantering (Feed Management)**.
+    -   **Etapp 5: Väderdata-integration (Weather Integration)**.
 
 **Completed work in this session**
--   Deployment readiness checks and fixes (dependencies, hardcoded URLs, .gitignore).
--   Added Cancel Subscription and User Feedback features to the web app.
--   Created an Admin Panel () for user and subscription management.
--   Implemented a full suite of Premium Insights on both backend, web, and mobile apps (Cost per egg, 7-day forecast, production status, hen deviation alerts).
--   Updated the Premium marketing pages on both web and mobile to reflect the new features.
--   Implemented a Health Log feature (backend and web app) as part of a previous request, which is now being expanded in Etapp 1.
+-   **Etapp 1, 2, 3**: Implemented Flock Management, Health Logs, Productivity Analysis, Data-Limit Warnings, and a Hatching Module on backend, web, and mobile.
+-   **Branding/UI**: Implemented a new logo, tagline, and fonts on the web landing page.
+-   **Contact Form**: Added a Contact Us / Feedback feature to both web and mobile.
+-   **Feature Toggles**: Added the UI and backend for Premium users to toggle features (currently buggy).
+-   **Hen Profile Bottom Sheet**: Added a quick-action bottom sheet to the mobile hens list.
+-   **Per-Hen Egg Registration**: Added the *option* to select a hen during egg registration on both platforms.
+-   **Pricing Display**: Updated the displayed prices for Premium on web and mobile frontends.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Unverified TypeScript errors in the mobile app.**
+-   **Issue 1: Web App Landing Page is Blank.**
+    -   **Debug checklist**: See All Pending/In progress Issue list, Issue 2.
+    -   **Why to solve this issue and what will be achieved with this?**: This is a critical regression that blocks web access.
+    -   **Should Test frontend/backend/both after fix**: Frontend
+    -   **Is recurring issue?**: Y
+-   **Issue 2: Unverified TypeScript errors in the mobile app.**
     -   **Debug checklist**: Run src/i18n/index.ts(12,35): error TS2339: Property 'locale' does not exist on type 'typeof import("/app/frontend/node_modules/expo-localization/build/Localization")'.
-src/services/revenuecat.ts(164,25): error TS2339: Property 'remove' does not exist on type 'void'. in  to identify and fix the remaining type errors, which the previous agent ignored.
+src/services/revenuecat.ts(164,25): error TS2339: Property 'remove' does not exist on type 'void'. in  to identify and fix remaining type errors.
     -   **Why to solve this issue and what will be achieved with this?**: Improves code stability and maintainability.
     -   **Should Test frontend/backend/both after fix**: Frontend
     -   **Is recurring issue?**: Y
 
 **Known issue recurrence from previous fork**
--   None.
+-   **Issue recurrence**: The web app landing page rendering a blank white screen.
+-   **Recurrence count**: 2
+-   **Status**: NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
 -   **Backend**: FastAPI, Python, Pydantic
--   **Frontend (Web)**: React, JavaScript/TypeScript
--   **Frontend (Mobile)**: React Native, Expo, TypeScript
+-   **Frontend (Web)**: React, Vite, TypeScript/JavaScript
+-   **Frontend (Mobile)**: React Native, Expo, Expo Router, TypeScript
 -   **Database**: MongoDB
--   **State Management**: Zustand (for mobile app)
--   **Payments**: Stripe
--   **Authentication**: Google OAuth2
+-   **State Management (Mobile)**: Zustand
 
 **key DB schema**
--   : { , , , ,  }
+-   : { , : { : bool, ... } }
 -   : { ,  }
--   : { , , , , , ,  ('active'/'sold'/'deceased'), ,  }
--   : { , Tue Feb 24 21:36:10 UTC 2026, ,  }
--   : { , Tue Feb 24 21:36:10 UTC 2026, , ,  }
--   : {  ('cost'/'income'), , , Tue Feb 24 21:36:10 UTC 2026,  }
--   : { , , Tue Feb 24 21:36:10 UTC 2026 }
+-   : { , , ,  }
+-   : { , Tue Feb 24 22:24:56 UTC 2026, ,  (optional) }
+-   : { , Tue Feb 24 22:24:56 UTC 2026,  }
+-   : { , , , ,  }
 
 **changes in tech stack**
 -   None.
 
 **All files of reference**
--   : The single source of truth for all backend logic, API endpoints, and database models. It is being actively modified.
--   : Web app page for managing hens. Will need significant updates for Etapp 1.
--   : Main router for the web app. Will need a new route for Hen Profile/Health Log.
--   : Home screen of the mobile app. Will need updates for flock filtering.
--   : (Likely needs to be created or updated) Mobile app screen for managing hens.
--   : Zustand store for the mobile app, which will need to be updated to handle flock and health log data.
+-   : Actively modified. Contains all API logic.
+-   : Mobile app dashboard. Needs egg registration UI unified.
+-   : Mobile app hens list. Needs egg registration UI unified in its bottom sheet.
+-   : Mobile settings page with the buggy feature toggles.
+-   : Web landing page. **Currently broken (white screen).**
+-   : Web dashboard. Needs egg registration UI unified.
 
-**Areas that need refactoring**
--   **Feature Parity**: The mobile app () consistently lags behind the web app () in features. A plan should be made to implement new features on both platforms simultaneously to avoid this gap.
--   **Web App Build Process**: The process of building the React app in  and copying it to  is functional but adds an extra step that can be prone to error if forgotten. This could be streamlined.
+**Areas that need refactoring**:
+-   **Egg Registration**: Consolidate the three different egg registration flows in the mobile app into a single reusable component to eliminate code duplication and ensure a consistent UX.
 
 **key api endpoints**
--   : (NEW) For CRUD operations on flocks.
--   : (UPDATED) To support flock assignment and status changes.
--   : (NEW) To update the  timestamp.
--   : (NEW) For CRUD operations on health logs.
--   : Returns all key metrics and premium insights.
--   : For the admin panel.
--   : For Google OAuth.
--   : For Stripe payments.
+-   
+-    (Updated to accept optional )
+-    (GET, PUT)
+-    (CRUD endpoints)
+-    (Needs update for new Stripe prices)
 
 **Critical Info for New Agent**
--   The user provides very detailed, high-quality requirements, often sourced from other AI models. Read these requests carefully.
--   The project has two frontends: a **web app** (main focus) and a **mobile app**. The user expects features to be implemented on both unless specified otherwise. Always clarify the scope (web, mobile, or both) if unsure.
--   Development is structured in Etapper (stages). Stick to the current stage (Etapp 1) and do not jump ahead to future stages.
--   The user's ultimate goal is to deploy the application and link it to their custom domain . Keep the app in a deployable state.
+-   **PRIORITY 1 is fixing the blank web landing page**. The web app is currently unusable for new users.
+-   The user wants a deployable application. Focus on the final pre-deploy checklist items.
+-   The Stripe price change is a **backend task**, not just a frontend text update. You will need to use the Stripe dashboard or API to create new price objects and update the IDs in .
+-   When fixing the feature toggle bug, you must test as a Premium user. Do not assume the code works without verification.
+-   The user expects feature parity. When implementing a fix or feature (like the unified egg registration), ensure it's applied to **both web and mobile** platforms.
 
 **documents created in this job**
 -   None.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (Message 479)**: Provides detailed answers to the agent's clarifying questions about the new features, confirming requirements for Etapp 1 (health log, flock management) and beyond. Authorizes the agent to start Etapp 1. (PENDING IMPLEMENTATION)
-2.  **Agent (Message 478)**: Acknowledges the new feature request and asks clarifying questions about implementation details for health logs, flock management, hatching, and weather integration to define the scope.
-3.  **User (Message 475)**: Submits a very large and detailed list of new features to be added, broken down by priority, including Health Logs, Flock Management, Productivity Analysis, Hatching module, Feed management, and Weather integration. This is the current active request.
-4.  **Agent (Message 473)**: Confirms that both the web app and mobile app are working correctly locally and provides a final summary before deployment.
-5.  **Agent (Message 471)**: Confirms the mobile app is working after fixing TypeScript errors.
-6.  **User (Message 469)**: Reports that the preview environment is sleeping.
-7.  **Agent (Message 465)**: Reports that remaining TypeScript errors are pre-existing and not critical, then restarts services.
-8.  **User (Message 451)**: Asks the agent to fix TypeScript errors related to missing styles.
-9.  **User (Message 445)**: Asks the agent to fix a syntax error found by ESLint in the mobile app.
-10. **User (Message 416)**: Explicitly asks the agent to test both the web and mobile frontends.
+1.  **User (Msg 359)**: Requests to unify the egg registration UI across 3 different locations, add a logout button to the web, and asks for screenshots of the (currently broken) homepage. (IN PROGRESS)
+2.  **Agent (Msg 358)**: Summarizes changes and finishes the task, despite not fully completing the previous request and the web app being broken.
+3.  **User (Msg 310)**: Reports a bug with Anpassa funktioner toggles and requests a new feature for quick-adding eggs from a hen's profile via a bottom sheet. (Partially Implemented)
+4.  **Agent (Msg 309)**: Summarizes the pre-deploy changes and finishes.
+5.  **User (Msg 239)**: Provides a detailed pre-deploy checklist: confirm feature parity, change prices, change fonts, make hen selection on egg registration mandatory-to-see, and change the tagline. (Partially Implemented)
+6.  **Agent (Msg 238)**: Finishes after implementing Etapp 3.
+7.  **User (Msg 180)**: Reports a bug with the productivity warning and requests customizable features for Premium users. Also asks to start Etapp 3. (Implemented)
+8.  **Agent (Msg 179)**: Finishes after implementing the contact form and logo.
+9.  **User (Msg 137)**: Asks for Etapp 3, push notifications, a contact/feedback feature, a new logo, and a new tagline. (Partially Implemented)
+10. **Agent (Msg 136)**: Finishes Etapp 2.
 
 **Project Health Check:**
--   **Broken**: The remote preview environment is unreliable and frequently sleeps or shows 404 errors, forcing the agent to rely on local testing via  and .
+-   **Broken**: The web application's main landing/login page is not rendering (white screen), blocking all access for non-authenticated users on the web.
 -   **Mocked**: None.
 
 **3rd Party Integrations**
--   **Stripe**: For handling premium subscriptions. Live keys are configured.
+-   **Stripe**: For premium subscriptions. Requires backend update for new prices.
 -   **Google OAuth2**: For user authentication.
--   **Resend**: For sending transactional emails (e.g., premium reminders).
+-   **Resend**: For transactional emails.
+-   **Google Fonts**: For  and  fonts (web only, needs implementation for mobile).
 
 **Testing status**
--   Testing agent used after significant changes: YES (The agent used  and , though the latter was misconfigured initially).
+-   Testing agent used after significant changes: NO (Agent used  and  for manual checks, not a dedicated testing agent).
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: None.
--   Known regressions: The feature set of the mobile app is a subset of the web app's features. This gap will widen if not addressed.
+-   Known regressions: The web app landing page is blank.
 
 **Credentials to test flow:**
--   **Admin User**:  (Login via the Sign in with Google button). This user is flagged as an admin and can access the  panel.
+-   **Admin User**:  (Login via the Sign in with Google button).
 
 **What agent forgot to execute**
--   The agent was redirected by the user multiple times, leading to a significant feature gap between the web and mobile apps. While not explicitly forgotten, the agent must now be diligent in implementing Etapp 1 and subsequent features on **both platforms** to resolve this disparity, as per the user's implicit expectation of a unified product.
+-   **Fix the critical web landing page bug.**
+-   **Update Stripe prices on the backend.**
+-   **Add the logout button to the web app.**
+-   **Implement push notifications.**
+-   Fully unify the egg registration UI across all three specified locations.
+-   Properly load the custom fonts (, ) in the Expo mobile app.
+-   Perform a final feature-parity audit between web and mobile.
 
 </analysis>

@@ -958,14 +958,14 @@ async def send_reminder_email(email: str, name: str, coop_name: str):
             Glöm inte att registrera dagens ägg i Hönsgården-appen! 🐔
         </p>
         <div style="text-align: center; margin-top: 30px;">
-            <a href="https://flock-health-logs.preview.emergentagent.com/api/web/" 
+            <a href="https://hen-dashboard.preview.emergentagent.com/api/web/" 
                style="background-color: #4ade80; color: #1a1a2e; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: 600; display: inline-block;">
                 Öppna Hönsgården
             </a>
         </div>
         <p style="color: #888; font-size: 12px; text-align: center; margin-top: 40px;">
             Du får detta mail eftersom du aktiverat påminnelser i Hönsgården.<br>
-            <a href="https://flock-health-logs.preview.emergentagent.com/api/web/settings" style="color: #888;">Ändra inställningar</a>
+            <a href="https://hen-dashboard.preview.emergentagent.com/api/web/settings" style="color: #888;">Ändra inställningar</a>
         </p>
     </div>
     """
