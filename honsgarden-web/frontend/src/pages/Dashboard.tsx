@@ -72,12 +72,13 @@ export default function Dashboard() {
   
   const loadData = async () => {
     try {
-      const [todayRes, summaryRes, coopRes, premiumRes, hensRes] = await Promise.all([
+      const [todayRes, summaryRes, coopRes, premiumRes, hensRes, insightsRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
         fetch('/api/premium/status', { credentials: 'include' }),
-        fetch('/api/hens', { credentials: 'include' })
+        fetch('/api/hens', { credentials: 'include' }),
+        fetch('/api/insights', { credentials: 'include' })
       ]);
       
       if (todayRes.ok) setTodayStats(await todayRes.json());
@@ -85,6 +86,7 @@ export default function Dashboard() {
       if (coopRes.ok) setCoop(await coopRes.json());
       if (premiumRes.ok) setPremium(await premiumRes.json());
       if (hensRes.ok) setHens(await hensRes.json());
+      if (insightsRes.ok) setInsights(await insightsRes.json());
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
