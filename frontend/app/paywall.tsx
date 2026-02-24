@@ -439,36 +439,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  planColumn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  planLabel: {
-    fontSize: 12,
+  featuresTitle: {
+    fontSize: 16,
     fontWeight: '600',
-    color: '#8E8E93',
-  },
-  premiumLabel: {
-    color: '#FFD93D',
+    color: '#FFF',
+    marginBottom: 16,
   },
   featureRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
+    alignItems: 'flex-start',
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#2C2C2E',
+    gap: 12,
+  },
+  featureIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(251, 191, 36, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  featureContent: {
+    flex: 1,
   },
   featureTitle: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: '600',
     color: '#FFF',
+    marginBottom: 2,
   },
-  featureValue: {
-    fontSize: 12,
+  featureDescription: {
+    fontSize: 13,
     color: '#8E8E93',
-  },
-  premiumValue: {
-    color: '#4CAF50',
-    fontWeight: '500',
+    lineHeight: 18,
   },
   plansContainer: {
     gap: 12,
