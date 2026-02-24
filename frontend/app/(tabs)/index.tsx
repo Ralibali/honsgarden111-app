@@ -69,6 +69,7 @@ export default function HomeScreen() {
       fetchCoopSettings(),
       fetchTodayStats(),
       fetchSummaryStats(),
+      fetchInsights(),
     ]);
   };
   
