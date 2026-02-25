@@ -49,6 +49,9 @@ export default function SettingsScreen() {
   const [feedbackEmail, setFeedbackEmail] = useState('');
   const [sendingFeedback, setSendingFeedback] = useState(false);
   
+  // Premium Gate Modal state
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  
   // Cancel subscription modal states
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
