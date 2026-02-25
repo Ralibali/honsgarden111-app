@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/api/web/',
+  base: './',  // Use relative paths for assets - works on both / and /api/web
   server: {
     port: 3001,
     host: '0.0.0.0',
