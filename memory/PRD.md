@@ -3,17 +3,20 @@
 ## Senaste uppdatering: 25 Feb 2026
 
 ### Deployment-status: ✅ REDO FÖR DEPLOYMENT
-- `frontend/app.json` slug ändrad till `honsgarden-app` (fixar EAS-konflikt)
+- Expo SDK nedgraderad till version 54 (från 55) för att lösa EAS deployment-fel
+- `frontend/app.json` slug ändrad till `honsgarden-app`
 - Webapp ombyggd med Privacy/Terms-sidor
 - Backend och webapp fullt fungerande
 - Mobilapp har ny Premium Gate Modal
 
 ### Senaste ändringar (25 Feb 2026):
+- ✅ **DEPLOYMENT FIX:** Nedgraderade Expo SDK från 55 till 54
+- ✅ Tog bort `newArchEnabled` och `edgeToEdgeEnabled` från app.json (SDK 55-specifika)
+- ✅ Uppdaterade expo-paket till SDK 54-kompatibla versioner
+- ✅ Skapade `eas.json` för EAS builds
+- ✅ Tog bort hardkodad APP_URL fallback i server.py
 - ✅ Skapade `/privacy` och `/terms` sidor för App Store-krav
-- ✅ Uppdaterade mobilappens paywall att omdirigera till honsgarden.se/premium istället för IAP
-- ✅ **NY: PremiumGateModal** - Snygg uppgradera-modal som visas istället för redirect till paywall
-- ✅ Modalen visar alla premium-funktioner, priser (19kr/mån, 149kr/år) och 7 dagars gratis
-- ✅ Modalen används på: Dashboard (AI-funktioner, väder, statistik) och Settings (uppgradera-knapp)
+- ✅ **PremiumGateModal** - Snygg uppgradera-modal i mobilappen
 - ✅ RevenueCat-kod behållen som backup men inaktiverad
 - ✅ Delad databas - premium-status synkas mellan webb och mobil automatiskt
 
