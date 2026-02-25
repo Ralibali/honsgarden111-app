@@ -476,6 +476,49 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
         
+        {/* Weather Card */}
+        {weather && (
+          <TouchableOpacity 
+            style={styles.weatherCard}
+            onPress={() => isPremium ? setShowWeatherModal(true) : router.push('/paywall')}
+          >
+            <View style={styles.weatherHeader}>
+              <Text style={styles.cardTitle}>🌤️ {isSv ? 'Väder' : 'Weather'}</Text>
+              {!isPremium && (
+                <View style={styles.premiumBadge}>
+                  <Text style={styles.premiumBadgeText}>Premium</Text>
+                </View>
+              )}
+            </View>
+            <View style={styles.weatherContent}>
+              <View style={styles.weatherMain}>
+                <Text style={styles.weatherTemp}>{weather.temperature}°C</Text>
+                <Text style={styles.weatherDesc}>{weather.description}</Text>
+              </View>
+              <View style={styles.weatherDetails}>
+                <Text style={styles.weatherDetail}>💧 {weather.humidity}%</Text>
+                <Text style={styles.weatherDetail}>💨 {weather.wind_speed} m/s</Text>
+              </View>
+            </View>
+            {isPremium && weather.tips && weather.tips.length > 0 && (
+              <View style={styles.weatherTips}>
+                <Text style={styles.weatherTipsTitle}>{isSv ? 'Tips för idag:' : 'Tips for today:'}</Text>
+                {weather.tips.slice(0, 2).map((tip: string, idx: number) => (
+                  <Text key={idx} style={styles.weatherTip}>💡 {tip}</Text>
+                ))}
+              </View>
+            )}
+            {!isPremium && (
+              <View style={styles.weatherLocked}>
+                <Ionicons name="lock-closed" size={16} color="#f59e0b" />
+                <Text style={styles.weatherLockedText}>
+                  {isSv ? 'Uppgradera för vädertips' : 'Upgrade for weather tips'}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
+        
         {/* Premium Insights */}
         {isPremium && insights?.premium && (
           <View style={styles.premiumInsightsCard}>
