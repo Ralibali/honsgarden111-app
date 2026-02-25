@@ -310,24 +310,26 @@ export default function SettingsScreen() {
                 <TouchableOpacity 
                   style={styles.upgradeButton}
                   onPress={() => {
-                    // On web, open React webapp premium page in same tab
-                    // User may need to log in there since sessions aren't shared
-                    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-                      // Show confirmation that they'll need to log in on the webapp
-                      const confirmed = window.confirm(
-                        'Du kommer att omdirigeras till webbversionen för att slutföra köpet.\n\n' +
-                        'Om du inte redan är inloggad där, behöver du logga in med samma konto.'
-                      );
-                      if (confirmed) {
-                        window.location.href = '/api/web/premium';
-                      }
-                    } else {
-                      router.push('/paywall');
-                    }
+                    // Open web browser for subscription management
+                    const premiumUrl = 'https://honsgarden.se/premium';
+                    Alert.alert(
+                      isSv ? 'Prenumerera via webben' : 'Subscribe via web',
+                      isSv 
+                        ? 'Du kommer att omdirigeras till honsgarden.se för att hantera din prenumeration.'
+                        : 'You will be redirected to honsgarden.se to manage your subscription.',
+                      [
+                        { text: isSv ? 'Avbryt' : 'Cancel', style: 'cancel' },
+                        { 
+                          text: isSv ? 'Öppna' : 'Open',
+                          onPress: () => Linking.openURL(premiumUrl)
+                        }
+                      ]
+                    );
                   }}
                 >
+                  <Ionicons name="globe-outline" size={18} color="#FFF" style={{ marginRight: 8 }} />
                   <Text style={styles.upgradeButtonText}>
-                    {isSv ? 'Uppgradera till Premium' : 'Upgrade to Premium'}
+                    {isSv ? 'Prenumerera via honsgarden.se' : 'Subscribe via honsgarden.se'}
                   </Text>
                 </TouchableOpacity>
               )}
