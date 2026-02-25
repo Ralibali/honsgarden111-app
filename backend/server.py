@@ -860,12 +860,13 @@ async def create_checkout_session(req: CreateCheckoutRequest, request: Request):
     success_url = f"{req.origin_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{req.origin_url}/premium"
     
-    # Create checkout session
+    # Create checkout session for subscription
     checkout_req = CheckoutSessionRequest(
         stripe_price_id=price_id,
         quantity=1,
         success_url=success_url,
         cancel_url=cancel_url,
+        mode="subscription",  # Required for recurring prices
         metadata={
             "user_id": user.user_id,
             "plan": req.plan
