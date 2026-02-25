@@ -165,34 +165,54 @@ export default function Premium() {
           <p>Se hur många ägg du kan förvänta dig kommande vecka</p>
         </div>
         <div className="feature-item highlight">
-          <span className="feature-icon">📊</span>
-          <h3>Produktionsstatus</h3>
-          <p>Se om flocken producerar normalt, lågt eller högt</p>
+          <span className="feature-icon">🤖</span>
+          <h3>AI-rådgivare "Agda"</h3>
+          <p>Personliga tips baserade på din flock och situation</p>
+        </div>
+        <div className="feature-item highlight">
+          <span className="feature-icon">🌤️</span>
+          <h3>Vädertips</h3>
+          <p>Anpassade råd baserade på väderprognosen</p>
         </div>
         <div className="feature-item highlight">
           <span className="feature-icon">⚠️</span>
           <h3>Avvikelsedetektion</h3>
           <p>Varning när en höna slutar värpa oväntat</p>
         </div>
-        <div className="feature-item highlight">
+        <div className="feature-item">
+          <span className="feature-icon">🩺</span>
+          <h3>Hälsologg</h3>
+          <p>Dokumentera sjukdom, vaccination och behandlingar</p>
+        </div>
+        <div className="feature-item">
+          <span className="feature-icon">🥚</span>
+          <h3>Kläckningsmodul</h3>
+          <p>Håll koll på kläckningar med påminnelser</p>
+        </div>
+        <div className="feature-item">
+          <span className="feature-icon">🌾</span>
+          <h3>Foderhantering</h3>
+          <p>Spåra foderinköp och förbrukning</p>
+        </div>
+        <div className="feature-item">
           <span className="feature-icon">💰</span>
           <h3>Ekonomijämförelse</h3>
           <p>Jämför vinst/förlust månad för månad</p>
         </div>
         <div className="feature-item">
           <span className="feature-icon">📝</span>
-          <h3>AI-sammanfattning</h3>
+          <h3>AI-dagsrapport</h3>
           <p>Daglig sammanfattning av din gårds status</p>
-        </div>
-        <div className="feature-item">
-          <span className="feature-icon">📧</span>
-          <h3>E-postpåminnelser</h3>
-          <p>Daglig påminnelse att registrera ägg</p>
         </div>
         <div className="feature-item">
           <span className="feature-icon">📈</span>
           <h3>Obegränsad historik</h3>
           <p>Spara all statistik för alltid</p>
+        </div>
+        <div className="feature-item">
+          <span className="feature-icon">🐔</span>
+          <h3>Obegränsade flockar</h3>
+          <p>Hantera flera flockar och hönsgrupper</p>
         </div>
         <div className="feature-item">
           <span className="feature-icon">❤️</span>
