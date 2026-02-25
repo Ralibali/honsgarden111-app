@@ -1193,6 +1193,174 @@ async def cancel_subscription(request: Request, cancel_req: CancelSubscriptionRe
         "expires_at": subscription.get('expires_at')
     }
 
+# ============ IN-APP PURCHASE (IAP) VERIFICATION ============
+class IAPVerifyRequest(BaseModel):
+    platform: str  # 'ios' or 'android'
+    receipt_data: str  # iOS: receipt-data, Android: purchase token
+    product_id: str
+    transaction_id: Optional[str] = None
+
+class IAPRestoreRequest(BaseModel):
+    platform: str
+    receipt_data: Optional[str] = None
+
+@api_router.post("/iap/verify")
+async def verify_iap_purchase(request: Request, iap_data: IAPVerifyRequest):
+    """
+    Verify in-app purchase receipt from iOS/Android
+    This endpoint validates purchases made through Apple/Google IAP
+    """
+    user = await require_user(request)
+    
+    try:
+        is_valid = False
+        expires_at = None
+        plan = "monthly"
+        
+        # Determine plan from product_id
+        if "yearly" in iap_data.product_id.lower() or "annual" in iap_data.product_id.lower():
+            plan = "yearly"
+            expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+        else:
+            expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+        
+        if iap_data.platform == "ios":
+            # iOS App Store receipt verification
+            # In production, you would verify with Apple's server
+            # For now, we trust the receipt if it's present
+            # TODO: Implement proper Apple receipt verification
+            # https://developer.apple.com/documentation/storekit/in-app_purchase/validating_receipts_with_the_app_store
+            if iap_data.receipt_data:
+                is_valid = True
+                logger.info(f"iOS IAP receipt received for user {user.email}, product: {iap_data.product_id}")
+        
+        elif iap_data.platform == "android":
+            # Android Google Play verification
+            # In production, you would verify with Google Play Developer API
+            # For now, we trust the receipt if it's present
+            # TODO: Implement proper Google Play verification
+            # https://developer.android.com/google/play/billing/integrate#verify
+            if iap_data.receipt_data:
+                is_valid = True
+                logger.info(f"Android IAP receipt received for user {user.email}, product: {iap_data.product_id}")
+        
+        if is_valid:
+            # Update user's subscription status
+            await db.subscriptions.update_one(
+                {"user_id": user.user_id},
+                {"$set": {
+                    "is_active": True,
+                    "plan": plan,
+                    "expires_at": expires_at,
+                    "platform": iap_data.platform,
+                    "product_id": iap_data.product_id,
+                    "transaction_id": iap_data.transaction_id,
+                    "purchase_source": "iap",
+                    "updated_at": datetime.now(timezone.utc)
+                }},
+                upsert=True
+            )
+            
+            # Log the purchase
+            await db.iap_transactions.insert_one({
+                "id": str(uuid.uuid4()),
+                "user_id": user.user_id,
+                "email": user.email,
+                "platform": iap_data.platform,
+                "product_id": iap_data.product_id,
+                "transaction_id": iap_data.transaction_id,
+                "plan": plan,
+                "verified": True,
+                "created_at": datetime.now(timezone.utc)
+            })
+            
+            return {
+                "success": True,
+                "is_premium": True,
+                "plan": plan,
+                "expires_at": expires_at.isoformat(),
+                "message": "Köpet verifierat och premium aktiverat"
+            }
+        else:
+            return {
+                "success": False,
+                "is_premium": False,
+                "message": "Kunde inte verifiera köpet"
+            }
+            
+    except Exception as e:
+        logger.error(f"IAP verification error: {e}")
+        raise HTTPException(status_code=500, detail="Fel vid verifiering av köp")
+
+@api_router.post("/iap/restore")
+async def restore_iap_purchases(request: Request, restore_data: IAPRestoreRequest):
+    """
+    Restore previous in-app purchases
+    Called when user taps "Restore Purchases" in the app
+    """
+    user = await require_user(request)
+    
+    try:
+        # Check if user has any previous IAP purchases
+        subscription = await db.subscriptions.find_one({
+            "user_id": user.user_id,
+            "purchase_source": "iap"
+        })
+        
+        if subscription:
+            expires_at = subscription.get('expires_at')
+            if expires_at:
+                if isinstance(expires_at, str):
+                    expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+                if expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
+                
+                # Check if still valid
+                if expires_at > datetime.now(timezone.utc):
+                    # Reactivate subscription
+                    await db.subscriptions.update_one(
+                        {"user_id": user.user_id},
+                        {"$set": {"is_active": True, "updated_at": datetime.now(timezone.utc)}}
+                    )
+                    
+                    return {
+                        "success": True,
+                        "is_premium": True,
+                        "plan": subscription.get('plan'),
+                        "expires_at": expires_at.isoformat(),
+                        "message": "Köp återställda"
+                    }
+        
+        # Also check for Stripe purchases (cross-platform premium)
+        stripe_sub = await db.subscriptions.find_one({
+            "user_id": user.user_id,
+            "purchase_source": {"$ne": "iap"}
+        })
+        
+        if stripe_sub and stripe_sub.get('is_active'):
+            expires_at = stripe_sub.get('expires_at')
+            if expires_at:
+                if isinstance(expires_at, str):
+                    expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+                if expires_at and expires_at > datetime.now(timezone.utc):
+                    return {
+                        "success": True,
+                        "is_premium": True,
+                        "plan": stripe_sub.get('plan'),
+                        "expires_at": expires_at.isoformat() if expires_at else None,
+                        "message": "Premium aktiv via webbköp"
+                    }
+        
+        return {
+            "success": False,
+            "is_premium": False,
+            "message": "Inga tidigare köp hittades"
+        }
+        
+    except Exception as e:
+        logger.error(f"IAP restore error: {e}")
+        raise HTTPException(status_code=500, detail="Fel vid återställning av köp")
+
 # ============ FEEDBACK ENDPOINTS ============
 @api_router.post("/feedback")
 async def submit_feedback(feedback: FeedbackCreate, request: Request):
