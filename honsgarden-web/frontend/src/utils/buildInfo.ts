@@ -1,5 +1,5 @@
-// Auto-generated build info - updated at build time
+// Auto-generated build info
 export const BUILD_INFO = {
-  timestamp: '2026-02-25 22:47',
-  version: '1.0.2'
+  timestamp: '2026-02-25 23:26',
+  version: '1.1.0'
 };
