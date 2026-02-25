@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -51,28 +51,9 @@ interface Flock {
 }
 
 interface Insights {
-  cost_per_egg: number;
-  total_eggs: number;
-  total_costs: number;
-  top_hen: { id: string; name: string; eggs: number } | null;
-  productivity_index: number;
-  hen_count: number;
-  hen_ranking: Array<{ id: string; name: string; eggs: number; lifecycle: string | null }>;
-  is_premium: boolean;
   premium?: {
-    forecast_7_days: number;
-    daily_average: number;
     production_status: string;
     production_text: string;
-    deviation_percent: number;
-    deviating_hens: Array<{ id: string; name: string; alert: string }>;
-    economy: {
-      this_month: { costs: number; sales: number; profit: number };
-      last_month: { costs: number; sales: number; profit: number };
-      change: number;
-      change_percent: number;
-    };
-    summary: string;
   };
 }
 
@@ -89,40 +70,43 @@ export default function Dashboard() {
   const [eggCount, setEggCount] = useState('');
   const [selectedHen, setSelectedHen] = useState<string>('');
   const [saving, setSaving] = useState(false);
-  const [showHenPicker, setShowHenPicker] = useState(false);
   
-  // New: Modal state for egg registration
+  // Modal states
   const [showEggModal, setShowEggModal] = useState(false);
-  
-  // New: AI Modal state
+  const [showShareModal, setShowShareModal] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiModalType, setAiModalType] = useState<'daily' | 'forecast'>('daily');
   const [aiData, setAiData] = useState<any>(null);
   const [aiLoading, setAiLoading] = useState(false);
   
+  // Animation state
+  const [isVisible, setIsVisible] = useState(false);
+
   useEffect(() => {
     loadData();
+    // Trigger entrance animations
+    setTimeout(() => setIsVisible(true), 100);
   }, []);
-  
+
   const loadData = async () => {
     try {
-      const [todayRes, summaryRes, coopRes, premiumRes, hensRes, insightsRes, flocksRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
         fetch('/api/premium/status', { credentials: 'include' }),
-        fetch('/api/hens', { credentials: 'include' }),
-        fetch('/api/insights', { credentials: 'include' }),
-        fetch('/api/flocks', { credentials: 'include' })
+        fetch('/api/hens?active_only=true', { credentials: 'include' }),
+        fetch('/api/flocks', { credentials: 'include' }),
+        fetch('/api/insights', { credentials: 'include' })
       ]);
-      
-      if (todayRes.ok) setTodayStats(await todayRes.json());
+
+      if (statsRes.ok) setTodayStats(await statsRes.json());
       if (summaryRes.ok) setSummary(await summaryRes.json());
       if (coopRes.ok) setCoop(await coopRes.json());
       if (premiumRes.ok) setPremium(await premiumRes.json());
       if (hensRes.ok) setHens(await hensRes.json());
-      if (insightsRes.ok) setInsights(await insightsRes.json());
       if (flocksRes.ok) setFlocks(await flocksRes.json());
+      if (insightsRes.ok) setInsights(await insightsRes.json());
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -147,7 +131,6 @@ export default function Dashboard() {
       await loadData();
       setEggCount('');
       setSelectedHen('');
-      setShowHenPicker(false);
       setShowEggModal(false);
     } catch (error) {
       console.error('Failed to add eggs:', error);
@@ -156,7 +139,6 @@ export default function Dashboard() {
     }
   };
   
-  // Load AI data
   const loadAiData = async (type: 'daily' | 'forecast') => {
     setAiLoading(true);
     setAiModalType(type);
@@ -175,94 +157,231 @@ export default function Dashboard() {
     }
   };
   
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 }).format(amount);
+  // Share functionality
+  const handleShare = async (platform: 'native' | 'facebook' | 'twitter' | 'download') => {
+    const shareText = `🐔 Min hönsgård idag!\n\n🥚 ${todayStats?.egg_count || 0} ägg idag\n🐔 ${todayStats?.hen_count || 0} hönor\n📊 ${summary?.this_month?.eggs || 0} ägg denna månad\n\n#Hönsgården #Höns #Ägg`;
+    const shareUrl = 'https://honsgarden.se';
+    
+    if (platform === 'native' && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Min Hönsgård',
+          text: shareText,
+          url: shareUrl
+        });
+      } catch (err) {
+        console.log('Share cancelled');
+      }
+    } else if (platform === 'facebook') {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank');
+    } else if (platform === 'twitter') {
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+    } else if (platform === 'download') {
+      // Create shareable image
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Background gradient
+        const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
+        gradient.addColorStop(0, '#1a2e1a');
+        gradient.addColorStop(1, '#0f1a0f');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 1080, 1080);
+        
+        // Title
+        ctx.fillStyle = '#4ade80';
+        ctx.font = 'bold 72px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('🐔 Hönsgården', 540, 150);
+        
+        // Stats
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 120px system-ui';
+        ctx.fillText(`${todayStats?.egg_count || 0}`, 540, 400);
+        ctx.font = '48px system-ui';
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillText('ägg idag', 540, 470);
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 80px system-ui';
+        ctx.fillText(`${summary?.this_month?.eggs || 0}`, 540, 620);
+        ctx.font = '36px system-ui';
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillText('ägg denna månad', 540, 680);
+        
+        // Hens
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 60px system-ui';
+        ctx.fillText(`🐔 ${todayStats?.hen_count || 0} hönor`, 540, 820);
+        
+        // Footer
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '32px system-ui';
+        ctx.fillText(format(new Date(), 'd MMMM yyyy', { locale: sv }), 540, 980);
+        
+        // Download
+        const link = document.createElement('a');
+        link.download = `honsgarden-${format(new Date(), 'yyyy-MM-dd')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }
+    }
+    setShowShareModal(false);
   };
   
-  // Check if user has any data
   const hasData = (todayStats?.egg_count ?? 0) > 0 || (summary?.total_eggs_all_time ?? 0) > 0;
   
-  // Get production status text
-  const getProductionStatusText = () => {
-    if (!hasData) {
-      return { status: 'Ingen data ännu', color: '#9ca3af', text: 'Lägg till ägg för att se statistik' };
-    }
-    if (insights?.premium?.production_status === 'high') {
-      return { status: 'Hög produktion', color: '#22c55e', text: insights.premium.production_text };
-    }
-    if (insights?.premium?.production_status === 'low') {
-      return { status: 'Låg produktion', color: '#ef4444', text: insights.premium.production_text };
-    }
-    return { status: 'Normal produktion', color: '#22c55e', text: insights?.premium?.production_text || '' };
-  };
-  
-  const productionInfo = getProductionStatusText();
-  
   if (loading) {
-    return <div className="loading">Laddar...</div>;
+    return (
+      <div className="dashboard-loading">
+        <div className="loading-spinner">🥚</div>
+        <p>Laddar din hönsgård...</p>
+      </div>
+    );
   }
   
   const today = new Date();
-  const dateString = format(today, 'EEEE d MMMM yyyy', { locale: sv });
-  
+  const dateString = format(today, 'EEEE d MMMM', { locale: sv });
+  const greeting = today.getHours() < 12 ? 'God morgon' : today.getHours() < 18 ? 'God eftermiddag' : 'God kväll';
+
   return (
-    <div className="dashboard" data-testid="dashboard">
-      {/* Data Limits Banner for Free Users */}
+    <div className={`dashboard ${isVisible ? 'visible' : ''}`} data-testid="dashboard">
       <DataLimitsBanner />
-      
-      {/* Productivity Alerts */}
       <ProductivityAlerts flocks={flocks} />
       
-      <header className="dashboard-header">
-        <div>
+      {/* Header */}
+      <header className="dashboard-header fade-in">
+        <div className="header-content">
+          <p className="greeting">{greeting}!</p>
           <h1>{coop?.coop_name || 'Min Hönsgård'}</h1>
           <p className="date">{dateString}</p>
         </div>
+        <button className="share-btn" onClick={() => setShowShareModal(true)} title="Dela">
+          <span>📤</span>
+        </button>
       </header>
       
-      {/* Main Action Button - Add Eggs */}
+      {/* Main Action - Add Eggs */}
       <button 
-        className="main-add-egg-btn"
+        className="main-action-btn slide-up"
         onClick={() => setShowEggModal(true)}
         data-testid="main-add-egg-btn"
       >
-        <span className="btn-icon">🥚</span>
-        <span className="btn-text">Lägg till ägg</span>
-        {(todayStats?.egg_count ?? 0) > 0 && (
-          <span className="today-count">{todayStats?.egg_count} idag</span>
-        )}
+        <div className="action-icon">🥚</div>
+        <div className="action-content">
+          <span className="action-title">Registrera ägg</span>
+          <span className="action-subtitle">
+            {(todayStats?.egg_count ?? 0) > 0 
+              ? `${todayStats?.egg_count} ägg idag` 
+              : 'Tryck för att lägga till'}
+          </span>
+        </div>
+        <div className="action-arrow">→</div>
       </button>
       
       {/* Quick Stats */}
-      <div className="stats-row">
-        <Link to="/hens" className="stat-card hen-card" data-testid="hen-count-card">
-          <span className="stat-icon">🐔</span>
+      <div className="stats-grid slide-up delay-1">
+        <Link to="/hens" className="stat-card">
+          <span className="stat-emoji">🐔</span>
           <span className="stat-value">{todayStats?.hen_count || 0}</span>
           <span className="stat-label">Hönor</span>
         </Link>
-        <Link to="/statistics" className="stat-card egg-card" data-testid="egg-count-card">
-          <span className="stat-icon">🥚</span>
+        <Link to="/statistics" className="stat-card">
+          <span className="stat-emoji">🥚</span>
           <span className="stat-value">{summary?.this_month?.eggs || 0}</span>
           <span className="stat-label">Denna månad</span>
         </Link>
+        <Link to="/finance" className="stat-card">
+          <span className="stat-emoji">💰</span>
+          <span className="stat-value">{summary?.this_month?.net || 0}</span>
+          <span className="stat-label">kr netto</span>
+        </Link>
       </div>
+      
+      {/* AI Features Section */}
+      <section className="ai-section slide-up delay-2">
+        <div className="section-header">
+          <h2>🤖 AI-insikter</h2>
+          {!premium?.is_premium && <span className="premium-badge">Premium</span>}
+        </div>
+        
+        <div className="ai-cards">
+          <button 
+            className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
+            onClick={() => premium?.is_premium ? loadAiData('daily') : navigate('/premium')}
+          >
+            <span className="ai-icon">📋</span>
+            <div className="ai-info">
+              <span className="ai-title">Dagsrapport</span>
+              <span className="ai-desc">{premium?.is_premium ? 'Personlig AI-analys' : 'Lås upp med Premium'}</span>
+            </div>
+            {!premium?.is_premium && <span className="lock-icon">🔒</span>}
+          </button>
+          
+          <button 
+            className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
+            onClick={() => premium?.is_premium ? loadAiData('forecast') : navigate('/premium')}
+          >
+            <span className="ai-icon">📈</span>
+            <div className="ai-info">
+              <span className="ai-title">7-dagars prognos</span>
+              <span className="ai-desc">{premium?.is_premium ? 'Förutsäg produktion' : 'Lås upp med Premium'}</span>
+            </div>
+            {!premium?.is_premium && <span className="lock-icon">🔒</span>}
+          </button>
+        </div>
+      </section>
+      
+      {/* Quick Actions */}
+      <section className="quick-actions slide-up delay-3">
+        <h2>Snabbåtgärder</h2>
+        <div className="actions-grid">
+          <Link to="/hens" className="action-card">
+            <span>🐔</span>
+            <span>Lägg till höna</span>
+          </Link>
+          <Link to="/finance" className="action-card">
+            <span>💸</span>
+            <span>Lägg till kostnad</span>
+          </Link>
+          <Link to="/statistics" className="action-card">
+            <span>📊</span>
+            <span>Se statistik</span>
+          </Link>
+          <Link to="/settings" className="action-card">
+            <span>⚙️</span>
+            <span>Inställningar</span>
+          </Link>
+        </div>
+      </section>
+      
+      {/* Upgrade Banner for Free Users */}
+      {!premium?.is_premium && (
+        <Link to="/premium" className="upgrade-banner slide-up delay-4">
+          <span className="upgrade-icon">⭐</span>
+          <div className="upgrade-text">
+            <span className="upgrade-title">Uppgradera till Premium</span>
+            <span className="upgrade-desc">AI-rapporter, prognos, hälsologg & mer</span>
+          </div>
+          <span className="upgrade-arrow">→</span>
+        </Link>
+      )}
       
       {/* Egg Registration Modal */}
       {showEggModal && (
         <div className="modal-overlay" onClick={() => setShowEggModal(false)}>
-          <div className="egg-modal" onClick={e => e.stopPropagation()}>
+          <div className="modal modal-slide-up" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>🥚 Registrera ägg</h3>
               <button className="close-btn" onClick={() => setShowEggModal(false)}>✕</button>
             </div>
             
             {hens.length > 0 && (
-              <div className="hen-selector">
+              <div className="form-group">
                 <label>Välj höna (valfritt)</label>
-                <select 
-                  value={selectedHen} 
-                  onChange={e => setSelectedHen(e.target.value)}
-                >
+                <select value={selectedHen} onChange={e => setSelectedHen(e.target.value)}>
                   <option value="">Alla hönor</option>
                   {hens.map(hen => (
                     <option key={hen.id} value={hen.id}>{hen.name}</option>
@@ -271,20 +390,20 @@ export default function Dashboard() {
               </div>
             )}
             
-            <div className="quick-add-buttons">
+            <div className="quick-buttons">
               {[1, 2, 3, 5, 10].map(num => (
                 <button
                   key={num}
                   onClick={() => handleQuickAdd(num)}
                   disabled={saving}
-                  className="quick-add-btn"
+                  className="quick-btn"
                 >
                   +{num}
                 </button>
               ))}
             </div>
             
-            <div className="custom-add">
+            <div className="custom-input">
               <input
                 type="number"
                 placeholder="Annat antal"
@@ -304,323 +423,93 @@ export default function Dashboard() {
         </div>
       )}
       
-      {/* Monthly Summary */}
-      <div className="card summary-card">
-        <h3>Denna månad</h3>
-        <div className="month-stats">
-          <div className="month-stat">
-            <span className="month-value">{summary?.this_month.eggs || 0}</span>
-            <span className="month-label">Ägg</span>
-          </div>
-          <div className="month-divider"></div>
-          <div className="month-stat">
-            <span className="month-value cost">{formatCurrency(summary?.this_month.costs || 0)}</span>
-            <span className="month-label">Kostnader</span>
-          </div>
-          <div className="month-divider"></div>
-          <div className="month-stat">
-            <span className="month-value income">{formatCurrency(summary?.this_month.sales || 0)}</span>
-            <span className="month-label">Försäljning</span>
-          </div>
-        </div>
-        <div className="net-row">
-          <span>Netto:</span>
-          <span className={`net-value ${(summary?.this_month.net || 0) >= 0 ? 'positive' : 'negative'}`}>
-            {(summary?.this_month.net || 0) >= 0 ? '+' : ''}{formatCurrency(summary?.this_month.net || 0)}
-          </span>
-        </div>
-      </div>
-      
-      {/* All Time Stats */}
-      <div className="card">
-        <h3>Totalt</h3>
-        <div className="total-stats">
-          <div className="total-stat">
-            <span className="total-icon">🥚</span>
-            <span className="total-value">{summary?.total_eggs_all_time || 0}</span>
-            <span className="total-label">Totalt ägg</span>
-          </div>
-          <div className="total-stat">
-            <span className="total-icon">📈</span>
-            <span className="total-value income">{formatCurrency(summary?.total_sales_all_time || 0)}</span>
-            <span className="total-label">Intäkter</span>
-          </div>
-          <div className="total-stat">
-            <span className="total-icon">📉</span>
-            <span className="total-value cost">{formatCurrency(summary?.total_costs_all_time || 0)}</span>
-            <span className="total-label">Kostnader</span>
-          </div>
-        </div>
-      </div>
-      
-      {/* Insights Card */}
-      {insights && (
-        <div className="card insights-card">
-          <h3>📊 Insikter</h3>
-          <div className="insights-grid">
-            <div className="insight-item">
-              <span className="insight-icon">💰</span>
-              <div className="insight-data">
-                <span className="insight-value">{insights.cost_per_egg} kr</span>
-                <span className="insight-label">Kostnad per ägg</span>
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
+          <div className="modal modal-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📤 Dela din statistik</h3>
+              <button className="close-btn" onClick={() => setShowShareModal(false)}>✕</button>
+            </div>
+            
+            <div className="share-preview">
+              <div className="share-card-preview">
+                <p className="share-title">🐔 {coop?.coop_name || 'Min Hönsgård'}</p>
+                <p className="share-stat-big">{todayStats?.egg_count || 0} ägg idag</p>
+                <p className="share-stat-small">{summary?.this_month?.eggs || 0} ägg denna månad</p>
               </div>
             </div>
-            {insights.top_hen && (
-              <div className="insight-item top-hen">
-                <span className="insight-icon">🏆</span>
-                <div className="insight-data">
-                  <span className="insight-value">{insights.top_hen.name}</span>
-                  <span className="insight-label">Toppvärpare ({insights.top_hen.eggs} ägg)</span>
-                </div>
-              </div>
-            )}
-            <div className="insight-item">
-              <span className="insight-icon">📈</span>
-              <div className="insight-data">
-                <span className="insight-value">{insights.productivity_index}%</span>
-                <span className="insight-label">Produktivitet denna månad</span>
-              </div>
+            
+            <div className="share-buttons">
+              {navigator.share && (
+                <button onClick={() => handleShare('native')} className="share-option">
+                  <span>📱</span>
+                  <span>Dela</span>
+                </button>
+              )}
+              <button onClick={() => handleShare('facebook')} className="share-option facebook">
+                <span>📘</span>
+                <span>Facebook</span>
+              </button>
+              <button onClick={() => handleShare('twitter')} className="share-option twitter">
+                <span>🐦</span>
+                <span>Twitter</span>
+              </button>
+              <button onClick={() => handleShare('download')} className="share-option download">
+                <span>📥</span>
+                <span>Ladda ner bild</span>
+              </button>
             </div>
+            
+            <p className="share-hint">Ladda ner bilden för att dela på Instagram Stories!</p>
           </div>
         </div>
       )}
-      
-      {/* PREMIUM INSIGHTS SECTION */}
-      {insights?.premium && (
-        <div className="card premium-insights-card">
-          <div className="premium-header">
-            <h3>⭐ Premium Insikter</h3>
-            <span className="premium-badge">Premium</span>
-          </div>
-          
-          {/* Summary */}
-          <div className="premium-summary">
-            <p>{insights.premium.summary}</p>
-          </div>
-          
-          {/* Production Status + Forecast */}
-          <div className="premium-stats-row">
-            <div className={`status-card status-${insights.premium.production_status}`}>
-              <span className="status-text">{insights.premium.production_text}</span>
-              <span className="status-detail">{insights.premium.deviation_percent > 0 ? '+' : ''}{insights.premium.deviation_percent}% vs snitt</span>
-            </div>
-            <div className="forecast-card">
-              <span className="forecast-icon">🔮</span>
-              <div className="forecast-data">
-                <span className="forecast-value">~{insights.premium.forecast_7_days} ägg</span>
-                <span className="forecast-label">Prognos nästa 7 dagar</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Deviating Hens Alert */}
-          {insights.premium.deviating_hens.length > 0 && (
-            <div className="alert-section">
-              <h4>⚠️ Avvikelser upptäckta</h4>
-              {insights.premium.deviating_hens.map(hen => (
-                <div key={hen.id} className="hen-alert">
-                  <span className="alert-icon">🐔</span>
-                  <span className="alert-text">{hen.alert}</span>
-                  <Link to="/hens" className="alert-action">Logga hälsa →</Link>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Economy Comparison */}
-          <div className="economy-comparison">
-            <h4>💰 Ekonomijämförelse</h4>
-            <div className="economy-cards">
-              <div className="economy-card">
-                <span className="economy-label">Denna månad</span>
-                <span className={`economy-value ${insights.premium.economy.this_month.profit >= 0 ? 'positive' : 'negative'}`}>
-                  {insights.premium.economy.this_month.profit >= 0 ? '+' : ''}{insights.premium.economy.this_month.profit} kr
-                </span>
-                <span className="economy-breakdown">
-                  ↑ {insights.premium.economy.this_month.sales} kr  ↓ {insights.premium.economy.this_month.costs} kr
-                </span>
-              </div>
-              <div className="economy-card faded">
-                <span className="economy-label">Förra månaden</span>
-                <span className="economy-value">
-                  {insights.premium.economy.last_month.profit >= 0 ? '+' : ''}{insights.premium.economy.last_month.profit} kr
-                </span>
-              </div>
-            </div>
-            <div className={`economy-change ${insights.premium.economy.change >= 0 ? 'positive' : 'negative'}`}>
-              {insights.premium.economy.change >= 0 ? '📈' : '📉'} {insights.premium.economy.change >= 0 ? '+' : ''}{insights.premium.economy.change} kr ({insights.premium.economy.change_percent}%)
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* AI Premium Features Section - Shown to everyone, blurred for free */}
-      <div className={`card ai-premium-section ${!premium?.is_premium ? 'blurred' : ''}`}>
-        <div className="ai-section-header">
-          <h3>🤖 AI-funktioner</h3>
-          {!premium?.is_premium && (
-            <span className="premium-badge-small">
-              <span className="lock-icon">🔒</span> Premium
-            </span>
-          )}
-        </div>
-        
-        <div className="ai-features-grid">
-          <button 
-            className={`ai-feature-card ${!premium?.is_premium ? 'locked' : ''}`}
-            onClick={() => premium?.is_premium ? loadAiData('daily') : navigate('/premium')}
-          >
-            <div className="ai-feature-icon">📋</div>
-            <div className="ai-feature-content">
-              <h4>AI Dagsrapport</h4>
-              <p>{premium?.is_premium 
-                ? 'Personlig sammanfattning och tips baserat på din data'
-                : 'Uppgradera för daglig AI-analys...'
-              }</p>
-            </div>
-            {!premium?.is_premium && (
-              <span className="unlock-btn">Lås upp</span>
-            )}
-          </button>
-          
-          <button 
-            className={`ai-feature-card ${!premium?.is_premium ? 'locked' : ''}`}
-            onClick={() => premium?.is_premium ? loadAiData('forecast') : navigate('/premium')}
-          >
-            <div className="ai-feature-icon">📈</div>
-            <div className="ai-feature-content">
-              <h4>Äggprognos 7 dagar</h4>
-              <p>{premium?.is_premium 
-                ? 'Förutsäg produktion baserat på historik'
-                : 'Se vad du kan förvänta dig...'
-              }</p>
-            </div>
-            {!premium?.is_premium && (
-              <span className="unlock-btn">Lås upp</span>
-            )}
-          </button>
-        </div>
-        
-        {!premium?.is_premium && (
-          <Link to="/premium" className="ai-upgrade-hint">
-            <span>✨</span> Uppgradera för full AI-upplevelse
-          </Link>
-        )}
-      </div>
       
       {/* AI Modal */}
       {showAiModal && (
         <div className="modal-overlay" onClick={() => setShowAiModal(false)}>
-          <div className="ai-modal" onClick={e => e.stopPropagation()}>
+          <div className="modal modal-slide-up" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{aiModalType === 'daily' ? '📋 AI Dagsrapport' : '📈 Äggprognos 7 dagar'}</h3>
+              <h3>{aiModalType === 'daily' ? '📋 AI Dagsrapport' : '📈 7-dagars prognos'}</h3>
               <button className="close-btn" onClick={() => setShowAiModal(false)}>✕</button>
             </div>
             
             {aiLoading ? (
               <div className="ai-loading">
-                <span className="loading-spinner">🔄</span>
-                <p>Genererar {aiModalType === 'daily' ? 'dagsrapport' : 'prognos'}...</p>
+                <div className="loading-spinner">🤖</div>
+                <p>Genererar {aiModalType === 'daily' ? 'rapport' : 'prognos'}...</p>
               </div>
             ) : aiData ? (
               <div className="ai-content">
                 {aiModalType === 'daily' ? (
                   <>
                     <p className="ai-summary">{aiData.report?.summary}</p>
-                    <div className="ai-stats">
-                      <div className="ai-stat">
+                    <div className="ai-stats-row">
+                      <div className="ai-stat-item">
                         <span>🥚</span>
-                        <span>{aiData.report?.eggs_today || 0} ägg idag</span>
+                        <span>{aiData.report?.eggs_today || 0} ägg</span>
                       </div>
-                      <div className="ai-stat">
+                      <div className="ai-stat-item">
                         <span>🐔</span>
                         <span>{aiData.report?.hen_count || 0} hönor</span>
                       </div>
                     </div>
-                    {aiData.report?.alerts?.length > 0 && (
-                      <div className="ai-alerts">
-                        <h4>⚠️ Varningar</h4>
-                        {aiData.report.alerts.map((alert: string, i: number) => (
-                          <p key={i}>{alert}</p>
-                        ))}
-                      </div>
-                    )}
                   </>
                 ) : (
                   <>
-                    <p className="ai-forecast-summary">
-                      Förväntat: <strong>{aiData.forecast?.total_predicted || 0} ägg</strong> nästa 7 dagar
+                    <p className="forecast-total">
+                      Förväntat: <strong>{aiData.forecast?.total_predicted || 0} ägg</strong>
                     </p>
-                    <div className="ai-forecast-details">
-                      <p>Baserat på {aiData.forecast?.days_of_data || 0} dagars historik</p>
-                      <p>Genomsnitt: {aiData.forecast?.avg_daily || 0} ägg/dag</p>
-                    </div>
-                    {aiData.forecast?.daily_predictions && (
-                      <div className="forecast-list">
-                        {aiData.forecast.daily_predictions.map((day: any) => (
-                          <div key={day.date} className="forecast-day">
-                            <span>{day.date}</span>
-                            <span>~{day.predicted_eggs} ägg</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <p className="forecast-avg">Genomsnitt: {aiData.forecast?.avg_daily || 0} ägg/dag</p>
                   </>
                 )}
               </div>
             ) : (
-              <p>Kunde inte ladda data</p>
+              <p className="ai-error">Kunde inte ladda data</p>
             )}
           </div>
         </div>
-      )}
-      
-      {/* Quick Actions */}
-      <div className="quick-actions-section">
-        <h3>⚡ Snabbåtgärder</h3>
-        <div className="quick-actions-grid">
-          <Link to="/feed" className="quick-action-card">
-            <span className="quick-action-icon" style={{ background: '#f59e0b' }}>🌾</span>
-            <span className="quick-action-label">Foder</span>
-          </Link>
-          <Link to="/hatching" className="quick-action-card">
-            <span className="quick-action-icon" style={{ background: '#ec4899' }}>🐣</span>
-            <span className="quick-action-label">Kläckning</span>
-          </Link>
-          <button 
-            className="quick-action-card"
-            onClick={() => {
-              const text = `🐔 ${coop?.coop_name || 'Min Hönsgård'} - Statistik\n\n🥚 ${summary?.this_month.eggs || 0} ägg denna månad\n📊 ${summary?.total_eggs_all_time || 0} ägg totalt\n💪 ${insights?.productivity_index || 0}% produktivitet\n🐓 ${today?.hen_count || 0} hönor\n\nSpåra din hönsgård med Hönsgården-appen! 🌾`;
-              if (navigator.share) {
-                navigator.share({ title: 'Min hönsgårdsstatistik', text });
-              } else {
-                navigator.clipboard.writeText(text);
-                alert('Kopierat till urklipp!');
-              }
-            }}
-          >
-            <span className="quick-action-icon" style={{ background: '#3b82f6' }}>📤</span>
-            <span className="quick-action-label">Dela</span>
-          </button>
-          <Link to="/statistics" className="quick-action-card">
-            <span className="quick-action-icon" style={{ background: '#8b5cf6' }}>📊</span>
-            <span className="quick-action-label">Statistik</span>
-          </Link>
-        </div>
-      </div>
-      
-      {/* Premium Banner - Show if NOT premium */}
-      {!premium?.is_premium && (
-        <Link to="/premium" className="premium-banner" data-testid="premium-banner">
-          <div className="premium-content">
-            <span className="premium-icon">⭐</span>
-            <div>
-              <strong>Uppgradera till Premium</strong>
-              <p>Prognos, produktionsstatus, varningar & ekonomijämförelse</p>
-            </div>
-          </div>
-          <span className="premium-arrow">›</span>
-        </Link>
       )}
     </div>
   );
