@@ -34,8 +34,15 @@
     "✅ Stripe checkout flow initiates correctly (buttons visible)"
   ],
   "updated_files": [
-    "/app/backend/tests/test_iteration10_comprehensive.py"
+    "/app/backend/tests/test_iteration10_comprehensive.py",
+    "/app/backend/server.py"
   ],
+  "bug_fixed": {
+    "file": "/app/backend/server.py",
+    "function": "get_reminder_settings",
+    "issue": "User lookup failed for email/password registered users due to using wrong field (user_id vs id)",
+    "fix": "Added fallback to check both user_id and id fields, with default values if user not found"
+  },
   "success_rate": {
     "backend": "96% (24/25 tests passed - 1 minor test path issue)",
     "frontend": "100% (all UI flows verified)"
