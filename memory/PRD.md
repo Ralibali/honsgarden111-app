@@ -1,5 +1,20 @@
 # Hönsgården - Product Requirements Document
 
+## Senaste uppdatering: 25 Feb 2026
+
+### Deployment-status: ✅ REDO FÖR DEPLOYMENT
+- `frontend/app.json` slug ändrad till `honsgarden-app` (fixar EAS-konflikt)
+- Webapp ombyggd med ny `ResetPassword.tsx`-sida
+- Backend `forgot-password` och `reset-password` endpoints verifierade
+
+### Senaste ändringar (25 Feb 2026):
+- ✅ Fixat deployment slug-konflikt i `frontend/app.json`
+- ✅ Skapat `ResetPassword.tsx` för lösenordsåterställning via länk
+- ✅ Lagt till `/reset-password` rutt i `App.tsx`
+- ✅ Ombyggt webapp och kopierat till `backend/webapp_dist`
+
+---
+
 ## Landningssida (Login.tsx) - KOMPLETT BESKRIVNING
 
 ### **Hero-sektion:**
