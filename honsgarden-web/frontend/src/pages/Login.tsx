@@ -226,6 +226,44 @@ export default function Login() {
                 </div>
               </div>
               
+              {/* Premium Features Preview */}
+              <div className="premium-preview">
+                <h3>⭐ Premium-funktioner</h3>
+                <ul className="premium-list">
+                  <li>🤖 AI-driven dagsrapport & rådgivare "Agda"</li>
+                  <li>📈 7-dagars äggprognos</li>
+                  <li>🩺 Hälsologg per höna</li>
+                  <li>🐣 Kläckningsmodul</li>
+                  <li>🌾 Foderhantering</li>
+                  <li>🌤️ Vädertips för hönsskötsel</li>
+                </ul>
+              </div>
+              
+              {/* Price Cards */}
+              <div className="price-cards">
+                <div className="price-card free">
+                  <h4>Gratis</h4>
+                  <div className="price">0 kr</div>
+                  <ul>
+                    <li>✓ Äggdagbok</li>
+                    <li>✓ Hönsprofiler</li>
+                    <li>✓ Grundstatistik</li>
+                    <li>✓ 30 dagars historik</li>
+                  </ul>
+                </div>
+                <div className="price-card premium">
+                  <span className="best-value">Bäst värde</span>
+                  <h4>Premium</h4>
+                  <div className="price">149 kr<span>/år</span></div>
+                  <ul>
+                    <li>✓ Allt i Gratis</li>
+                    <li>✓ AI-rådgivare "Agda"</li>
+                    <li>✓ Obegränsad historik</li>
+                    <li>✓ Alla premium-funktioner</li>
+                  </ul>
+                </div>
+              </div>
+              
               <button 
                 className="btn-primary btn-large"
                 onClick={() => setAuthMode('register')}
