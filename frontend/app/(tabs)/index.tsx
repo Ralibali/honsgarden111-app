@@ -114,6 +114,18 @@ export default function HomeScreen() {
     }
   };
   
+  const loadWeather = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/weather`);
+      if (res.ok) {
+        const data = await res.json();
+        setWeather(data);
+      }
+    } catch (error) {
+      console.error('Failed to load weather:', error);
+    }
+  };
+  
   useEffect(() => {
     if (lastAction && lastAction.type === 'egg_record') {
       showUndoSnackbar(lastAction.data.count);
