@@ -1085,6 +1085,8 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     padding: 16,
     marginTop: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   upgradeButtonText: {
     color: '#FFF',
