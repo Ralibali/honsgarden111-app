@@ -640,6 +640,210 @@ async def logout(request: Request, response: Response):
     response.delete_cookie(key="session_token", path="/", secure=True, samesite="none")
     return {"message": "Logged out"}
 
+# ============ MOBILE AUTH ENDPOINTS ============
+
+class GoogleMobileAuth(BaseModel):
+    google_id: str
+    email: EmailStr
+    name: str
+    picture: Optional[str] = None
+    access_token: str
+
+class AppleMobileAuth(BaseModel):
+    apple_id: str
+    email: Optional[EmailStr] = None
+    name: Optional[str] = None
+    identity_token: Optional[str] = None
+    authorization_code: Optional[str] = None
+
+@api_router.post("/auth/google/mobile")
+async def google_mobile_auth(request: Request, response: Response, auth_data: GoogleMobileAuth):
+    """
+    Authenticate user via Google Sign-In from mobile app
+    This is for native Google OAuth (not web redirect flow)
+    """
+    try:
+        email = auth_data.email
+        name = auth_data.name or email.split("@")[0]
+        picture = auth_data.picture
+        google_id = auth_data.google_id
+        
+        # Find or create user
+        existing_user = await db.users.find_one({"email": email}, {"_id": 0})
+        if existing_user:
+            user_id = existing_user["user_id"]
+            await db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {
+                    "name": name,
+                    "picture": picture,
+                    "google_id": google_id,
+                    "auth_provider": "google",
+                    "last_login": datetime.now(timezone.utc)
+                }}
+            )
+        else:
+            user_id = f"user_{uuid.uuid4().hex[:12]}"
+            await db.users.insert_one({
+                "user_id": user_id,
+                "email": email,
+                "name": name,
+                "picture": picture,
+                "google_id": google_id,
+                "auth_provider": "google",
+                "created_at": datetime.now(timezone.utc),
+                "reminder_enabled": True,
+                "reminder_time": "18:00",
+                "terms_accepted": datetime.now(timezone.utc)
+            })
+            await db.coop_settings.insert_one({
+                "id": str(uuid.uuid4()),
+                "user_id": user_id,
+                "coop_name": "Min Hönsgård",
+                "hen_count": 0,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
+            })
+            trial_expires = datetime.now(timezone.utc) + timedelta(days=FREE_TRIAL_DAYS)
+            await db.subscriptions.insert_one({
+                "user_id": user_id,
+                "is_active": True,
+                "plan": "trial",
+                "expires_at": trial_expires,
+                "created_at": datetime.now(timezone.utc)
+            })
+            logger.info(f"New Google user {email} created via mobile")
+        
+        session_token = f"session_{uuid.uuid4().hex}"
+        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+        
+        await db.user_sessions.delete_many({"user_id": user_id})
+        await db.user_sessions.insert_one({
+            "user_id": user_id,
+            "session_token": session_token,
+            "expires_at": expires_at,
+            "auth_provider": "google",
+            "platform": "mobile",
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            path="/",
+            max_age=7 * 24 * 60 * 60
+        )
+        
+        return {
+            "success": True,
+            "user_id": user_id,
+            "email": email,
+            "name": name,
+            "token": session_token
+        }
+        
+    except Exception as e:
+        logger.error(f"Google mobile auth error: {e}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
+
+@api_router.post("/auth/apple/mobile")
+async def apple_mobile_auth(request: Request, response: Response, auth_data: AppleMobileAuth):
+    """
+    Authenticate user via Apple Sign-In from iOS app
+    Note: Apple only provides email/name on FIRST sign-in
+    """
+    try:
+        apple_id = auth_data.apple_id
+        
+        existing_user = await db.users.find_one({"apple_id": apple_id}, {"_id": 0})
+        
+        if existing_user:
+            user_id = existing_user["user_id"]
+            email = existing_user.get("email")
+            name = existing_user.get("name")
+            await db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {"last_login": datetime.now(timezone.utc)}}
+            )
+        else:
+            email = auth_data.email
+            name = auth_data.name
+            
+            if not email:
+                email = f"apple_{apple_id[:8]}@privaterelay.appleid.com"
+            if not name:
+                name = "Apple-användare"
+            
+            user_id = f"user_{uuid.uuid4().hex[:12]}"
+            await db.users.insert_one({
+                "user_id": user_id,
+                "email": email,
+                "name": name,
+                "apple_id": apple_id,
+                "auth_provider": "apple",
+                "created_at": datetime.now(timezone.utc),
+                "reminder_enabled": True,
+                "reminder_time": "18:00",
+                "terms_accepted": datetime.now(timezone.utc)
+            })
+            
+            await db.coop_settings.insert_one({
+                "id": str(uuid.uuid4()),
+                "user_id": user_id,
+                "coop_name": "Min Hönsgård",
+                "hen_count": 0,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
+            })
+            
+            trial_expires = datetime.now(timezone.utc) + timedelta(days=FREE_TRIAL_DAYS)
+            await db.subscriptions.insert_one({
+                "user_id": user_id,
+                "is_active": True,
+                "plan": "trial",
+                "expires_at": trial_expires,
+                "created_at": datetime.now(timezone.utc)
+            })
+            logger.info(f"New Apple user created via mobile: {email}")
+        
+        session_token = f"session_{uuid.uuid4().hex}"
+        expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+        
+        await db.user_sessions.delete_many({"user_id": user_id})
+        await db.user_sessions.insert_one({
+            "user_id": user_id,
+            "session_token": session_token,
+            "expires_at": expires_at,
+            "auth_provider": "apple",
+            "platform": "mobile",
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            path="/",
+            max_age=7 * 24 * 60 * 60
+        )
+        
+        return {
+            "success": True,
+            "user_id": user_id,
+            "email": email,
+            "name": name,
+            "token": session_token
+        }
+        
+    except Exception as e:
+        logger.error(f"Apple mobile auth error: {e}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
+
 
 # ============ EMAIL/PASSWORD AUTH ============
 def hash_password(password: str) -> str:
