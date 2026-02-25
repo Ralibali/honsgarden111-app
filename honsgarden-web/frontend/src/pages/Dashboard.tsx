@@ -57,6 +57,33 @@ interface Insights {
   };
 }
 
+interface WeatherData {
+  current?: {
+    temp: number;
+    feels_like: number;
+    humidity: number;
+    description: string;
+    icon: string;
+    location: string;
+  };
+  tips: Array<{
+    type: string;
+    priority: string;
+    message: string;
+  }>;
+}
+
+interface FlockStats {
+  total: number;
+  hens: number;
+  roosters: number;
+  ratio: number | null;
+  recommendations: Array<{
+    type: string;
+    message: string;
+  }>;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [todayStats, setTodayStats] = useState<TodayStats | null>(null);
@@ -66,6 +93,8 @@ export default function Dashboard() {
   const [hens, setHens] = useState<Hen[]>([]);
   const [flocks, setFlocks] = useState<Flock[]>([]);
   const [insights, setInsights] = useState<Insights | null>(null);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [flockStats, setFlockStats] = useState<FlockStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [eggCount, setEggCount] = useState('');
   const [selectedHen, setSelectedHen] = useState<string>('');
