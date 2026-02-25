@@ -3220,7 +3220,266 @@ async def get_egg_forecast(request: Request):
     }
 
 
-# ============ BASIC ROUTES ============
+@api_router.post("/ai/advisor")
+async def get_ai_advisor(request: Request, question: str = ""):
+    """AI Hönsgårdsrådgivare 'Agda' - Premium only
+    Gives personalized advice based on user's flock and question"""
+    user_id = await get_user_id(request)
+    
+    # Check premium status
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    if not is_premium:
+        return {
+            "is_premium": False,
+            "preview": True,
+            "response": "🔒 AI-rådgivaren Agda är en Premium-funktion. Uppgradera för personliga råd om dina höns!"
+        }
+    
+    # Get user's flock data
+    hens = await db.hens.find({"user_id": user_id, "is_active": True}, {"_id": 0}).to_list(100)
+    hen_count = len([h for h in hens if h.get('hen_type', 'hen') == 'hen'])
+    rooster_count = len([h for h in hens if h.get('hen_type') == 'rooster'])
+    
+    # Get recent eggs
+    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).strftime('%Y-%m-%d')
+    recent_eggs = await db.eggs.find({"user_id": user_id, "date": {"$gte": week_ago}}).to_list(1000)
+    weekly_total = sum(e.get('count', 0) for e in recent_eggs)
+    
+    # Get recent health logs
+    health_logs = await db.health_logs.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).sort("date", -1).limit(10).to_list(10)
+    
+    # Get user info
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    user_name = user.get("name", "").split()[0] if user and user.get("name") else ""
+    
+    try:
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"advisor-{user_id}",
+            system_message=f"""{HONSGARD_KNOWLEDGE}
+
+Du pratar med {user_name if user_name else 'en hönsägare'}.
+Deras flock: {hen_count} höns och {rooster_count} tuppar.
+Ägg senaste veckan: {weekly_total}
+Senaste hälsonoteringar: {len(health_logs)} st
+
+Ge konkreta, personliga råd baserat på deras situation.
+Svara på svenska, var vänlig men professionell.
+Om frågan är oklar, ge generella tips om hönsskötsel."""
+        ).with_model("openai", "gpt-4o")
+        
+        prompt = question if question else "Ge mig några tips för min hönsgård baserat på min nuvarande situation."
+        
+        message = UserMessage(text=prompt)
+        ai_response = await chat.send_message(message)
+        
+        return {
+            "is_premium": True,
+            "preview": False,
+            "response": ai_response,
+            "context": {
+                "hen_count": hen_count,
+                "rooster_count": rooster_count,
+                "weekly_eggs": weekly_total
+            }
+        }
+    except Exception as e:
+        logging.error(f"AI advisor failed: {e}")
+        return {
+            "is_premium": True,
+            "preview": False,
+            "response": "Agda kunde inte svara just nu. Försök igen om en stund!",
+            "error": True
+        }
+
+
+@api_router.get("/weather")
+async def get_weather(request: Request, lat: float = 59.33, lon: float = 18.07):
+    """Get weather data and hen-care tips based on weather
+    Default coordinates are for Stockholm"""
+    user_id = await get_user_id(request)
+    
+    # Try to get user's saved location
+    user_prefs = await db.user_preferences.find_one({"user_id": user_id}, {"_id": 0})
+    if user_prefs:
+        lat = user_prefs.get('latitude', lat)
+        lon = user_prefs.get('longitude', lon)
+    
+    weather_data = {
+        "current": None,
+        "tips": [],
+        "source": "default"
+    }
+    
+    # Try to get real weather data
+    if WEATHER_API_KEY:
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"https://api.openweathermap.org/data/2.5/weather",
+                    params={
+                        "lat": lat,
+                        "lon": lon,
+                        "appid": WEATHER_API_KEY,
+                        "units": "metric",
+                        "lang": "sv"
+                    },
+                    timeout=5.0
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    weather_data["current"] = {
+                        "temp": data["main"]["temp"],
+                        "feels_like": data["main"]["feels_like"],
+                        "humidity": data["main"]["humidity"],
+                        "description": data["weather"][0]["description"],
+                        "icon": data["weather"][0]["icon"],
+                        "location": data.get("name", "Okänd plats")
+                    }
+                    weather_data["source"] = "openweathermap"
+        except Exception as e:
+            logging.warning(f"Weather API failed: {e}")
+    
+    # Generate tips based on weather
+    tips = []
+    if weather_data["current"]:
+        temp = weather_data["current"]["temp"]
+        humidity = weather_data["current"]["humidity"]
+        
+        # Temperature-based tips
+        if temp < 0:
+            tips.append({
+                "type": "cold",
+                "priority": "high",
+                "message": "🥶 Minusgrader! Kontrollera att vattnet inte fryser och ge extra foder."
+            })
+        elif temp < 5:
+            tips.append({
+                "type": "cold",
+                "priority": "medium",
+                "message": "❄️ Kallt ute. Säkerställ att hönshuset är dragfritt men ventilerat."
+            })
+        elif temp > 25:
+            tips.append({
+                "type": "heat",
+                "priority": "high",
+                "message": "🌡️ Varmt! Se till att hönsen har skugga och extra vatten."
+            })
+        elif temp > 30:
+            tips.append({
+                "type": "heat",
+                "priority": "urgent",
+                "message": "🔥 Extrem värme! Höns kan dö av värmeslag. Kyla, vatten, skugga!"
+            })
+        
+        # Humidity tips
+        if humidity > 80:
+            tips.append({
+                "type": "humidity",
+                "priority": "medium",
+                "message": "💧 Hög luftfuktighet. Kontrollera ventilationen i hönshuset."
+            })
+        
+        # Seasonal tip
+        month = datetime.now().month
+        if month in [11, 12, 1, 2]:
+            tips.append({
+                "type": "seasonal",
+                "priority": "info",
+                "message": "💡 Vintertid! Överväg extra belysning (14-16 timmar) för att upprätthålla äggproduktionen."
+            })
+    else:
+        # Default tips without weather data
+        tips.append({
+            "type": "general",
+            "priority": "info",
+            "message": "Lägg till din plats i inställningarna för personliga vädertips!"
+        })
+    
+    weather_data["tips"] = tips
+    
+    return weather_data
+
+
+@api_router.put("/user-preferences/location")
+async def update_user_location(request: Request, lat: float, lon: float, location_name: str = ""):
+    """Update user's location for weather data"""
+    user_id = await get_user_id(request)
+    
+    await db.user_preferences.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "latitude": lat,
+            "longitude": lon,
+            "location_name": location_name,
+            "updated_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    return {"message": "Plats uppdaterad", "lat": lat, "lon": lon, "location_name": location_name}
+
+
+@api_router.get("/flock/statistics")
+async def get_flock_statistics(request: Request):
+    """Get statistics about the flock including hen/rooster ratio"""
+    user_id = await get_user_id(request)
+    
+    all_poultry = await db.hens.find({"user_id": user_id, "is_active": True}, {"_id": 0}).to_list(200)
+    
+    hens = [p for p in all_poultry if p.get('hen_type', 'hen') == 'hen']
+    roosters = [p for p in all_poultry if p.get('hen_type') == 'rooster']
+    
+    # Calculate ideal ratio
+    hen_count = len(hens)
+    rooster_count = len(roosters)
+    
+    # Recommendations
+    recommendations = []
+    
+    if rooster_count == 0 and hen_count > 0:
+        recommendations.append({
+            "type": "info",
+            "message": "Du har ingen tupp. En tupp kan hjälpa till att hålla ordning i flocken och varna för rovdjur."
+        })
+    elif rooster_count > 0 and hen_count > 0:
+        ratio = hen_count / rooster_count
+        if ratio < 8:
+            recommendations.append({
+                "type": "warning",
+                "message": f"Du har {rooster_count} tupp(ar) på {hen_count} höns. Rekommenderat är 8-12 höns per tupp. För få höns kan leda till övermattning och stress."
+            })
+        elif ratio > 12:
+            recommendations.append({
+                "type": "info",
+                "message": f"Du har {rooster_count} tupp(ar) på {hen_count} höns. Du skulle kunna ha ytterligare en tupp om du vill."
+            })
+        else:
+            recommendations.append({
+                "type": "success",
+                "message": f"Bra balans! {rooster_count} tupp(ar) på {hen_count} höns är inom rekommenderat intervall."
+            })
+    
+    if rooster_count > 1:
+        recommendations.append({
+            "type": "warning",
+            "message": f"Med {rooster_count} tuppar, se upp för slagsmål. Separera dem om de bråkar."
+        })
+    
+    return {
+        "total": len(all_poultry),
+        "hens": hen_count,
+        "roosters": rooster_count,
+        "ratio": round(hen_count / rooster_count, 1) if rooster_count > 0 else None,
+        "recommendations": recommendations,
+        "by_breed": {},  # Could be expanded
+        "by_flock": {}   # Could be expanded
+    }
 @api_router.get("/")
 async def root():
     return {"message": "Hönsgården API", "version": "2.0"}
