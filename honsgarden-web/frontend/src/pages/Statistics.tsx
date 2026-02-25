@@ -352,22 +352,22 @@ export default function Statistics() {
           </div>
           <div className="stat-card">
             <div className="stat-icon">📈</div>
-            <div className="stat-value">{stats.avg_eggs_per_day.toFixed(1)}</div>
+            <div className="stat-value">{formatNumber(stats.avg_eggs_per_day, 1)}</div>
             <div className="stat-label">Ägg/dag</div>
           </div>
           <div className="stat-card">
             <div className="stat-icon">💰</div>
-            <div className="stat-value">{stats.total_sales} kr</div>
+            <div className="stat-value">{formatCurrency(stats.total_sales)}</div>
             <div className="stat-label">Intäkter</div>
           </div>
           <div className="stat-card">
             <div className="stat-icon">💸</div>
-            <div className="stat-value">{stats.total_costs} kr</div>
+            <div className="stat-value">{formatCurrency(stats.total_costs)}</div>
             <div className="stat-label">Kostnader</div>
           </div>
-          <div className={`stat-card wide ${stats.net >= 0 ? 'positive' : 'negative'}`}>
+          <div className={`stat-card wide ${formatNet(stats.net).className}`}>
             <div className="stat-icon">{stats.net >= 0 ? '📊' : '⚠️'}</div>
-            <div className="stat-value">{stats.net >= 0 ? '+' : ''}{stats.net} kr</div>
+            <div className="stat-value">{formatNet(stats.net).value}</div>
             <div className="stat-label">Resultat</div>
           </div>
         </div>
