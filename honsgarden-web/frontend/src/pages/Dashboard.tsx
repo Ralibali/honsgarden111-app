@@ -324,7 +324,24 @@ export default function Dashboard() {
       <header className="dashboard-header fade-in">
         <div className="header-content">
           <p className="greeting">{greeting}!</p>
-          <h1>{coop?.coop_name || 'Min Hönsgård'}</h1>
+          <div className="header-title-row">
+            <h1>{coop?.coop_name || 'Min Hönsgård'}</h1>
+            {weather?.current && (
+              <button 
+                className="weather-widget"
+                onClick={() => setShowWeatherModal(true)}
+                title="Klicka för vädertips"
+              >
+                <span className="weather-icon">
+                  {weather.current.temp < 0 ? '❄️' : 
+                   weather.current.temp < 10 ? '🌥️' : 
+                   weather.current.temp < 20 ? '⛅' : 
+                   weather.current.temp < 25 ? '☀️' : '🔥'}
+                </span>
+                <span className="weather-temp">{Math.round(weather.current.temp)}°</span>
+              </button>
+            )}
+          </div>
           <p className="date">{dateString}</p>
         </div>
         <button className="share-btn" onClick={() => setShowShareModal(true)} title="Dela">
