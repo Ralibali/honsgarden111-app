@@ -159,6 +159,8 @@ class EmailRegister(BaseModel):
     email: EmailStr
     password: str
     name: Optional[str] = None
+    accepted_terms: bool = False
+    accepted_marketing: bool = False
 
 class EmailLogin(BaseModel):
     email: EmailStr
