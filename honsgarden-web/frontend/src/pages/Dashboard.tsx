@@ -581,7 +581,7 @@ export default function Dashboard() {
               {weather?.tips && weather.tips.length > 0 && (
                 <div className="weather-tips-section">
                   <h4>💡 Tips för din hönsgård</h4>
-                  {isPremium ? (
+                  {premium?.is_premium ? (
                     <div className="tips-list">
                       {weather.tips.map((tip, idx) => (
                         <div key={idx} className={`tip-card ${tip.priority}`}>
