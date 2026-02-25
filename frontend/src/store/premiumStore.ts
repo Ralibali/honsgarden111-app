@@ -226,6 +226,46 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
       return false;
     }
   },
+  
+  verifyPurchaseWithBackend: async (platform: string, receiptData: string, productId: string, transactionId?: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/iap/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          platform,
+          receipt_data: receiptData,
+          product_id: productId,
+          transaction_id: transactionId,
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.is_premium) {
+          set({
+            isPremium: true,
+            plan: data.plan,
+            expiresAt: data.expires_at,
+          });
+          
+          // Cache locally
+          await AsyncStorage.setItem('premium_status', JSON.stringify({
+            isPremium: true,
+            plan: data.plan,
+            expiresAt: data.expires_at,
+          }));
+          
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to verify purchase with backend:', error);
+      return false;
+    }
+  },
 }));
 
 // Helper hooks for feature gating
