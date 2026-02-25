@@ -35,6 +35,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
   subscriptionId: null,
   expiresAt: null,
   plan: null,
+  platform: null,
   loading: false,
   initialized: false,
   
@@ -47,14 +48,24 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
         await initRevenueCat();
         
         // Add listener for subscription changes
-        addCustomerInfoListener((customerInfo) => {
+        addCustomerInfoListener(async (customerInfo) => {
           const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
           if (entitlement) {
+            // Sync with backend when purchase detected
+            const platform = Platform.OS as 'ios' | 'android';
+            await get().verifyPurchaseWithBackend(
+              platform,
+              JSON.stringify(customerInfo),
+              entitlement.productIdentifier,
+              customerInfo.originalAppUserId
+            );
+            
             set({
               isPremium: true,
               expiresAt: entitlement.expirationDate || null,
               subscriptionId: entitlement.productIdentifier,
               plan: entitlement.productIdentifier?.includes('yearly') ? 'yearly' : 'monthly',
+              platform,
             });
           } else {
             set({
@@ -62,12 +73,13 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
               expiresAt: null,
               subscriptionId: null,
               plan: null,
+              platform: null,
             });
           }
         });
       }
       
-      set({ initialized: true });
+      set({ initialized: true, platform: Platform.OS as any });
       
       // Check current status
       await get().checkPremiumStatus();
