@@ -43,7 +43,15 @@ export default function Premium() {
       });
       
       if (!res.ok) {
-        throw new Error('Failed to create checkout session');
+        const errorData = await res.json().catch(() => ({}));
+        console.error('Checkout error:', res.status, errorData);
+        
+        if (res.status === 401) {
+          alert('Din session har gått ut. Vänligen logga in igen.');
+          window.location.href = '/login';
+          return;
+        }
+        throw new Error(errorData.detail || 'Failed to create checkout session');
       }
       
       const { url } = await res.json();
