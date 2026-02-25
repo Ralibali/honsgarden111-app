@@ -581,13 +581,29 @@ export default function Dashboard() {
               {weather?.tips && weather.tips.length > 0 && (
                 <div className="weather-tips-section">
                   <h4>💡 Tips för din hönsgård</h4>
-                  <div className="tips-list">
-                    {weather.tips.map((tip, idx) => (
-                      <div key={idx} className={`tip-card ${tip.priority}`}>
-                        <span>{tip.message}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {isPremium ? (
+                    <div className="tips-list">
+                      {weather.tips.map((tip, idx) => (
+                        <div key={idx} className={`tip-card ${tip.priority}`}>
+                          <span>{tip.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="premium-lock-card">
+                      <span className="lock-icon">🔒</span>
+                      <p>Vädertips är en Premium-funktion</p>
+                      <button 
+                        className="btn-upgrade-small"
+                        onClick={() => {
+                          setShowWeatherModal(false);
+                          navigate('/premium');
+                        }}
+                      >
+                        Uppgradera till Premium
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
               
