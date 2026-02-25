@@ -107,9 +107,45 @@ export default function Dashboard() {
   const [aiModalType, setAiModalType] = useState<'daily' | 'forecast'>('daily');
   const [aiData, setAiData] = useState<any>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [showWeatherModal, setShowWeatherModal] = useState(false);
+  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
   
   // Animation state
   const [isVisible, setIsVisible] = useState(false);
+
+  // Get user's geolocation on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords = {
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          };
+          setUserLocation(coords);
+          // Fetch weather with user's location
+          fetchWeatherWithLocation(coords.lat, coords.lon);
+        },
+        (error) => {
+          console.log('Geolocation not available:', error.message);
+          // Use default Stockholm coords
+        },
+        { enableHighAccuracy: false, timeout: 5000 }
+      );
+    }
+  }, []);
+  
+  const fetchWeatherWithLocation = async (lat: number, lon: number) => {
+    try {
+      const res = await fetch(`/api/weather?lat=${lat}&lon=${lon}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setWeather(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch weather:', error);
+    }
+  };
 
   useEffect(() => {
     loadData();
