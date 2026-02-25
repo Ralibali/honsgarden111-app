@@ -22,6 +22,7 @@ import { useThemeStore, ThemeColors, ThemeMode } from '../../src/store/themeStor
 import { useAuthStore } from '../../src/store/authStore';
 import i18n, { setLanguage, getLanguage } from '../../src/i18n';
 import * as Notifications from 'expo-notifications';
+import PremiumGateModal from '../../components/PremiumGateModal';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
