@@ -11,130 +11,113 @@ Finally, the user needs to fix recurring production deployment failures, connect
 
 1.  **Authentication & GDPR:**
     *   Implement a primary email/password system with mandatory email confirmation.
-    *   Re-implement Google Sign-In and add Facebook Sign-In.
-    *   Implement a full Forgot Password flow (email sending, token verification, password reset).
-    *   Create a visually appealing login/registration page.
-    *   On registration, include a mandatory GDPR checkbox for terms (referencing ) and an optional one for newsletters.
-    *   Store user consent in the database and display it in an admin view.
+    *   Re-implement Google Sign-In and add Apple Sign-In for mobile.
+    *   Implement a full Forgot Password flow.
+    *   Create a visually appealing login/registration page with premium feature highlights.
+    *   On registration, include a mandatory GDPR checkbox for terms and an optional one for newsletters.
+    *   Create an Admin view to manage users.
 
 2.  **Feature Parity (Web & Mobile):**
-    *   Ensure the Expo mobile app has the exact same functionality as the React web app. This includes:
-        *   Full authentication (Email/Password, Google, Facebook).
-        *   Registration flow with GDPR consent.
-        *   Forgot Password functionality.
-        *   AI Hönsgårdsrådgivare Agda.
-        *   Väderintegration (Weather), with tips locked for premium users.
-        *   Stripe for web payments and RevenueCat for in-app-purchases.
+    *   Ensure the Expo mobile app has the exact same functionality as the React web app. This is the current main focus.
 
-3.  **New Features & UI/UX:**
-    *   **AI Hönsgårdsrådgivare Agda:** Provide personalized advice based on user data.
-    *   **Väderintegration (Weather):** Display weather from OpenWeatherMap based on user's location, with specific tips being a premium feature.
-    *   **Tupp-funktion (Rooster):** Allow registering Tupp (rooster) in addition to hens.
-    *   Update the premium page description to include new premium features.
-    *   Refine UI text and styles based on user feedback (e.g., taglines, text colors).
+3.  **In-App Purchases (Mobile):**
+    *   Implement Premium subscriptions via RevenueCat for iOS (App Store IAP) and Android (Google Play Billing). Stripe is for web only.
+    *   Backend must verify receipts from Apple/Google.
+    -   Users must be able to restore purchases.
+    -   The premium status must sync between web and mobile platforms.
 
-4.  **Deployment & Domain:**
+4.  **Premium Gating (Mobile):**
+    *   Implement a central function () to lock/unlock premium features.
+    *   Locked features should show a premium badge and prompt an upgrade modal on press.
+    *   Features to gate: AI reports/forecasts, health log, advanced stats, incubation log, smart reminders.
+
+5.  **New Features & UI/UX:**
+    *   **AI Hönsgårdsrådgivare Agda:** Provide personalized advice.
+    *   **Väderintegration (Weather):** Display weather, with tips being a premium feature.
+    *   **Push-notifikationer (Mobile):** For reminders and alerts (Free + Premium tiers).
+    *   **Admin Panel:** Accessible from the UI for designated admin users.
+    *   **Version Banner:** A build timestamp in the web app footer to identify the current deployment version.
+
+6.  **Deployment & Domain:**
     *   Resolve all deployment build errors.
-    *   Ensure production deployment is stable and serves the correct web application.
-    *   Guide the user on connecting their custom domain ().
-    *   Verify that the Stripe premium subscription flow works on the live production environment.
+    *   Guide the user on connecting their custom domain () and activating SSL.
+    *   Prepare the mobile app for App Store and Google Play submission.
 
 **User's preferred language**: Swedish (Svenska). The next agent MUST respond in Swedish.
 
 **what currently exists?**
-A full-stack application with a FastAPI backend and two frontends: a fully-featured React web app () and an Expo mobile app ().
+A full-stack application with a FastAPI backend, a feature-complete React web app (), and an Expo mobile app () that is undergoing major development.
 
-The web app has a complete, GDPR-compliant authentication system (email/password, Google Sign-In) with a Forgot Password UI and an updated premium features page. Most UI/UX feedback from the user has been implemented on the web app.
+**Web App:** The web application is stable and includes full authentication (Email, Google), a Forgot Password flow, premium feature previews, an admin panel, and a build version banner in the footer. Most user-requested UI tweaks and bug fixes have been completed.
 
-Work has begun on bringing the Expo mobile app to feature parity. A basic authentication structure (state management, navigation, logout button) has been scaffolded, but the UI screens (Login, Register, Forgot Password) are not implemented.
+**Mobile App:** The focus has shifted entirely to the mobile app. **Phase 1 (Release-critical)** is in progress. The RevenueCat SDK for in-app purchases has been installed and configured with the user's API key. A  component has been created. Scaffolding for native Google & Apple sign-in is complete, with client IDs provided by the user added to the configuration. Backend endpoints to support mobile IAP verification and social logins have been created.
 
-The backend is configured to use the  domain for sending emails via Resend. The last action was a failed deployment attempt.
+**Backend:** The FastAPI server supports all web app features and now includes new endpoints for mobile IAP receipt validation (, ) and mobile social logins (, ). Admin user emails are configured in the  file.
 
 **Last working item**:
--   Last item agent was working: Debugging a production deployment failure. The user provided build logs, and the agent was tasked with analyzing and fixing the errors.
+-   Last item agent was working: Creating Privacy Policy and Terms of Service pages for the web application, a requirement for app store submission. The agent created the component files (, ).
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? After applying the fix, the  should be used to trigger a new deployment. Manual testing is not applicable here.
+-   Which testing method agent to use? Frontend testing agent. After adding the routes and rebuilding the web app, use the screenshot tool to verify the pages are accessible.
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Production deployment failure due to EAS project slug conflict.** (P0)
-    -   **Description:** The deployment build is failing during the  step. The logs show the error:  The conflicting slug is .
-    -   **Attempted fixes:** None yet. The issue was just identified from the logs.
+-   **Issue 1: Complete Mobile App Phase 1 (Release-critical).** (P0)
+    -   **Description:** The mobile app's core infrastructure for release is partially built but untested on real devices. This includes In-App Purchases and Social Logins.
+    -   **Attempted fixes:** The code has been written and configured.
     -   **Next debug checklist**:
-        1.  Open the Expo app's configuration file: .
-        2.  Locate the  property.
-        3.  Change its value from  to a more project-specific and unique name, such as .
-        4.  Trigger a new deployment using the  to verify the fix.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker. Fixing it will allow the application to be deployed to production.
+        1.  Guide the user to create the subscription products (, ) in App Store Connect and Google Play Console.
+        2.  Trigger an EAS Build for both iOS (TestFlight) and Android (Internal Testing).
+        3.  Instruct the user to test the full IAP flow (purchase, restore) and social logins (Google, Apple) on their physical devices using the test builds.
+        4.  Implement loading/error states for all network-dependent views in the mobile app (e.g., login, data fetching, IAP flow) as requested.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is the primary blocker for submitting the app to the App Stores.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Neither. The fix is a configuration change verified by a successful deployment.
-    -   **Blocked on other issue**: None.
+    -   **Should Test frontend/backend/both after fix?**: Both (via user testing on device).
+    -   **Blocked on other issue**: User action (App Store/Google Play setup).
 
--   **Issue 2: Production deployment stability and functionality.** (P1)
-    -   **Description:** The user has historically faced issues on the live URL (e.g., 520 errors, wrong app served). This needs to be thoroughly verified by the user once a deployment succeeds.
-    -   **Status**: BLOCKED (on Issue 1)
+-   **Issue 2: Custom Domain Activation & SSL.** (P1)
+    -   **Description:** The user cannot find the Link Domain option in the Emergent UI to finalize the  setup and activate SSL. The agent identified this is likely due to the deployment type being Expo and advised the user to contact support.
+    -   **Status**: BLOCKED (on Emergent Support).
     -   **Is recurring issue?**: Y
 
--   **Issue 3: OpenWeatherMap API Key Inactive.** (P2)
-    -   **Description:** The provided API key returned a 401 error. The UI has a graceful fallback. This needs to be re-checked periodically.
-    -   **Status**: BLOCKED (on third-party key activation)
-    -   **Is recurring issue?**: N
-
 **In progress Task List**:
--   **Task 1: Achieve Feature Parity for Mobile App.** (P0)
-    -   **Description**: Implement all features from the web app in the Expo mobile app.
-    -   **Where to resume**: The authentication scaffolding exists in the  directory. The immediate next step is to build the UI for the authentication screens.
-        1.  Implement the UI for Login, Register, and Forgot Password in . These should visually match the web app and include all fields, GDPR checkboxes, and social login buttons.
-        2.  Connect the UI to the backend API endpoints for registration, login, social auth, and password reset.
-        3.  Port the premium-feature logic (e.g., for weather tips) and AI advisor functionality to the relevant mobile app screens, ensuring they respect the user's subscription status.
-    -   **What will be achieved with this?**: A consistent user experience across web and mobile, fulfilling a core user requirement.
+-   **Task 1: Finalize Privacy Policy & Terms Pages.** (P0)
+    -   **Where to resume**: The component files  and  exist. You must add the routes for  and  in , then rebuild the web app.
+    -   **What will be achieved with this?**: Fulfills a legal requirement for app store submission.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Both. Use the  to test the complete mobile app flow after implementation.
-    -   **Blocked on something**: Technically blocked by the deployment issue (Issue 1), as testing on a real device via EAS builds will be necessary.
+    -   **Should Test frontend/backend/both after fix?**: Frontend.
+    -   **Blocked on something**: No.
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks:**
-    -   **(P1) Implement Forgot Password Backend Logic**: The UI and link exist, but the backend is missing the logic to generate/email a reset token and update the password. This needs to be built in .
-    -   **(P2) Add Facebook Login**: The user wants this. The agent has determined a Facebook Developer App is needed. The next step is to guide the user to obtain the  and  and then implement the integration using .
+-   **Upcoming Tasks (Mobile App - Phase 2):**
+    -   (P1) Implement UI for AI Daily Report & Forecasts.
+    -   (P1) Implement UI for Health Log & Health Warnings.
+    -   (P1) Implement UI for Incubation (Kläckning) Log.
+    -   (P2) Implement Push Notifications via Expo Push.
+    -   (P2) Implement UI for Advanced Statistics.
+    -   (P2) Add an Admin link in the mobile settings screen for admin users.
 
 -   **Future Tasks:**
-    -   **(P2) Affiliate Product Links**: Integrate product recommendations with affiliate links.
-    -   **(P2) Push Notifications**: A planned premium feature for the mobile app.
-    -   **(P2) Enhanced Analytics**: More advanced graphs and trends for users.
-    -   **(P2) User Onboarding**: A welcome guide or tour for new users.
-    -   **(P3) Add Apple Sign-In**: To complement other authentication methods on iOS.
+    -   (P2) Affiliate Product Links integration.
+    -   (P3) User Onboarding / Welcome Tour.
 
 **Completed work in this session**
--   **GDPR & UX Refinement (Web App)**:
-    -   Finalized the new login/registration page ().
-    -   Made the newsletter checkbox optional to comply with GDPR, based on user feedback.
-    -   Updated all UI text (taglines, labels) as requested by the user.
-    -   Fixed styles on the Forgot Password page.
--   **Authentication Flow (Web App)**:
-    -   Re-introduced Google Login alongside the email/password system.
-    -   Added the UI for a Forgot Password page.
--   **Premium Features (Web App)**:
-    -   Updated the dashboard () to show weather data to all users but hide weather-based *tips* behind the premium subscription.
-    -   Updated the  page to list the new premium features.
--   **Mobile App Scaffolding ( directory)**:
-    -   Created a complete authentication routing flow using Expo Router.
-    -   Added a state management solution () for handling user sessions.
-    -   Added a Logout button to the settings screen.
--   **Backend & Testing**:
-    -   Updated  registration logic to handle the optional newsletter field.
-    -   Updated the email sender to use the verified  domain.
-    -   Ran a full test suite using , which found and fixed a bug in the process.
-
-**Earlier issues found/mentioned but not fixed**
--   **Issue 1: Incomplete Forgot Password Feature**
-    -   **Debug checklist**:
-        1.  Create a new endpoint in  (e.g., ) that takes an email, generates a secure, short-lived JWT reset token, and emails it to the user using Resend.
-        2.  Create a frontend page (e.g., ) that validates the token from the URL.
-        3.  Create a new endpoint (e.g., ) that accepts the token and a new password, verifies the token, and updates the user's  in the database.
-    -   **Why to solve this issue and what will be achieved with this?**: It is a standard and essential feature for any application with user accounts.
-    -   **Should Test frontend/backend/both after fix**: Both.
+-   Fixed the critical EAS deployment error by changing the  in .
+-   Fully implemented and fixed the Forgot Password flow for the web app by creating .
+-   Resolved the production issue where the web app was being downloaded instead of rendered by adding  to the backend .
+-   Fixed Google OAuth redirect URL issues on the web app.
+-   Implemented a large batch of UI/UX improvements on the web app (admin link, price cards on login, CSS fixes, updated dashboard actions).
+-   Added designated admin user emails to the backend  file.
+-   Added a build timestamp/version banner to the web app's footer for easier debugging.
+-   Ran a full test suite on the web app using , which passed successfully after fixing one minor backend bug.
+-   **Started Mobile App Phase 1 (Release Critical):**
+    -   Installed and fully configured the RevenueCat SDK for in-app purchases.
+    -   Created a  component using RevenueCat's UI library.
+    -   Added backend endpoints for IAP receipt verification and restoration.
+    -   Implemented scaffolding and configuration for native Google Sign-In (iOS/Android) and Apple Sign-In (iOS).
+    -   Guided the user through the complete setup of Entitlements, Products, and Offerings in their RevenueCat dashboard.
+-   Created placeholder pages for Privacy Policy and Terms of Service.
 
 **Code Architecture**
 
@@ -142,52 +125,61 @@ The backend is configured to use the  domain for sending emails via Resend. The 
 **Key Technical Concepts**
 -   **Backend**: FastAPI, Pydantic, Motor (async MongoDB), Resend.
 -   **Frontend (Web)**: React, Vite, TypeScript, .
--   **Frontend (Mobile)**: Expo, React Native, Expo Router, Zustand (for state).
--   **Authentication**: JWT-based Email/Password, Google Sign-In.
--   **Deployment**: The React app is built and served by FastAPI. The Expo app is built via EAS. The entire application is containerized for deployment.
+-   **Frontend (Mobile)**: Expo, React Native, Expo Router, Zustand, **RevenueCat**.
+-   **Authentication**: JWT, Google Sign-In (Web & Mobile), Apple Sign-In (Mobile).
+-   **Deployment**: Web app is built and served by FastAPI. Mobile app is built via EAS.
 
 **key DB schema**
--   : { , , , ,  (datetime),  (datetime),  }
--   : { , , ,  (HEN or ROOSTER) }
+-   : { , , , , , ,  ('monthly', 'yearly'),  ('web', 'ios', 'android'), ,  }
+-   : { , , ,  }
+-   : { Wed Feb 25 23:03:51 UTC 2026, , ,  }
 
 **All files of reference**
--   : **CRITICAL**. Contains the  that needs to be changed to fix the deployment.
--   : The core backend logic file.
--   : The main file to implement the mobile app's login/register UI.
--   : The state management for the mobile app's auth session.
--   : The reference implementation for the web app's login/register UI.
+-   : Needs to be edited to add routes for the new legal pages.
+-   : Contains the core RevenueCat logic for the mobile app.
+-   : Contains the mobile social login logic.
+-   : Holds the Google Client IDs for the mobile app.
+-   : The single source of truth for all backend logic, including new IAP and mobile auth endpoints.
+-   : Contains scheme and package identifiers for mobile builds and deep linking.
 
 **Critical Info for New Agent**
--   **The absolute first priority is to fix the deployment.** Edit  and change the  to something unique like , then trigger a new deployment.
--   **The main development task is achieving mobile app feature parity.** The mobile app ( dir) is significantly behind the web app ( dir). Use the web app as the source of truth for functionality and UI.
--   **Respond in Swedish.** This is a strict requirement from the user.
--   The Forgot Password feature is incomplete. The backend logic for sending the reset email and updating the password is not implemented.
+-   Your primary focus is the **mobile app ()** and getting it ready for release. The web app is largely complete.
+-   The immediate next step is to finish the Privacy/Terms pages task, then move on to guiding the user through setting up their App Store/Google Play products so you can create a test build (EAS).
+-   Do not attempt to fix the custom domain () issue. It is blocked on Emergent Support. You should follow up with the user on their support ticket status.
+-   The user is now very technical and specific with their requests. Follow the phased implementation plan (Phase 1, Phase 2) they provided for the mobile app.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks if the web and mobile apps are now identical in functionality. **Status: Addressed**. The agent explained they are not and started work on parity.
-2.  **User**: Confirms  domain is verified. **Status: Completed**.
-3.  **User**: Provides detailed UI feedback on screenshots (tagline, text color, GDPR compliance for newsletter checkbox). **Status: Completed**. The agent implemented all changes.
-4.  **User**: Shares build error logs and asks the agent to use the deployment agent to fix them. **Status: In Progress**. This is the current highest priority task.
-5.  **User**: Confirms choices for feature implementation (re-add Google login, make weather tips premium, etc.). **Status: Completed**.
-6.  **User**: Asks to change Aurora Media AB to honsgarden.se in the terms text. **Status: Completed**.
-7.  **User**: Asks for visual improvements, making all registration fields mandatory, updating the premium description, and adding Facebook login & Forgot Password. **Status: Partially Completed**. Visuals, premium page, and Forgot Password UI were done. Making the newsletter mandatory was later reverted due to GDPR. Facebook login and the backend for forgot password are pending.
+1.  **User**: Asks for help integrating RevenueCat with specific API keys and requirements. **Status: Completed**.
+2.  **User**: Asks for guidance on setting up the RevenueCat dashboard. **Status: Completed**.
+3.  **User**: Sends a screenshot of their RevenueCat Offering for verification. **Status: Completed**. Agent provided feedback to correct the structure.
+4.  **User**: Sends an updated screenshot of the Offering. **Status: Completed**. Agent confirmed it is correct.
+5.  **User**: Expresses confusion about Test Store in RevenueCat. **Status: Addressed**. Agent explained it's the correct sandbox environment for testing.
+6.  **User**: Asks what is left to do before the app can be launched on the app stores. **Status: Addressed**. Agent provided a detailed checklist.
+7.  **User**: Asks agent to generate and implement Privacy Policy & Terms of Service pages. **Status: In Progress**. This is the current task.
+8.  **User**: Asks for help creating iOS and Android OAuth clients in Google Cloud. **Status: Completed**.
+9.  **User**: Provides the iOS Client ID. **Status: Completed**.
+10. **User**: Provides the Android Client ID. **Status: Completed**.
 
 **Project Health Check:**
--   **Broken**: **Deployment is broken.** The EAS build fails due to a slug conflict.
--   **Mocked**: The weather data is still mocked/shows a placeholder because the user's OpenWeatherMap API key is likely still inactive.
+-   **Broken**: Custom domain  is not serving with HTTPS and is not correctly linked in the Emergent platform. This is **blocked** on Emergent Support.
+-   **Mocked**:
+    -   The In-App Purchase flow is implemented but untested on a real device. It is mocked until verified via an EAS build in a sandbox environment.
+    -   Weather data remains mocked due to the user's inactive OpenWeatherMap API key.
 
 **3rd Party Integrations**
--   **Stripe**: For web subscriptions.
--   **Resend**: For transactional emails (e.g., registration, password reset).
--   **OpenWeatherMap**: For weather data (key provided by user is inactive).
--   **OpenAI via **: For AI features (Daily Report, Flock Advisor). Uses Emergent LLM Key.
--   **Google Sign-In**: Integrated on the web app.
--   **RevenueCat**: Present in the mobile app from previous versions, used for in-app purchases.
+-   **Stripe**: Web subscriptions.
+-   **Resend**: Transactional emails.
+-   **OpenWeatherMap**: Weather data (key inactive).
+-   **OpenAI via **: AI features (Uses Emergent LLM Key).
+-   **Google Sign-In**: For both web and mobile.
+-   **Apple Sign-In**: For mobile (iOS).
+-   **RevenueCat**: For mobile in-app purchases (iOS/Android).
 
 **Testing status**
--   Testing agent used after significant changes: **YES**. The agent successfully used  to test the web app's new auth flow, and the subagent found and fixed one bug.
--   Test files created: A test report was generated at .
--   Known regressions: Production deployment has been historically unstable.
+-   Testing agent used after significant changes: **YES**, on the web application.
+-   Troubleshoot agent used after agent stuck in loop: NO
+-   Test files created: None.
+-   Known regressions: The custom domain functionality has been historically unstable.
 
 **What agent forgot to execute**
--   The backend logic for the Forgot Password feature is completely missing. The agent created the UI link and page but did not implement the endpoints in  for generating a token, sending the email, and resetting the password.</analysis>
+-   The agent was in the middle of a task. The routes for the newly created  and  pages have not been added to . This should be the immediate next action.</analysis>

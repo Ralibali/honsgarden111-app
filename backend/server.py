@@ -44,7 +44,7 @@ STRIPE_PRICE_YEARLY = os.environ.get('STRIPE_PRICE_YEARLY', '')
 # Resend (Email) config
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'noreply@honsgarden.se')
-APP_URL = os.environ.get('APP_URL', 'https://rooster-registry.preview.emergentagent.com')
+APP_URL = os.environ.get('APP_URL', 'https://hens-premium-beta.preview.emergentagent.com')
 if RESEND_API_KEY:
     resend.api_key = RESEND_API_KEY
 
