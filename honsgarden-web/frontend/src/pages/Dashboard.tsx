@@ -119,14 +119,16 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
         fetch('/api/premium/status', { credentials: 'include' }),
         fetch('/api/hens?active_only=true', { credentials: 'include' }),
         fetch('/api/flocks', { credentials: 'include' }),
-        fetch('/api/insights', { credentials: 'include' })
+        fetch('/api/insights', { credentials: 'include' }),
+        fetch('/api/weather', { credentials: 'include' }),
+        fetch('/api/flock/statistics', { credentials: 'include' })
       ]);
 
       if (statsRes.ok) setTodayStats(await statsRes.json());
@@ -136,6 +138,8 @@ export default function Dashboard() {
       if (hensRes.ok) setHens(await hensRes.json());
       if (flocksRes.ok) setFlocks(await flocksRes.json());
       if (insightsRes.ok) setInsights(await insightsRes.json());
+      if (weatherRes.ok) setWeather(await weatherRes.json());
+      if (flockStatsRes.ok) setFlockStats(await flockStatsRes.json());
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
