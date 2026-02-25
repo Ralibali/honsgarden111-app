@@ -219,6 +219,34 @@
   color: #ec4899;
 }
 
+/* GDPR Consent Badges */
+.badge.gdpr-yes {
+  background-color: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+}
+
+.badge.gdpr-no {
+  background-color: rgba(156, 163, 175, 0.15);
+  color: var(--text-secondary);
+}
+
+.badge.newsletter-yes {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+}
+
+.badge.newsletter-no {
+  background-color: transparent;
+  color: var(--text-muted);
+}
+
+.consent-date {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 /* Buttons */
 .btn-success {
   background-color: #4ade80;
