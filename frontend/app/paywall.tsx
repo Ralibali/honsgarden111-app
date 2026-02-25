@@ -176,25 +176,10 @@ export default function PaywallScreen() {
   
   // Get prices - always use SEK
   const getPrice = (plan: 'monthly' | 'yearly'): string => {
-    // Always return SEK prices regardless of RevenueCat
     return plan === 'yearly' ? YEARLY_PRICE : MONTHLY_PRICE;
   };
   
-  // Get monthly equivalent for yearly plan
-  const getMonthlyEquivalent = (): string => {
-    return '12,42 kr/mån';
-  };
-  
-  if (loadingOfferings) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4CAF50" />
-          <Text style={styles.loadingText}>{t('common.loading')}</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const isSv = i18n.locale.startsWith('sv');
   
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
