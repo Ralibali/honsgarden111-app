@@ -717,6 +717,21 @@ export default function SettingsScreen() {
               </View>
             )}
             
+            {/* Admin Panel Link */}
+            {isAdmin && (
+              <TouchableOpacity 
+                style={[styles.logoutButton, { backgroundColor: colors.primary + '20', marginBottom: 12 }]}
+                onPress={() => {
+                  // Open admin panel in browser
+                  const adminUrl = `${API_URL}/api/web/admin`;
+                  Linking.openURL(adminUrl);
+                }}
+              >
+                <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
+                <Text style={[styles.logoutText, { color: colors.primary }]}>{isSv ? 'Admin Panel' : 'Admin Panel'}</Text>
+              </TouchableOpacity>
+            )}
+            
             <TouchableOpacity 
               style={styles.logoutButton}
               onPress={() => {
