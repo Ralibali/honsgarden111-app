@@ -294,19 +294,27 @@ export default function PaywallScreen() {
           </Text>
         </View>
         
-        {/* Restore purchases */}
+        {/* Restore purchases / Check status */}
         <TouchableOpacity 
           style={styles.restoreButton} 
           onPress={handleRestore} 
           disabled={storeLoading}
         >
-          <Text style={styles.restoreButtonText}>{t('premium.restorePurchases')}</Text>
+          <Text style={styles.restoreButtonText}>
+            {isSv ? 'Redan prenumerant? Kontrollera status' : 'Already subscribed? Check status'}
+          </Text>
         </TouchableOpacity>
         
-        {/* Terms notice */}
-        <Text style={styles.termsNotice}>
-          {t('premium.termsNotice', { store: Platform.OS === 'ios' ? 'App Store' : 'Google Play' })}
-        </Text>
+        {/* Privacy & Terms links */}
+        <View style={styles.legalLinks}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy')}>
+            <Text style={styles.legalLinkText}>{isSv ? 'Integritetspolicy' : 'Privacy Policy'}</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalSeparator}>•</Text>
+          <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/terms')}>
+            <Text style={styles.legalLinkText}>{isSv ? 'Användarvillkor' : 'Terms of Service'}</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
