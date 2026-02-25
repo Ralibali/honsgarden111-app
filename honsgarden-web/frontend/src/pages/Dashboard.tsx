@@ -148,6 +148,7 @@ export default function Dashboard() {
       setEggCount('');
       setSelectedHen('');
       setShowHenPicker(false);
+      setShowEggModal(false);
     } catch (error) {
       console.error('Failed to add eggs:', error);
     } finally {
@@ -155,9 +156,47 @@ export default function Dashboard() {
     }
   };
   
+  // Load AI data
+  const loadAiData = async (type: 'daily' | 'forecast') => {
+    setAiLoading(true);
+    setAiModalType(type);
+    setShowAiModal(true);
+    try {
+      const endpoint = type === 'daily' ? '/api/ai/daily-report' : '/api/ai/egg-forecast';
+      const res = await fetch(endpoint, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setAiData(data);
+      }
+    } catch (error) {
+      console.error('Failed to load AI data:', error);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 }).format(amount);
   };
+  
+  // Check if user has any data
+  const hasData = (todayStats?.egg_count ?? 0) > 0 || (summary?.total_eggs_all_time ?? 0) > 0;
+  
+  // Get production status text
+  const getProductionStatusText = () => {
+    if (!hasData) {
+      return { status: 'Ingen data ännu', color: '#9ca3af', text: 'Lägg till ägg för att se statistik' };
+    }
+    if (insights?.premium?.production_status === 'high') {
+      return { status: 'Hög produktion', color: '#22c55e', text: insights.premium.production_text };
+    }
+    if (insights?.premium?.production_status === 'low') {
+      return { status: 'Låg produktion', color: '#ef4444', text: insights.premium.production_text };
+    }
+    return { status: 'Normal produktion', color: '#22c55e', text: insights?.premium?.production_text || '' };
+  };
+  
+  const productionInfo = getProductionStatusText();
   
   if (loading) {
     return <div className="loading">Laddar...</div>;
