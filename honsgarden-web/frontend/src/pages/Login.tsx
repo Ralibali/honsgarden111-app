@@ -17,6 +17,14 @@ export default function Login() {
   const [sending, setSending] = useState(false);
   const [showCookieBanner, setShowCookieBanner] = useState(false);
   
+  // Email/Password auth state
+  const [authMode, setAuthMode] = useState<'options' | 'login' | 'register'>('options');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  
   useEffect(() => {
     // Check if user has already accepted cookies
     const cookieConsent = localStorage.getItem('cookie_consent');
@@ -33,6 +41,40 @@ export default function Login() {
   const acceptNecessaryCookies = () => {
     localStorage.setItem('cookie_consent', 'necessary');
     setShowCookieBanner(false);
+  };
+  
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthLoading(true);
+    
+    try {
+      const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+      const body = authMode === 'register' 
+        ? { email, password, name: name || undefined }
+        : { email, password };
+      
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setAuthError(data.detail || 'Något gick fel');
+        return;
+      }
+      
+      // Success - reload to go to dashboard
+      window.location.href = '/';
+    } catch (error) {
+      setAuthError('Kunde inte ansluta till servern');
+    } finally {
+      setAuthLoading(false);
+    }
   };
   
   const handleContactSubmit = async () => {
