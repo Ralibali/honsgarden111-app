@@ -59,6 +59,10 @@ export default function HomeScreen() {
   const [hens, setHens] = useState<any[]>([]);
   const [selectedHenId, setSelectedHenId] = useState<string>('');
   
+  // Weather state
+  const [weather, setWeather] = useState<any>(null);
+  const [showWeatherModal, setShowWeatherModal] = useState(false);
+  
   // Animation refs
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const undoOpacity = useRef(new Animated.Value(0)).current;
@@ -71,6 +75,7 @@ export default function HomeScreen() {
     loadDataLimits();
     loadProductivityAlerts();
     loadHens();
+    loadWeather();
   }, []);
   
   const loadDataLimits = async () => {
