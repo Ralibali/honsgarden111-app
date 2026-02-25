@@ -153,6 +153,14 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
   
+  // Helper to show premium gate modal with feature info
+  const showPremiumGate = (featureName: string, icon: keyof typeof Ionicons.glyphMap = 'star') => {
+    setPremiumFeatureName(featureName);
+    setPremiumFeatureIcon(icon);
+    setShowPremiumModal(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+  
   const showUndoSnackbar = (count: number) => {
     setLastRegisteredCount(count);
     setShowUndo(true);
