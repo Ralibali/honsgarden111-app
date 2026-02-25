@@ -3624,7 +3624,7 @@ if WEBAPP_DIR.exists():
     @app.get("/api/web/{full_path:path}")
     async def serve_webapp_api(request: Request, full_path: str = ""):
         """Serve the React webapp"""
-        return FileResponse(str(WEBAPP_DIR / "index.html"))
+        return FileResponse(str(WEBAPP_DIR / "index.html"), media_type="text/html")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
