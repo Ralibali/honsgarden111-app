@@ -199,7 +199,7 @@ export default function Login() {
             </svg>
           </div>
           <h1 className="login-title">Hönsgården</h1>
-          <p className="login-tagline">Din digitala assistent för din hönsgård</p>
+          <p className="login-tagline">Din digitala assistent för hönsgården</p>
         </div>
         
         {/* Auth Card */}
