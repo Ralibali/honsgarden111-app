@@ -2961,9 +2961,17 @@ async def get_ai_daily_report(request: Request):
     Returns a blurred preview for free users"""
     user_id = await get_user_id(request)
     
+    # Get user info
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    user_name = user.get("name", "").split()[0] if user and user.get("name") else "hönsägare"
+    
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
     is_premium = subscription.get('is_active', False) if subscription else False
+    
+    # Get coop name
+    coop = await db.coops.find_one({"user_id": user_id}, {"_id": 0})
+    coop_name = coop.get("coop_name", "hönsgården") if coop else "hönsgården"
     
     # Get today's data
     today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
@@ -3006,21 +3014,27 @@ async def get_ai_daily_report(request: Request):
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"daily-report-{user_id}-{today}",
-            system_message="Du är en hjälpsam assistent för en hönsägare. Skriv korta, personliga och uppmuntrande rapporter på svenska. Använd emojis sparsamt."
+            system_message="""Du är Agda, en hjälpsam och erfaren hönsskötare-assistent med bondsk charm. 
+Du skriver korta, personliga och uppmuntrande rapporter på svenska. 
+Du har alltid tips om hönsskötsel och är varm och omtänksam i tonen.
+Använd emojis sparsamt (max 2-3 per rapport).
+Avsluta alltid med 'Kacklande hälsningar, Agda 🐔'"""
         ).with_model("openai", "gpt-4o")
         
-        prompt = f"""Skriv en kort daglig rapport för en hönsägare baserat på följande data:
+        prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
 
-- Datum: {today}
+Data för idag ({today}):
 - Antal ägg idag: {total_eggs}
 - Antal aktiva höns: {hen_count}
 - Produktivitetsvarningar: {', '.join(alerts) if alerts else 'Inga'}
 - Senaste hälsoanteckningar: {len(health_logs)} loggade
 
 Rapporten ska innehålla:
-1. En kort sammanfattning av dagen (1-2 meningar)
-2. En observation eller uppmuntran
-3. Ett tips eller påminnelse (om relevant)
+1. En personlig hälsning till {user_name}
+2. En kort sammanfattning av dagens produktion
+3. En observation eller uppmuntran
+4. Ett praktiskt tips (om relevant)
+5. Avsluta med din signatur
 
 Håll det under 100 ord och personligt."""
         
