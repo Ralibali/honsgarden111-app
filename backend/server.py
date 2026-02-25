@@ -2990,16 +2990,22 @@ async def get_admin_users(request: Request, skip: int = 0, limit: int = 50):
     # Enrich with subscription data
     enriched_users = []
     for u in users:
-        sub = await db.subscriptions.find_one({"user_id": u.get("user_id")}, {"_id": 0})
+        user_id = u.get("user_id") or u.get("id")
+        sub = await db.subscriptions.find_one({"user_id": user_id}, {"_id": 0})
         enriched_users.append({
-            "user_id": u.get("user_id"),
+            "user_id": user_id,
             "email": u.get("email"),
             "name": u.get("name"),
             "picture": u.get("picture"),
             "created_at": u.get("created_at"),
             "is_premium": sub.get("is_active", False) if sub else False,
             "plan": sub.get("plan") if sub else None,
-            "reminder_enabled": u.get("reminder_enabled", False)
+            "reminder_enabled": u.get("reminder_enabled", False),
+            "auth_provider": u.get("auth_provider", "google"),
+            "accepted_terms": u.get("accepted_terms", False),
+            "accepted_terms_at": u.get("accepted_terms_at"),
+            "accepted_marketing": u.get("accepted_marketing", False),
+            "accepted_marketing_at": u.get("accepted_marketing_at")
         })
     
     return {"users": enriched_users, "total": total, "skip": skip, "limit": limit}
