@@ -23,6 +23,7 @@ import { useThemeStore, ThemeColors } from '../../src/store/themeStore';
 import i18n, { formatCurrency } from '../../src/i18n';
 import { format } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
+import PremiumGateModal from '../../components/PremiumGateModal';
 
 export default function HomeScreen() {
   const router = useRouter();
