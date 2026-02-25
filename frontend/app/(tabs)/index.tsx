@@ -281,7 +281,7 @@ export default function HomeScreen() {
         {dataLimits && !dataLimits.is_premium && !dismissedBanner && dataLimits.hidden_data?.months_of_history > 0 && (
           <TouchableOpacity 
             style={styles.hiddenDataCard}
-            onPress={() => router.push('/paywall')}
+            onPress={() => showPremiumGate(isSv ? 'Statistikhistorik' : 'Statistics History', 'analytics')}
             activeOpacity={0.9}
           >
             <View style={styles.hiddenDataOverlay}>
