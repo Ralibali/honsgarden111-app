@@ -12,7 +12,7 @@ import requests
 import uuid
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://mobile-first-43.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://rooster-registry.preview.emergentagent.com')
 
 
 class TestGDPRRegistration:
