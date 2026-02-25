@@ -290,9 +290,17 @@ export default function SettingsScreen() {
                 <TouchableOpacity 
                   style={styles.upgradeButton}
                   onPress={() => {
-                    // On web, redirect to React webapp premium page where Stripe works
+                    // On web, open React webapp premium page in same tab
+                    // User may need to log in there since sessions aren't shared
                     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-                      window.location.href = '/api/web/premium';
+                      // Show confirmation that they'll need to log in on the webapp
+                      const confirmed = window.confirm(
+                        'Du kommer att omdirigeras till webbversionen för att slutföra köpet.\n\n' +
+                        'Om du inte redan är inloggad där, behöver du logga in med samma konto.'
+                      );
+                      if (confirmed) {
+                        window.location.href = '/api/web/premium';
+                      }
                     } else {
                       router.push('/paywall');
                     }
