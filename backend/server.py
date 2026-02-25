@@ -15,6 +15,7 @@ from datetime import datetime, date, timezone, timedelta
 from enum import Enum
 import httpx
 import resend
+import bcrypt
 
 # AI Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
