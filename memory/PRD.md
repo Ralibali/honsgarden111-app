@@ -13,14 +13,16 @@
 - **Typsnitt Mobil**: Playfair Display + Inter (via expo-font)
 
 ### **GDPR-compliant Registration (Uppdaterad Feb 25, 2026):**
-- **Alla fält obligatoriska**
+- **Obligatoriska fält**: Namn, E-post, Lösenord, Användarvillkor
+- **Frivilligt fält**: Nyhetsbrev (GDPR-krav - inget samtycke för marknadsföring får vara obligatoriskt)
 - **Checkbox 1 (obligatorisk)**: "Jag har läst och godkänner användarvillkoren och integritetspolicyn för **honsgarden.se**" med klickbar länk
-- **Checkbox 2 (obligatorisk)**: "Jag godkänner att honsgarden.se skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress"
-- **Glömt lösenord**: Länk på inloggningssidan för återställning
-- **Terms Modal**: Fullständig GDPR-text med alla sektioner (Allmänt, Personuppgifter, GDPR-rättigheter, E-post, Cookies, Säkerhet, Ansvarsbegränsning, Tillämplig lag, Kontakt)
+- **Checkbox 2 (frivillig)**: "Jag godkänner att honsgarden.se skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress"
+- **Glömt lösenord**: Länk på inloggningssidan + supporttext "Har du inget konto? Kontakta oss så hjälper vi dig."
+- **Terms Modal**: Fullständig GDPR-text med alla sektioner
 - **Admin-vy**: Visar GDPR-samtycke och Nyhetsbrev-status för varje användare
 - **Databaslagring**: accepted_terms, accepted_terms_at, accepted_marketing, accepted_marketing_at
 - **Google-login**: Tillgänglig som alternativ till e-post/lösenord
+- **Tagline**: "Din digitala assistent för hönsgården"
 
 ### **Features-sektion (6 kort i grid):**
 1. 🥚 Äggdagbok - Registrera ägg snabbt och enkelt
