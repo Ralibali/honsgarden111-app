@@ -2303,7 +2303,11 @@ async def get_insights(request: Request, include_premium: bool = False):
         else:
             deviation_percent = 0
         
-        if deviation_percent < -15:
+        # Check if user has any eggs at all
+        if total_eggs == 0:
+            production_status = "no_data"
+            production_text = "📝 Inga ägg registrerade än"
+        elif deviation_percent < -15:
             production_status = "low"
             production_text = "🟡 Låg produktion"
         elif deviation_percent > 15:
