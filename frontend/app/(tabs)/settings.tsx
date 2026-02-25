@@ -911,6 +911,12 @@ export default function SettingsScreen() {
           </View>
         </View>
       </Modal>
+      
+      {/* Premium Gate Modal */}
+      <PremiumGateModal
+        visible={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+      />
     </SafeAreaView>
   );
 }
