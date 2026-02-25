@@ -68,8 +68,8 @@ export default function Login() {
         return;
       }
       
-      // Success - reload to go to dashboard
-      window.location.href = '/';
+      // Success - navigate to dashboard (use relative path for SPA routing)
+      navigate('/eggs');
     } catch (error) {
       setAuthError('Kunde inte ansluta till servern');
     } finally {
