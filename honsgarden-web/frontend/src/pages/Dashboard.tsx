@@ -466,7 +466,10 @@ export default function Dashboard() {
         </div>
         
         <div className="ai-features-grid">
-          <div className={`ai-feature-card ${!premium?.is_premium ? 'locked' : ''}`}>
+          <button 
+            className={`ai-feature-card ${!premium?.is_premium ? 'locked' : ''}`}
+            onClick={() => premium?.is_premium ? loadAiData('daily') : navigate('/premium')}
+          >
             <div className="ai-feature-icon">📋</div>
             <div className="ai-feature-content">
               <h4>AI Dagsrapport</h4>
@@ -476,11 +479,14 @@ export default function Dashboard() {
               }</p>
             </div>
             {!premium?.is_premium && (
-              <Link to="/premium" className="unlock-btn">Lås upp</Link>
+              <span className="unlock-btn">Lås upp</span>
             )}
-          </div>
+          </button>
           
-          <div className={`ai-feature-card ${!premium?.is_premium ? 'locked' : ''}`}>
+          <button 
+            className={`ai-feature-card ${!premium?.is_premium ? 'locked' : ''}`}
+            onClick={() => premium?.is_premium ? loadAiData('forecast') : navigate('/premium')}
+          >
             <div className="ai-feature-icon">📈</div>
             <div className="ai-feature-content">
               <h4>Äggprognos 7 dagar</h4>
@@ -490,9 +496,9 @@ export default function Dashboard() {
               }</p>
             </div>
             {!premium?.is_premium && (
-              <Link to="/premium" className="unlock-btn">Lås upp</Link>
+              <span className="unlock-btn">Lås upp</span>
             )}
-          </div>
+          </button>
         </div>
         
         {!premium?.is_premium && (
@@ -501,6 +507,73 @@ export default function Dashboard() {
           </Link>
         )}
       </div>
+      
+      {/* AI Modal */}
+      {showAiModal && (
+        <div className="modal-overlay" onClick={() => setShowAiModal(false)}>
+          <div className="ai-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{aiModalType === 'daily' ? '📋 AI Dagsrapport' : '📈 Äggprognos 7 dagar'}</h3>
+              <button className="close-btn" onClick={() => setShowAiModal(false)}>✕</button>
+            </div>
+            
+            {aiLoading ? (
+              <div className="ai-loading">
+                <span className="loading-spinner">🔄</span>
+                <p>Genererar {aiModalType === 'daily' ? 'dagsrapport' : 'prognos'}...</p>
+              </div>
+            ) : aiData ? (
+              <div className="ai-content">
+                {aiModalType === 'daily' ? (
+                  <>
+                    <p className="ai-summary">{aiData.report?.summary}</p>
+                    <div className="ai-stats">
+                      <div className="ai-stat">
+                        <span>🥚</span>
+                        <span>{aiData.report?.eggs_today || 0} ägg idag</span>
+                      </div>
+                      <div className="ai-stat">
+                        <span>🐔</span>
+                        <span>{aiData.report?.hen_count || 0} hönor</span>
+                      </div>
+                    </div>
+                    {aiData.report?.alerts?.length > 0 && (
+                      <div className="ai-alerts">
+                        <h4>⚠️ Varningar</h4>
+                        {aiData.report.alerts.map((alert: string, i: number) => (
+                          <p key={i}>{alert}</p>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="ai-forecast-summary">
+                      Förväntat: <strong>{aiData.forecast?.total_predicted || 0} ägg</strong> nästa 7 dagar
+                    </p>
+                    <div className="ai-forecast-details">
+                      <p>Baserat på {aiData.forecast?.days_of_data || 0} dagars historik</p>
+                      <p>Genomsnitt: {aiData.forecast?.avg_daily || 0} ägg/dag</p>
+                    </div>
+                    {aiData.forecast?.daily_predictions && (
+                      <div className="forecast-list">
+                        {aiData.forecast.daily_predictions.map((day: any) => (
+                          <div key={day.date} className="forecast-day">
+                            <span>{day.date}</span>
+                            <span>~{day.predicted_eggs} ägg</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : (
+              <p>Kunde inte ladda data</p>
+            )}
+          </div>
+        </div>
+      )}
       
       {/* Quick Actions */}
       <div className="quick-actions-section">
