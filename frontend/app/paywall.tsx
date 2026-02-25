@@ -137,7 +137,7 @@ export default function PaywallScreen() {
           credentials: 'include',
           body: JSON.stringify({
             plan: selectedPlan,
-            origin_url: window.location.origin
+            origin_url: window.location.origin + '/api/web'
           })
         });
         
@@ -155,10 +155,15 @@ export default function PaywallScreen() {
         } else {
           const error = await res.json();
           console.error('Checkout error:', error);
-          // Use window.alert for web since Alert.alert doesn't work well
+          // If not authenticated, redirect to webapp login
           if (res.status === 401) {
-            window.alert('Du måste vara inloggad för att köpa Premium. Vänligen logga in först.');
-            router.back();
+            const goToWebapp = window.confirm(
+              'Du måste vara inloggad för att köpa Premium.\n\n' +
+              'Vill du gå till webbversionen för att logga in och slutföra köpet?'
+            );
+            if (goToWebapp) {
+              window.location.href = '/api/web/premium';
+            }
           } else {
             window.alert(error.detail || 'Kunde inte skapa betalningssession. Försök igen.');
           }
