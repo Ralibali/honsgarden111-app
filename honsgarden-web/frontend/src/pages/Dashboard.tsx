@@ -326,21 +326,28 @@ export default function Dashboard() {
           <p className="greeting">{greeting}!</p>
           <div className="header-title-row">
             <h1>{coop?.coop_name || 'Min Hönsgård'}</h1>
-            {weather?.current && (
-              <button 
-                className="weather-widget"
-                onClick={() => setShowWeatherModal(true)}
-                title="Klicka för vädertips"
-              >
-                <span className="weather-icon">
-                  {weather.current.temp < 0 ? '❄️' : 
-                   weather.current.temp < 10 ? '🌥️' : 
-                   weather.current.temp < 20 ? '⛅' : 
-                   weather.current.temp < 25 ? '☀️' : '🔥'}
-                </span>
-                <span className="weather-temp">{Math.round(weather.current.temp)}°</span>
-              </button>
-            )}
+            <button 
+              className="weather-widget"
+              onClick={() => setShowWeatherModal(true)}
+              title="Klicka för vädertips"
+            >
+              {weather?.current ? (
+                <>
+                  <span className="weather-icon">
+                    {weather.current.temp < 0 ? '❄️' : 
+                     weather.current.temp < 10 ? '🌥️' : 
+                     weather.current.temp < 20 ? '⛅' : 
+                     weather.current.temp < 25 ? '☀️' : '🔥'}
+                  </span>
+                  <span className="weather-temp">{Math.round(weather.current.temp)}°</span>
+                </>
+              ) : (
+                <>
+                  <span className="weather-icon">🌤️</span>
+                  <span className="weather-temp">--°</span>
+                </>
+              )}
+            </button>
           </div>
           <p className="date">{dateString}</p>
         </div>
