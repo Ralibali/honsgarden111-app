@@ -216,10 +216,22 @@ export default function Dashboard() {
       <header className="dashboard-header">
         <div>
           <h1>{coop?.coop_name || 'Min Hönsgård'}</h1>
-          <p className="subtitle">Följ äggproduktion och ekonomi – dag för dag.</p>
           <p className="date">{dateString}</p>
         </div>
       </header>
+      
+      {/* Main Action Button - Add Eggs */}
+      <button 
+        className="main-add-egg-btn"
+        onClick={() => setShowEggModal(true)}
+        data-testid="main-add-egg-btn"
+      >
+        <span className="btn-icon">🥚</span>
+        <span className="btn-text">Lägg till ägg</span>
+        {(todayStats?.egg_count ?? 0) > 0 && (
+          <span className="today-count">{todayStats?.egg_count} idag</span>
+        )}
+      </button>
       
       {/* Quick Stats */}
       <div className="stats-row">
@@ -228,56 +240,69 @@ export default function Dashboard() {
           <span className="stat-value">{todayStats?.hen_count || 0}</span>
           <span className="stat-label">Hönor</span>
         </Link>
-        <div className="stat-card egg-card" data-testid="egg-count-card">
+        <Link to="/statistics" className="stat-card egg-card" data-testid="egg-count-card">
           <span className="stat-icon">🥚</span>
-          <span className="stat-value">{todayStats?.egg_count || 0}</span>
-          <span className="stat-label">Ägg idag</span>
-        </div>
+          <span className="stat-value">{summary?.this_month?.eggs || 0}</span>
+          <span className="stat-label">Denna månad</span>
+        </Link>
       </div>
       
-      {/* Quick Add */}
-      <div className="quick-add-section">
-        <div className="quick-add-header">
-          <h3>Snabbregistrera ägg</h3>
-          {hens.length > 0 && (
-            <button 
-              className={`hen-toggle ${showHenPicker ? 'active' : ''}`}
-              onClick={() => setShowHenPicker(!showHenPicker)}
-              data-testid="hen-toggle-btn"
-            >
-              {selectedHen ? `🐔 ${hens.find(h => h.id === selectedHen)?.name}` : '🥚 Alla hönor'}
-              <span className="toggle-icon">{showHenPicker ? '▲' : '▼'}</span>
-            </button>
-          )}
-        </div>
-        
-        {showHenPicker && hens.length > 0 && (
-          <div className="hen-picker" data-testid="hen-picker">
-            <button 
-              className={`hen-option ${selectedHen === '' ? 'active' : ''}`}
-              onClick={() => { setSelectedHen(''); setShowHenPicker(false); }}
-              data-testid="hen-option-all"
-            >
-              <span>🥚</span>
-              <span>Alla hönor</span>
-            </button>
-            {hens.map(hen => (
+      {/* Egg Registration Modal */}
+      {showEggModal && (
+        <div className="modal-overlay" onClick={() => setShowEggModal(false)}>
+          <div className="egg-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🥚 Registrera ägg</h3>
+              <button className="close-btn" onClick={() => setShowEggModal(false)}>✕</button>
+            </div>
+            
+            {hens.length > 0 && (
+              <div className="hen-selector">
+                <label>Välj höna (valfritt)</label>
+                <select 
+                  value={selectedHen} 
+                  onChange={e => setSelectedHen(e.target.value)}
+                >
+                  <option value="">Alla hönor</option>
+                  {hens.map(hen => (
+                    <option key={hen.id} value={hen.id}>{hen.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
+            <div className="quick-add-buttons">
+              {[1, 2, 3, 5, 10].map(num => (
+                <button
+                  key={num}
+                  onClick={() => handleQuickAdd(num)}
+                  disabled={saving}
+                  className="quick-add-btn"
+                >
+                  +{num}
+                </button>
+              ))}
+            </div>
+            
+            <div className="custom-add">
+              <input
+                type="number"
+                placeholder="Annat antal"
+                value={eggCount}
+                onChange={(e) => setEggCount(e.target.value)}
+                min="0"
+              />
               <button
-                key={hen.id}
-                className={`hen-option ${selectedHen === hen.id ? 'active' : ''}`}
-                onClick={() => { setSelectedHen(hen.id); setShowHenPicker(false); }}
-                data-testid={`hen-option-${hen.id}`}
+                onClick={() => eggCount && handleQuickAdd(parseInt(eggCount))}
+                disabled={!eggCount || saving}
+                className="btn-primary"
               >
-                <span>🐔</span>
-                <span>{hen.name}</span>
+                Lägg till
               </button>
-            ))}
+            </div>
           </div>
-        )}
-        
-        <div className="quick-add-buttons">
-          {[1, 2, 3, 5, 10].map(num => (
-            <button
+        </div>
+      )}
               key={num}
               onClick={() => handleQuickAdd(num)}
               disabled={saving}
