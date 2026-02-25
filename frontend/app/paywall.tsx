@@ -129,6 +129,8 @@ export default function PaywallScreen() {
     if (!isNative) {
       try {
         const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+        console.log('Creating Stripe checkout session...', { plan: selectedPlan, origin: window.location.origin });
+        
         const res = await fetch(`${API_URL}/api/checkout/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -139,20 +141,31 @@ export default function PaywallScreen() {
           })
         });
         
+        console.log('Checkout response status:', res.status);
+        
         if (res.ok) {
           const data = await res.json();
+          console.log('Checkout data:', data);
           if (data.url) {
             // Redirect to Stripe checkout
+            console.log('Redirecting to Stripe:', data.url);
             window.location.href = data.url;
             return;
           }
         } else {
           const error = await res.json();
-          Alert.alert(t('common.error'), error.detail || t('premium.purchaseError'));
+          console.error('Checkout error:', error);
+          // Use window.alert for web since Alert.alert doesn't work well
+          if (res.status === 401) {
+            window.alert('Du måste vara inloggad för att köpa Premium. Vänligen logga in först.');
+            router.back();
+          } else {
+            window.alert(error.detail || 'Kunde inte skapa betalningssession. Försök igen.');
+          }
         }
       } catch (error) {
         console.error('Stripe checkout error:', error);
-        Alert.alert(t('common.error'), t('premium.purchaseError'));
+        window.alert('Ett fel uppstod. Kontrollera din internetanslutning och försök igen.');
       }
       setPurchasing(false);
       return;
