@@ -112,6 +112,11 @@ export default function Premium() {
               <li>✅ Avvikelsedetektion per höna</li>
               <li>✅ Ekonomijämförelse (månad för månad)</li>
               <li>✅ AI-sammanfattning av din gård</li>
+              <li>✅ AI-rådgivare "Agda" - personliga tips</li>
+              <li>✅ Vädertips för din hönsgård</li>
+              <li>✅ Hälsologg</li>
+              <li>✅ Kläckningsmodul</li>
+              <li>✅ Foderhantering</li>
               <li>✅ E-postpåminnelser</li>
               <li>✅ Obegränsad statistikhistorik</li>
             </ul>
