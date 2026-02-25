@@ -57,13 +57,31 @@ export default function SettingsScreen() {
   const [featurePrefs, setFeaturePrefs] = useState<any>(null);
   const [savingPrefs, setSavingPrefs] = useState(false);
   
+  // Admin check
+  const [isAdmin, setIsAdmin] = useState(false);
+  
   const t = i18n.t.bind(i18n);
   const isSv = i18n.locale.startsWith('sv');
   
   useEffect(() => {
     fetchCoopSettings();
     loadFeaturePreferences();
+    checkAdminStatus();
   }, []);
+  
+  const checkAdminStatus = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/check`, {
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsAdmin(data.is_admin === true);
+      }
+    } catch (error) {
+      setIsAdmin(false);
+    }
+  };
   
   const loadFeaturePreferences = async () => {
     try {
