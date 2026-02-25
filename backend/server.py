@@ -657,6 +657,14 @@ async def register_email(data: EmailRegister, request: Request, response: Respon
     if not data.accepted_terms:
         raise HTTPException(status_code=400, detail="Du måste godkänna användarvillkoren")
     
+    # Check if marketing is accepted (now required)
+    if not data.accepted_marketing:
+        raise HTTPException(status_code=400, detail="Du måste godkänna att ta emot information från oss")
+    
+    # Check if name is provided
+    if not data.name or not data.name.strip():
+        raise HTTPException(status_code=400, detail="Namn är obligatoriskt")
+    
     # Check if email already exists
     existing = await db.users.find_one({"email": data.email.lower()})
     if existing:
