@@ -2826,7 +2826,15 @@ class EmailRequest(BaseModel):
 async def get_reminder_settings(request: Request):
     """Get reminder settings for current user"""
     user = await require_user(request)
+    # Try both id formats (user_id for Google, id for email/password)
     user_doc = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not user_doc:
+        user_doc = await db.users.find_one({"id": user.user_id}, {"_id": 0})
+    
+    if not user_doc:
+        # Return defaults if user not found
+        return {"enabled": True, "time": "18:00"}
+    
     return {
         "enabled": user_doc.get("reminder_enabled", True),
         "time": user_doc.get("reminder_time", "18:00")
