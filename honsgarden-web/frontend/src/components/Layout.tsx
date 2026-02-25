@@ -50,6 +50,15 @@ export default function Layout() {
               <span className="nav-label">{item.label}</span>
             </NavLink>
           ))}
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => `nav-item admin-nav ${isActive ? 'active' : ''}`}
+            >
+              <span className="nav-icon">👑</span>
+              <span className="nav-label">Admin</span>
+            </NavLink>
+          )}
         </nav>
         
         <div className="sidebar-footer">
