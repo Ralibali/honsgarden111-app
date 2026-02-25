@@ -21,8 +21,13 @@ export default function Layout() {
     // Check admin status
     const checkAdmin = async () => {
       try {
-        const res = await fetch('/api/admin/stats', { credentials: 'include' });
-        setIsAdmin(res.ok);
+        const res = await fetch('/api/admin/check', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setIsAdmin(data.is_admin === true);
+        } else {
+          setIsAdmin(false);
+        }
       } catch {
         setIsAdmin(false);
       }
