@@ -314,9 +314,9 @@ export default function Settings() {
               Avsluta prenumeration
             </button>
           ) : (
-            <a href="/premium" className="btn-primary upgrade-btn" data-testid="upgrade-premium-btn">
+            <Link to="/premium" className="btn-primary upgrade-btn" data-testid="upgrade-premium-btn">
               ⭐ Uppgradera till Premium
-            </a>
+            </Link>
           )}
         </div>
       )}
