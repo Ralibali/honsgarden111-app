@@ -218,6 +218,32 @@
   text-align: center;
 }
 
+/* Muted subtitle (for forgot password) */
+.form-subtitle-muted {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Support text */
+.support-text {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 20px 0;
+  line-height: 1.6;
+}
+
+.support-text a {
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+.support-text a:hover {
+  text-decoration: underline;
+}
+
 /* Consent Section */
 .consent-section {
   margin: 20px 0;
