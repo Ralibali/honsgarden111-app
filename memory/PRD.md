@@ -37,78 +37,11 @@
 | | **Flexibelt, avsluta när som helst** | **Badge: "Bäst värde"** |
 | | | **12,40 kr/mån – spara 79 kr!** |
 
-### **Final CTA:**
-- Text: "Gå med andra hönsgårdsägare som redan använder Hönsgården." (borttaget "tusentals")
-
-### **Hälsologg - Premium-funktion:**
-- Låst för gratisanvändare i både mobilapp och webbapp
-- Visar 🔒 ikon och uppmaning att uppgradera
-
 ### **Cookie-banner (lagkrav):**
 - Text: "Vi använder cookies för att förbättra din upplevelse. Genom att fortsätta godkänner du vår användning av cookies."
 - Knappar: "Endast nödvändiga" | "Godkänn alla"
 - Valet sparas i localStorage så bannern inte visas igen
-
-### **Footer:**
-- © 2026 Hönsgården (uppdaterat från 2024)
-
-### **Övrigt på landningssidan:**
-- Final CTA med kyckling-bild
-- Footer med "Kontakta oss" och "Skicka förslag"
-- Flytande kontaktknapp (💬)
-
----
-
-## Feature-parity (Webb vs Mobil)
-
-| Feature | Mobil | Webb |
-|---------|-------|------|
-| Dashboard | ✅ | ✅ |
-| Äggregistrering (+1,+2,+3,+5,+10) | ✅ | ✅ |
-| Ägg-sida | ✅ | ✅ |
-| Hönor-sida | ✅ | ✅ |
-| Ekonomi/Finance | ✅ | ✅ |
-| Statistik med grafer | ✅ | ✅ |
-| Inställningar | ✅ | ✅ |
-| **Anpassa funktioner** | ✅ | ✅ (FIXAT) |
-| **Foderhantering (Etapp 4)** | ✅ | ✅ |
-| **Kläckning** | ✅ | ✅ (FIXAT) |
-| **Dela statistik** | ✅ | ✅ (FIXAT) |
-| **Quick Actions** | ✅ | ✅ (FIXAT) |
-| **Grafer på Statistik** | ✅ | ✅ (NYTT) |
-| Premium-betalning | ✅ | ✅ |
-
----
-
-## Grafer på Statistik-sidan
-
-### **GRATIS:**
-1. **Äggproduktion över tid** (Linjegraf)
-   - Filter: Dag / Vecka / Månad
-   - Visar antal ägg per tidsperiod
-   - Grön linje (#4ade80)
-
-2. **Ekonomigraf** (Stapeldiagram)
-   - Visar intäkter vs kostnader per månad
-   - Gröna staplar = intäkter
-   - Röda staplar = kostnader
-
-### **PREMIUM (låsta för gratis):**
-3. **Förväntad vs faktisk produktion** (Stapeldiagram)
-   - Två linjer: Förväntat (lila) vs Faktiskt (grön)
-   - Baserat på ras och ålder
-   - Veckovis visning
-
-4. **Per-höna-produktion** (Horisontellt stapeldiagram)
-   - Varje höna = en stapel
-   - Stjärnan i flocken markeras gul
-   - Sorterat efter produktion
-
-**Låst-kort för gratis-användare:**
-- Visar suddigt innehåll (blur 8px)
-- Låssymbol 🔒
-- Text: "Uppgradera till Premium för att se denna graf"
-- Knapp: "Uppgradera"
+- **Design**: Diskret banner i hörnet (blockerar inte login-knapp)
 
 ---
 
@@ -120,101 +53,62 @@
 - `GET/POST /api/flocks` - Flockar
 - `GET/POST /api/transactions` - Ekonomitransaktioner
 
+### Authentication
+- `POST /api/auth/session` - Google OAuth exchange
+- `POST /api/auth/register` - Email/password registration
+- `POST /api/auth/login` - Email/password login
+- `POST /api/auth/forgot-password` - Password reset request
+- `POST /api/auth/reset-password` - Password reset with token
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - Logout
+
+### Payments (Stripe Subscription)
+- `POST /api/checkout/create` - Create Stripe checkout session (mode=subscription)
+- `GET /api/checkout/status/{session_id}` - Check payment status
+- `POST /api/webhook/stripe` - Stripe webhook handler
+- `GET /api/premium/status` - Get premium status
+- `POST /api/subscription/cancel` - Cancel subscription
+
 ### Statistik
 - `GET /api/statistics/today` - Dagens statistik
 - `GET /api/statistics/summary` - Månads/total sammanfattning
 - `GET /api/statistics/month/{year}/{month}` - Månadsstatistik med daglig breakdown
 - `GET /api/insights` - Insikter (kostnad/ägg, toppvärpare, produktivitet)
 
-### Feed Management (Etapp 4)
+### Feed Management (Etapp 4 - Premium)
 - `GET/POST /api/feed` - Foderregistreringar
 - `DELETE /api/feed/{id}` - Ta bort
 - `GET /api/feed/inventory` - Lagerstatus + varningar
 - `PUT /api/feed/inventory/{type}` - Uppdatera trösklar
 - `GET /api/feed/statistics?days=30` - Foderstatistik
 
-### Hatching (Kläckning)
+### Hatching (Kläckning - Premium)
 - `GET/POST /api/hatching` - Kläckningar
 - `POST /api/hatching/{id}/complete` - Avsluta kläckning
 - `DELETE /api/hatching/{id}` - Ta bort
 
-### Premium/Account
-- `GET /api/account/data-limits` - Gömd data för gratis
-- `GET /api/premium/status` - Premiumstatus
-- `GET/PUT /api/feature-preferences` - Anpassningsbara funktioner
+### AI Features (Premium)
+- `GET /api/ai/daily-report` - AI-genererad dagsrapport
+- `GET /api/ai/egg-forecast` - 7-dagars äggprognos
 
 ---
 
 ## Completed Features (February 2026)
 
-### Session 1 - P0/P1
-- [x] Fix vit skärm på webappen (Vite base path)
-- [x] Förena äggregistrerings-UI (+1,+2,+3,+5,+10 + fritext + höna-väljare)
-- [x] Feature toggles credentials-bug
-- [x] Insikter-sektion visuell förbättring
-- [x] Data holdback Premium-funktion (30 dagar för gratis)
+### Session 9 - P0 Bug Fixes (February 25, 2026)
+- [x] **KRITISK FIX: Stripe checkout** - Bytte från emergentintegrations CheckoutSessionRequest (mode='payment' hårdkodat) till direkt stripe.checkout.Session.create() med mode='subscription' för prenumerationer
+- [x] **FIX: "Normal produktion" text** - Ändrade insights endpoint att visa "Inga ägg registrerade än" (status: no_data) för användare med 0 ägg istället för "Normal produktion"
+- [x] **FIX: Login redirect** - Fixade redirect efter email-login så användare navigerar korrekt inom SPA
 
-### Session 2 - Typsnitt & Etapp 4
-- [x] Typsnitt i mobilappen (Playfair Display + Inter)
-- [x] Etapp 4: Foderhantering (båda plattformar)
-- [x] Dela statistik-funktion
-- [x] Quick Actions på Dashboard
-
-### Session 3 - Feature Parity & Grafer
-- [x] Uppdatera pristabell (30 dagar, inte 90)
-- [x] Anpassa funktioner på webb (Settings)
-- [x] Hatching-modul på webb
-- [x] Dela statistik på webb
-- [x] Quick Actions på webb Dashboard
-- [x] Insikter scroll-indikator (← svep →)
-- [x] Grafer på Statistik-sidan:
-  - Äggproduktion över tid (GRATIS)
-  - Ekonomigraf (GRATIS)
-  - Förväntad vs faktisk (PREMIUM)
-  - Per-höna-graf (PREMIUM)
-
----
-
-## Teknisk Stack
-- **Backend**: FastAPI (Python), MongoDB
-- **Frontend Web**: React, Vite, TypeScript, Recharts
-- **Frontend Mobile**: React Native, Expo, expo-font
-- **Payments**: Stripe
-- **Auth**: Google OAuth2
-- **Fonts**: Playfair Display, Inter (Google Fonts)
-
-### Session 4 - P0 Bug Fixes (February 24, 2026)
-- [x] Valutafix mobilapp: Betalväggen visar nu SEK (19 kr, 149 kr) istället för USD
-- [x] "Anpassa funktioner" på webb: Fixat nyckelnamn (preferences.show_flock_management)
-- [x] Tillbaka-knapp på Hatching-modulen
-- [x] Grafer verifierade - fungerar med recharts
-
-### Session 5 - Premium-begränsningar (February 24, 2026)
-- [x] Backend: Hälsologg API kräver nu Premium (POST returnerar 403, GET returnerar tom array)
-- [x] Backend: Flock-begränsning (max 1 för gratis) fungerar
-- [x] Backend: Kläckningsmodul kräver Premium (403 för gratis)
-- [x] Backend: Feature-preferences kräver Premium för anpassning
-- [x] Webb Frontend: Hälsologg-knapp visar låst tillstånd för gratisanvändare
-- [x] Webb Frontend: Flock-sparning visar premium-popup vid 403
-
-### Session 6 - Demo-data & Feature Parity (February 24, 2026)
-- [x] Statistikgrafer: Demo-data visas för nya användare utan äggdata
-- [x] Demo-data banner: "Exempeldata visas - Börja logga ägg för att se din egen statistik!"
-- [x] Ekonomigraf: Ändrat från BarChart till PieChart för bättre visualisering
-- [x] Feature parity audit: Webb och mobil har paritet i kärnfunktioner
-- [x] Premium grafer: "Expected vs Actual" och "Per-Hen" låsta med blur för gratisanvändare
-
-### Session 7 - Foderhantering Premium (February 24, 2026)
-- [x] Backend: Feed API kräver nu Premium (POST returnerar 403, GET returnerar tom array)
-- [x] Mobil Frontend: Feed-skärmen visar premium-lås för gratisanvändare
-- [x] Webb Frontend: Feed-sidan visar premium-lås för gratisanvändare
-
-### Session 8 - AI-funktioner & Blurrad Premium (February 24, 2026)
-- [x] Backend: AI Daily Report endpoint (/api/ai/daily-report) - Premium only, blurred preview for free
-- [x] Backend: Egg Forecast endpoint (/api/ai/egg-forecast) - Premium only, blurred preview for free
-- [x] Mobil Dashboard: AI-sektion med blurrade kort för gratisanvändare + "Lås upp" knappar
-- [x] Webb Dashboard: AI-sektion med blurrade kort för gratisanvändare + "Lås upp" knappar
-- [x] Integration: emergentintegrations + OpenAI GPT-4o för AI-rapporter
+### Tidigare Sessioner
+- [x] Critical Auth Fix: Resolved login loop with missing `request` parameter
+- [x] Premium Feature Lockdown (Backend + Frontend)
+- [x] Email/Password Authentication
+- [x] AI-Powered Features (Daily Report, 7-Day Forecast)
+- [x] Dashboard & UX Redesign
+- [x] Cookie Banner Redesign
+- [x] Demo data for statistics graphs
+- [x] Share to Social Media function
 
 ---
 
@@ -232,6 +126,25 @@
 
 ---
 
+## Teknisk Stack
+- **Backend**: FastAPI (Python), MongoDB
+- **Frontend Web**: React, Vite, TypeScript, Recharts
+- **Frontend Mobile**: React Native, Expo, expo-font
+- **Payments**: Stripe (Subscription Mode)
+- **Auth**: Google OAuth2 + Email/Password (bcrypt, JWT)
+- **AI**: emergentintegrations + OpenAI GPT-4o
+- **Fonts**: Playfair Display, Inter (Google Fonts)
+
+---
+
 ## P2 - Future/Backlog
 - [ ] Push-notiser för kläckning/hälsokontroller
-- [ ] Etapp 5 (borttagen från plan)
+- [ ] Apple Sign-In
+- [ ] Enhanced Analytics
+- [ ] User Onboarding guide
+
+---
+
+## Test Files
+- `/app/backend/tests/test_stripe_and_auth.py` - Stripe checkout + Auth tests
+- `/app/test_reports/iteration_7.json` - Latest test report
