@@ -8,25 +8,16 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { usePremiumStore } from '../src/store/premiumStore';
-import { getOfferings, purchasePackage, ENTITLEMENT_ID } from '../src/services/revenuecat';
 import i18n from '../src/i18n';
 
-// Try to import RevenueCatUI (only available on native)
-let RevenueCatUI: any = null;
-let PAYWALL_RESULT: any = null;
-
-try {
-  const rcui = require('react-native-purchases-ui');
-  RevenueCatUI = rcui.default;
-  PAYWALL_RESULT = rcui.PAYWALL_RESULT;
-} catch (e) {
-  console.log('RevenueCatUI not available (likely on web)');
-}
+// RevenueCat imports - kept as backup but not used for primary flow
+// Users are redirected to web for subscription management
 
 const MONTHLY_PRICE = '19 kr';
 const YEARLY_PRICE = '149 kr';
