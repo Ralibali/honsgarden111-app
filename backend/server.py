@@ -714,11 +714,65 @@ async def register_email(data: EmailRegister, request: Request, response: Respon
         domain=cookie_domain
     )
     
+    # Send welcome/confirmation email
+    if RESEND_API_KEY:
+        try:
+            await asyncio.to_thread(resend.Emails.send, {
+                "from": f"Hönsgården <{SENDER_EMAIL}>",
+                "to": [data.email.lower()],
+                "subject": "Välkommen till Hönsgården! 🐔",
+                "html": f"""
+                <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #4CAF50; font-family: 'Playfair Display', Georgia, serif; font-size: 32px;">🐔 Hönsgården</h1>
+                    </div>
+                    
+                    <h2 style="color: #333;">Välkommen, {user["name"]}! 👋</h2>
+                    
+                    <p style="color: #555; line-height: 1.6;">
+                        Ditt konto har skapats och du har nu tillgång till <strong>7 dagars gratis Premium</strong>!
+                    </p>
+                    
+                    <div style="background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%); border-radius: 12px; padding: 20px; margin: 20px 0; color: white;">
+                        <h3 style="margin: 0 0 10px 0;">🎁 Din Premium-provperiod inkluderar:</h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>AI-driven dagsrapport</li>
+                            <li>7-dagars äggprognos</li>
+                            <li>Obegränsade flockar</li>
+                            <li>Hälsologg</li>
+                            <li>Och mycket mer!</li>
+                        </ul>
+                    </div>
+                    
+                    <p style="color: #555; line-height: 1.6;">
+                        <strong>Kom igång direkt:</strong><br>
+                        1. Lägg till dina hönor 🐔<br>
+                        2. Registrera ditt första ägg 🥚<br>
+                        3. Utforska statistik och insikter 📊
+                    </p>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="https://honsgarden.se" style="background: #4CAF50; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                            Öppna Hönsgården
+                        </a>
+                    </div>
+                    
+                    <p style="color: #888; font-size: 12px; text-align: center; margin-top: 40px;">
+                        Du får detta mejl för att du registrerade ett konto på Hönsgården.<br>
+                        © 2026 Hönsgården - Din digitala assistent för din hönsgård
+                    </p>
+                </div>
+                """
+            })
+            logging.info(f"Welcome email sent to {data.email}")
+        except Exception as e:
+            logging.error(f"Failed to send welcome email: {e}")
+    
     return {
         "user_id": user_id,
         "email": data.email.lower(),
         "name": user["name"],
-        "message": "Konto skapat! Du har 7 dagars gratis Premium-provperiod."
+        "message": "Konto skapat! Du har 7 dagars gratis Premium-provperiod. Ett bekräftelsemejl har skickats."
     }
 
 @api_router.post("/auth/login")
