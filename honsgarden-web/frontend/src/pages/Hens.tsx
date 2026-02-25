@@ -404,6 +404,7 @@ export default function Hens() {
     setBirthDate('');
     setNotes('');
     setHenFlockId('');
+    setHenType('hen');
   };
   
   // Calculate last seen warning
