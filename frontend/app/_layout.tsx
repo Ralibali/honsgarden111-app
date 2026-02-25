@@ -18,6 +18,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import { usePremiumStore } from '../src/store/premiumStore';
 import { useThemeStore } from '../src/store/themeStore';
+import { useAuthStore } from '../src/store/authStore';
 
 // Keep splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -25,6 +26,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const { initializePremium } = usePremiumStore();
   const { initializeTheme, isDark, colors } = useThemeStore();
+  const { checkAuth, isAuthenticated, isLoading: authLoading } = useAuthStore();
   
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_400Regular,
@@ -51,6 +53,7 @@ export default function RootLayout() {
     // Initialize theme and premium status on app launch
     initializeTheme();
     initializePremium();
+    checkAuth();
   }, []);
   
   const onLayoutRootView = useCallback(async () => {
@@ -59,7 +62,7 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
   
-  if (!fontsLoaded) {
+  if (!fontsLoaded || authLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a1a2e' }}>
         <ActivityIndicator size="large" color="#4ade80" />
@@ -71,6 +74,7 @@ export default function RootLayout() {
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen 
           name="paywall" 
