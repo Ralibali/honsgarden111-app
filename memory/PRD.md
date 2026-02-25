@@ -12,12 +12,15 @@
 - **Typsnitt Web**: Playfair Display (rubriker), Inter (brödtext)
 - **Typsnitt Mobil**: Playfair Display + Inter (via expo-font)
 
-### **GDPR-compliant Registration (NY - Feb 25, 2026):**
-- **Checkbox 1 (obligatorisk)**: "Jag har läst och godkänner användarvillkoren och integritetspolicyn" med klickbar länk
-- **Checkbox 2 (valfri)**: "Jag godkänner att Aurora Media AB skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress"
+### **GDPR-compliant Registration (Uppdaterad Feb 25, 2026):**
+- **Alla fält obligatoriska**
+- **Checkbox 1 (obligatorisk)**: "Jag har läst och godkänner användarvillkoren och integritetspolicyn för **honsgarden.se**" med klickbar länk
+- **Checkbox 2 (obligatorisk)**: "Jag godkänner att honsgarden.se skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress"
+- **Glömt lösenord**: Länk på inloggningssidan för återställning
 - **Terms Modal**: Fullständig GDPR-text med alla sektioner (Allmänt, Personuppgifter, GDPR-rättigheter, E-post, Cookies, Säkerhet, Ansvarsbegränsning, Tillämplig lag, Kontakt)
 - **Admin-vy**: Visar GDPR-samtycke och Nyhetsbrev-status för varje användare
 - **Databaslagring**: accepted_terms, accepted_terms_at, accepted_marketing, accepted_marketing_at
+- **Google-login**: Tillgänglig som alternativ till e-post/lösenord
 
 ### **Features-sektion (6 kort i grid):**
 1. 🥚 Äggdagbok - Registrera ägg snabbt och enkelt
