@@ -574,6 +574,259 @@ async def logout(request: Request, response: Response):
     response.delete_cookie(key="session_token", path="/", secure=True, samesite="none")
     return {"message": "Logged out"}
 
+
+# ============ EMAIL/PASSWORD AUTH ============
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt"""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    """Verify a password against its hash"""
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+@api_router.post("/auth/register")
+async def register_email(data: EmailRegister, request: Request, response: Response):
+    """Register a new user with email and password"""
+    # Check if email already exists
+    existing = await db.users.find_one({"email": data.email.lower()})
+    if existing:
+        raise HTTPException(status_code=400, detail="E-postadressen är redan registrerad")
+    
+    # Validate password
+    if len(data.password) < 6:
+        raise HTTPException(status_code=400, detail="Lösenordet måste vara minst 6 tecken")
+    
+    # Create user
+    user_id = str(uuid.uuid4())
+    hashed_pw = hash_password(data.password)
+    
+    user = {
+        "id": user_id,
+        "email": data.email.lower(),
+        "password_hash": hashed_pw,
+        "name": data.name or data.email.split('@')[0],
+        "picture": None,
+        "auth_provider": "email",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(user)
+    
+    # Give 7 days FREE trial premium
+    trial_end = datetime.now(timezone.utc) + timedelta(days=7)
+    subscription = {
+        "user_id": user_id,
+        "plan": "trial",
+        "is_active": True,
+        "trial_end": trial_end.isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.subscriptions.insert_one(subscription)
+    
+    # Create default coop
+    coop = CoopSettings(user_id=user_id, coop_name="Min Hönsgård")
+    await db.coops.insert_one(coop.dict())
+    
+    # Create session and set cookie
+    session_token = str(uuid.uuid4())
+    session = UserSession(
+        user_id=user_id,
+        session_token=session_token,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+    )
+    await db.user_sessions.insert_one(session.dict())
+    
+    # Set cookie
+    host = request.headers.get("host", "")
+    cookie_domain = host.split(":")[0] if "emergent.host" in host else None
+    
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=7 * 24 * 60 * 60,
+        domain=cookie_domain
+    )
+    
+    return {
+        "user_id": user_id,
+        "email": data.email.lower(),
+        "name": user["name"],
+        "message": "Konto skapat! Du har 7 dagars gratis Premium-provperiod."
+    }
+
+@api_router.post("/auth/login")
+async def login_email(data: EmailLogin, request: Request, response: Response):
+    """Login with email and password"""
+    # Find user
+    user = await db.users.find_one({"email": data.email.lower()})
+    if not user:
+        raise HTTPException(status_code=401, detail="Felaktig e-post eller lösenord")
+    
+    # Check if user has password (might be Google-only user)
+    if not user.get("password_hash"):
+        raise HTTPException(status_code=401, detail="Detta konto använder Google-inloggning. Logga in med Google istället.")
+    
+    # Verify password
+    if not verify_password(data.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Felaktig e-post eller lösenord")
+    
+    user_id = user["id"]
+    
+    # Create session and set cookie
+    session_token = str(uuid.uuid4())
+    session = UserSession(
+        user_id=user_id,
+        session_token=session_token,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+    )
+    await db.user_sessions.insert_one(session.dict())
+    
+    # Set cookie
+    host = request.headers.get("host", "")
+    cookie_domain = host.split(":")[0] if "emergent.host" in host else None
+    
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=7 * 24 * 60 * 60,
+        domain=cookie_domain
+    )
+    
+    return {
+        "user_id": user_id,
+        "email": user["email"],
+        "name": user.get("name", ""),
+        "picture": user.get("picture")
+    }
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: PasswordResetRequest):
+    """Request password reset email"""
+    user = await db.users.find_one({"email": data.email.lower()})
+    
+    # Always return success (don't reveal if email exists)
+    if not user:
+        return {"message": "Om e-postadressen finns i systemet kommer du få ett återställningsmail."}
+    
+    # Check if user has password auth
+    if not user.get("password_hash"):
+        return {"message": "Om e-postadressen finns i systemet kommer du få ett återställningsmail."}
+    
+    # Generate reset token
+    reset_token = str(uuid.uuid4())
+    expires = datetime.now(timezone.utc) + timedelta(hours=1)
+    
+    await db.password_resets.insert_one({
+        "user_id": user["id"],
+        "token": reset_token,
+        "expires_at": expires.isoformat(),
+        "used": False
+    })
+    
+    # Send email via Resend
+    try:
+        app_url = os.environ.get('APP_URL', 'https://honsgarden.se')
+        reset_link = f"{app_url}/reset-password?token={reset_token}"
+        
+        resend.api_key = os.environ.get('RESEND_API_KEY')
+        resend.Emails.send({
+            "from": os.environ.get('SENDER_EMAIL', 'noreply@honsgarden.se'),
+            "to": data.email,
+            "subject": "Återställ ditt lösenord - Hönsgården",
+            "html": f"""
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>🐔 Hönsgården</h2>
+                <p>Hej!</p>
+                <p>Du har begärt att återställa ditt lösenord. Klicka på knappen nedan för att välja ett nytt lösenord:</p>
+                <p style="margin: 24px 0;">
+                    <a href="{reset_link}" style="background: #4ade80; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+                        Återställ lösenord
+                    </a>
+                </p>
+                <p>Länken är giltig i 1 timme.</p>
+                <p>Om du inte begärde denna återställning kan du ignorera detta mail.</p>
+                <p>Vänliga hälsningar,<br>Hönsgården</p>
+            </div>
+            """
+        })
+    except Exception as e:
+        logger.error(f"Failed to send password reset email: {e}")
+    
+    return {"message": "Om e-postadressen finns i systemet kommer du få ett återställningsmail."}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: PasswordReset, request: Request, response: Response):
+    """Reset password with token"""
+    # Find valid reset token
+    reset = await db.password_resets.find_one({
+        "token": data.token,
+        "used": False
+    })
+    
+    if not reset:
+        raise HTTPException(status_code=400, detail="Ogiltig eller utgången återställningslänk")
+    
+    # Check expiry
+    expires = datetime.fromisoformat(reset["expires_at"].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires:
+        raise HTTPException(status_code=400, detail="Återställningslänken har gått ut")
+    
+    # Validate new password
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Lösenordet måste vara minst 6 tecken")
+    
+    # Update password
+    hashed_pw = hash_password(data.new_password)
+    await db.users.update_one(
+        {"id": reset["user_id"]},
+        {"$set": {"password_hash": hashed_pw}}
+    )
+    
+    # Mark token as used
+    await db.password_resets.update_one(
+        {"token": data.token},
+        {"$set": {"used": True}}
+    )
+    
+    # Create session and log user in
+    user = await db.users.find_one({"id": reset["user_id"]})
+    session_token = str(uuid.uuid4())
+    session = UserSession(
+        user_id=user["id"],
+        session_token=session_token,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+    )
+    await db.user_sessions.insert_one(session.dict())
+    
+    # Set cookie
+    host = request.headers.get("host", "")
+    cookie_domain = host.split(":")[0] if "emergent.host" in host else None
+    
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        path="/",
+        max_age=7 * 24 * 60 * 60,
+        domain=cookie_domain
+    )
+    
+    return {
+        "user_id": user["id"],
+        "email": user["email"],
+        "message": "Lösenordet har återställts"
+    }
+
+
 # ============ STRIPE CHECKOUT ENDPOINTS ============
 @api_router.post("/checkout/create", response_model=CreateCheckoutResponse)
 async def create_checkout_session(req: CreateCheckoutRequest, request: Request):
