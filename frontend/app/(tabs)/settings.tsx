@@ -289,7 +289,14 @@ export default function SettingsScreen() {
               {!isPremium && (
                 <TouchableOpacity 
                   style={styles.upgradeButton}
-                  onPress={() => router.push('/paywall')}
+                  onPress={() => {
+                    // On web, redirect to React webapp premium page where Stripe works
+                    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                      window.location.href = '/api/web/premium';
+                    } else {
+                      router.push('/paywall');
+                    }
+                  }}
                 >
                   <Text style={styles.upgradeButtonText}>
                     {isSv ? 'Uppgradera till Premium' : 'Upgrade to Premium'}
