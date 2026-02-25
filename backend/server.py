@@ -653,6 +653,10 @@ def verify_password(password: str, hashed: str) -> bool:
 @api_router.post("/auth/register")
 async def register_email(data: EmailRegister, request: Request, response: Response):
     """Register a new user with email and password"""
+    # Check if terms are accepted
+    if not data.accepted_terms:
+        raise HTTPException(status_code=400, detail="Du måste godkänna användarvillkoren")
+    
     # Check if email already exists
     existing = await db.users.find_one({"email": data.email.lower()})
     if existing:
@@ -673,6 +677,10 @@ async def register_email(data: EmailRegister, request: Request, response: Respon
         "name": data.name or data.email.split('@')[0],
         "picture": None,
         "auth_provider": "email",
+        "accepted_terms": True,
+        "accepted_terms_at": datetime.now(timezone.utc).isoformat(),
+        "accepted_marketing": data.accepted_marketing,
+        "accepted_marketing_at": datetime.now(timezone.utc).isoformat() if data.accepted_marketing else None,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user)
@@ -716,7 +724,7 @@ async def register_email(data: EmailRegister, request: Request, response: Respon
         domain=cookie_domain
     )
     
-    # Send welcome/confirmation email
+    # Send welcome/confirmation email with logo
     if RESEND_API_KEY:
         try:
             await asyncio.to_thread(resend.Emails.send, {
