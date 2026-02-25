@@ -195,3 +195,14 @@
     justify-content: space-around;
   }
 }
+
+/* Admin Nav Item */
+.admin-nav {
+  margin-top: auto;
+  border-top: 1px solid var(--border-color);
+  padding-top: 8px;
+}
+
+.admin-nav .nav-icon {
+  color: #f59e0b;
+}
