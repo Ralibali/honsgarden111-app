@@ -510,6 +510,13 @@ async def exchange_session(session_req: SessionRequest, response: Response):
     })
     
     # Set cookie
+    # Set cookie - domain handling for production
+    cookie_domain = None
+    host = request.headers.get("host", "")
+    if "emergent.host" in host:
+        # Production deployment - set domain for full host
+        cookie_domain = host.split(":")[0]  # Remove port if any
+    
     response.set_cookie(
         key="session_token",
         value=session_token,
@@ -517,7 +524,8 @@ async def exchange_session(session_req: SessionRequest, response: Response):
         secure=True,
         samesite="none",
         path="/",
-        max_age=7 * 24 * 60 * 60
+        max_age=7 * 24 * 60 * 60,
+        domain=cookie_domain
     )
     
     return {
