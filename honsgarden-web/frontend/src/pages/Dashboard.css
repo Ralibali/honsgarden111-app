@@ -873,6 +873,44 @@
   opacity: 0.9;
 }
 
+/* Premium Lock Card */
+.premium-lock-card {
+  text-align: center;
+  padding: 24px 16px;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
+  border: 1px dashed rgba(251, 191, 36, 0.3);
+  border-radius: 12px;
+}
+
+.premium-lock-card .lock-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.premium-lock-card p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.btn-upgrade-small {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1a1a2e;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-upgrade-small:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
 .weather-loading {
   text-align: center;
   color: var(--text-muted);
