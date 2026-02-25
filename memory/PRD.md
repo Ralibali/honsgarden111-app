@@ -8,9 +8,16 @@
 - **Rubrik**: "Hönsgården" (Playfair Display, 56px, vit, bold)
 - **Tagline**: "Din digitala assistent för din hönsgård"
 - **Undertitel**: "Håll koll på dina hönor, ägg och ekonomi – på ett enkelt sätt."
-- **CTA-knapp**: "Kom igång gratis med Google" (vit med Google-logga)
+- **CTA-knapp**: "Kom igång gratis" (vit bakgrund, grön text)
 - **Typsnitt Web**: Playfair Display (rubriker), Inter (brödtext)
 - **Typsnitt Mobil**: Playfair Display + Inter (via expo-font)
+
+### **GDPR-compliant Registration (NY - Feb 25, 2026):**
+- **Checkbox 1 (obligatorisk)**: "Jag har läst och godkänner användarvillkoren och integritetspolicyn" med klickbar länk
+- **Checkbox 2 (valfri)**: "Jag godkänner att Aurora Media AB skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress"
+- **Terms Modal**: Fullständig GDPR-text med alla sektioner (Allmänt, Personuppgifter, GDPR-rättigheter, E-post, Cookies, Säkerhet, Ansvarsbegränsning, Tillämplig lag, Kontakt)
+- **Admin-vy**: Visar GDPR-samtycke och Nyhetsbrev-status för varje användare
+- **Databaslagring**: accepted_terms, accepted_terms_at, accepted_marketing, accepted_marketing_at
 
 ### **Features-sektion (6 kort i grid):**
 1. 🥚 Äggdagbok - Registrera ägg snabbt och enkelt
