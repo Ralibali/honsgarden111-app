@@ -325,16 +325,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0D0D0D',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#8E8E93',
-    marginTop: 12,
-    fontSize: 16,
-  },
   scrollView: {
     flex: 1,
   },
