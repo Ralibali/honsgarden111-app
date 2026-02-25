@@ -529,11 +529,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  termsNotice: {
-    textAlign: 'center',
+  webNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#1C1C1E',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 16,
+    gap: 10,
+  },
+  webNoticeText: {
+    flex: 1,
+    color: '#8E8E93',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  legalLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+    gap: 8,
+  },
+  legalLinkText: {
     color: '#666',
-    fontSize: 11,
-    marginTop: 8,
-    lineHeight: 16,
+    fontSize: 12,
+  },
+  legalSeparator: {
+    color: '#666',
+    fontSize: 12,
   },
 });
