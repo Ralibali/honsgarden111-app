@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { format, subMonths, subDays, startOfMonth, endOfMonth, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, startOfWeek, endOfWeek } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
+import { formatNumber, formatCurrency, formatNet } from '../utils/format';
 import './Statistics.css';
 
 interface MonthStats {
