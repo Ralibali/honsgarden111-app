@@ -23,162 +23,67 @@ const MONTHLY_PRICE = '19 kr';
 const YEARLY_PRICE = '149 kr';
 const YEARLY_SAVINGS = 35;
 
+// Web premium URL - users are redirected here for subscription management
+const PREMIUM_WEB_URL = 'https://honsgarden.se/premium';
+
 export default function PaywallScreen() {
   const router = useRouter();
-  const { setPremiumStatus, restorePurchases, checkPremiumStatus, loading: storeLoading } = usePremiumStore();
+  const { restorePurchases, checkPremiumStatus, loading: storeLoading } = usePremiumStore();
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
-  const [purchasing, setPurchasing] = useState(false);
-  const [offerings, setOfferings] = useState<any>(null);
-  const [loadingOfferings, setLoadingOfferings] = useState(true);
   
   const t = i18n.t.bind(i18n);
-  const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
+  const isSv = i18n.locale.startsWith('sv');
   
-  useEffect(() => {
-    loadOfferings();
-  }, []);
-  
-  const loadOfferings = async () => {
-    if (!isNative) {
-      setLoadingOfferings(false);
-      return;
-    }
-    
-    try {
-      const currentOffering = await getOfferings();
-      setOfferings(currentOffering);
-    } catch (error) {
-      console.error('Failed to load offerings:', error);
-    }
-    setLoadingOfferings(false);
-  };
-  
-  // Use RevenueCat's built-in paywall if available
-  const presentRevenueCatPaywall = async (): Promise<boolean> => {
-    if (!RevenueCatUI || !PAYWALL_RESULT) {
-      console.log('RevenueCatUI not available');
-      return false;
-    }
-    
-    try {
-      const paywallResult = await RevenueCatUI.presentPaywall();
-      
-      switch (paywallResult) {
-        case PAYWALL_RESULT.PURCHASED:
-        case PAYWALL_RESULT.RESTORED:
-          await checkPremiumStatus();
-          return true;
-        case PAYWALL_RESULT.NOT_PRESENTED:
-        case PAYWALL_RESULT.ERROR:
-        case PAYWALL_RESULT.CANCELLED:
-        default:
-          return false;
-      }
-    } catch (error) {
-      console.error('Paywall presentation error:', error);
-      return false;
-    }
-  };
-  
-  const handlePurchase = async () => {
-    setPurchasing(true);
-    
-    // Always use our custom paywall to ensure SEK prices are shown
-    // The RevenueCat built-in paywall shows USD by default
-    
-    // Manual package purchase
-    if (isNative && offerings) {
-      try {
-        const packageId = selectedPlan === 'yearly' ? '$rc_annual' : '$rc_monthly';
-        const packageToPurchase = offerings.availablePackages?.find(
-          (pkg: any) => pkg.packageType === packageId || pkg.identifier === packageId
-        );
-        
-        if (packageToPurchase) {
-          const result = await purchasePackage(packageToPurchase);
-          
-          if (result.success) {
-            await checkPremiumStatus();
-            setPurchasing(false);
-            Alert.alert(
-              t('common.success'),
-              t('premium.purchaseSuccess'),
-              [{ text: 'OK', onPress: () => router.back() }]
-            );
-            return;
-          } else if (result.error === 'cancelled') {
-            setPurchasing(false);
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Purchase error:', error);
-      }
-    }
-    
-    // Web: Use Stripe checkout for real payments
-    if (!isNative) {
-      try {
-        const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-        console.log('Creating Stripe checkout session...', { plan: selectedPlan, origin: window.location.origin });
-        
-        const res = await fetch(`${API_URL}/api/checkout/create`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            plan: selectedPlan,
-            origin_url: window.location.origin + '/api/web'
-          })
-        });
-        
-        console.log('Checkout response status:', res.status);
-        
-        if (res.ok) {
-          const data = await res.json();
-          console.log('Checkout data:', data);
-          if (data.url) {
-            // Redirect to Stripe checkout
-            console.log('Redirecting to Stripe:', data.url);
-            window.location.href = data.url;
-            return;
-          }
-        } else {
-          const error = await res.json();
-          console.error('Checkout error:', error);
-          // If not authenticated, redirect to webapp login
-          if (res.status === 401) {
-            const goToWebapp = window.confirm(
-              'Du måste vara inloggad för att köpa Premium.\n\n' +
-              'Vill du gå till webbversionen för att logga in och slutföra köpet?'
-            );
-            if (goToWebapp) {
-              window.location.href = '/api/web/premium';
-            }
-          } else {
-            window.alert(error.detail || 'Kunde inte skapa betalningssession. Försök igen.');
-          }
-        }
-      } catch (error) {
-        console.error('Stripe checkout error:', error);
-        window.alert('Ett fel uppstod. Kontrollera din internetanslutning och försök igen.');
-      }
-      setPurchasing(false);
-      return;
-    }
-    
-    setPurchasing(false);
-    Alert.alert(t('common.error'), t('premium.purchaseError'));
+  // Open web browser for premium subscription
+  const handleUpgrade = async () => {
+    // Show confirmation dialog
+    Alert.alert(
+      isSv ? 'Prenumerera via webben' : 'Subscribe via web',
+      isSv 
+        ? 'Du kommer att omdirigeras till honsgarden.se för att hantera din prenumeration. Logga in med samma konto där.'
+        : 'You will be redirected to honsgarden.se to manage your subscription. Log in with the same account there.',
+      [
+        {
+          text: isSv ? 'Avbryt' : 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: isSv ? 'Öppna webbsidan' : 'Open website',
+          onPress: () => {
+            // Open the premium page in external browser
+            Linking.openURL(PREMIUM_WEB_URL).catch((err) => {
+              console.error('Failed to open URL:', err);
+              Alert.alert(
+                t('common.error'),
+                isSv 
+                  ? 'Kunde inte öppna webbläsaren. Besök honsgarden.se/premium manuellt.'
+                  : 'Could not open browser. Visit honsgarden.se/premium manually.'
+              );
+            });
+          },
+        },
+      ]
+    );
   };
   
   const handleRestore = async () => {
-    const success = await restorePurchases();
-    if (success) {
-      Alert.alert(t('common.success'), t('premium.restoreSuccess'), [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+    // Check premium status from backend (synced via database)
+    await checkPremiumStatus();
+    const { isPremium } = usePremiumStore.getState();
+    
+    if (isPremium) {
+      Alert.alert(
+        t('common.success'), 
+        isSv ? 'Din Premium-status har återställts!' : 'Your Premium status has been restored!',
+        [{ text: 'OK', onPress: () => router.back() }]
+      );
     } else {
-      Alert.alert(t('common.error'), t('premium.restoreError'));
+      Alert.alert(
+        isSv ? 'Ingen prenumeration hittad' : 'No subscription found',
+        isSv 
+          ? 'Vi kunde inte hitta någon aktiv prenumeration kopplad till ditt konto.'
+          : 'We could not find any active subscription linked to your account.'
+      );
     }
   };
   
