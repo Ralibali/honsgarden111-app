@@ -19,6 +19,11 @@ interface User {
   is_premium: boolean;
   plan: string | null;
   reminder_enabled: boolean;
+  auth_provider?: string;
+  accepted_terms?: boolean;
+  accepted_terms_at?: string;
+  accepted_marketing?: boolean;
+  accepted_marketing_at?: string;
 }
 
 interface Subscription {
