@@ -433,9 +433,16 @@ async def get_current_user(request: Request) -> Optional[User]:
     if expires_at < datetime.now(timezone.utc):
         return None
     
-    user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    user = await db.users.find_one({"id": session["user_id"]}, {"_id": 0})
+    if not user:
+        # Try with user_id field as fallback (for older records)
+        user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
     if not user:
         return None
+    
+    # Normalize user_id field
+    if "id" in user and "user_id" not in user:
+        user["user_id"] = user["id"]
     
     return User(**user)
 
