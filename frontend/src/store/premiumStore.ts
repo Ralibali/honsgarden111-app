@@ -6,6 +6,7 @@ import {
   checkPremiumEntitlement,
   restorePurchases as rcRestorePurchases,
   addCustomerInfoListener,
+  purchasePackage,
   ENTITLEMENT_ID,
 } from '../services/revenuecat';
 
@@ -16,6 +17,7 @@ export interface PremiumState {
   subscriptionId: string | null;
   expiresAt: string | null;
   plan: 'monthly' | 'yearly' | null;
+  platform: 'ios' | 'android' | 'web' | null;
   loading: boolean;
   initialized: boolean;
   
@@ -25,6 +27,7 @@ export interface PremiumState {
   setPremiumStatus: (status: boolean, subscriptionId?: string, expiresAt?: string, plan?: 'monthly' | 'yearly') => void;
   clearPremiumStatus: () => void;
   restorePurchases: () => Promise<boolean>;
+  verifyPurchaseWithBackend: (platform: string, receiptData: string, productId: string, transactionId?: string) => Promise<boolean>;
 }
 
 export const usePremiumStore = create<PremiumState>((set, get) => ({
