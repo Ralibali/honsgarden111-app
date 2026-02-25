@@ -95,6 +95,23 @@
 
 ## Completed Features (February 2026)
 
+### Session 10 - Nya funktioner (February 25, 2026)
+- [x] **AI Hönsgårdsrådgivare "Agda"** - Premium-funktion som ger personliga råd baserat på flocken
+  - Kunskapsbas med 10+ års erfarenhet av höns
+  - Tips om stallmiljö, foder, sjukdomar, tuppar, väder och säsong
+  - Endpoint: POST /api/ai/advisor
+- [x] **Väderintegration** - Visar väder och ger tips
+  - Temperaturbaserade tips (kyla, värme)
+  - Säsongstips (vinter = mer ljus behövs)
+  - Fuktighetstips
+  - Endpoint: GET /api/weather
+- [x] **Tupp-funktion** - Lägg till tuppar i flocken
+  - Ny typ-väljare (Höna/Tupp) i formuläret
+  - Flockstatistik med tupp/höna-ratio
+  - Rekommendationer (8-12 höns per tupp)
+  - Endpoint: GET /api/flock/statistics
+- [x] **Dashboard uppdaterad** - Visar väder och flockråd
+
 ### Session 9 - P0 Bug Fixes (February 25, 2026)
 - [x] **KRITISK FIX: Stripe checkout** - Bytte från emergentintegrations CheckoutSessionRequest (mode='payment' hårdkodat) till direkt stripe.checkout.Session.create() med mode='subscription' för prenumerationer
 - [x] **FIX: "Normal produktion" text** - Ändrade insights endpoint att visa "Inga ägg registrerade än" (status: no_data) för användare med 0 ägg istället för "Normal produktion"
