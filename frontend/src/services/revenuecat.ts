@@ -6,13 +6,18 @@ import Constants from 'expo-constants';
 const REVENUECAT_IOS_API_KEY = Constants.expoConfig?.extra?.REVENUECAT_IOS_API_KEY || process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || '';
 const REVENUECAT_ANDROID_API_KEY = Constants.expoConfig?.extra?.REVENUECAT_ANDROID_API_KEY || process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || '';
 
+// Environment check
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || 
+  !__DEV__ || 
+  Constants.expoConfig?.extra?.APP_ENV === 'production';
+
 // Entitlement ID from RevenueCat dashboard
-export const ENTITLEMENT_ID = 'aurora media AB Pro';
+export const ENTITLEMENT_ID = 'premium';
 
 // Product IDs (configure these in RevenueCat dashboard)
 export const PRODUCT_IDS = {
-  MONTHLY: 'honshus_monthly',
-  YEARLY: 'honshus_yearly',
+  MONTHLY: 'honsgarden_monthly',
+  YEARLY: 'honsgarden_yearly',
 };
 
 let isConfigured = false;
@@ -24,19 +29,33 @@ let isConfigured = false;
 export const initRevenueCat = async (): Promise<void> => {
   if (isConfigured) return;
   
+  // Skip on web
+  if (Platform.OS === 'web') {
+    console.log('RevenueCat: Web platform not supported');
+    return;
+  }
+  
   try {
-    // Set log level for debugging (change to SILENT in production)
-    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    // Set log level based on environment
+    if (IS_PRODUCTION) {
+      Purchases.setLogLevel(LOG_LEVEL.ERROR);
+    } else {
+      Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    }
     
     // Configure with platform-specific API key
     if (Platform.OS === 'ios') {
+      if (!REVENUECAT_IOS_API_KEY) {
+        console.warn('RevenueCat: iOS API key not configured');
+        return;
+      }
       await Purchases.configure({ apiKey: REVENUECAT_IOS_API_KEY });
     } else if (Platform.OS === 'android') {
+      if (!REVENUECAT_ANDROID_API_KEY) {
+        console.warn('RevenueCat: Android API key not configured');
+        return;
+      }
       await Purchases.configure({ apiKey: REVENUECAT_ANDROID_API_KEY });
-    } else {
-      // Web - RevenueCat doesn't support web, so we skip
-      console.log('RevenueCat: Web platform not supported');
-      return;
     }
     
     isConfigured = true;
