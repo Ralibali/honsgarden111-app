@@ -4,14 +4,21 @@
 
 ### Deployment-status: ✅ REDO FÖR DEPLOYMENT
 - `frontend/app.json` slug ändrad till `honsgarden-app` (fixar EAS-konflikt)
-- Webapp ombyggd med ny `ResetPassword.tsx`-sida
-- Backend `forgot-password` och `reset-password` endpoints verifierade
+- Webapp ombyggd med Privacy/Terms-sidor
+- Backend och webapp fullt fungerande
 
 ### Senaste ändringar (25 Feb 2026):
-- ✅ Fixat deployment slug-konflikt i `frontend/app.json`
-- ✅ Skapat `ResetPassword.tsx` för lösenordsåterställning via länk
-- ✅ Lagt till `/reset-password` rutt i `App.tsx`
-- ✅ Ombyggt webapp och kopierat till `backend/webapp_dist`
+- ✅ Skapade `/privacy` och `/terms` sidor för App Store-krav
+- ✅ Uppdaterade mobilappens paywall att omdirigera till honsgarden.se/premium istället för IAP
+- ✅ Uppdaterade Settings-skärmen med ny "Prenumerera via honsgarden.se" knapp
+- ✅ RevenueCat-kod behållen som backup men inaktiverad
+- ✅ Delad databas - premium-status synkas mellan webb och mobil automatiskt
+
+### Ny arkitektur för prenumerationer:
+- **Webb**: Stripe-betalning på honsgarden.se/premium (som du skapar)
+- **Mobil**: Öppnar webbläsaren till honsgarden.se/premium
+- **Synk**: Premium-status delas via MongoDB-databasen
+- **Fördel**: Undviker 15-30% App Store/Google Play avgifter
 
 ---
 
