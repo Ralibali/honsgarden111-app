@@ -986,6 +986,18 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontSize: 15,
     fontWeight: '500',
   },
+  upgradeButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  upgradeButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   themeContainer: {
     flexDirection: 'row',
     gap: 12,
