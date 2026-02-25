@@ -32,13 +32,16 @@ export default function Premium() {
   const handlePurchase = async (plan: 'monthly' | 'yearly') => {
     setPurchasing(true);
     try {
+      // Use the full path including /api/web for proper routing
+      const baseUrl = window.location.origin + '/api/web';
+      
       const res = await fetch('/api/checkout/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           plan,
-          origin_url: window.location.origin
+          origin_url: baseUrl
         })
       });
       
