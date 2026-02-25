@@ -1,23 +1,34 @@
+/**
+ * RevenueCat Integration for Hönsgården
+ * Full subscription management with Paywall and Customer Center support
+ */
 import { Platform } from 'react-native';
-import Purchases, { LOG_LEVEL, CustomerInfo, PurchasesOffering } from 'react-native-purchases';
+import Purchases, { 
+  LOG_LEVEL, 
+  CustomerInfo, 
+  PurchasesOffering,
+  PurchasesPackage,
+  PURCHASES_ERROR_CODE,
+} from 'react-native-purchases';
 import Constants from 'expo-constants';
 
-// RevenueCat API Keys from environment variables
-const REVENUECAT_IOS_API_KEY = Constants.expoConfig?.extra?.REVENUECAT_IOS_API_KEY || process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || '';
-const REVENUECAT_ANDROID_API_KEY = Constants.expoConfig?.extra?.REVENUECAT_ANDROID_API_KEY || process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || '';
+// RevenueCat API Key - Use your test key
+const REVENUECAT_API_KEY = 'test_hyDYIzhCbqNxMdjcHEIfFjEFJpO';
+
+// Can also be configured per-platform via env
+const REVENUECAT_IOS_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || REVENUECAT_API_KEY;
+const REVENUECAT_ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || REVENUECAT_API_KEY;
 
 // Environment check
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' || 
-  !__DEV__ || 
-  Constants.expoConfig?.extra?.APP_ENV === 'production';
+const IS_PRODUCTION = !__DEV__ || Constants.expoConfig?.extra?.APP_ENV === 'production';
 
-// Entitlement ID from RevenueCat dashboard
-export const ENTITLEMENT_ID = 'premium';
+// Entitlement ID - MUST match your RevenueCat dashboard
+export const ENTITLEMENT_ID = 'Hönsgården app Pro';
 
-// Product IDs (configure these in RevenueCat dashboard)
+// Product IDs - MUST match your RevenueCat dashboard
 export const PRODUCT_IDS = {
-  MONTHLY: 'honsgarden_monthly',
-  YEARLY: 'honsgarden_yearly',
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
 };
 
 let isConfigured = false;
@@ -26,53 +37,99 @@ let isConfigured = false;
  * Initialize RevenueCat SDK
  * Call this once when the app starts
  */
-export const initRevenueCat = async (): Promise<void> => {
-  if (isConfigured) return;
+export const initRevenueCat = async (): Promise<boolean> => {
+  if (isConfigured) return true;
   
-  // Skip on web
+  // Web platform - use mock mode
   if (Platform.OS === 'web') {
-    console.log('RevenueCat: Web platform not supported');
-    return;
+    console.log('RevenueCat: Web platform detected, using mock mode');
+    isConfigured = true;
+    return true;
   }
   
   try {
     // Set log level based on environment
-    if (IS_PRODUCTION) {
-      Purchases.setLogLevel(LOG_LEVEL.ERROR);
-    } else {
-      Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    Purchases.setLogLevel(IS_PRODUCTION ? LOG_LEVEL.ERROR : LOG_LEVEL.VERBOSE);
+    
+    // Get platform-specific API key
+    const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_API_KEY : REVENUECAT_ANDROID_API_KEY;
+    
+    if (!apiKey) {
+      console.error('RevenueCat: No API key configured for', Platform.OS);
+      return false;
     }
     
-    // Configure with platform-specific API key
-    if (Platform.OS === 'ios') {
-      if (!REVENUECAT_IOS_API_KEY) {
-        console.warn('RevenueCat: iOS API key not configured');
-        return;
-      }
-      await Purchases.configure({ apiKey: REVENUECAT_IOS_API_KEY });
-    } else if (Platform.OS === 'android') {
-      if (!REVENUECAT_ANDROID_API_KEY) {
-        console.warn('RevenueCat: Android API key not configured');
-        return;
-      }
-      await Purchases.configure({ apiKey: REVENUECAT_ANDROID_API_KEY });
-    }
+    // Configure RevenueCat
+    await Purchases.configure({ apiKey });
     
     isConfigured = true;
-    console.log('RevenueCat configured successfully');
+    console.log(`RevenueCat initialized for ${Platform.OS}`);
+    return true;
   } catch (error) {
-    console.error('Failed to configure RevenueCat:', error);
+    console.error('RevenueCat initialization failed:', error);
+    return false;
   }
 };
 
 /**
- * Check if user has active premium subscription
+ * Identify user with RevenueCat (for cross-platform sync)
+ * Call after user logs in
+ */
+export const identifyUser = async (userId: string): Promise<CustomerInfo | null> => {
+  if (Platform.OS === 'web') return null;
+  
+  try {
+    const { customerInfo } = await Purchases.logIn(userId);
+    console.log('RevenueCat: User identified:', userId);
+    return customerInfo;
+  } catch (error) {
+    console.error('RevenueCat identify error:', error);
+    return null;
+  }
+};
+
+/**
+ * Logout user from RevenueCat
+ * Call when user logs out
+ */
+export const logoutUser = async (): Promise<void> => {
+  if (Platform.OS === 'web') return;
+  
+  try {
+    await Purchases.logOut();
+    console.log('RevenueCat: User logged out');
+  } catch (error) {
+    console.error('RevenueCat logout error:', error);
+  }
+};
+
+/**
+ * Get current customer info
+ */
+export const getCustomerInfo = async (): Promise<CustomerInfo | null> => {
+  if (Platform.OS === 'web') return null;
+  
+  try {
+    return await Purchases.getCustomerInfo();
+  } catch (error) {
+    console.error('Error getting customer info:', error);
+    return null;
+  }
+};
+
+/**
+ * Check if user has premium entitlement
  */
 export const checkPremiumEntitlement = async (): Promise<{
   isPremium: boolean;
   expiresAt: string | null;
   productId: string | null;
+  willRenew: boolean;
 }> => {
+  if (Platform.OS === 'web') {
+    return { isPremium: false, expiresAt: null, productId: null, willRenew: false };
+  }
+  
   try {
     const customerInfo = await Purchases.getCustomerInfo();
     const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
@@ -82,31 +139,33 @@ export const checkPremiumEntitlement = async (): Promise<{
         isPremium: true,
         expiresAt: entitlement.expirationDate || null,
         productId: entitlement.productIdentifier,
+        willRenew: entitlement.willRenew,
       };
     }
     
-    return {
-      isPremium: false,
-      expiresAt: null,
-      productId: null,
-    };
+    return { isPremium: false, expiresAt: null, productId: null, willRenew: false };
   } catch (error) {
-    console.error('Failed to check entitlement:', error);
-    return {
-      isPremium: false,
-      expiresAt: null,
-      productId: null,
-    };
+    console.error('Entitlement check failed:', error);
+    return { isPremium: false, expiresAt: null, productId: null, willRenew: false };
   }
 };
 
 /**
- * Get available offerings (products)
+ * Get available offerings (subscription packages)
  */
 export const getOfferings = async (): Promise<PurchasesOffering | null> => {
+  if (Platform.OS === 'web') return null;
+  
   try {
     const offerings = await Purchases.getOfferings();
-    return offerings.current;
+    
+    if (offerings.current) {
+      console.log('RevenueCat offerings loaded:', offerings.current.identifier);
+      return offerings.current;
+    }
+    
+    console.warn('No current offering available');
+    return null;
   } catch (error) {
     console.error('Failed to get offerings:', error);
     return null;
@@ -114,54 +173,88 @@ export const getOfferings = async (): Promise<PurchasesOffering | null> => {
 };
 
 /**
+ * Get all available offerings
+ */
+export const getAllOfferings = async (): Promise<{ [key: string]: PurchasesOffering }> => {
+  if (Platform.OS === 'web') return {};
+  
+  try {
+    const offerings = await Purchases.getOfferings();
+    return offerings.all;
+  } catch (error) {
+    console.error('Failed to get all offerings:', error);
+    return {};
+  }
+};
+
+/**
  * Purchase a package
  */
-export const purchasePackage = async (packageToPurchase: any): Promise<{
+export const purchasePackage = async (pkg: PurchasesPackage): Promise<{
   success: boolean;
-  customerInfo: CustomerInfo | null;
-  error: string | null;
+  customerInfo?: CustomerInfo;
+  error?: string;
+  userCancelled?: boolean;
 }> => {
+  if (Platform.OS === 'web') {
+    return { success: false, error: 'Purchases not available on web' };
+  }
+  
   try {
-    const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
+    const { customerInfo } = await Purchases.purchasePackage(pkg);
+    
+    // Verify the entitlement was granted
+    const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
+    
     return {
-      success: true,
+      success: isPremium,
       customerInfo,
-      error: null,
     };
   } catch (error: any) {
-    // Check if user cancelled
-    if (error.userCancelled) {
+    // Handle user cancellation gracefully
+    if (error.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
+      return { success: false, userCancelled: true };
+    }
+    
+    // Handle other specific errors
+    if (error.code === PURCHASES_ERROR_CODE.PRODUCT_ALREADY_PURCHASED_ERROR) {
+      // User already has this product - restore it
+      const restoreResult = await restorePurchases();
       return {
-        success: false,
-        customerInfo: null,
-        error: 'cancelled',
+        success: restoreResult.isPremium,
+        error: restoreResult.isPremium ? undefined : 'Already purchased but restore failed',
       };
     }
-    console.error('Purchase failed:', error);
+    
+    console.error('Purchase error:', error);
     return {
       success: false,
-      customerInfo: null,
       error: error.message || 'Purchase failed',
     };
   }
 };
 
 /**
- * Restore purchases
+ * Restore previous purchases
  */
 export const restorePurchases = async (): Promise<{
   success: boolean;
   isPremium: boolean;
-  error: string | null;
+  customerInfo?: CustomerInfo;
+  error?: string;
 }> => {
+  if (Platform.OS === 'web') {
+    return { success: false, isPremium: false, error: 'Not available on web' };
+  }
+  
   try {
     const customerInfo = await Purchases.restorePurchases();
-    const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
+    const isPremium = customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
     
     return {
       success: true,
-      isPremium: !!entitlement,
-      error: null,
+      isPremium,
+      customerInfo,
     };
   } catch (error: any) {
     console.error('Restore failed:', error);
@@ -174,11 +267,74 @@ export const restorePurchases = async (): Promise<{
 };
 
 /**
- * Add listener for customer info updates
+ * Add listener for customer info changes
+ * Returns unsubscribe function
  */
 export const addCustomerInfoListener = (
-  callback: (info: CustomerInfo) => void
+  callback: (customerInfo: CustomerInfo) => void
 ): (() => void) => {
+  if (Platform.OS === 'web') {
+    return () => {};
+  }
+  
   const listener = Purchases.addCustomerInfoUpdateListener(callback);
   return () => listener.remove();
+};
+
+/**
+ * Get subscription management URL (for "Manage Subscription" button)
+ */
+export const getManagementURL = async (): Promise<string | null> => {
+  if (Platform.OS === 'web') return null;
+  
+  try {
+    const customerInfo = await Purchases.getCustomerInfo();
+    return customerInfo.managementURL;
+  } catch (error) {
+    console.error('Error getting management URL:', error);
+    return null;
+  }
+};
+
+/**
+ * Check if RevenueCat is configured
+ */
+export const isRevenueCatConfigured = (): boolean => {
+  return isConfigured;
+};
+
+/**
+ * Format price for display
+ */
+export const formatPackagePrice = (pkg: PurchasesPackage): string => {
+  const price = pkg.product.priceString;
+  const period = pkg.packageType;
+  
+  switch (period) {
+    case 'MONTHLY':
+      return `${price}/månad`;
+    case 'ANNUAL':
+      return `${price}/år`;
+    default:
+      return price;
+  }
+};
+
+/**
+ * Calculate savings percentage for yearly vs monthly
+ */
+export const calculateYearlySavings = (
+  monthlyPkg: PurchasesPackage | undefined,
+  yearlyPkg: PurchasesPackage | undefined
+): number => {
+  if (!monthlyPkg || !yearlyPkg) return 0;
+  
+  const monthlyPrice = monthlyPkg.product.price;
+  const yearlyPrice = yearlyPkg.product.price;
+  const yearlyMonthlyEquivalent = yearlyPrice / 12;
+  
+  if (monthlyPrice <= 0) return 0;
+  
+  const savings = ((monthlyPrice - yearlyMonthlyEquivalent) / monthlyPrice) * 100;
+  return Math.round(savings);
 };
