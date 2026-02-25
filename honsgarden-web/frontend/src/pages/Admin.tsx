@@ -282,7 +282,8 @@ export default function Admin() {
                   <th>Email</th>
                   <th>Registrerad</th>
                   <th>Premium</th>
-                  <th>Påminnelser</th>
+                  <th>GDPR-samtycke</th>
+                  <th>Nyhetsbrev</th>
                   <th>Åtgärder</th>
                 </tr>
               </thead>
@@ -300,7 +301,19 @@ export default function Admin() {
                         {u.is_premium ? `⭐ ${u.plan}` : 'Gratis'}
                       </span>
                     </td>
-                    <td>{u.reminder_enabled ? '✅' : '❌'}</td>
+                    <td>
+                      <span className={`badge ${u.accepted_terms ? 'gdpr-yes' : 'gdpr-no'}`}>
+                        {u.accepted_terms ? '✅ Godkänt' : '❌ Nej'}
+                      </span>
+                      {u.accepted_terms_at && (
+                        <span className="consent-date">{formatDate(u.accepted_terms_at)}</span>
+                      )}
+                    </td>
+                    <td>
+                      <span className={`badge ${u.accepted_marketing ? 'newsletter-yes' : 'newsletter-no'}`}>
+                        {u.accepted_marketing ? '📧 Ja' : '—'}
+                      </span>
+                    </td>
                     <td className="actions-cell">
                       <button 
                         onClick={() => handleToggleSubscription(u.user_id, u.is_premium)}
