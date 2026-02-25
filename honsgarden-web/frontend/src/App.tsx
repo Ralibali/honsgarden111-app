@@ -15,6 +15,7 @@ import AuthCallback from './pages/AuthCallback';
 import Admin from './pages/Admin';
 import Feed from './pages/Feed';
 import Hatching from './pages/Hatching';
+import ResetPassword from './pages/ResetPassword';
 import Layout from './components/Layout';
 
 function AppRouter() {
