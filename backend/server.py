@@ -104,6 +104,23 @@ class UserSession(BaseModel):
 class SessionRequest(BaseModel):
     session_id: str
 
+# Email/Password Auth Models
+class EmailRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: Optional[str] = None
+
+class EmailLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+class PasswordReset(BaseModel):
+    token: str
+    new_password: str
+
 # ============ COOP/DATA MODELS ============
 class CoopSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
