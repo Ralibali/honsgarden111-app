@@ -214,14 +214,70 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
 }));
 
 // Helper hooks for feature gating
-export const useCanAccessFeature = (feature: 'yearStats' | 'pdfExport' | 'reminders' | 'unlimitedHistory' | 'multipleCoops'): boolean => {
+export type PremiumFeature = 
+  | 'ai_daily_report'
+  | 'ai_forecast_7'
+  | 'ai_forecast_14'
+  | 'ai_forecast_30'
+  | 'health_log'
+  | 'health_alerts'
+  | 'advanced_stats'
+  | 'incubation_log'
+  | 'incubation_stats'
+  | 'pdf_export'
+  | 'smart_reminders'
+  | 'sharing_family'
+  | 'weather_tips'
+  | 'feed_management'
+  | 'unlimited_history'
+  | 'multiple_coops';
+
+// All premium features list
+export const PREMIUM_FEATURES: PremiumFeature[] = [
+  'ai_daily_report',
+  'ai_forecast_7',
+  'ai_forecast_14',
+  'ai_forecast_30',
+  'health_log',
+  'health_alerts',
+  'advanced_stats',
+  'incubation_log',
+  'incubation_stats',
+  'pdf_export',
+  'smart_reminders',
+  'sharing_family',
+  'weather_tips',
+  'feed_management',
+  'unlimited_history',
+  'multiple_coops',
+];
+
+/**
+ * Central feature access check
+ * Use this everywhere to check if user can access a feature
+ */
+export const canAccess = (feature: PremiumFeature, isPremium: boolean): boolean => {
+  return isPremium || !PREMIUM_FEATURES.includes(feature);
+};
+
+/**
+ * Hook for checking feature access
+ */
+export const useCanAccessFeature = (feature: PremiumFeature): boolean => {
   const isPremium = usePremiumStore((state) => state.isPremium);
+  return canAccess(feature, isPremium);
+};
+
+/**
+ * Hook that returns both access status and a function to show upgrade modal
+ */
+export const useFeatureAccess = (feature: PremiumFeature) => {
+  const isPremium = usePremiumStore((state) => state.isPremium);
+  const hasAccess = canAccess(feature, isPremium);
   
-  const premiumFeatures = ['yearStats', 'pdfExport', 'reminders', 'unlimitedHistory', 'multipleCoops'];
-  
-  if (premiumFeatures.includes(feature)) {
-    return isPremium;
-  }
-  
-  return true;
+  return {
+    hasAccess,
+    isPremium,
+    requiresPremium: PREMIUM_FEATURES.includes(feature),
+  };
 };
