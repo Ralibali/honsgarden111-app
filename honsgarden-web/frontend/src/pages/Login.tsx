@@ -442,7 +442,7 @@ export default function Login() {
                 />
               </div>
               
-              {/* GDPR Consent Checkboxes - ALL REQUIRED */}
+              {/* GDPR Consent Checkboxes */}
               <div className="consent-section">
                 <label className="consent-checkbox required">
                   <input
@@ -466,18 +466,16 @@ export default function Login() {
                   </span>
                 </label>
                 
-                <label className="consent-checkbox required">
+                <label className="consent-checkbox optional">
                   <input
                     type="checkbox"
                     checked={acceptedMarketing}
                     onChange={(e) => setAcceptedMarketing(e.target.checked)}
-                    required
                     data-testid="accept-marketing"
                   />
                   <span className="checkmark"></span>
                   <span className="consent-text">
                     Jag godkänner att honsgarden.se skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress.
-                    <span className="required-star">*</span>
                   </span>
                 </label>
               </div>
@@ -485,7 +483,7 @@ export default function Login() {
               <button 
                 type="submit" 
                 className="btn-primary btn-large"
-                disabled={authLoading || !acceptedTerms || !acceptedMarketing || !name.trim()}
+                disabled={authLoading || !acceptedTerms || !name.trim()}
                 data-testid="register-submit"
               >
                 {authLoading ? 'Skapar konto...' : 'Skapa konto'}
