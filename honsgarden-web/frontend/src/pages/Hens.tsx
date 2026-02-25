@@ -79,6 +79,7 @@ export default function Hens() {
   const [color, setColor] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [henType, setHenType] = useState<'hen' | 'rooster'>('hen');
   const [henFlockId, setHenFlockId] = useState<string>('');
   const [saving, setSaving] = useState(false);
   
