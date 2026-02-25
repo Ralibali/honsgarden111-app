@@ -278,6 +278,37 @@
   text-decoration: none;
 }
 
+/* Premium Features Preview */
+.premium-features-preview {
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 10px;
+}
+
+.premium-features-preview .premium-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.premium-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.premium-features-list li {
+  font-size: 13px;
+  color: var(--text-primary);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.premium-features-list li:last-child {
+  border-bottom: none;
+}
+
 /* Feedback Card */
 .feedback-card {
   border: 1px solid rgba(99, 102, 241, 0.2);
