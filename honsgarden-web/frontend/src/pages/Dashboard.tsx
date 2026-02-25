@@ -318,9 +318,16 @@ export default function Dashboard() {
       <div className="stats-grid slide-up delay-1">
         <Link to="/hens" className="stat-card">
           <span className="stat-emoji">🐔</span>
-          <span className="stat-value">{todayStats?.hen_count || 0}</span>
+          <span className="stat-value">{flockStats?.hens || todayStats?.hen_count || 0}</span>
           <span className="stat-label">Hönor</span>
         </Link>
+        {flockStats && flockStats.roosters > 0 && (
+          <Link to="/hens" className="stat-card">
+            <span className="stat-emoji">🐓</span>
+            <span className="stat-value">{flockStats.roosters}</span>
+            <span className="stat-label">Tuppar</span>
+          </Link>
+        )}
         <Link to="/statistics" className="stat-card">
           <span className="stat-emoji">🥚</span>
           <span className="stat-value">{summary?.this_month?.eggs || 0}</span>
@@ -332,6 +339,51 @@ export default function Dashboard() {
           <span className="stat-label">kr netto</span>
         </Link>
       </div>
+      
+      {/* Weather Section */}
+      {weather && weather.tips && weather.tips.length > 0 && (
+        <section className="weather-section slide-up delay-2">
+          <div className="section-header">
+            <h2>🌤️ Vädertips</h2>
+          </div>
+          <div className="weather-tips">
+            {weather.tips.map((tip, idx) => (
+              <div 
+                key={idx} 
+                className={`weather-tip ${tip.priority}`}
+              >
+                <span className="tip-message">{tip.message}</span>
+              </div>
+            ))}
+          </div>
+          {weather.current && (
+            <div className="weather-current">
+              <span className="temp">{Math.round(weather.current.temp)}°C</span>
+              <span className="desc">{weather.current.description}</span>
+              <span className="location">{weather.current.location}</span>
+            </div>
+          )}
+        </section>
+      )}
+      
+      {/* Flock Recommendations */}
+      {flockStats && flockStats.recommendations && flockStats.recommendations.length > 0 && (
+        <section className="flock-recommendations slide-up delay-2">
+          <div className="section-header">
+            <h2>🐔 Flockråd</h2>
+          </div>
+          <div className="recommendations">
+            {flockStats.recommendations.map((rec, idx) => (
+              <div key={idx} className={`recommendation ${rec.type}`}>
+                {rec.type === 'success' && '✅ '}
+                {rec.type === 'warning' && '⚠️ '}
+                {rec.type === 'info' && '💡 '}
+                {rec.message}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       
       {/* AI Features Section */}
       <section className="ai-section slide-up delay-2">
