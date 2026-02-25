@@ -6,19 +6,31 @@
 - `frontend/app.json` slug ändrad till `honsgarden-app` (fixar EAS-konflikt)
 - Webapp ombyggd med Privacy/Terms-sidor
 - Backend och webapp fullt fungerande
+- Mobilapp har ny Premium Gate Modal
 
 ### Senaste ändringar (25 Feb 2026):
 - ✅ Skapade `/privacy` och `/terms` sidor för App Store-krav
 - ✅ Uppdaterade mobilappens paywall att omdirigera till honsgarden.se/premium istället för IAP
-- ✅ Uppdaterade Settings-skärmen med ny "Prenumerera via honsgarden.se" knapp
+- ✅ **NY: PremiumGateModal** - Snygg uppgradera-modal som visas istället för redirect till paywall
+- ✅ Modalen visar alla premium-funktioner, priser (19kr/mån, 149kr/år) och 7 dagars gratis
+- ✅ Modalen används på: Dashboard (AI-funktioner, väder, statistik) och Settings (uppgradera-knapp)
 - ✅ RevenueCat-kod behållen som backup men inaktiverad
 - ✅ Delad databas - premium-status synkas mellan webb och mobil automatiskt
 
 ### Ny arkitektur för prenumerationer:
 - **Webb**: Stripe-betalning på honsgarden.se/premium (som du skapar)
-- **Mobil**: Öppnar webbläsaren till honsgarden.se/premium
+- **Mobil**: Visar PremiumGateModal → Öppnar webbläsaren till honsgarden.se/premium
 - **Synk**: Premium-status delas via MongoDB-databasen
 - **Fördel**: Undviker 15-30% App Store/Google Play avgifter
+
+### Premium Gate Modal (NY):
+- Fil: `/app/frontend/components/PremiumGateModal.tsx`
+- Visar feature-namn som triggade modalen
+- Lista med alla 8 premium-funktioner
+- Pris-kort för månads och årsprenumeration
+- "Spara 35%" badge på årlig
+- 7 dagars provperiod-info
+- CTA: "Prenumerera via honsgarden.se"
 
 ---
 
