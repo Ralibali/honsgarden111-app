@@ -852,43 +852,49 @@ async def create_checkout_session(req: CreateCheckoutRequest, request: Request):
     if not price_id:
         raise HTTPException(status_code=500, detail="Stripe price not configured")
     
-    # Initialize Stripe checkout
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
     # Build URLs
     success_url = f"{req.origin_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{req.origin_url}/premium"
     
-    # Create checkout session for subscription
-    checkout_req = CheckoutSessionRequest(
-        stripe_price_id=price_id,
-        quantity=1,
-        success_url=success_url,
-        cancel_url=cancel_url,
-        mode="subscription",  # Required for recurring prices
-        metadata={
+    try:
+        # Use Stripe SDK directly with mode="subscription" for recurring prices
+        # The emergentintegrations library has mode="payment" hardcoded, which doesn't work for subscriptions
+        stripe.api_key = STRIPE_API_KEY
+        
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            mode='subscription',  # Required for recurring prices
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "user_id": user.user_id,
+                "plan": req.plan
+            }
+        )
+        
+        # Store pending transaction
+        await db.payment_transactions.insert_one({
+            "id": str(uuid.uuid4()),
+            "session_id": session.id,
             "user_id": user.user_id,
-            "plan": req.plan
-        }
-    )
-    
-    session = await stripe_checkout.create_checkout_session(checkout_req)
-    
-    # Store pending transaction
-    await db.payment_transactions.insert_one({
-        "id": str(uuid.uuid4()),
-        "session_id": session.session_id,
-        "user_id": user.user_id,
-        "plan": req.plan,
-        "amount": 19.0 if req.plan == "monthly" else 149.0,
-        "currency": "SEK",
-        "payment_status": "pending",
-        "created_at": datetime.now(timezone.utc)
-    })
-    
-    return CreateCheckoutResponse(url=session.url, session_id=session.session_id)
+            "plan": req.plan,
+            "amount": 19.0 if req.plan == "monthly" else 149.0,
+            "currency": "SEK",
+            "payment_status": "pending",
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        return CreateCheckoutResponse(url=session.url, session_id=session.id)
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error creating checkout session: {e}")
+        raise HTTPException(status_code=500, detail=f"Betalningsfel: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error creating checkout session: {e}")
+        raise HTTPException(status_code=500, detail="Kunde inte skapa betalningssession")
 
 @api_router.get("/checkout/status/{session_id}")
 async def get_checkout_status(session_id: str, request: Request):
