@@ -286,10 +286,24 @@ export default function Settings() {
             </span>
             {premium.is_premium && premium.plan && (
               <span className="plan-info">
-                {premium.plan === 'yearly' ? 'Årsprenumeration' : 'Månadsprenumeration'}
+                {premium.plan === 'yearly' ? 'Årsprenumeration' : premium.plan === 'trial' ? 'Provperiod' : 'Månadsprenumeration'}
               </span>
             )}
           </div>
+          
+          {!premium.is_premium && (
+            <div className="premium-features-preview">
+              <p className="premium-desc">Lås upp alla funktioner:</p>
+              <ul className="premium-features-list">
+                <li>🤖 AI-driven dagsrapport & rådgivare</li>
+                <li>📈 7-dagars äggprognos</li>
+                <li>🩺 Hälsologg per höna</li>
+                <li>🐣 Kläckningsmodul</li>
+                <li>🌾 Foderhantering</li>
+              </ul>
+            </div>
+          )}
+          
           {premium.is_premium ? (
             <button 
               onClick={() => setShowCancelModal(true)} 
@@ -299,8 +313,8 @@ export default function Settings() {
               Avsluta prenumeration
             </button>
           ) : (
-            <a href="/premium" className="btn-primary upgrade-btn">
-              Uppgradera till Premium
+            <a href="/premium" className="btn-primary upgrade-btn" data-testid="upgrade-premium-btn">
+              ⭐ Uppgradera till Premium
             </a>
           )}
         </div>
