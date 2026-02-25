@@ -25,9 +25,5 @@
   },
   "submit": {
     "production": {}
-  },
-  "update": {
-    "channel": "production",
-    "environment": "production"
   }
 }
