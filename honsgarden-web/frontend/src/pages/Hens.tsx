@@ -686,14 +686,32 @@ export default function Hens() {
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2>{editingHen ? 'Redigera höna' : 'Lägg till höna'}</h2>
+            <h2>{editingHen ? 'Redigera' : 'Lägg till'} {henType === 'rooster' ? 'tupp' : 'höna'}</h2>
+            
+            <label>Typ</label>
+            <div className="type-selector">
+              <button
+                type="button"
+                className={`type-btn ${henType === 'hen' ? 'active' : ''}`}
+                onClick={() => setHenType('hen')}
+              >
+                🐔 Höna
+              </button>
+              <button
+                type="button"
+                className={`type-btn ${henType === 'rooster' ? 'active' : ''}`}
+                onClick={() => setHenType('rooster')}
+              >
+                🐓 Tupp
+              </button>
+            </div>
             
             <label>Namn *</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="T.ex. Greta"
+              placeholder={henType === 'rooster' ? 'T.ex. Kansen' : 'T.ex. Greta'}
               data-testid="hen-name-input"
             />
             
@@ -738,7 +756,7 @@ export default function Hens() {
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="T.ex. Köpt från grannens gård"
+              placeholder={henType === 'rooster' ? 'T.ex. Lugn tupp, bra vakt' : 'T.ex. Köpt från grannens gård'}
               data-testid="hen-notes-input"
             />
             
