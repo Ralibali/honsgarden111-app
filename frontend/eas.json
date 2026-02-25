@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 3.0.0"
+    "version": ">= 3.0.0",
+    "requireCommit": false
   },
   "build": {
     "development": {
@@ -24,5 +25,9 @@
   },
   "submit": {
     "production": {}
+  },
+  "update": {
+    "channel": "production",
+    "environment": "production"
   }
 }
