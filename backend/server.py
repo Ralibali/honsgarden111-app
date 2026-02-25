@@ -657,9 +657,7 @@ async def register_email(data: EmailRegister, request: Request, response: Respon
     if not data.accepted_terms:
         raise HTTPException(status_code=400, detail="Du måste godkänna användarvillkoren")
     
-    # Check if marketing is accepted (now required)
-    if not data.accepted_marketing:
-        raise HTTPException(status_code=400, detail="Du måste godkänna att ta emot information från oss")
+    # Note: accepted_marketing is optional per GDPR - no validation required
     
     # Check if name is provided
     if not data.name or not data.name.strip():
