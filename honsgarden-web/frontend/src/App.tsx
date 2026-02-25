@@ -92,7 +92,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/api/web">
       <AuthProvider>
         <AppRouter />
       </AuthProvider>
