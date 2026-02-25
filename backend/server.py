@@ -3232,7 +3232,7 @@ async def get_egg_forecast(request: Request):
     
     # Get historical data (last 30 days)
     thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime('%Y-%m-%d')
-    eggs_history = await db.eggs.find(
+    eggs_history = await db.egg_records.find(
         {"user_id": user_id, "date": {"$gte": thirty_days_ago}}
     ).to_list(1000)
     
@@ -3320,7 +3320,7 @@ async def get_ai_advisor(request: Request, question: str = ""):
     
     # Get recent eggs
     week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).strftime('%Y-%m-%d')
-    recent_eggs = await db.eggs.find({"user_id": user_id, "date": {"$gte": week_ago}}).to_list(1000)
+    recent_eggs = await db.egg_records.find({"user_id": user_id, "date": {"$gte": week_ago}}).to_list(1000)
     weekly_total = sum(e.get('count', 0) for e in recent_eggs)
     
     # Get recent health logs
