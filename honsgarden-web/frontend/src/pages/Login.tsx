@@ -351,7 +351,7 @@ export default function Login() {
           {authMode === 'forgot' && (
             <form onSubmit={handleForgotPassword} className="auth-form">
               <h2>Glömt lösenord?</h2>
-              <p className="form-subtitle">Ange din e-postadress så skickar vi en återställningslänk.</p>
+              <p className="form-subtitle-muted">Ange din e-postadress så skickar vi en återställningslänk.</p>
               
               {authError && <div className="auth-error">{authError}</div>}
               {successMessage && <div className="auth-success">{successMessage}</div>}
@@ -377,6 +377,11 @@ export default function Login() {
               >
                 {authLoading ? 'Skickar...' : 'Skicka återställningslänk'}
               </button>
+              
+              <p className="support-text">
+                Har du inget konto? Eller fått problem? <br/>
+                <a href="mailto:info@honsgarden.se">Kontakta oss</a> så hjälper vi dig.
+              </p>
               
               <button 
                 type="button" 
