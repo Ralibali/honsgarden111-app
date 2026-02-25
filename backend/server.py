@@ -3126,7 +3126,7 @@ async def get_ai_daily_report(request: Request):
     
     # Get today's data
     today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
-    eggs_today = await db.eggs.find({"user_id": user_id, "date": today}).to_list(100)
+    eggs_today = await db.egg_records.find({"user_id": user_id, "date": today}).to_list(100)
     total_eggs = sum(e.get('count', 0) for e in eggs_today)
     hens = await db.hens.find({"user_id": user_id, "is_active": True}).to_list(100)
     hen_count = len(hens)
@@ -3140,7 +3140,7 @@ async def get_ai_daily_report(request: Request):
     # Get productivity alerts
     alerts = []
     for hen in hens:
-        hen_eggs = await db.eggs.find(
+        hen_eggs = await db.egg_records.find(
             {"user_id": user_id, "hen_id": hen.get("id")}
         ).sort("date", -1).limit(7).to_list(7)
         if len(hen_eggs) < 2:
