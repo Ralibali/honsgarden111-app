@@ -1353,6 +1353,76 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     color: colors.textSecondary,
     textAlign: 'center',
   },
+  // Weather Card
+  weatherCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  weatherHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  weatherContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  weatherMain: {
+    flex: 1,
+  },
+  weatherTemp: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  weatherDesc: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textTransform: 'capitalize',
+  },
+  weatherDetails: {
+    alignItems: 'flex-end',
+  },
+  weatherDetail: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  weatherTips: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  weatherTipsTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  weatherTip: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  weatherLocked: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    gap: 6,
+  },
+  weatherLockedText: {
+    fontSize: 13,
+    color: '#f59e0b',
+  },
   // Premium Insights Card
   premiumInsightsCard: {
     backgroundColor: colors.surface,
