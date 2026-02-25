@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useCallback } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { 
   PlayfairDisplay_400Regular,
@@ -38,6 +38,16 @@ export default function RootLayout() {
   });
   
   useEffect(() => {
+    // On web, redirect to the React webapp which handles auth better
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      // If not already on /api/web, redirect there
+      if (!currentPath.startsWith('/api/web')) {
+        window.location.href = '/api/web';
+        return;
+      }
+    }
+    
     // Initialize theme and premium status on app launch
     initializeTheme();
     initializePremium();
