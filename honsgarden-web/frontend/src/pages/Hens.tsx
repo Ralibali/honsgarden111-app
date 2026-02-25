@@ -22,6 +22,7 @@ interface Hen {
   status_date?: string;
   last_seen?: string;
   last_seen_warning_days: number;
+  hen_type?: 'hen' | 'rooster';
 }
 
 interface HealthLog {
