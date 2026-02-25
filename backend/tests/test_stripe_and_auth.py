@@ -219,28 +219,37 @@ class TestInsightsEndpoint:
     """P2: Test insights endpoint production_text logic"""
     
     def test_insights_new_user_shows_no_eggs_message(self):
-        """Test that a new user with 0 eggs sees 'Inga ägg registrerade än'"""
+        """Test that a new user with 0 eggs sees 'Inga ägg registrerade än'
+        
+        New users get 7-day premium trial, so they have access to premium section.
+        When total_eggs=0, production_text should be 'Inga ägg registrerade än'
+        """
         # Create a fresh test user
         test_email = f"TEST_insights_{uuid.uuid4().hex[:8]}@example.com"
         
         session = requests.Session()
         session.headers.update({"Content-Type": "application/json"})
         
-        # Register
+        # Register - new users get 7-day premium trial
         register_response = session.post(f"{BASE_URL}/api/auth/register", json={
             "email": test_email,
             "password": "testpass123"
         })
         assert register_response.status_code == 200, f"Registration failed: {register_response.text}"
+        assert "7 dagars gratis Premium" in register_response.json().get("message", ""), \
+            "New user should get 7-day trial message"
         
-        # Get insights
+        # Get insights - should have premium section since user has trial
         insights_response = session.get(f"{BASE_URL}/api/insights")
         assert insights_response.status_code == 200, f"Insights failed: {insights_response.text}"
         
         data = insights_response.json()
         
+        # Verify user is premium (trial)
+        assert data.get("is_premium") == True, "New user should have premium trial"
+        
         # Check premium insights section
-        assert "premium" in data, "Response should contain 'premium' section"
+        assert "premium" in data, "Response should contain 'premium' section (user has trial)"
         premium_data = data["premium"]
         
         assert "production_text" in premium_data, "Premium should contain production_text"
@@ -254,22 +263,37 @@ class TestInsightsEndpoint:
         assert "Inga ägg registrerade" in production_text, \
             f"Expected 'Inga ägg registrerade' in text, got: {production_text}"
         
-        print(f"✅ New user sees correct message: {production_text}")
+        print(f"✅ New user (with trial) sees correct message: {production_text}")
         print(f"✅ Production status: {production_status}")
     
-    def test_insights_default_user_anonymous(self):
-        """Test insights endpoint for anonymous/default user"""
+    def test_insights_accessible_anonymous(self):
+        """Test insights endpoint is accessible for anonymous users (default_user)
+        
+        Note: Premium section only appears for premium users.
+        Non-premium users see basic insights without production_text.
+        """
         # Without any auth, uses default_user
         response = requests.get(f"{BASE_URL}/api/insights")
         
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
-        assert "premium" in data, "Response should contain premium section"
+        
+        # Basic insights should always be present
+        assert "total_eggs" in data, "Should have total_eggs"
+        assert "is_premium" in data, "Should have is_premium flag"
+        
+        # Premium section is only for premium users
+        is_premium = data.get("is_premium", False)
+        if is_premium:
+            assert "premium" in data, "Premium user should have premium section"
+        else:
+            # Non-premium users may not have premium section
+            print(f"ℹ️ Default user is_premium={is_premium}, no premium section expected")
         
         print(f"✅ Insights endpoint accessible for default user")
-        print(f"✅ Production text: {data['premium'].get('production_text', 'N/A')}")
-        print(f"✅ Production status: {data['premium'].get('production_status', 'N/A')}")
+        print(f"✅ Total eggs: {data.get('total_eggs', 0)}")
+        print(f"✅ Is premium: {is_premium}")
 
 
 # Cleanup fixture - runs after all tests
