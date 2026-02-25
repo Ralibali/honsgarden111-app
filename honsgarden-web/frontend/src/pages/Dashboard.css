@@ -335,6 +335,9 @@
   border-radius: 14px;
   text-decoration: none;
   transition: transform 0.2s, background 0.2s;
+  position: relative;
+  border: none;
+  cursor: pointer;
 }
 
 .action-card:hover {
@@ -346,10 +349,22 @@
   font-size: 24px;
 }
 
-.action-card span:last-child {
+.action-card span:nth-child(2) {
   font-size: 11px;
   color: var(--text-secondary);
   text-align: center;
+}
+
+.action-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 8px !important;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white !important;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
 /* Upgrade Banner */
