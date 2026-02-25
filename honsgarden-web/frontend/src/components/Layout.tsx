@@ -61,7 +61,7 @@ export default function Layout() {
       
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav">
-        {navItems.slice(0, 5).map(item => (
+        {navItems.map(item => (
           <NavLink
             key={item.path}
             to={item.path}
