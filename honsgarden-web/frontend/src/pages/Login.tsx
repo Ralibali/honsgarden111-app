@@ -3,32 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
-const PREVIEW_IMAGES = {
-  hero: 'https://images.pexels.com/photos/4911743/pexels-photo-4911743.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
-  eggs: 'https://images.pexels.com/photos/4911785/pexels-photo-4911785.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940',
-  chick: 'https://images.pexels.com/photos/4911778/pexels-photo-4911778.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940'
-};
+const HERO_IMAGE = 'https://images.pexels.com/photos/4911743/pexels-photo-4911743.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260';
 
 export default function Login() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [contactMessage, setContactMessage] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactSent, setContactSent] = useState(false);
-  const [sending, setSending] = useState(false);
   const [showCookieBanner, setShowCookieBanner] = useState(false);
   
-  // Email/Password auth state
-  const [authMode, setAuthMode] = useState<'options' | 'login' | 'register'>('options');
+  // Auth state
+  const [authMode, setAuthMode] = useState<'welcome' | 'login' | 'register'>('welcome');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  
+  // GDPR consent state
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedMarketing, setAcceptedMarketing] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   
   useEffect(() => {
-    // Check if user has already accepted cookies
     const cookieConsent = localStorage.getItem('cookie_consent');
     if (!cookieConsent) {
       setShowCookieBanner(true);
@@ -48,12 +44,26 @@ export default function Login() {
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+    setSuccessMessage('');
     setAuthLoading(true);
+    
+    // Validate terms acceptance for registration
+    if (authMode === 'register' && !acceptedTerms) {
+      setAuthError('Du måste godkänna användarvillkoren för att registrera dig.');
+      setAuthLoading(false);
+      return;
+    }
     
     try {
       const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
       const body = authMode === 'register' 
-        ? { email, password, name: name || undefined }
+        ? { 
+            email, 
+            password, 
+            name: name || undefined,
+            accepted_terms: acceptedTerms,
+            accepted_marketing: acceptedMarketing
+          }
         : { email, password };
       
       const res = await fetch(endpoint, {
@@ -70,7 +80,7 @@ export default function Login() {
         return;
       }
       
-      // Success - set user in context and navigate to dashboard
+      // Success
       setUser({
         user_id: data.user_id,
         email: data.email,
@@ -84,68 +94,69 @@ export default function Login() {
       setAuthLoading(false);
     }
   };
-  
-  const handleContactSubmit = async () => {
-    if (!contactMessage.trim()) return;
-    setSending(true);
-    try {
-      await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          type: 'contact',
-          message: contactMessage,
-          email: contactEmail || undefined
-        })
-      });
-      setContactSent(true);
-      setTimeout(() => {
-        setShowContactModal(false);
-        setContactSent(false);
-        setContactMessage('');
-        setContactEmail('');
-      }, 2000);
-    } catch (error) {
-      console.error('Failed to send feedback:', error);
-    }
-    setSending(false);
-  };
-  
+
   return (
-    <div className="landing-page">
-      {/* Hero Section */}
-      <header className="hero">
-        <div className="hero-overlay"></div>
-        <img src={PREVIEW_IMAGES.hero} alt="Kvinna som tar hand om sina höns" className="hero-image" />
-        <div className="hero-content">
-          {/* New Logo */}
-          <div className="logo-container">
-            <div className="logo-icon">
-              <svg viewBox="0 0 100 100" width="80" height="80">
-                {/* Stylized hen silhouette */}
-                <circle cx="50" cy="50" r="45" fill="#D97706" opacity="0.15"/>
-                <path d="M30 65 Q35 45 50 40 Q65 35 70 50 Q75 65 65 75 Q50 85 35 75 Q25 70 30 65" fill="#D97706"/>
-                <circle cx="60" cy="48" r="4" fill="#1F2937"/>
-                <path d="M68 45 Q75 42 72 50 Q70 55 68 52" fill="#EF4444"/>
-                <path d="M55 58 Q58 62 52 62 Q48 62 50 58" fill="#F59E0B"/>
-                {/* Egg accent */}
-                <ellipse cx="35" cy="72" rx="8" ry="10" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1.5"/>
-              </svg>
-            </div>
-            <h1>Hönsgården</h1>
+    <div className="login-page">
+      {/* Background */}
+      <div className="login-bg" style={{ backgroundImage: `url(${HERO_IMAGE})` }}>
+        <div className="login-overlay"></div>
+      </div>
+      
+      {/* Content */}
+      <div className="login-content">
+        {/* Logo & Brand */}
+        <div className="login-brand">
+          <div className="login-logo">
+            <svg viewBox="0 0 100 100" className="logo-svg">
+              <circle cx="50" cy="45" r="35" fill="#FF9800"/>
+              <circle cx="50" cy="40" r="25" fill="#FFC107"/>
+              <ellipse cx="50" cy="70" rx="20" ry="15" fill="#FFE082"/>
+              <circle cx="42" cy="35" r="4" fill="#333"/>
+              <path d="M50 28 L55 18 L45 18 Z" fill="#F44336"/>
+              <path d="M62 45 Q75 45 70 55" stroke="#FF9800" strokeWidth="3" fill="none"/>
+            </svg>
           </div>
-          <p className="tagline-main">Din digitala assistent för din hönsgård</p>
-          <p className="tagline-sub">Håll koll på dina hönor, ägg och ekonomi – på ett enkelt sätt.</p>
-          
-          {/* Auth Options */}
-          {authMode === 'options' && (
-            <div className="auth-options">
-              <button onClick={() => setAuthMode('login')} className="cta-button email-btn">
-                ✉️ Logga in med e-post
+          <h1 className="login-title">Hönsgården</h1>
+          <p className="login-tagline">Din digitala assistent för din hönsgård</p>
+        </div>
+        
+        {/* Auth Card */}
+        <div className="auth-card">
+          {/* Welcome Screen */}
+          {authMode === 'welcome' && (
+            <div className="auth-welcome">
+              <h2>Välkommen!</h2>
+              <p>Håll koll på dina hönor, ägg och ekonomi – på ett enkelt sätt.</p>
+              
+              <div className="welcome-features">
+                <div className="feature-item">
+                  <span className="feature-icon">🥚</span>
+                  <span>Äggdagbok</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-icon">🐔</span>
+                  <span>Hönsprofiler</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-icon">📊</span>
+                  <span>Statistik</span>
+                </div>
+                <div className="feature-item">
+                  <span className="feature-icon">💰</span>
+                  <span>Ekonomi</span>
+                </div>
+              </div>
+              
+              <button 
+                className="btn-primary btn-large"
+                onClick={() => setAuthMode('register')}
+              >
+                Kom igång gratis
               </button>
               
               <p className="auth-switch">
-                Ny här? <button onClick={() => setAuthMode('register')}>Skapa konto gratis</button>
+                Har du redan ett konto? 
+                <button onClick={() => setAuthMode('login')}>Logga in</button>
               </p>
             </div>
           )}
@@ -153,300 +164,271 @@ export default function Login() {
           {/* Login Form */}
           {authMode === 'login' && (
             <form onSubmit={handleEmailAuth} className="auth-form">
-              <h3>Logga in</h3>
+              <h2>Logga in</h2>
               
               {authError && <div className="auth-error">{authError}</div>}
               
-              <input
-                type="email"
-                placeholder="E-postadress"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <input
-                type="password"
-                placeholder="Lösenord"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="form-group">
+                <label>E-postadress</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="din@email.se"
+                  required
+                  autoComplete="email"
+                />
+              </div>
               
-              <button type="submit" className="cta-button" disabled={authLoading}>
+              <div className="form-group">
+                <label>Lösenord</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+              
+              <button 
+                type="submit" 
+                className="btn-primary btn-large"
+                disabled={authLoading}
+              >
                 {authLoading ? 'Loggar in...' : 'Logga in'}
               </button>
               
               <p className="auth-switch">
-                <button type="button" onClick={() => setAuthMode('options')}>← Tillbaka</button>
-                {' | '}
-                <button type="button" onClick={() => setAuthMode('register')}>Skapa konto</button>
+                Ny här? 
+                <button type="button" onClick={() => setAuthMode('register')}>Skapa konto gratis</button>
               </p>
+              
+              <button 
+                type="button" 
+                className="btn-back"
+                onClick={() => setAuthMode('welcome')}
+              >
+                ← Tillbaka
+              </button>
             </form>
           )}
           
           {/* Register Form */}
           {authMode === 'register' && (
             <form onSubmit={handleEmailAuth} className="auth-form">
-              <h3>Skapa konto</h3>
-              <p className="form-subtitle">7 dagars gratis Premium ingår!</p>
+              <h2>Skapa konto</h2>
+              <p className="form-subtitle">🎁 7 dagars gratis Premium ingår!</p>
               
               {authError && <div className="auth-error">{authError}</div>}
+              {successMessage && <div className="auth-success">{successMessage}</div>}
               
-              <input
-                type="text"
-                placeholder="Namn (valfritt)"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <input
-                type="email"
-                placeholder="E-postadress"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <input
-                type="password"
-                placeholder="Lösenord (minst 6 tecken)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
+              <div className="form-group">
+                <label>Namn <span className="optional">(valfritt)</span></label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ditt namn"
+                  autoComplete="name"
+                />
+              </div>
               
-              <button type="submit" className="cta-button" disabled={authLoading}>
+              <div className="form-group">
+                <label>E-postadress</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="din@email.se"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label>Lösenord</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minst 6 tecken"
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                />
+              </div>
+              
+              {/* GDPR Consent Checkboxes */}
+              <div className="consent-section">
+                <label className="consent-checkbox required">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    required
+                  />
+                  <span className="checkmark"></span>
+                  <span className="consent-text">
+                    Jag har läst och godkänner{' '}
+                    <button 
+                      type="button" 
+                      className="link-btn"
+                      onClick={() => setShowTermsModal(true)}
+                    >
+                      användarvillkoren och integritetspolicyn
+                    </button>
+                    <span className="required-star">*</span>
+                  </span>
+                </label>
+                
+                <label className="consent-checkbox optional">
+                  <input
+                    type="checkbox"
+                    checked={acceptedMarketing}
+                    onChange={(e) => setAcceptedMarketing(e.target.checked)}
+                  />
+                  <span className="checkmark"></span>
+                  <span className="consent-text">
+                    Jag godkänner att Aurora Media AB skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress. Jag kan avprenumerera när som helst.
+                  </span>
+                </label>
+              </div>
+              
+              <button 
+                type="submit" 
+                className="btn-primary btn-large"
+                disabled={authLoading || !acceptedTerms}
+              >
                 {authLoading ? 'Skapar konto...' : 'Skapa konto'}
               </button>
               
               <p className="auth-switch">
-                <button type="button" onClick={() => setAuthMode('options')}>← Tillbaka</button>
-                {' | '}
-                <button type="button" onClick={() => setAuthMode('login')}>Har redan konto</button>
+                Har du redan ett konto? 
+                <button type="button" onClick={() => setAuthMode('login')}>Logga in</button>
               </p>
+              
+              <button 
+                type="button" 
+                className="btn-back"
+                onClick={() => setAuthMode('welcome')}
+              >
+                ← Tillbaka
+              </button>
             </form>
           )}
         </div>
-      </header>
+        
+        {/* Footer */}
+        <p className="login-footer">
+          © 2026 Aurora Media AB
+        </p>
+      </div>
       
-      {/* Features Section */}
-      <section className="features-section">
-        <h2>Allt du behöver för din hönsgård</h2>
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">🥚</div>
-            <h3>Äggdagbok</h3>
-            <p>Registrera ägg snabbt och enkelt. Se trender och jämför med tidigare perioder.</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🐔</div>
-            <h3>Hönsprofiler</h3>
-            <p>Ge dina hönor namn och följ varje hönas äggläggning och hälsa individuellt.</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3>Statistik & Insikter</h3>
-            <p>Tydliga grafer, produktivitetsvarningar och smarta prognoser.</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">💰</div>
-            <h3>Ekonomi</h3>
-            <p>Håll koll på foder, utrustning och försäljning. Se kostnad per ägg.</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🩺</div>
-            <h3>Hälsologg</h3>
-            <p>Dokumentera vaccinationer, veterinärbesök och sjukdomar för varje höna.</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🏠</div>
-            <h3>Flockhantering</h3>
-            <p>Organisera dina hönor i flockar och hönshus. Filtrera statistik per flock.</p>
-          </div>
-        </div>
-      </section>
-      
-      {/* Screenshot Preview */}
-      <section className="preview-section">
-        <div className="preview-content">
-          <div className="preview-text">
-            <h2>Se hur det fungerar</h2>
-            <p>Enkel och intuitiv design som gör det roligt att hålla koll på hönsgården. Fungerar på både mobil och dator.</p>
-            <ul className="preview-list">
-              <li>✓ Snabbregistrera ägg med ett klick</li>
-              <li>✓ Automatiska beräkningar och trender</li>
-              <li>✓ Varningar när hönor inte värper</li>
-              <li>✓ "Senast sedd"-funktion för säkerhet</li>
-              <li>✓ Synka mellan mobil och dator</li>
-            </ul>
-          </div>
-          <div className="preview-image-container">
-            <img src={PREVIEW_IMAGES.eggs} alt="Samla ägg" className="preview-image" />
-          </div>
-        </div>
-      </section>
-      
-      {/* Pricing Section */}
-      <section className="pricing-section">
-        <h2>Enkel prissättning</h2>
-        <p className="pricing-subtitle">Börja gratis – uppgradera när du vill ha mer</p>
-        <div className="pricing-cards three-cards">
-          {/* Gratis */}
-          <div className="pricing-card">
-            <h3>Gratis</h3>
-            <div className="price">0 kr</div>
-            <ul>
-              <li>✓ 1 flock</li>
-              <li>✓ 30 dagars historik</li>
-              <li>✓ Grundläggande statistik</li>
-              <li>✓ Ägg- och ekonomilogg</li>
-              <li>✓ Äggproduktionsgraf</li>
-              <li>✓ Ekonomigraf</li>
-            </ul>
-            <button onClick={() => setAuthMode('register')} className="pricing-btn secondary">Kom igång gratis</button>
-          </div>
-          
-          {/* Premium Månadsvis */}
-          <div className="pricing-card">
-            <h3>Premium Månadsvis</h3>
-            <div className="price">19 kr<span>/mån</span></div>
-            <p className="price-note">Flexibelt, avsluta när som helst</p>
-            <ul>
-              <li>✓ Allt i Gratis</li>
-              <li>✓ Obegränsad historik</li>
-              <li>✓ Obegränsade flockar</li>
-              <li>✓ Hälsologg</li>
-              <li>✓ AI-genererad dagsrapport</li>
-              <li>✓ Äggprognos 7 dagar framåt</li>
-              <li>✓ Avvikelsedetektion</li>
-              <li>✓ Ekonomijämförelse månad för månad</li>
-              <li>✓ Kläckningsmodul</li>
-              <li>✓ Anpassningsbara funktioner</li>
-            </ul>
-            <button onClick={() => setAuthMode('register')} className="pricing-btn secondary">Välj månadsvis</button>
-          </div>
-          
-          {/* Premium Årsvis - Bäst värde */}
-          <div className="pricing-card popular">
-            <div className="popular-badge">Bäst värde</div>
-            <h3>Premium Årsvis</h3>
-            <div className="price">149 kr<span>/år</span></div>
-            <p className="price-note savings">Motsvarar 12,40 kr/mån – spara 79 kr!</p>
-            <ul>
-              <li>✓ Allt i Gratis</li>
-              <li>✓ Obegränsad historik</li>
-              <li>✓ Obegränsade flockar</li>
-              <li>✓ Hälsologg</li>
-              <li>✓ AI-genererad dagsrapport</li>
-              <li>✓ Äggprognos 7 dagar framåt</li>
-              <li>✓ Avvikelsedetektion</li>
-              <li>✓ Ekonomijämförelse månad för månad</li>
-              <li>✓ Kläckningsmodul</li>
-              <li>✓ Anpassningsbara funktioner</li>
-            </ul>
-            <button onClick={() => setAuthMode('register')} className="pricing-btn primary">Välj årsvis</button>
-          </div>
-        </div>
-      </section>
-      
-      {/* Final CTA */}
-      <section className="final-cta">
-        <img src={PREVIEW_IMAGES.chick} alt="Kyckling" className="cta-image" />
-        <div className="cta-content">
-          <h2>Redo att komma igång?</h2>
-          <p>Gå med andra hönsgårdsägare som redan använder Hönsgården.</p>
-          <button onClick={() => setAuthMode('register')} className="cta-button large">
-            <svg viewBox="0 0 24 24" width="20" height="20">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Skapa konto gratis
-          </button>
-        </div>
-      </section>
-      
-      {/* Footer */}
-      <footer className="landing-footer">
-        <div className="footer-content">
-          <div className="footer-brand">
-            <div className="footer-logo">
-              <svg viewBox="0 0 100 100" width="32" height="32">
-                <circle cx="50" cy="50" r="45" fill="#D97706" opacity="0.15"/>
-                <path d="M30 65 Q35 45 50 40 Q65 35 70 50 Q75 65 65 75 Q50 85 35 75 Q25 70 30 65" fill="#D97706"/>
-                <circle cx="60" cy="48" r="4" fill="#1F2937"/>
-                <ellipse cx="35" cy="72" rx="8" ry="10" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="1.5"/>
-              </svg>
-              <span>Hönsgården</span>
+      {/* Terms Modal */}
+      {showTermsModal && (
+        <div className="modal-overlay" onClick={() => setShowTermsModal(false)}>
+          <div className="terms-modal" onClick={e => e.stopPropagation()}>
+            <div className="terms-header">
+              <h2>Användarvillkor & Integritetspolicy</h2>
+              <button className="close-btn" onClick={() => setShowTermsModal(false)}>✕</button>
             </div>
-            <p>Gjord med ❤️ för hönsälskare</p>
-          </div>
-          <div className="footer-links">
-            <button onClick={() => setShowContactModal(true)} className="footer-link">
-              💬 Kontakta oss
-            </button>
-            <button onClick={() => setShowContactModal(true)} className="footer-link">
-              💡 Skicka förslag
-            </button>
-          </div>
-        </div>
-        <p className="copyright">© 2026 Hönsgården. Alla rättigheter förbehållna.</p>
-      </footer>
-      
-      {/* Floating Contact Button */}
-      <button 
-        className="floating-contact-btn"
-        onClick={() => setShowContactModal(true)}
-        title="Kontakta oss"
-      >
-        💬
-      </button>
-      
-      {/* Contact Modal */}
-      {showContactModal && (
-        <div className="contact-modal-overlay" onClick={() => setShowContactModal(false)}>
-          <div className="contact-modal" onClick={e => e.stopPropagation()}>
-            {contactSent ? (
-              <div className="contact-success">
-                <span className="success-icon">✅</span>
-                <h3>Tack för ditt meddelande!</h3>
-                <p>Vi återkommer så snart vi kan.</p>
-              </div>
-            ) : (
-              <>
-                <h3>💬 Kontakta oss</h3>
-                <p>Har du frågor, förslag eller feedback? Vi älskar att höra från dig!</p>
-                
-                <label>E-post (valfritt)</label>
-                <input
-                  type="email"
-                  value={contactEmail}
-                  onChange={(e) => setContactEmail(e.target.value)}
-                  placeholder="din@email.se"
-                />
-                
-                <label>Meddelande</label>
-                <textarea
-                  value={contactMessage}
-                  onChange={(e) => setContactMessage(e.target.value)}
-                  placeholder="Skriv ditt meddelande här..."
-                  rows={4}
-                />
-                
-                <div className="contact-buttons">
-                  <button onClick={() => setShowContactModal(false)} className="cancel-btn">
-                    Avbryt
-                  </button>
-                  <button 
-                    onClick={handleContactSubmit} 
-                    disabled={!contactMessage.trim() || sending}
-                    className="send-btn"
-                  >
-                    {sending ? 'Skickar...' : 'Skicka'}
-                  </button>
-                </div>
-              </>
-            )}
+            <div className="terms-content">
+              <p className="terms-updated"><strong>Aurora Media AB</strong> | Senast uppdaterad: 2026-02-25</p>
+              
+              <h3>1. Allmänt</h3>
+              <ul>
+                <li>Dessa villkor gäller när du skapar ett konto och använder tjänsten som tillhandahålls av Aurora Media AB ("vi", "oss", "tjänsten").</li>
+                <li>Genom att registrera dig bekräftar du att du har läst, förstått och godkänt dessa villkor.</li>
+                <li>Du måste vara minst 16 år gammal för att använda tjänsten. Om du är under 18 år krävs målsmans godkännande.</li>
+                <li>Villkoren gäller tills vidare och kan uppdateras. Du meddelas vid väsentliga förändringar.</li>
+              </ul>
+              
+              <h3>2. Personuppgifter & GDPR</h3>
+              <p>Vi behandlar dina personuppgifter i enlighet med EU:s dataskyddsförordning (GDPR) samt den svenska dataskyddslagen (2018:218).</p>
+              
+              <h4>Vilka uppgifter vi samlar in:</h4>
+              <ul>
+                <li>Namn och e-postadress vid registrering</li>
+                <li>Uppgifter du själv lämnar i tjänsten</li>
+                <li>Tekniska data (t.ex. IP-adress, enhetstyp, cookies)</li>
+              </ul>
+              
+              <h4>Rättslig grund för behandlingen:</h4>
+              <ul>
+                <li><strong>Avtal</strong> – för att kunna tillhandahålla tjänsten du registrerat dig för</li>
+                <li><strong>Samtycke</strong> – för marknadsföring och nyhetsbrev</li>
+                <li><strong>Berättigat intresse</strong> – för säkerhet, felsökning och förbättring av tjänsten</li>
+              </ul>
+              
+              <h4>Dina rättigheter enligt GDPR:</h4>
+              <ul>
+                <li>Rätt till <strong>tillgång</strong> – du kan begära ett utdrag av dina uppgifter</li>
+                <li>Rätt till <strong>rättelse</strong> – du kan korrigera felaktiga uppgifter</li>
+                <li>Rätt till <strong>radering</strong> ("rätten att bli glömd")</li>
+                <li>Rätt till <strong>dataportabilitet</strong> – få dina uppgifter i maskinläsbart format</li>
+                <li>Rätt att <strong>invända</strong> mot behandling</li>
+                <li>Rätt att <strong>återkalla samtycke</strong> när som helst</li>
+              </ul>
+              
+              <p>För att utöva dina rättigheter, kontakta oss på: <strong>info@auroramedia.se</strong></p>
+              
+              <h4>Lagringstid:</h4>
+              <ul>
+                <li>Dina uppgifter lagras så länge ditt konto är aktivt eller så länge det krävs enligt lag.</li>
+                <li>Vid avslut av konto raderas personuppgifter inom 30 dagar, om inget annat krävs enligt lag.</li>
+              </ul>
+              
+              <p>Du har rätt att lämna klagomål till <strong>Integritetsskyddsmyndigheten (IMY)</strong>: <a href="https://www.imy.se" target="_blank" rel="noopener noreferrer">www.imy.se</a></p>
+              
+              <h3>3. E-postkommunikation & Marknadsföring</h3>
+              <p>Genom att kryssa i rutan för marknadsföring ger du ditt <strong>uttryckliga samtycke</strong> till att Aurora Media AB får kontakta dig via e-post med:</p>
+              <ul>
+                <li><strong>Nyhetsbrev</strong> – nyheter, artiklar och information om tjänsten</li>
+                <li><strong>Marknadsföring & erbjudanden</strong> – kampanjer, rabatter och relevanta erbjudanden</li>
+                <li><strong>Produktuppdateringar</strong> – information om nya funktioner, förändringar och förbättringar</li>
+              </ul>
+              <p>Du kan när som helst <strong>avprenumerera</strong> via avprenumerationslänken i varje utskick eller genom att kontakta oss direkt.</p>
+              
+              <h3>4. Cookies</h3>
+              <ul>
+                <li>Vi använder cookies och liknande tekniker för att tjänsten ska fungera korrekt.</li>
+                <li>Cookies för analys och marknadsföring används endast efter ditt samtycke.</li>
+                <li>Du kan hantera cookieinställningar i din webbläsare.</li>
+              </ul>
+              
+              <h3>5. Säkerhet</h3>
+              <ul>
+                <li>Vi vidtar tekniska och organisatoriska åtgärder för att skydda dina personuppgifter.</li>
+                <li>Du ansvarar för att hålla ditt lösenord hemligt.</li>
+              </ul>
+              
+              <h3>6. Ansvarsbegränsning</h3>
+              <ul>
+                <li>Tjänsten tillhandahålls "i befintligt skick". Vi garanterar inte oavbruten eller felfri drift.</li>
+                <li>Aurora Media AB ansvarar inte för indirekt skada, utebliven vinst eller dataförlust.</li>
+              </ul>
+              
+              <h3>7. Tillämplig lag & Tvistelösning</h3>
+              <ul>
+                <li>Dessa villkor regleras av <strong>svensk lag</strong>.</li>
+                <li>Tvister kan hänskjutas till <strong>Allmänna reklamationsnämnden (ARN)</strong> eller allmän domstol i Sverige.</li>
+              </ul>
+              
+              <h3>8. Kontakt</h3>
+              <p>
+                <strong>Aurora Media AB</strong><br/>
+                Organisationsnummer: 559272-0220<br/>
+                E-post: info@auroramedia.se<br/>
+                Webbplats: www.honsgarden.se
+              </p>
+            </div>
+            <div className="terms-footer">
+              <button className="btn-primary" onClick={() => setShowTermsModal(false)}>
+                Jag har läst villkoren
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -459,10 +441,10 @@ export default function Login() {
             <p>Vi använder cookies för att förbättra din upplevelse. Genom att fortsätta godkänner du vår användning av cookies.</p>
           </div>
           <div className="cookie-buttons">
-            <button onClick={acceptNecessaryCookies} className="cookie-btn secondary">
+            <button onClick={acceptNecessaryCookies} className="btn-secondary-small">
               Endast nödvändiga
             </button>
-            <button onClick={acceptAllCookies} className="cookie-btn primary">
+            <button onClick={acceptAllCookies} className="btn-primary-small">
               Godkänn alla
             </button>
           </div>
