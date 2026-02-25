@@ -90,18 +90,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Detect if we're running under /api/web or at root
-const getBasename = () => {
-  const path = window.location.pathname;
-  if (path.startsWith('/api/web')) {
-    return '/api/web';
-  }
-  return '/';
-};
-
 function App() {
   return (
-    <BrowserRouter basename={getBasename()}>
+    <BrowserRouter basename="/api/web">
       <AuthProvider>
         <AppRouter />
       </AuthProvider>
