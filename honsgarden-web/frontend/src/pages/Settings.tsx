@@ -408,7 +408,7 @@ export default function Settings() {
             <div className="premium-lock">
               <span className="lock-icon">🔒</span>
               <p>Uppgradera till Premium för att anpassa funktioner</p>
-              <a href="/premium" className="btn-secondary">Uppgradera</a>
+              <Link to="/premium" className="btn-secondary">Uppgradera</Link>
             </div>
           )}
         </div>
