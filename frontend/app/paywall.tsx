@@ -125,25 +125,36 @@ export default function PaywallScreen() {
       }
     }
     
-    // Demo mode for web or if no offerings available
+    // Web: Use Stripe checkout for real payments
     if (!isNative) {
-      // Simulate purchase for demo
-      setTimeout(() => {
-        const expiresAt = new Date();
-        if (selectedPlan === 'yearly') {
-          expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-        } else {
-          expiresAt.setMonth(expiresAt.getMonth() + 1);
-        }
+      try {
+        const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+        const res = await fetch(`${API_URL}/api/checkout/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            plan: selectedPlan,
+            origin_url: window.location.origin
+          })
+        });
         
-        setPremiumStatus(true, 'demo_subscription', expiresAt.toISOString(), selectedPlan);
-        setPurchasing(false);
-        Alert.alert(
-          t('common.success'),
-          t('premium.purchaseSuccess'),
-          [{ text: 'OK', onPress: () => router.back() }]
-        );
-      }, 1500);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            // Redirect to Stripe checkout
+            window.location.href = data.url;
+            return;
+          }
+        } else {
+          const error = await res.json();
+          Alert.alert(t('common.error'), error.detail || t('premium.purchaseError'));
+        }
+      } catch (error) {
+        console.error('Stripe checkout error:', error);
+        Alert.alert(t('common.error'), t('premium.purchaseError'));
+      }
+      setPurchasing(false);
       return;
     }
     
