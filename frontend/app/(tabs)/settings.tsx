@@ -261,10 +261,7 @@ export default function SettingsScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('settings.premiumSection')}</Text>
             
-            <TouchableOpacity 
-              style={styles.premiumCard}
-              onPress={() => !isPremium && router.push('/paywall')}
-            >
+            <View style={styles.premiumCard}>
               <View style={styles.premiumCardContent}>
                 <View style={[
                   styles.premiumIcon,
@@ -278,7 +275,7 @@ export default function SettingsScreen() {
                 </View>
                 <View style={styles.premiumInfo}>
                   <Text style={styles.premiumStatus}>
-                    {t('settings.premiumStatus')}: {isPremium ? t('settings.premiumActive') : t('settings.premiumInactive')}
+                    {isPremium ? t('settings.premiumActive') : t('settings.premiumInactive')}
                   </Text>
                   {isPremium && plan && (
                     <Text style={styles.premiumPlan}>
@@ -286,11 +283,20 @@ export default function SettingsScreen() {
                     </Text>
                   )}
                 </View>
-                {!isPremium && (
-                  <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-                )}
               </View>
-            </TouchableOpacity>
+              
+              {/* Upgrade Button - Only for non-premium users */}
+              {!isPremium && (
+                <TouchableOpacity 
+                  style={styles.upgradeButton}
+                  onPress={() => router.push('/paywall')}
+                >
+                  <Text style={styles.upgradeButtonText}>
+                    {isSv ? 'Uppgradera till Premium' : 'Upgrade to Premium'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
             
             {/* Cancel Subscription Button - Only for Premium users */}
             {isPremium && (
