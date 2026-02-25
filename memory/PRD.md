@@ -103,6 +103,13 @@
 ## Completed Features (February 2026)
 
 ### Session 10 - Nya funktioner (February 25, 2026)
+- [x] **GDPR-compliant Registration Flow** - Helt ny registreringsprocess
+  - Obligatorisk checkbox för användarvillkor & integritetspolicy
+  - Valfri checkbox för nyhetsbrev och marknadsföring
+  - Full GDPR-text i modal med alla sektioner
+  - Admin-vy visar samtyckesstatus per användare
+  - Samtycke sparas med tidsstämpel i databasen
+  - Välkomstmail skickas vid registrering (via Resend)
 - [x] **AI Hönsgårdsrådgivare "Agda"** - Premium-funktion som ger personliga råd baserat på flocken
   - Kunskapsbas med 10+ års erfarenhet av höns
   - Tips om stallmiljö, foder, sjukdomar, tuppar, väder och säsong
@@ -118,6 +125,7 @@
   - Rekommendationer (8-12 höns per tupp)
   - Endpoint: GET /api/flock/statistics
 - [x] **Dashboard uppdaterad** - Visar väder och flockråd
+- [x] **Google Sign-In borttagen** - Endast e-post/lösenord för nu
 
 ### Session 9 - P0 Bug Fixes (February 25, 2026)
 - [x] **KRITISK FIX: Stripe checkout** - Bytte från emergentintegrations CheckoutSessionRequest (mode='payment' hårdkodat) till direkt stripe.checkout.Session.create() med mode='subscription' för prenumerationer
