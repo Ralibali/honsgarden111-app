@@ -73,7 +73,8 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    const currentUrl = window.location.origin + window.location.pathname;
+    // Use the full current URL including /api/web path
+    const currentUrl = window.location.href.split('?')[0].split('#')[0];
     const redirectUrl = `${GOOGLE_AUTH_URL}?redirect_url=${encodeURIComponent(currentUrl)}`;
     window.location.href = redirectUrl;
   };
