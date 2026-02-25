@@ -683,6 +683,47 @@ export default function SettingsScreen() {
             </View>
           )}
           
+          {/* Account Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{isSv ? 'Konto' : 'Account'}</Text>
+            
+            {isAuthenticated && user && (
+              <View style={styles.accountInfo}>
+                <View style={styles.accountIcon}>
+                  <Ionicons name="person" size={24} color={colors.primary} />
+                </View>
+                <View style={styles.accountDetails}>
+                  <Text style={styles.accountName}>{user.name || 'Användare'}</Text>
+                  <Text style={styles.accountEmail}>{user.email}</Text>
+                </View>
+              </View>
+            )}
+            
+            <TouchableOpacity 
+              style={styles.logoutButton}
+              onPress={() => {
+                Alert.alert(
+                  isSv ? 'Logga ut' : 'Log out',
+                  isSv ? 'Är du säker på att du vill logga ut?' : 'Are you sure you want to log out?',
+                  [
+                    { text: isSv ? 'Avbryt' : 'Cancel', style: 'cancel' },
+                    { 
+                      text: isSv ? 'Logga ut' : 'Log out', 
+                      style: 'destructive',
+                      onPress: async () => {
+                        await logout();
+                        router.replace('/(auth)/login');
+                      }
+                    }
+                  ]
+                );
+              }}
+            >
+              <Ionicons name="log-out" size={20} color={colors.error} />
+              <Text style={styles.logoutText}>{isSv ? 'Logga ut' : 'Log out'}</Text>
+            </TouchableOpacity>
+          </View>
+          
           {/* Contact & Support Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{isSv ? 'Kontakt & Support' : 'Contact & Support'}</Text>
