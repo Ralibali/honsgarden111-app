@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
 const HERO_IMAGE = 'https://images.pexels.com/photos/4911743/pexels-photo-4911743.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260';
 
+// Google OAuth URL - Emergent Auth
+const GOOGLE_AUTH_URL = 'https://demobackend.emergentagent.com/auth/v1/env/oauth/google';
+
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setUser } = useAuth();
   const [showCookieBanner, setShowCookieBanner] = useState(false);
   
   // Auth state
-  const [authMode, setAuthMode] = useState<'welcome' | 'login' | 'register'>('welcome');
+  const [authMode, setAuthMode] = useState<'welcome' | 'login' | 'register' | 'forgot'>('welcome');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -23,6 +27,14 @@ export default function Login() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedMarketing, setAcceptedMarketing] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    if (sessionId) {
+      handleGoogleCallback(sessionId);
+    }
+  }, [searchParams]);
   
   useEffect(() => {
     const cookieConsent = localStorage.getItem('cookie_consent');
@@ -30,6 +42,41 @@ export default function Login() {
       setShowCookieBanner(true);
     }
   }, []);
+
+  const handleGoogleCallback = async (sessionId: string) => {
+    setAuthLoading(true);
+    try {
+      const res = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ session_id: sessionId })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setUser({
+          user_id: data.user_id,
+          email: data.email,
+          name: data.name || '',
+          picture: data.picture
+        });
+        navigate('/');
+      } else {
+        setAuthError('Google-inloggning misslyckades');
+      }
+    } catch (error) {
+      setAuthError('Kunde inte ansluta till servern');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    const currentUrl = window.location.origin + window.location.pathname;
+    const redirectUrl = `${GOOGLE_AUTH_URL}?redirect_url=${encodeURIComponent(currentUrl)}`;
+    window.location.href = redirectUrl;
+  };
   
   const acceptAllCookies = () => {
     localStorage.setItem('cookie_consent', 'all');
@@ -47,11 +94,23 @@ export default function Login() {
     setSuccessMessage('');
     setAuthLoading(true);
     
-    // Validate terms acceptance for registration
-    if (authMode === 'register' && !acceptedTerms) {
-      setAuthError('Du måste godkänna användarvillkoren för att registrera dig.');
-      setAuthLoading(false);
-      return;
+    // Validate for registration
+    if (authMode === 'register') {
+      if (!name.trim()) {
+        setAuthError('Namn är obligatoriskt');
+        setAuthLoading(false);
+        return;
+      }
+      if (!acceptedTerms) {
+        setAuthError('Du måste godkänna användarvillkoren för att registrera dig.');
+        setAuthLoading(false);
+        return;
+      }
+      if (!acceptedMarketing) {
+        setAuthError('Du måste godkänna att ta emot information från oss.');
+        setAuthLoading(false);
+        return;
+      }
     }
     
     try {
@@ -60,7 +119,7 @@ export default function Login() {
         ? { 
             email, 
             password, 
-            name: name || undefined,
+            name: name.trim(),
             accepted_terms: acceptedTerms,
             accepted_marketing: acceptedMarketing
           }
@@ -88,6 +147,29 @@ export default function Login() {
         picture: data.picture
       });
       navigate('/');
+    } catch (error) {
+      setAuthError('Kunde inte ansluta till servern');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    setSuccessMessage('');
+    setAuthLoading(true);
+    
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await res.json();
+      setSuccessMessage(data.message || 'Om e-postadressen finns skickas ett återställningsmail.');
+      setEmail('');
     } catch (error) {
       setAuthError('Kunde inte ansluta till servern');
     } finally {
@@ -150,8 +232,28 @@ export default function Login() {
               <button 
                 className="btn-primary btn-large"
                 onClick={() => setAuthMode('register')}
+                data-testid="get-started-btn"
               >
                 Kom igång gratis
+              </button>
+
+              <div className="auth-divider">
+                <span>eller</span>
+              </div>
+
+              <button 
+                className="btn-google"
+                onClick={handleGoogleLogin}
+                disabled={authLoading}
+                data-testid="google-login-btn"
+              >
+                <svg viewBox="0 0 24 24" className="google-icon">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Fortsätt med Google
               </button>
               
               <p className="auth-switch">
@@ -177,6 +279,7 @@ export default function Login() {
                   placeholder="din@email.se"
                   required
                   autoComplete="email"
+                  data-testid="login-email"
                 />
               </div>
               
@@ -189,15 +292,44 @@ export default function Login() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
+                  data-testid="login-password"
                 />
               </div>
+
+              <button 
+                type="button" 
+                className="forgot-password-link"
+                onClick={() => setAuthMode('forgot')}
+              >
+                Glömt lösenord?
+              </button>
               
               <button 
                 type="submit" 
                 className="btn-primary btn-large"
                 disabled={authLoading}
+                data-testid="login-submit"
               >
                 {authLoading ? 'Loggar in...' : 'Logga in'}
+              </button>
+
+              <div className="auth-divider">
+                <span>eller</span>
+              </div>
+
+              <button 
+                type="button"
+                className="btn-google"
+                onClick={handleGoogleLogin}
+                disabled={authLoading}
+              >
+                <svg viewBox="0 0 24 24" className="google-icon">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Fortsätt med Google
               </button>
               
               <p className="auth-switch">
@@ -214,6 +346,47 @@ export default function Login() {
               </button>
             </form>
           )}
+
+          {/* Forgot Password Form */}
+          {authMode === 'forgot' && (
+            <form onSubmit={handleForgotPassword} className="auth-form">
+              <h2>Glömt lösenord?</h2>
+              <p className="form-subtitle">Ange din e-postadress så skickar vi en återställningslänk.</p>
+              
+              {authError && <div className="auth-error">{authError}</div>}
+              {successMessage && <div className="auth-success">{successMessage}</div>}
+              
+              <div className="form-group">
+                <label>E-postadress</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="din@email.se"
+                  required
+                  autoComplete="email"
+                  data-testid="forgot-email"
+                />
+              </div>
+              
+              <button 
+                type="submit" 
+                className="btn-primary btn-large"
+                disabled={authLoading}
+                data-testid="forgot-submit"
+              >
+                {authLoading ? 'Skickar...' : 'Skicka återställningslänk'}
+              </button>
+              
+              <button 
+                type="button" 
+                className="btn-back"
+                onClick={() => setAuthMode('login')}
+              >
+                ← Tillbaka till inloggning
+              </button>
+            </form>
+          )}
           
           {/* Register Form */}
           {authMode === 'register' && (
@@ -225,18 +398,20 @@ export default function Login() {
               {successMessage && <div className="auth-success">{successMessage}</div>}
               
               <div className="form-group">
-                <label>Namn <span className="optional">(valfritt)</span></label>
+                <label>Namn <span className="required-star">*</span></label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ditt namn"
+                  required
                   autoComplete="name"
+                  data-testid="register-name"
                 />
               </div>
               
               <div className="form-group">
-                <label>E-postadress</label>
+                <label>E-postadress <span className="required-star">*</span></label>
                 <input
                   type="email"
                   value={email}
@@ -244,11 +419,12 @@ export default function Login() {
                   placeholder="din@email.se"
                   required
                   autoComplete="email"
+                  data-testid="register-email"
                 />
               </div>
               
               <div className="form-group">
-                <label>Lösenord</label>
+                <label>Lösenord <span className="required-star">*</span></label>
                 <input
                   type="password"
                   value={password}
@@ -257,10 +433,11 @@ export default function Login() {
                   required
                   minLength={6}
                   autoComplete="new-password"
+                  data-testid="register-password"
                 />
               </div>
               
-              {/* GDPR Consent Checkboxes */}
+              {/* GDPR Consent Checkboxes - ALL REQUIRED */}
               <div className="consent-section">
                 <label className="consent-checkbox required">
                   <input
@@ -268,6 +445,7 @@ export default function Login() {
                     checked={acceptedTerms}
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
                     required
+                    data-testid="accept-terms"
                   />
                   <span className="checkmark"></span>
                   <span className="consent-text">
@@ -277,21 +455,24 @@ export default function Login() {
                       className="link-btn"
                       onClick={() => setShowTermsModal(true)}
                     >
-                      användarvillkoren och integritetspolicyn
+                      användarvillkoren och integritetspolicyn för honsgarden.se
                     </button>
                     <span className="required-star">*</span>
                   </span>
                 </label>
                 
-                <label className="consent-checkbox optional">
+                <label className="consent-checkbox required">
                   <input
                     type="checkbox"
                     checked={acceptedMarketing}
                     onChange={(e) => setAcceptedMarketing(e.target.checked)}
+                    required
+                    data-testid="accept-marketing"
                   />
                   <span className="checkmark"></span>
                   <span className="consent-text">
-                    Jag godkänner att Aurora Media AB skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress. Jag kan avprenumerera när som helst.
+                    Jag godkänner att honsgarden.se skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress.
+                    <span className="required-star">*</span>
                   </span>
                 </label>
               </div>
@@ -299,9 +480,29 @@ export default function Login() {
               <button 
                 type="submit" 
                 className="btn-primary btn-large"
-                disabled={authLoading || !acceptedTerms}
+                disabled={authLoading || !acceptedTerms || !acceptedMarketing || !name.trim()}
+                data-testid="register-submit"
               >
                 {authLoading ? 'Skapar konto...' : 'Skapa konto'}
+              </button>
+
+              <div className="auth-divider">
+                <span>eller</span>
+              </div>
+
+              <button 
+                type="button"
+                className="btn-google"
+                onClick={handleGoogleLogin}
+                disabled={authLoading}
+              >
+                <svg viewBox="0 0 24 24" className="google-icon">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Fortsätt med Google
               </button>
               
               <p className="auth-switch">
@@ -322,7 +523,7 @@ export default function Login() {
         
         {/* Footer */}
         <p className="login-footer">
-          © 2026 Aurora Media AB
+          © 2026 honsgarden.se
         </p>
       </div>
       
@@ -335,11 +536,11 @@ export default function Login() {
               <button className="close-btn" onClick={() => setShowTermsModal(false)}>✕</button>
             </div>
             <div className="terms-content">
-              <p className="terms-updated"><strong>Aurora Media AB</strong> | Senast uppdaterad: 2026-02-25</p>
+              <p className="terms-updated"><strong>honsgarden.se</strong> | Senast uppdaterad: 2026-02-25</p>
               
               <h3>1. Allmänt</h3>
               <ul>
-                <li>Dessa villkor gäller när du skapar ett konto och använder tjänsten som tillhandahålls av Aurora Media AB ("vi", "oss", "tjänsten").</li>
+                <li>Dessa villkor gäller när du skapar ett konto och använder tjänsten honsgarden.se ("vi", "oss", "tjänsten").</li>
                 <li>Genom att registrera dig bekräftar du att du har läst, förstått och godkänt dessa villkor.</li>
                 <li>Du måste vara minst 16 år gammal för att använda tjänsten. Om du är under 18 år krävs målsmans godkännande.</li>
                 <li>Villkoren gäller tills vidare och kan uppdateras. Du meddelas vid väsentliga förändringar.</li>
@@ -351,7 +552,7 @@ export default function Login() {
               <h4>Vilka uppgifter vi samlar in:</h4>
               <ul>
                 <li>Namn och e-postadress vid registrering</li>
-                <li>Uppgifter du själv lämnar i tjänsten</li>
+                <li>Uppgifter du själv lämnar i tjänsten (hönsdata, äggregistreringar, ekonomi)</li>
                 <li>Tekniska data (t.ex. IP-adress, enhetstyp, cookies)</li>
               </ul>
               
@@ -372,7 +573,7 @@ export default function Login() {
                 <li>Rätt att <strong>återkalla samtycke</strong> när som helst</li>
               </ul>
               
-              <p>För att utöva dina rättigheter, kontakta oss på: <strong>info@auroramedia.se</strong></p>
+              <p>För att utöva dina rättigheter, kontakta oss på: <strong>info@honsgarden.se</strong></p>
               
               <h4>Lagringstid:</h4>
               <ul>
@@ -383,11 +584,11 @@ export default function Login() {
               <p>Du har rätt att lämna klagomål till <strong>Integritetsskyddsmyndigheten (IMY)</strong>: <a href="https://www.imy.se" target="_blank" rel="noopener noreferrer">www.imy.se</a></p>
               
               <h3>3. E-postkommunikation & Marknadsföring</h3>
-              <p>Genom att kryssa i rutan för marknadsföring ger du ditt <strong>uttryckliga samtycke</strong> till att Aurora Media AB får kontakta dig via e-post med:</p>
+              <p>Genom att godkänna villkoren ger du ditt <strong>samtycke</strong> till att honsgarden.se får kontakta dig via e-post med:</p>
               <ul>
-                <li><strong>Nyhetsbrev</strong> – nyheter, artiklar och information om tjänsten</li>
-                <li><strong>Marknadsföring & erbjudanden</strong> – kampanjer, rabatter och relevanta erbjudanden</li>
-                <li><strong>Produktuppdateringar</strong> – information om nya funktioner, förändringar och förbättringar</li>
+                <li><strong>Nyhetsbrev</strong> – nyheter, tips och information om hönsuppfödning</li>
+                <li><strong>Erbjudanden</strong> – kampanjer, rabatter och relevanta produkter</li>
+                <li><strong>Produktuppdateringar</strong> – information om nya funktioner och förbättringar</li>
               </ul>
               <p>Du kan när som helst <strong>avprenumerera</strong> via avprenumerationslänken i varje utskick eller genom att kontakta oss direkt.</p>
               
@@ -407,7 +608,7 @@ export default function Login() {
               <h3>6. Ansvarsbegränsning</h3>
               <ul>
                 <li>Tjänsten tillhandahålls "i befintligt skick". Vi garanterar inte oavbruten eller felfri drift.</li>
-                <li>Aurora Media AB ansvarar inte för indirekt skada, utebliven vinst eller dataförlust.</li>
+                <li>honsgarden.se ansvarar inte för indirekt skada, utebliven vinst eller dataförlust.</li>
               </ul>
               
               <h3>7. Tillämplig lag & Tvistelösning</h3>
@@ -418,9 +619,8 @@ export default function Login() {
               
               <h3>8. Kontakt</h3>
               <p>
-                <strong>Aurora Media AB</strong><br/>
-                Organisationsnummer: 559272-0220<br/>
-                E-post: info@auroramedia.se<br/>
+                <strong>honsgarden.se</strong><br/>
+                E-post: info@honsgarden.se<br/>
                 Webbplats: www.honsgarden.se
               </p>
             </div>
