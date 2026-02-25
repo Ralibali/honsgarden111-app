@@ -16,6 +16,7 @@ from enum import Enum
 import httpx
 import resend
 import bcrypt
+import stripe
 
 # AI Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
