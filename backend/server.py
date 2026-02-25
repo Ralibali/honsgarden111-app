@@ -437,7 +437,7 @@ async def require_admin(request: Request) -> User:
 
 # ============ AUTH ENDPOINTS ============
 @api_router.post("/auth/session")
-async def exchange_session(session_req: SessionRequest, response: Response):
+async def exchange_session(session_req: SessionRequest, request: Request, response: Response):
     """Exchange session_id from Emergent Auth for user data and session token"""
     # REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
     try:
