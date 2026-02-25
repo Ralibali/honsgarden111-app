@@ -1,223 +1,188 @@
-<analysis>
+<analysis>**original_problem_statement**:
+The user wants to finalize the Hönsgården application for deployment. This involves fixing critical bugs related to premium subscriptions and login, achieving feature parity and a consistent UI/UX between the web and mobile apps, and implementing several new features to enhance user engagement and monetization. The end goal is a polished, consistent, and deployable product on the user's production URL.
 
-**original_problem_statement**:
-The user wants to finalize the Hönsgården application for deployment by implementing a series of features and bug fixes. The primary goal is to achieve feature parity and a consistent user experience across the web and mobile (iOS/Android) platforms.
+**PRODUCT REQUIREMENTS (Consolidated & Updated):**
 
-**PRODUCT REQUIREMENTS (Consolidated from recent requests):**
+1.  **Critical Bug Fixes:**
+    *   **BUG (P0):** Users cannot purchase a premium subscription. The checkout process fails with an error.
+    *   **BUG (P0):** The login flow on the production deployment is broken, preventing users from accessing the app.
+    *   **BUG:** AI-generated daily report does not display the user's name and the assistant is unnamed. (FIXED)
+    *   **BUG:** The Settings tab was missing from the mobile navigation. (FIXED)
+    *   **BUG:** The cookie banner was obtrusive and blocked the login button. (FIXED)
 
-1.  **Feature Parity & Consistency:**
-    *   Ensure all features on the web app are present and work identically on the mobile apps.
-    *   Unify the egg registration flow across all three entry points (Dashboard quick-add, Add Egg page, Hen Profile bottom sheet). This unified UI must include:
-        *   Quick-add buttons: +1, +2, +3, +5, +10.
-        *   A free-text field for custom amounts.
-        *   An optional dropdown to select the hen.
-        *   Default to unknown hen if none is selected.
+2.  **Feature Implementation & Lockdown:**
+    *   **Premium Feature Lockdown:** Ensure all designated premium features are properly locked for free users on both backend and frontend. This includes: Health Log, Multiple Flocks, Hatching Module, Customizable Features, Feed Management (), and advanced AI insights. (DONE)
+    *   **Email & Password Auth:** Implement a traditional email and password login system as an alternative to Google Sign-In. (DONE)
+    *   **AI-Powered Insights (Freemium Teaser):** Implement an AI Daily Report and 7-Day Egg Forecast. For free users, these sections should be visible but blurred, acting as a teaser to encourage upgrading to premium. (DONE)
+    *   **Share to Social Media:** Add a function to let users create and share a visually appealing summary of their statistics on social media platforms like Instagram and Facebook.
+    *   **Demo Data for Graphs:** Display sample/demo data in the statistics graphs for new users who have not yet logged any data. (DONE)
 
-2.  **UI/UX & Branding Updates:**
-    *   **Fonts:** Change all fonts to  for headings/logo and  for body/UI text.
-    *   **Tagline:** Change the tagline back to Hönsgården with the subtitle Din digitala assistent för din hönsgård.
-    *   **Logo:** A new, more professional logo and tagline were implemented on the landing page.
-    *   **Logout Button (Web):** Add a Logga ut button to the web application.
-
-3.  **New Features & Bug Fixes:**
-    *   **Hen Profile Quick Add:** Implement a bottom sheet on the mobile app that appears when a user taps a hen, allowing for quick egg registration (+1, +2, +3) and access to other options (More options).
-    *   **BUG - Customizable Features:** The Anpassa funktioner (Customize Features) toggles under settings do not work, even for Premium accounts. This needs to be fixed.
-    *   **Productivity Warning Logic:** The warning for a hen not laying eggs should only appear if the user actively registers eggs on a per-hen basis (to avoid false positives from quick-add).
-    *   **Push Notifications:** Implement push notifications for key events (e.g., hatching reminders).
-    *   **Contact/Feedback:** A Contact Us or feedback mechanism should be available on both web and mobile.
-
-4.  **Pricing & Deployment:**
-    *   **Price Change:** Update Premium pricing to **19 kr/month** and **149 kr/year** everywhere, including the Stripe backend configuration.
+3.  **UI/UX Improvements:**
+    *   **Dashboard Redesign:** Rework the main dashboard to be cleaner and more intuitive. Replace the multiple egg registration buttons with a single, prominent Add Egg button that opens a modal.
+    *   **Mobile-Friendly Modals:** Ensure modals, like the egg registration modal, are responsive and fit well on mobile screens without requiring scrolling.
+    *   **Clickable AI Cards:** Make the AI insight cards on the dashboard clickable, opening a modal with more details.
+    *   **Navigation Order:** Change the navigation tab order to Ägg then Hönor.
+    *   **Zero Data State:** When a user has 0 eggs logged, change the Normal Production text to something more intuitive, like No data logged yet.
+    *   **UI Polish:** Improve the overall visual design by grouping elements better, adding more whitespace, and implementing micro-animations for a better user experience.
 
 **User's preferred language**: Swedish (Svenska). The next agent MUST respond in Swedish.
 
 **what currently exists?**
-A full-stack application with a FastAPI backend, MongoDB database, a React web app, and an Expo mobile app. The agent has implemented several major feature stages (Etapper):
--   **Etapp 1 (Completed):** Flock Management and a detailed Health Log for each hen.
--   **Etapp 2 (Completed):** Productivity analysis per hen and warnings for free-tier data limits (90-day history).
--   **Etapp 3 (Completed):** A Hatching module for premium users to track egg incubation.
--   **Other Features (Completed):** A new logo/tagline on the web landing page, a contact/feedback form, and feature toggles in settings for Premium users (though this is buggy). Optional per-hen selection was added to egg registration.
+A full-stack application (FastAPI, React, Expo) where most features have been implemented. Critical work has been done to lock down premium features on both the backend and frontend. New features like email/password authentication and blurred AI-powered freemium teasers have been added. The UI has undergone several revisions based on user feedback. However, the application is currently unstable on the production deployment URL, with critical failures in the premium subscription checkout and, intermittently, the login flow. The preview environment appears to work correctly, but these fixes are not translating to the user's live site after deployment.
 
 **Last working item**:
--   Last item agent was working: Unifying the egg registration UI to be consistent across the app, as per user request. The agent started by updating the quick-add modal on the mobile app's dashboard () to include more quick-add buttons (+1, +2, +3, +5, +10) and a custom input field.
+-   Last item agent was working: Fixing the failed premium subscription checkout. The agent identified that the Stripe checkout session was being created with  instead of , which caused a 500 error from the backend. The agent was attempting to fix this by calling the Stripe API directly with the correct parameters.
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? **frontend testing agent** to verify the UI and functionality of the egg registration flow on all three entry points (Dashboard, Add Egg page, Hen Profile sheet) on the mobile app. Then, use the **screenshot tool** to verify the same on the web app.
+-   Which testing method agent to use? **backend testing agent** to create a test that simulates a premium checkout request for a subscription product. The test must verify that the backend returns a valid Stripe checkout session URL. A successful curl command against the  endpoint after the fix would also be a valid test.
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1 (P0): Unify Egg Registration UI.**
-    -   **Description**: The user wants the egg registration flow to be identical in three places: Dashboard quick-add, the dedicated Add Egg page, and the new Hen Profile bottom sheet. The agent updated the Dashboard modal but not the other two locations.
-    -   **Next debug checklist**:
-        1.  Refactor the mobile app to use a single, reusable component (like the started ) for all three egg registration points.
-        2.  Ensure this component includes: +1, +2, +3, +5, +10 buttons, a custom text input, and the optional hen selector.
-        3.  Verify the same consistency on the web app's registration flows.
-    -   **Why fix this issue and what will be achieved with the fix?**: Creates a consistent and less confusing user experience, which is a critical requirement before deployment.
-    -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: None
+-   **Issue 1 (P0): Premium subscription checkout fails with a 500 error.**
+-   **Issue 2 (P0): Production deployment is unstable.**
+-   **Issue 3 (P2): Normal produktion text for 0 eggs.**
 
--   **Issue 2 (P1): BUG - Web App Landing Page is Blank.**
-    -   **Description**: The web app's public landing/login page () renders as a completely white screen. This prevents any new or logged-out user from using the web application.
-    -   **Attempted fixes**: The agent noted the issue twice (Msg 172, 362) but did not investigate, instead moving on to other tasks. It checked the CSS and HTML, which seemed correct, suggesting a JavaScript rendering or build issue.
-    -   **Next debug checklist**:
-        1.  Start the web app in dev mode ().
-        2.  Open the browser's developer console and check for any JavaScript errors that are preventing React from rendering.
-        3.  Review recent changes to  and its CSS, as the issue appeared after these were modified.
-        4.  Check the Vite build configuration and output.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical, blocking bug that makes the web app unusable for non-authenticated users.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: None
+Issues Detail:
+-   **Issue 1: Premium subscription checkout fails with a 500 error.**
+    -   Attempted fixes: The agent found the root cause: the Stripe session was created with  for a recurring price, which is incorrect. The attempt to fix this by modifying the Pydantic model failed because the model didn't support the  parameter. The agent was starting to implement a fix using the  library directly.
+    -   Next debug checklist:
+        1.  Locate the  endpoint in .
+        2.  Remove the usage of the  Pydantic model for creating the session.
+        3.  Instantiate the Stripe  call directly.
+        4.  Ensure the  parameter is set to .
+        5.  Verify all other required parameters (, , ) are passed correctly.
+    -   Why fix this issue and what will be achieved with the fix?: This is a critical business-blocking bug. Users cannot pay for the service, preventing all revenue generation.
+    -   Status: IN PROGRESS
+    -   Is recurring issue?: Y
+    -   Should Test frontend/backend/both after fix?: Backend
+    -   Blocked on other issue: None
 
--   **Issue 3 (P2): BUG - Anpassa funktioner Toggles Not Working.**
-    -   **Description**: The feature toggles in the settings menu are not functional, even for Premium users.
-    -   **Attempted fixes**: The agent checked the user's subscription status in the dev environment and found they were not Premium. The agent assumed the code was correct and the problem was just the user's status. This is an unverified assumption.
-    -   **Next debug checklist**:
-        1.  Temporarily grant the test user () Premium status in the database or via a backend script.
-        2.  Test the feature toggles on the mobile app's settings screen.
-        3.  Debug the state management and API calls in  to see why the toggles are not saving or reflecting the user's choices.
-    -   **Why fix this issue and what will be achieved with the fix?**: Fulfills a specific user requirement for Premium users to customize their interface.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: None
+-   **Issue 2: Production deployment is unstable.**
+    -   Attempted fixes: The user has repeatedly reported that after deploying, the live site () either shows a , a , or has a broken login loop where the user is redirected back to the start page. The agent fixed a bug in the  function (missing  parameter) that was likely causing auth issues, but this hasn't solved the deployment instability.
+    -   Next debug checklist:
+        1.  After fixing Issue 1, advise the user to deploy again.
+        2.  If the deployment fails, the issue is likely environmental or a configuration mismatch between preview and production.
+        3.  Check all  files for hardcoded URLs that might point to the preview environment.
+        4.  Review the  files to ensure the correct applications are being started with the correct parameters in the production environment. The agent previously discovered the Expo app was running on the frontend port instead of the React web app. This might be happening again on production.
+    -   Why fix this issue and what will be achieved with the fix?: The application is useless if it's not stable on the production URL. This is the highest priority after the checkout fix.
+    -   Status: NOT STARTED
+    -   Is recurring issue?: Y
+    -   Should Test frontend/backend/both after fix?: Both
+    -   Blocked on other issue: Issue 1
+
+-   **Issue 3: Normal produktion text for 0 eggs.**
+    -   Attempted fixes: The user requested changing the text when a user has 0 eggs from Normal produktion to something more intuitive. The agent acknowledged this and started a major dashboard redesign but it's unclear if this specific text change was completed.
+    -   Next debug checklist:
+        1.  Search for the string Normal produktion in .
+        2.  Wrap the rendering of this text in a condition: if , display Inga ägg har registrerats än. or similar. Otherwise, display the normal production text.
+    -   Why fix this issue and what will be achieved with the fix?: A small but important UX improvement that makes the app feel more polished and less confusing for new users.
+    -   Status: NOT STARTED
+    -   Is recurring issue?: N
+    -   Should Test frontend/backend/both after fix?: Frontend
+    -   Blocked on other issue: None
 
 **In progress Task List**:
--   **Task 1: Unify Egg Registration UI (P0)**
-    -   **Where to resume**: In the mobile app codebase (), apply the new unified egg registration logic (from the Dashboard modal) to the dedicated Add Egg page and the Hen Profile bottom sheet ().
-    -   **What will be achieved with this?**: A consistent and intuitive core user flow, ready for deployment.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on something**: No
+-   **Task 1: UI/UX Overhaul (P1)**
+    -   Where to resume: The agent started implementing a cleaner dashboard layout, micro-animations, and a share to social media feature in  and . This work is incomplete.
+    -   What will be achieved with this?: Fulfills user's request for a more polished and engaging UI, and adds a viral marketing component (social sharing).
+    -   Status: IN PROGRESS
+    -   Should Test frontend/backend/both after fix?: Frontend
+    -   Blocked on something: No
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks (Pre-Deploy, P1):**
-    -   **Add Logout Button to Web App:** Implement a Logga ut button on the authenticated web app interface. (File:  or a header component).
-    -   **Update Stripe Prices (Backend):** The agent only updated the displayed price on the frontend. The actual Stripe Price IDs used in the backend ( in the  endpoint) must be updated or replaced with new ones corresponding to 19 kr/mo and 149 kr/yr.
-    -   **Implement Push Notifications:** A requested feature that has not been started. This will likely involve using Expo's push notification service and creating backend logic to trigger notifications (e.g., for hatching).
-    -   **Final Feature Parity Audit:** A final check to confirm that all features are identical across web and mobile, as requested by the user.
-
--   **Future Tasks (Post-Deploy, P2):**
-    -   **Etapp 4: Foderhantering (Feed Management)**.
-    -   **Etapp 5: Väderdata-integration (Weather Integration)**.
+-   **Upcoming Tasks:**
+    -   **(P1) Implement Push Notifications:** This is a planned premium feature that has not been started. It will likely require integration with a service like Firebase Cloud Messaging (FCM) or Expo's push notification service.
+-   **Future Tasks:**
+    -   **(P2) Enhanced Analytics:** The user has expressed interest in more advanced graphs and trends.
+    -   **(P2) User Onboarding:** Add a welcome guide or tour for new users to explain the app's features.
+    -   **(P2) Add Apple Sign-In:** To complement Google and email/password auth, especially for the iOS App Store.
 
 **Completed work in this session**
--   **Etapp 1, 2, 3**: Implemented Flock Management, Health Logs, Productivity Analysis, Data-Limit Warnings, and a Hatching Module on backend, web, and mobile.
--   **Branding/UI**: Implemented a new logo, tagline, and fonts on the web landing page.
--   **Contact Form**: Added a Contact Us / Feedback feature to both web and mobile.
--   **Feature Toggles**: Added the UI and backend for Premium users to toggle features (currently buggy).
--   **Hen Profile Bottom Sheet**: Added a quick-action bottom sheet to the mobile hens list.
--   **Per-Hen Egg Registration**: Added the *option* to select a hen during egg registration on both platforms.
--   **Pricing Display**: Updated the displayed prices for Premium on web and mobile frontends.
-
-**Earlier issues found/mentioned but not fixed**
--   **Issue 1: Web App Landing Page is Blank.**
-    -   **Debug checklist**: See All Pending/In progress Issue list, Issue 2.
-    -   **Why to solve this issue and what will be achieved with this?**: This is a critical regression that blocks web access.
-    -   **Should Test frontend/backend/both after fix**: Frontend
-    -   **Is recurring issue?**: Y
--   **Issue 2: Unverified TypeScript errors in the mobile app.**
-    -   **Debug checklist**: Run src/i18n/index.ts(12,35): error TS2339: Property 'locale' does not exist on type 'typeof import("/app/frontend/node_modules/expo-localization/build/Localization")'.
-src/services/revenuecat.ts(164,25): error TS2339: Property 'remove' does not exist on type 'void'. in  to identify and fix remaining type errors.
-    -   **Why to solve this issue and what will be achieved with this?**: Improves code stability and maintainability.
-    -   **Should Test frontend/backend/both after fix**: Frontend
-    -   **Is recurring issue?**: Y
+-   **Critical Auth Fix**: Resolved a login loop by adding the missing  parameter to the  function, which prevented cookies from being set correctly.
+-   **Premium Feature Lockdown**: Implemented backend (403 Forbidden) and frontend (UI locks) for all premium features, most recently for  (Feed Management).
+-   **Email/Password Authentication**: Added a full registration and login flow for users without a Google account.
+-   **AI-Powered Features**:
+    -   Implemented backend endpoints for an AI Daily Report and 7-Day Egg Forecast.
+    -   The AI assistant was named Agda and the reports were personalized with the user's name.
+    -   Implemented a freemium teaser on the frontend where these features are visible but blurred for free users to encourage upgrades.
+-   **Dashboard & UX Redesign**:
+    -   Began a major redesign of the dashboard, replacing multiple buttons with a single Add Egg button that opens a modal.
+    -   Made AI insight cards on the dashboard clickable.
+    -   Fixed the navigation tab order.
+-   **Cookie Banner Redesign**: Changed the full-width cookie banner to a small, discreet notice in the corner so it no longer blocks the login button.
+-   **Bug Fixes**:
+    -   Fixed an issue where the Settings tab was hidden in the mobile navigation bar.
+    -   Added demo data to statistics graphs so they are not empty for new users.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence**: The web app landing page rendering a blank white screen.
--   **Recurrence count**: 2
--   **Status**: NOT STARTED
+-   Issue recurrence in previous fork: Instability on the production deployment URL (502/520 errors, auth loops).
+-   Recurrence count: 3+
+-   Status: **IN PROGRESS**
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI, Python, Pydantic
--   **Frontend (Web)**: React, Vite, TypeScript/JavaScript
--   **Frontend (Mobile)**: React Native, Expo, Expo Router, TypeScript
--   **Database**: MongoDB
--   **State Management (Mobile)**: Zustand
+-   **Backend**: FastAPI, Python, Pydantic, Passlib (for password hashing), python-jose (for JWTs).
+-   **Frontend (Web)**: React, Vite, TypeScript, .
+-   **Frontend (Mobile)**: React Native, Expo, Expo Router.
+-   **Database**: MongoDB.
+-   **Authentication**: Google OAuth2 (managed by Emergent), JWT-based Email/Password.
+-   **AI Integration**:  library used for AI-powered text generation (daily report).
 
 **key DB schema**
--   : { , : { : bool, ... } }
--   : { ,  }
--   : { , , ,  }
--   : { , Tue Feb 24 22:24:56 UTC 2026, ,  (optional) }
--   : { , Tue Feb 24 22:24:56 UTC 2026,  }
--   : { , , , ,  }
-
-**changes in tech stack**
--   None.
+-   : { , , , , ... }
+-   : { , ,  }
+-   : Now a premium-locked resource.
 
 **All files of reference**
--   : Actively modified. Contains all API logic.
--   : Mobile app dashboard. Needs egg registration UI unified.
--   : Mobile app hens list. Needs egg registration UI unified in its bottom sheet.
--   : Mobile settings page with the buggy feature toggles.
--   : Web landing page. **Currently broken (white screen).**
--   : Web dashboard. Needs egg registration UI unified.
-
-**Areas that need refactoring**:
--   **Egg Registration**: Consolidate the three different egg registration flows in the mobile app into a single reusable component to eliminate code duplication and ensure a consistent UX.
-
-**key api endpoints**
--   
--    (Updated to accept optional )
--    (GET, PUT)
--    (CRUD endpoints)
--    (Needs update for new Stripe prices)
+-   : Contains the broken  endpoint and the new email/password auth logic.
+-   : Site of the major ongoing UI/UX refactor.
+-   : Contains the new email/password login form.
+-   : Contains new styles for the non-obtrusive cookie banner.
 
 **Critical Info for New Agent**
--   **PRIORITY 1 is fixing the blank web landing page**. The web app is currently unusable for new users.
--   The user wants a deployable application. Focus on the final pre-deploy checklist items.
--   The Stripe price change is a **backend task**, not just a frontend text update. You will need to use the Stripe dashboard or API to create new price objects and update the IDs in .
--   When fixing the feature toggle bug, you must test as a Premium user. Do not assume the code works without verification.
--   The user expects feature parity. When implementing a fix or feature (like the unified egg registration), ensure it's applied to **both web and mobile** platforms.
+-   **Production vs. Preview is the main problem.** The user is extremely frustrated because the application works in the preview environment but is broken on their live production URL (). Do not consider a task done until it is verified to work on the production deployment.
+-   **Prioritize revenue-blocking and access-blocking bugs.** The premium checkout (Issue 1) and deployment instability (Issue 2) are P0. Nothing else matters until users can log in and pay.
+-   **Always respond in Swedish.**
+-   After fixing the checkout and deployment issues, the next priority is finishing the UI/UX overhaul the user requested (Task 1).
 
-**documents created in this job**
--   None.
+**documents and test reports created in this job**
+-    (updated multiple times).
+-   , 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (Msg 359)**: Requests to unify the egg registration UI across 3 different locations, add a logout button to the web, and asks for screenshots of the (currently broken) homepage. (IN PROGRESS)
-2.  **Agent (Msg 358)**: Summarizes changes and finishes the task, despite not fully completing the previous request and the web app being broken.
-3.  **User (Msg 310)**: Reports a bug with Anpassa funktioner toggles and requests a new feature for quick-adding eggs from a hen's profile via a bottom sheet. (Partially Implemented)
-4.  **Agent (Msg 309)**: Summarizes the pre-deploy changes and finishes.
-5.  **User (Msg 239)**: Provides a detailed pre-deploy checklist: confirm feature parity, change prices, change fonts, make hen selection on egg registration mandatory-to-see, and change the tagline. (Partially Implemented)
-6.  **Agent (Msg 238)**: Finishes after implementing Etapp 3.
-7.  **User (Msg 180)**: Reports a bug with the productivity warning and requests customizable features for Premium users. Also asks to start Etapp 3. (Implemented)
-8.  **Agent (Msg 179)**: Finishes after implementing the contact form and logo.
-9.  **User (Msg 137)**: Asks for Etapp 3, push notifications, a contact/feedback feature, a new logo, and a new tagline. (Partially Implemented)
-10. **Agent (Msg 136)**: Finishes Etapp 2.
+1.  **User**: Asks for a share-to-social-media function and a UI review.
+2.  **User**: Approves all three suggestions (Share function, Dashboard layout, Animations).
+3.  **User**: Points out that the user's name is missing from the AI Daily Report and asks for the assistant to be named.
+4.  **User**: Reports they still cannot purchase premium, providing a screenshot of the error.
+5.  **User**: Asks for another login option besides Google.
+6.  **User**: Confirms they want Email & Password login.
+7.  **User**: Provides context for the previous message, Fortsätt där du sluta (Continue where you left off).
+8.  **User**: Reports the production URL is down ().
+9.  **User**: Expresses extreme frustration that they still cannot log in after redeploying, stating the app needs to be fixed for launch.
+10. **User**: Asks if the production link will work after the next deploy and how to access the admin panel.
 
 **Project Health Check:**
--   **Broken**: The web application's main landing/login page is not rendering (white screen), blocking all access for non-authenticated users on the web.
--   **Mocked**: None.
+-   **Broken**:
+    -   **Premium Checkout**: The core monetization feature is non-functional due to a backend error.
+    -   **Production Deployment**: The live site is unstable, frequently crashing (502/520 errors) or suffering from critical bugs like auth loops that are not present in the preview environment.
 
 **3rd Party Integrations**
--   **Stripe**: For premium subscriptions. Requires backend update for new prices.
--   **Google OAuth2**: For user authentication.
--   **Resend**: For transactional emails.
--   **Google Fonts**: For  and  fonts (web only, needs implementation for mobile).
+-   **Stripe**: For subscriptions (currently broken).
+-   **Emergent-managed Google Auth**: For social login.
+-   **Recharts**: For data visualization.
+-   **OpenAI via **: Powers the AI Daily Report (uses Emergent LLM Key).
 
 **Testing status**
--   Testing agent used after significant changes: NO (Agent used  and  for manual checks, not a dedicated testing agent).
--   Troubleshoot agent used after agent stuck in loop: NO
+-   Testing agent used after significant changes: YES. However, there is a major disconnect between the testing agent's success in the preview environment and the reality of the broken production deployment.
 -   Test files created: None.
--   Known regressions: The web app landing page is blank.
+-   Known regressions: The entire production deployment is regressing into an unusable state after changes.
 
 **Credentials to test flow:**
--   **Admin User**:  (Login via the Sign in with Google button).
+-   **Admin User**:  (use Google Sign-In or create a password for it). Access admin panel at  after login.
 
 **What agent forgot to execute**
--   **Fix the critical web landing page bug.**
--   **Update Stripe prices on the backend.**
--   **Add the logout button to the web app.**
--   **Implement push notifications.**
--   Fully unify the egg registration UI across all three specified locations.
--   Properly load the custom fonts (, ) in the Expo mobile app.
--   Perform a final feature-parity audit between web and mobile.
-
-</analysis>
+-   The agent has not successfully resolved the root cause of the production deployment instability. Fixes applied in the preview environment are not consistently working on the live site, suggesting an environmental or configuration issue is being overlooked.
+-   The specific UI text change for Normal produktion was acknowledged but may have been lost during the larger dashboard redesign.
+-   The UI/UX overhaul (social share, animations, layout) was started but is far from complete.</analysis>

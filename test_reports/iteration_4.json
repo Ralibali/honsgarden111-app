@@ -26,7 +26,7 @@
   "seed_data_creation": "",
   "retest_needed": false,
   "main_agent_can_self_test": true,
-  "context_for_next_testing_agent": "P0 fixes verified via code review. Full UI testing requires Google OAuth login. Web app at https://honsgarden-deploy.preview.emergentagent.com/api/web/ loads correctly showing login page. API endpoint /api/feature-preferences returns correct structure with preferences object containing show_flock_management etc.",
+  "context_for_next_testing_agent": "P0 fixes verified via code review. Full UI testing requires Google OAuth login. Web app at https://subscription-flow-21.preview.emergentagent.com/api/web/ loads correctly showing login page. API endpoint /api/feature-preferences returns correct structure with preferences object containing show_flock_management etc.",
   "features_verified": {
     "Settings Page - Feature Toggles Fix": {
       "status": "PASS",
