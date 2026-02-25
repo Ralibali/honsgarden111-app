@@ -704,7 +704,26 @@
 }
 
 /* Mobile Responsive */
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 12px;
+    padding-bottom: 80px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 24px;
+  }
+  
+  .greeting {
+    font-size: 13px;
+  }
+}
+
 @media (max-width: 400px) {
+  .dashboard {
+    padding: 8px;
+  }
+  
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
@@ -724,5 +743,16 @@
   
   .quick-buttons {
     grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .dashboard-header h1 {
+    font-size: 20px;
+  }
+}
+
+/* Safe area for mobile browsers */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .dashboard {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
 }
