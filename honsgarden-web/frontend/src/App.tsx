@@ -16,6 +16,8 @@ import Admin from './pages/Admin';
 import Feed from './pages/Feed';
 import Hatching from './pages/Hatching';
 import ResetPassword from './pages/ResetPassword';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import Layout from './components/Layout';
 
 function AppRouter() {
@@ -31,6 +33,8 @@ function AppRouter() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
       <Route path="/checkout/success" element={<CheckoutSuccess />} />
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="/" element={<Dashboard />} />
