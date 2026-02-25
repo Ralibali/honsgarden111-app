@@ -68,6 +68,7 @@ export default function Layout() {
         </nav>
         
         <div className="sidebar-footer">
+          <div className="build-info">Build: {BUILD_INFO.timestamp}</div>
           {user && (
             <div className="user-info">
               {user.picture && <img src={user.picture} alt={user.name} className="user-avatar" />}
