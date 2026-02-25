@@ -286,6 +286,10 @@ class HenStatus(str, Enum):
     SOLD = "sold"
     DECEASED = "deceased"
 
+class HenType(str, Enum):
+    HEN = "hen"
+    ROOSTER = "rooster"
+
 # ============ HEN MODELS ============
 class HenCreate(BaseModel):
     name: str
@@ -294,6 +298,7 @@ class HenCreate(BaseModel):
     birth_date: Optional[str] = None
     notes: Optional[str] = None
     flock_id: Optional[str] = None
+    hen_type: HenType = HenType.HEN  # Default to hen
 
 class HenUpdate(BaseModel):
     name: Optional[str] = None
@@ -307,6 +312,7 @@ class HenUpdate(BaseModel):
     status_date: Optional[str] = None
     last_seen: Optional[str] = None
     last_seen_warning_days: Optional[int] = None
+    hen_type: Optional[HenType] = None
 
 class EggRecord(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
