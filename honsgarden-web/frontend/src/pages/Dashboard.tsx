@@ -457,21 +457,34 @@ export default function Dashboard() {
       <section className="quick-actions slide-up delay-3">
         <h2>Snabbåtgärder</h2>
         <div className="actions-grid">
+          <button 
+            className="action-card"
+            onClick={() => setShowEggModal(true)}
+          >
+            <span>🥚</span>
+            <span>Registrera ägg</span>
+          </button>
           <Link to="/hens" className="action-card">
             <span>🐔</span>
-            <span>Lägg till höna</span>
+            <span>Mina hönor</span>
+          </Link>
+          <Link to="/feed" className="action-card">
+            <span>🌾</span>
+            <span>Foder</span>
+            {!premium?.is_premium && <span className="action-badge">Premium</span>}
+          </Link>
+          <Link to="/hatching" className="action-card">
+            <span>🐣</span>
+            <span>Kläckning</span>
+            {!premium?.is_premium && <span className="action-badge">Premium</span>}
           </Link>
           <Link to="/finance" className="action-card">
-            <span>💸</span>
-            <span>Lägg till kostnad</span>
+            <span>💰</span>
+            <span>Ekonomi</span>
           </Link>
           <Link to="/statistics" className="action-card">
             <span>📊</span>
-            <span>Se statistik</span>
-          </Link>
-          <Link to="/settings" className="action-card">
-            <span>⚙️</span>
-            <span>Inställningar</span>
+            <span>Statistik</span>
           </Link>
         </div>
       </section>
