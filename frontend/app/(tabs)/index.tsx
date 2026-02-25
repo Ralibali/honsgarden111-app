@@ -835,6 +835,14 @@ export default function HomeScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+      
+      {/* Premium Gate Modal */}
+      <PremiumGateModal
+        visible={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        featureName={premiumFeatureName}
+        featureIcon={premiumFeatureIcon}
+      />
     </SafeAreaView>
   );
 }
