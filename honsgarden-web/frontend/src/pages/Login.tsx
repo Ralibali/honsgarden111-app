@@ -10,6 +10,7 @@ const PREVIEW_IMAGES = {
 };
 
 export default function Login() {
+  const navigate = useNavigate();
   const { login } = useAuth();
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactMessage, setContactMessage] = useState('');
