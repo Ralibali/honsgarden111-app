@@ -3206,11 +3206,12 @@ if WEBAPP_DIR.exists():
     async def favicon_api():
         return FileResponse(str(WEBAPP_DIR / "favicon.svg"))
     
-    # Serve webapp at ROOT - this catches all non-API routes
+    # Redirect root to webapp
     @app.get("/")
-    async def serve_webapp_root():
-        """Serve the React webapp at root"""
-        return FileResponse(str(WEBAPP_DIR / "index.html"))
+    async def redirect_to_webapp():
+        """Redirect root to React webapp"""
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/api/web", status_code=302)
     
     @app.get("/login")
     @app.get("/eggs")
@@ -3221,16 +3222,17 @@ if WEBAPP_DIR.exists():
     @app.get("/premium")
     @app.get("/admin")
     @app.get("/checkout-success")
-    async def serve_webapp_routes(request: Request):
-        """Serve the React webapp for SPA routes"""
-        return FileResponse(str(WEBAPP_DIR / "index.html"))
+    async def redirect_webapp_routes():
+        """Redirect SPA routes to /api/web"""
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/api/web", status_code=302)
     
-    # Keep /api/web for backwards compatibility
+    # Serve webapp at /api/web
     @app.get("/api/web")
     @app.get("/api/web/")
     @app.get("/api/web/{full_path:path}")
     async def serve_webapp_api(request: Request, full_path: str = ""):
-        """Serve the React webapp (backwards compatible)"""
+        """Serve the React webapp"""
         return FileResponse(str(WEBAPP_DIR / "index.html"))
 
 @app.on_event("shutdown")
