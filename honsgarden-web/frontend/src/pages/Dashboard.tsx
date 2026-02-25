@@ -535,6 +535,79 @@ export default function Dashboard() {
         </div>
       )}
       
+      {/* Weather Modal */}
+      {showWeatherModal && (
+        <div className="modal-overlay" onClick={() => setShowWeatherModal(false)}>
+          <div className="modal modal-slide-up weather-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🌤️ Väder & Tips</h3>
+              <button className="close-btn" onClick={() => setShowWeatherModal(false)}>✕</button>
+            </div>
+            <div className="weather-modal-content">
+              {weather?.current ? (
+                <>
+                  <div className="weather-main">
+                    <div className="weather-big-icon">
+                      {weather.current.temp < 0 ? '❄️' : 
+                       weather.current.temp < 10 ? '🌥️' : 
+                       weather.current.temp < 20 ? '⛅' : 
+                       weather.current.temp < 25 ? '☀️' : '🔥'}
+                    </div>
+                    <div className="weather-info">
+                      <span className="weather-big-temp">{Math.round(weather.current.temp)}°C</span>
+                      <span className="weather-feels">Känns som {Math.round(weather.current.feels_like)}°</span>
+                      <span className="weather-desc">{weather.current.description}</span>
+                      <span className="weather-location">📍 {weather.current.location}</span>
+                    </div>
+                  </div>
+                  <div className="weather-details">
+                    <div className="weather-detail">
+                      <span className="detail-label">Luftfuktighet</span>
+                      <span className="detail-value">{weather.current.humidity}%</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="weather-loading">Laddar väderdata...</p>
+              )}
+              
+              {weather?.tips && weather.tips.length > 0 && (
+                <div className="weather-tips-section">
+                  <h4>💡 Tips för din hönsgård</h4>
+                  <div className="tips-list">
+                    {weather.tips.map((tip, idx) => (
+                      <div key={idx} className={`tip-card ${tip.priority}`}>
+                        <span>{tip.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {!userLocation && (
+                <button 
+                  className="location-btn"
+                  onClick={() => {
+                    if (navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                          const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                          setUserLocation(coords);
+                          fetchWeatherWithLocation(coords.lat, coords.lon);
+                        },
+                        () => alert('Kunde inte hämta din plats')
+                      );
+                    }
+                  }}
+                >
+                  📍 Använd min plats
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Share Modal */}
       {showShareModal && (
         <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
