@@ -313,27 +313,11 @@ export default function SettingsScreen() {
               {!isPremium && (
                 <TouchableOpacity 
                   style={styles.upgradeButton}
-                  onPress={() => {
-                    // Open web browser for subscription management
-                    const premiumUrl = 'https://honsgarden.se/premium';
-                    Alert.alert(
-                      isSv ? 'Prenumerera via webben' : 'Subscribe via web',
-                      isSv 
-                        ? 'Du kommer att omdirigeras till honsgarden.se för att hantera din prenumeration.'
-                        : 'You will be redirected to honsgarden.se to manage your subscription.',
-                      [
-                        { text: isSv ? 'Avbryt' : 'Cancel', style: 'cancel' },
-                        { 
-                          text: isSv ? 'Öppna' : 'Open',
-                          onPress: () => Linking.openURL(premiumUrl)
-                        }
-                      ]
-                    );
-                  }}
+                  onPress={() => setShowPremiumModal(true)}
                 >
-                  <Ionicons name="globe-outline" size={18} color="#FFF" style={{ marginRight: 8 }} />
+                  <Ionicons name="star" size={18} color="#FFF" style={{ marginRight: 8 }} />
                   <Text style={styles.upgradeButtonText}>
-                    {isSv ? 'Prenumerera via honsgarden.se' : 'Subscribe via honsgarden.se'}
+                    {isSv ? 'Uppgradera till Premium' : 'Upgrade to Premium'}
                   </Text>
                 </TouchableOpacity>
               )}
