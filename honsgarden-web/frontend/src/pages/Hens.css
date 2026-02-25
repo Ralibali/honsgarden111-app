@@ -722,3 +722,47 @@
 .hen-name:hover {
   color: var(--accent-primary);
 }
+
+/* Type Selector */
+.type-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.type-btn:hover {
+  border-color: var(--primary);
+}
+
+.type-btn.active {
+  border-color: var(--primary);
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Rooster indicator in hen list */
+.hen-type-badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-left: 8px;
+}
+
+.hen-type-badge.rooster {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+}
