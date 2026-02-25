@@ -70,8 +70,14 @@ export default function Login() {
         return;
       }
       
-      // Success - navigate to dashboard (use relative path for SPA routing)
-      navigate('/eggs');
+      // Success - set user in context and navigate to dashboard
+      setUser({
+        user_id: data.user_id,
+        email: data.email,
+        name: data.name || '',
+        picture: data.picture
+      });
+      navigate('/');
     } catch (error) {
       setAuthError('Kunde inte ansluta till servern');
     } finally {
