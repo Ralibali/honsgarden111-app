@@ -11,15 +11,15 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import i18n from '../src/i18n';
 
-interface PremiumGateModalProps {
+// TypeScript interface for props
+type PremiumGateModalProps = {
   visible: boolean;
   onClose: () => void;
   featureName?: string;
   featureIcon?: keyof typeof Ionicons.glyphMap;
-}
+};
 
 const PREMIUM_WEB_URL = 'https://honsgarden.se/premium';
 
