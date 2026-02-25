@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 import { useAppStore } from '../../src/store/appStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import { useThemeStore, ThemeColors, ThemeMode } from '../../src/store/themeStore';
+import { useAuthStore } from '../../src/store/authStore';
 import i18n, { setLanguage, getLanguage } from '../../src/i18n';
 import * as Notifications from 'expo-notifications';
 
@@ -28,6 +29,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { coopSettings, fetchCoopSettings, updateCoopSettings, loading } = useAppStore();
   const { isPremium, plan, expiresAt, clearPremiumStatus } = usePremiumStore();
+  const { user, logout, isAuthenticated } = useAuthStore();
   const { colors, isDark, mode, setThemeMode } = useThemeStore();
   
   const [coopName, setCoopName] = useState('');
