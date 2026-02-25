@@ -393,32 +393,6 @@ export default function Dashboard() {
         </Link>
       </div>
       
-      {/* Weather Section */}
-      {weather && weather.tips && weather.tips.length > 0 && (
-        <section className="weather-section slide-up delay-2">
-          <div className="section-header">
-            <h2>🌤️ Vädertips</h2>
-          </div>
-          <div className="weather-tips">
-            {weather.tips.map((tip, idx) => (
-              <div 
-                key={idx} 
-                className={`weather-tip ${tip.priority}`}
-              >
-                <span className="tip-message">{tip.message}</span>
-              </div>
-            ))}
-          </div>
-          {weather.current && (
-            <div className="weather-current">
-              <span className="temp">{Math.round(weather.current.temp)}°C</span>
-              <span className="desc">{weather.current.description}</span>
-              <span className="location">{weather.current.location}</span>
-            </div>
-          )}
-        </section>
-      )}
-      
       {/* Flock Recommendations */}
       {flockStats && flockStats.recommendations && flockStats.recommendations.length > 0 && (
         <section className="flock-recommendations slide-up delay-2">
