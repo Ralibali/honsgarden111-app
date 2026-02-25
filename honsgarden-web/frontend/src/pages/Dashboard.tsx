@@ -77,6 +77,7 @@ interface Insights {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [todayStats, setTodayStats] = useState<TodayStats | null>(null);
   const [summary, setSummary] = useState<SummaryStats | null>(null);
   const [coop, setCoop] = useState<CoopSettings | null>(null);
@@ -89,6 +90,15 @@ export default function Dashboard() {
   const [selectedHen, setSelectedHen] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [showHenPicker, setShowHenPicker] = useState(false);
+  
+  // New: Modal state for egg registration
+  const [showEggModal, setShowEggModal] = useState(false);
+  
+  // New: AI Modal state
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiModalType, setAiModalType] = useState<'daily' | 'forecast'>('daily');
+  const [aiData, setAiData] = useState<any>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   
   useEffect(() => {
     loadData();
