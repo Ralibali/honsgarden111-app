@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Layout.css';
@@ -15,6 +15,20 @@ const navItems = [
 export default function Layout() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    // Check admin status
+    const checkAdmin = async () => {
+      try {
+        const res = await fetch('/api/admin/stats', { credentials: 'include' });
+        setIsAdmin(res.ok);
+      } catch {
+        setIsAdmin(false);
+      }
+    };
+    if (user) checkAdmin();
+  }, [user]);
   
   return (
     <div className="layout">
