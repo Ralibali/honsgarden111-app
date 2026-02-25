@@ -106,11 +106,7 @@ export default function Login() {
         setAuthLoading(false);
         return;
       }
-      if (!acceptedMarketing) {
-        setAuthError('Du måste godkänna att ta emot information från oss.');
-        setAuthLoading(false);
-        return;
-      }
+      // Note: acceptedMarketing is optional per GDPR
     }
     
     try {
