@@ -265,6 +265,7 @@ class Hen(BaseModel):
     status_date: Optional[str] = None
     last_seen: Optional[str] = None
     last_seen_warning_days: int = 3  # Default warning after 3 days
+    hen_type: str = "hen"  # hen or rooster
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
