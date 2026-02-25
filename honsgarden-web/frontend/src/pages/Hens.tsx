@@ -185,7 +185,8 @@ export default function Hens() {
           color: color || undefined,
           birth_date: birthDate || undefined,
           notes: notes || undefined,
-          flock_id: henFlockId || undefined
+          flock_id: henFlockId || undefined,
+          hen_type: henType
         })
       });
       await loadData();
@@ -205,6 +206,7 @@ export default function Hens() {
     setBirthDate(hen.birth_date || '');
     setNotes(hen.notes || '');
     setHenFlockId(hen.flock_id || '');
+    setHenType(hen.hen_type || 'hen');
     setShowModal(true);
   };
   
