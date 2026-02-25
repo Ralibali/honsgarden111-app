@@ -64,6 +64,11 @@ export default function HomeScreen() {
   const [weather, setWeather] = useState<any>(null);
   const [showWeatherModal, setShowWeatherModal] = useState(false);
   
+  // Premium Gate Modal state
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [premiumFeatureName, setPremiumFeatureName] = useState('');
+  const [premiumFeatureIcon, setPremiumFeatureIcon] = useState<keyof typeof Ionicons.glyphMap>('star');
+  
   // Animation refs
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const undoOpacity = useRef(new Animated.Value(0)).current;
