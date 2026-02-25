@@ -303,35 +303,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-              key={num}
-              onClick={() => handleQuickAdd(num)}
-              disabled={saving}
-              className="quick-add-btn"
-              data-testid={`quick-add-${num}`}
-            >
-              +{num}
-            </button>
-          ))}
-        </div>
-        <div className="custom-add">
-          <input
-            type="number"
-            placeholder="Annat antal"
-            value={eggCount}
-            onChange={(e) => setEggCount(e.target.value)}
-            min="0"
-            data-testid="custom-egg-count"
-          />
-          <button
-            onClick={() => eggCount && handleQuickAdd(parseInt(eggCount))}
-            disabled={!eggCount || saving}
-            className="btn-primary"
-            data-testid="add-custom-eggs"
-          >
-            Lägg till
-          </button>
-        </div>
-      </div>
       
       {/* Monthly Summary */}
       <div className="card summary-card">
