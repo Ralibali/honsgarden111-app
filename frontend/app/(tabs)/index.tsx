@@ -494,7 +494,7 @@ export default function HomeScreen() {
         {weather && (
           <TouchableOpacity 
             style={styles.weatherCard}
-            onPress={() => isPremium ? setShowWeatherModal(true) : router.push('/paywall')}
+            onPress={() => isPremium ? setShowWeatherModal(true) : showPremiumGate(isSv ? 'Vädertips' : 'Weather Tips', 'cloudy')}
           >
             <View style={styles.weatherHeader}>
               <Text style={styles.cardTitle}>🌤️ {isSv ? 'Väder' : 'Weather'}</Text>
