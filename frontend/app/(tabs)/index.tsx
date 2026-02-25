@@ -652,7 +652,7 @@ export default function HomeScreen() {
             {!isPremium && (
               <TouchableOpacity 
                 style={styles.unlockButton}
-                onPress={() => router.push('/paywall')}
+                onPress={() => showPremiumGate(isSv ? 'AI Dagsrapport' : 'AI Daily Report', 'document-text')}
               >
                 <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
               </TouchableOpacity>
@@ -679,7 +679,7 @@ export default function HomeScreen() {
             {!isPremium && (
               <TouchableOpacity 
                 style={styles.unlockButton}
-                onPress={() => router.push('/paywall')}
+                onPress={() => showPremiumGate(isSv ? 'Äggprognos' : 'Egg Forecast', 'trending-up')}
               >
                 <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
               </TouchableOpacity>
@@ -690,7 +690,7 @@ export default function HomeScreen() {
           {!isPremium && (
             <TouchableOpacity 
               style={styles.aiUpgradeHint}
-              onPress={() => router.push('/paywall')}
+              onPress={() => showPremiumGate(isSv ? 'AI-funktioner' : 'AI Features', 'sparkles')}
             >
               <Ionicons name="sparkles" size={16} color="#f59e0b" />
               <Text style={styles.aiUpgradeHintText}>
@@ -704,7 +704,7 @@ export default function HomeScreen() {
         {!isPremium && (
           <TouchableOpacity 
             style={styles.premiumBanner}
-            onPress={() => router.push('/paywall')}
+            onPress={() => showPremiumGate('', 'star')}
           >
             <View style={styles.premiumBannerContent}>
               <Ionicons name="star" size={24} color={colors.warning} />
