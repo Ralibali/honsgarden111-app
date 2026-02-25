@@ -268,19 +268,31 @@ export default function PaywallScreen() {
         
         {/* CTA Button */}
         <TouchableOpacity
-          style={[styles.ctaButton, (purchasing || storeLoading) && styles.ctaButtonDisabled]}
-          onPress={handlePurchase}
-          disabled={purchasing || storeLoading}
+          style={[styles.ctaButton, storeLoading && styles.ctaButtonDisabled]}
+          onPress={handleUpgrade}
+          disabled={storeLoading}
         >
-          {purchasing ? (
+          {storeLoading ? (
             <ActivityIndicator color="#FFF" />
           ) : (
-            <Text style={styles.ctaButtonText}>{t('premium.startPremium')}</Text>
+            <>
+              <Ionicons name="globe-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />
+              <Text style={styles.ctaButtonText}>
+                {isSv ? 'Prenumerera via honsgarden.se' : 'Subscribe via honsgarden.se'}
+              </Text>
+            </>
           )}
         </TouchableOpacity>
         
-        {/* Cancel anytime notice */}
-        <Text style={styles.cancelNotice}>{t('premium.cancelAnytime')}</Text>
+        {/* Info notice about web subscription */}
+        <View style={styles.webNotice}>
+          <Ionicons name="information-circle" size={18} color="#8E8E93" />
+          <Text style={styles.webNoticeText}>
+            {isSv 
+              ? 'Prenumerationen hanteras via vår hemsida för enklare betalning och hantering.'
+              : 'Subscription is managed via our website for easier payment and management.'}
+          </Text>
+        </View>
         
         {/* Restore purchases */}
         <TouchableOpacity 
