@@ -744,9 +744,10 @@
 
 @media (max-width: 768px) {
   .cookie-banner {
-    flex-direction: column;
-    padding: 20px;
-    text-align: center;
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
   }
   
   .cookie-content {
