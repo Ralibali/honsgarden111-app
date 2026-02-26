@@ -20,9 +20,8 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useThemeStore } from '../../src/store/themeStore';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-const GOOGLE_AUTH_URL = `${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/auth/v1/env/oauth/google`;
 
-type AuthMode = 'welcome' | 'login' | 'register' | 'forgot' | 'verify-code' | 'new-password';
+type AuthMode = 'welcome' | 'login' | 'register' | 'forgot' | 'verify-code' | 'new-password' | 'register-verify';
 
 export default function LoginScreen() {
   const router = useRouter();
