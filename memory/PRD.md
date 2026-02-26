@@ -1,10 +1,36 @@
 # Hönsgården - Product Requirements Document
 
-## Senaste uppdatering: 26 Feb 2026
+## Senaste uppdatering: 26 Feb 2026 (Session 2)
 
 ---
 
-## NYLIGEN GENOMFÖRT (26 Feb 2026)
+## NYLIGEN GENOMFÖRT (26 Feb 2026 - Session 2)
+
+### 1. Avancerade Statistiska Insikter ✅
+**Ny backend-endpoint: `/api/statistics/advanced-insights`**
+
+Returnerar detaljerad data om:
+- **Foderkonvertering** (kg foder per dussin ägg)
+- **Värpfrekvens** (% av höns som värper dagligen)
+- **Kostnad per ägg**
+- **Vinst per ägg**
+- **Foderkostnad per ägg**
+- **Ägg per höna (månad/år)**
+- **Bästa värpdag** (vilken veckodag ger mest ägg)
+- **Produktivitetspoäng** (0-100)
+
+### 2. Uppdaterad Statistik-sida (Frontend) ✅
+- Ny sektion "Avancerade insikter" tillagd
+- Produktivitetspoäng-visare med färgkodning
+- Rutnät med alla nyckeltal
+- Premium-lås för icke-premium användare
+
+### 3. Syntax-fix i login.tsx ✅
+- Åtgärdade `<View style={styles.divider}>` fel (saknades stängning)
+
+---
+
+## TIDIGARE GENOMFÖRT (26 Feb 2026 - Session 1)
 
 ### 1. Autentisering - Endast E-post/Lösenord ✅
 **Google Sign-In har tagits bort.** Enklare och säkrare.
