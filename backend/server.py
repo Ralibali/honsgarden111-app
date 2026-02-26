@@ -4430,6 +4430,16 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+# Serve standalone premium page via API route
+@api_router.get("/premium-page", response_class=HTMLResponse)
+async def serve_premium_page_api():
+    """Serve the standalone premium landing page"""
+    premium_file = ROOT_DIR / "webapp_dist" / "premium.html"
+    if premium_file.exists():
+        with open(premium_file, 'r', encoding='utf-8') as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Premium page not found</h1>", status_code=404)
+
 # Include the router in the main app
 app.include_router(api_router)
 
