@@ -10,7 +10,7 @@ import uuid
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://rooster-registry-1.preview.emergentagent.com"
+    BASE_URL = "https://flock-manager-11.preview.emergentagent.com"
 
 
 class TestFeedAPIEndpoints:
