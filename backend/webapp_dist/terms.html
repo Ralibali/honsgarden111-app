@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Användarvillkor - Hönsgården</title>
+    <link rel="icon" type="image/svg+xml" href="/api/web/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-card: #1a1a24;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-green: #4ade80;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        
+        .header {
+            position: sticky;
+            top: 0;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon { font-size: 1.75rem; }
+        .logo-text { font-size: 1.125rem; font-weight: 700; }
+        
+        .back-link {
+            color: var(--accent-green);
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-link:hover { text-decoration: underline; }
+        
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 3rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-green);
+        }
+        
+        h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        ul, ol {
+            color: var(--text-secondary);
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        li { margin-bottom: 0.5rem; }
+        
+        .highlight-box {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent-green);
+        }
+        
+        .highlight-box p { margin-bottom: 0; }
+        
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left-color: #ef4444;
+        }
+        
+        a { color: var(--accent-green); }
+        
+        .footer {
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+        
+        .footer p {
+            font-size: 0.875rem;
+        }
+        
+        .footer a { margin: 0 0.5rem; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span class="logo-icon">🐔</span>
+                <span class="logo-text">Hönsgården</span>
+            </a>
+            <a href="/api/premium-page" class="back-link">
+                ← Tillbaka
+            </a>
+        </div>
+    </header>
+    
+    <main class="main">
+        <h1>Användarvillkor</h1>
+        <p class="last-updated">Senast uppdaterade: 26 februari 2026</p>
+        
+        <p>
+            Välkommen till Hönsgården! Genom att använda vår app och tjänst godkänner du dessa användarvillkor. 
+            Läs dem noggrant innan du börjar använda Hönsgården.
+        </p>
+        
+        <div class="highlight-box">
+            <p><strong>Kort sammanfattning:</strong> Använd Hönsgården för att hålla koll på din hönsgård. 
+            Var snäll, bryt inte mot lagen, och ha kul! 🐔</p>
+        </div>
+        
+        <h2>1. Godkännande av villkor</h2>
+        <p>
+            Genom att skapa ett konto eller använda Hönsgården godkänner du dessa villkor. 
+            Om du inte godkänner villkoren, vänligen använd inte tjänsten.
+        </p>
+        
+        <h2>2. Beskrivning av tjänsten</h2>
+        <p>Hönsgården är en app för att:</p>
+        <ul>
+            <li>Registrera och spåra äggproduktion</li>
+            <li>Hantera information om hönor och flockar</li>
+            <li>Få AI-baserade råd och prognoser (Premium)</li>
+            <li>Spåra ekonomi kopplat till din hönsgård</li>
+            <li>Dokumentera hälsa och kläckning (Premium)</li>
+        </ul>
+        
+        <h2>3. Konton och registrering</h2>
+        <p>När du skapar ett konto måste du:</p>
+        <ul>
+            <li>Vara minst 16 år gammal</li>
+            <li>Ange korrekt information</li>
+            <li>Hålla ditt lösenord hemligt</li>
+            <li>Meddela oss om obehörig åtkomst</li>
+        </ul>
+        <p>Du ansvarar för all aktivitet på ditt konto.</p>
+        
+        <h2>4. Premium-prenumeration</h2>
+        
+        <h3>4.1 Priser och betalning</h3>
+        <ul>
+            <li><strong>Månatlig:</strong> 19 kr/månad</li>
+            <li><strong>Årlig:</strong> 149 kr/år</li>
+        </ul>
+        <p>Alla priser inkluderar moms. Betalning sker via Stripe.</p>
+        
+        <h3>4.2 Automatisk förnyelse</h3>
+        <p>
+            Premium-prenumerationen förnyas automatiskt om du inte avbryter den innan förnyelsedatumet. 
+            Du kan avbryta när som helst via inställningarna.
+        </p>
+        
+        <h3>4.3 Provperiod</h3>
+        <p>
+            Nya användare kan få en gratis provperiod på 7 dagar. Under provperioden debiteras du inte. 
+            Om du inte avbryter före provperiodens slut börjar din betalda prenumeration.
+        </p>
+        
+        <h3>4.4 Återbetalning</h3>
+        <p>
+            Om du inte är nöjd kan du begära återbetalning inom 30 dagar från ditt första köp. 
+            Kontakta <a href="mailto:info@honsgarden.se">info@honsgarden.se</a>.
+        </p>
+        
+        <h2>5. Användarens ansvar</h2>
+        <p>Du får <strong>inte</strong>:</p>
+        <ul>
+            <li>Använda tjänsten för olagliga ändamål</li>
+            <li>Dela ditt konto med andra</li>
+            <li>Försöka hacka eller störa tjänsten</li>
+            <li>Ladda upp skadlig kod eller virus</li>
+            <li>Automatisera åtkomst utan tillstånd (t.ex. bots)</li>
+            <li>Kränka andras rättigheter</li>
+        </ul>
+        
+        <h2>6. Immateriella rättigheter</h2>
+        <p>
+            Hönsgården, inklusive design, kod, logotyper och innehåll, tillhör oss eller våra licensgivare. 
+            Du får inte kopiera, modifiera eller distribuera vårt material utan skriftligt tillstånd.
+        </p>
+        <p>
+            Din data (äggregistreringar, information om hönor etc.) tillhör dig. 
+            Du ger oss en licens att lagra och bearbeta den för att tillhandahålla tjänsten.
+        </p>
+        
+        <h2>7. AI-funktioner</h2>
+        <p>Hönsgårdens AI-funktioner (Agda, dagsrapporter, prognoser) är avsedda som hjälpmedel och rådgivning.</p>
+        <div class="highlight-box warning-box">
+            <p><strong>Viktigt:</strong> AI-råden ersätter inte professionell veterinärrådgivning. 
+            Vid allvarliga hälsoproblem hos dina hönor, kontakta alltid en veterinär.</p>
+        </div>
+        
+        <h2>8. Tillgänglighet</h2>
+        <p>
+            Vi strävar efter att Hönsgården ska vara tillgänglig dygnet runt, men vi kan inte garantera det. 
+            Tjänsten kan vara otillgänglig för underhåll eller av andra anledningar.
+        </p>
+        
+        <h2>9. Ansvarsbegränsning</h2>
+        <p>
+            Hönsgården tillhandahålls "i befintligt skick". Vi ger inga garantier för att tjänsten är felfri. 
+            Vi ansvarar inte för:
+        </p>
+        <ul>
+            <li>Förlust av data (vi rekommenderar regelbunden export)</li>
+            <li>Ekonomiska förluster baserade på AI-råd</li>
+            <li>Skador orsakade av tredje parts tjänster</li>
+            <li>Avbrott i tjänsten</li>
+        </ul>
+        
+        <h2>10. Ändringar av villkor</h2>
+        <p>
+            Vi kan uppdatera dessa villkor. Väsentliga ändringar meddelas via e-post minst 30 dagar innan de träder i kraft. 
+            Fortsatt användning efter ändringar innebär att du godkänner de nya villkoren.
+        </p>
+        
+        <h2>11. Uppsägning</h2>
+        <p>
+            Du kan när som helst radera ditt konto via inställningarna. 
+            Vi kan stänga av konton som bryter mot dessa villkor.
+        </p>
+        
+        <h2>12. Tvister och tillämplig lag</h2>
+        <p>
+            Dessa villkor regleras av svensk lag. Tvister ska i första hand lösas genom förhandling. 
+            Om det inte lyckas kan tvisten prövas av svensk domstol.
+        </p>
+        
+        <h2>13. Kontakt</h2>
+        <p>Har du frågor om villkoren? Kontakta oss:</p>
+        <ul>
+            <li>E-post: <a href="mailto:info@honsgarden.se">info@honsgarden.se</a></li>
+            <li>Adress: Hönsgården AB, Sverige</li>
+        </ul>
+    </main>
+    
+    <footer class="footer">
+        <p>
+            © 2026 Hönsgården · 
+            <a href="/api/privacy">Integritetspolicy</a> · 
+            <a href="/api/terms">Användarvillkor</a>
+        </p>
+    </footer>
+</body>
+</html>
