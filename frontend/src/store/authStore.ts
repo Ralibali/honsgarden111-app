@@ -95,6 +95,18 @@ export const useAuthStore = create<AuthState>()(
             return { success: false, message: data.detail };
           }
           
+          // Check if verification is required
+          if (data.requires_verification) {
+            set({ isLoading: false, error: null });
+            return { 
+              success: true, 
+              requiresVerification: true,
+              email: data.email,
+              message: data.message 
+            };
+          }
+          
+          // Legacy flow: direct login after register
           set({
             user: {
               user_id: data.user_id,
