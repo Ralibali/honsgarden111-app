@@ -1150,8 +1150,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginTop: 16,
     alignItems: 'center',
   },
+  resendButtonDisabled: {
+    opacity: 0.5,
+  },
   resendText: {
     color: '#4ade80',
     fontSize: 14,
+  },
+  resendTextDisabled: {
+    color: 'rgba(74, 222, 128, 0.5)',
   },
 });
