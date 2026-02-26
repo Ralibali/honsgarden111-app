@@ -910,6 +910,157 @@ export default function HomeScreen() {
         </KeyboardAvoidingView>
       </Modal>
       
+      {/* AI Daily Report Modal */}
+      <Modal
+        visible={showAiReportModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowAiReportModal(false)}
+      >
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowAiReportModal(false)}>
+              <Ionicons name="close" size={28} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {isSv ? 'AI Dagsrapport' : 'AI Daily Report'}
+            </Text>
+            <TouchableOpacity onPress={loadAiReport}>
+              <Ionicons name="refresh" size={24} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.modalContent} contentContainerStyle={{ padding: 16 }}>
+            {aiReportLoading ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingEmoji}>🤖</Text>
+                <Text style={[styles.loadingText, { color: colors.text }]}>
+                  {isSv ? 'Genererar din AI-rapport...' : 'Generating your AI report...'}
+                </Text>
+              </View>
+            ) : aiReport ? (
+              <View>
+                <View style={[styles.reportCard, { backgroundColor: colors.surface }]}>
+                  <Text style={[styles.reportDate, { color: colors.textMuted }]}>
+                    {format(new Date(), 'd MMMM yyyy', { locale: isSv ? sv : enUS })}
+                  </Text>
+                  <Text style={[styles.reportText, { color: colors.text }]}>
+                    {aiReport.report || aiReport.message || (isSv ? 'Ingen rapport tillgänglig' : 'No report available')}
+                  </Text>
+                </View>
+                
+                {aiReport.tips && aiReport.tips.length > 0 && (
+                  <View style={[styles.tipsCard, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.tipsTitle, { color: colors.text }]}>
+                      💡 {isSv ? 'Tips för idag' : 'Tips for today'}
+                    </Text>
+                    {aiReport.tips.map((tip: string, index: number) => (
+                      <View key={index} style={styles.tipRow}>
+                        <Text style={styles.tipBullet}>•</Text>
+                        <Text style={[styles.tipText, { color: colors.textSecondary }]}>{tip}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ) : (
+              <TouchableOpacity style={[styles.loadReportBtn, { backgroundColor: colors.primary }]} onPress={loadAiReport}>
+                <Text style={styles.loadReportBtnText}>
+                  {isSv ? 'Ladda rapport' : 'Load Report'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+      
+      {/* Egg Forecast Modal */}
+      <Modal
+        visible={showForecastModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowForecastModal(false)}
+      >
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowForecastModal(false)}>
+              <Ionicons name="close" size={28} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {isSv ? 'Äggprognos' : 'Egg Forecast'}
+            </Text>
+            <TouchableOpacity onPress={loadEggForecast}>
+              <Ionicons name="refresh" size={24} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.modalContent} contentContainerStyle={{ padding: 16 }}>
+            {forecastLoading ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingEmoji}>📈</Text>
+                <Text style={[styles.loadingText, { color: colors.text }]}>
+                  {isSv ? 'Beräknar prognos...' : 'Calculating forecast...'}
+                </Text>
+              </View>
+            ) : eggForecast ? (
+              <View>
+                {/* 7-day forecast summary */}
+                <View style={[styles.forecastSummaryCard, { backgroundColor: colors.primary + '15' }]}>
+                  <Text style={styles.forecastSummaryIcon}>🥚</Text>
+                  <Text style={[styles.forecastSummaryValue, { color: colors.primary }]}>
+                    ~{eggForecast.forecast_7_days || eggForecast.total || 0}
+                  </Text>
+                  <Text style={[styles.forecastSummaryLabel, { color: colors.text }]}>
+                    {isSv ? 'ägg förväntade kommande 7 dagar' : 'eggs expected in the next 7 days'}
+                  </Text>
+                </View>
+                
+                {/* Daily breakdown */}
+                {eggForecast.daily_forecast && (
+                  <View style={[styles.dailyForecastCard, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.dailyForecastTitle, { color: colors.text }]}>
+                      {isSv ? 'Daglig prognos' : 'Daily Forecast'}
+                    </Text>
+                    {eggForecast.daily_forecast.map((day: any, index: number) => (
+                      <View key={index} style={styles.dailyForecastRow}>
+                        <Text style={[styles.dailyForecastDay, { color: colors.textSecondary }]}>
+                          {day.day || format(new Date(Date.now() + index * 86400000), 'EEE', { locale: isSv ? sv : enUS })}
+                        </Text>
+                        <View style={styles.dailyForecastBar}>
+                          <View style={[styles.dailyForecastBarFill, { 
+                            width: `${Math.min((day.eggs / (eggForecast.max_daily || 10)) * 100, 100)}%`,
+                            backgroundColor: colors.primary 
+                          }]} />
+                        </View>
+                        <Text style={[styles.dailyForecastValue, { color: colors.text }]}>
+                          {day.eggs}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                
+                {/* Confidence note */}
+                <View style={[styles.confidenceNote, { backgroundColor: colors.surface }]}>
+                  <Ionicons name="information-circle" size={18} color={colors.textMuted} />
+                  <Text style={[styles.confidenceNoteText, { color: colors.textMuted }]}>
+                    {isSv 
+                      ? 'Prognosen baseras på de senaste 14 dagarnas data och kan variera beroende på väder och andra faktorer.'
+                      : 'Forecast is based on the last 14 days of data and may vary depending on weather and other factors.'}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <TouchableOpacity style={[styles.loadReportBtn, { backgroundColor: colors.primary }]} onPress={loadEggForecast}>
+                <Text style={styles.loadReportBtnText}>
+                  {isSv ? 'Ladda prognos' : 'Load Forecast'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+      
       {/* Premium Gate Modal */}
       <PremiumGateModal
         visible={showPremiumModal}
