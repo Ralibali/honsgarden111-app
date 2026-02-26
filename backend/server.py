@@ -1428,7 +1428,6 @@ async def reset_password_with_code(data: dict):
     
     logger.info(f"Password reset completed for user {reset['user_id']}")
     return {"success": True, "message": "Lösenordet har ändrats! Du kan nu logga in."}
-        return {"message": "E-posttjänsten är inte konfigurerad. Kontakta support för att återställa ditt lösenord.", "email_sent": False}
 
 @api_router.post("/auth/reset-password")
 async def reset_password(data: PasswordReset, request: Request, response: Response):
