@@ -287,10 +287,21 @@
 ---
 
 ## P2 - Future/Backlog
-- [ ] Push-notiser för kläckning/hälsokontroller
-- [ ] Apple Sign-In
+- [ ] Apple Sign-In (kod finns, behöver aktiveras)
 - [ ] Enhanced Analytics
 - [ ] User Onboarding guide
+- [ ] Affiliate-produktlänkar
+
+## Senaste verifiering (26 Feb 2026)
+### ✅ Bekräftade funktioner i mobilappen:
+- Admin Panel-länk i settings.tsx (rad 728-741) för admin-användare
+- Push-notifikationstjänst i `/app/frontend/src/services/notifications.ts`
+- AI Dagsrapport-modal och Äggprognos-modal i dashboard
+
+### ⚠️ Deployment-blockering:
+- **Problem:** EAS CLI kräver `--environment` flagga för SDK 51+
+- **Lösning:** Uppdatera deployment-kommando till `eas update --environment production ...`
+- **Status:** Väntar på åtgärd från användaren
 
 ---
 
