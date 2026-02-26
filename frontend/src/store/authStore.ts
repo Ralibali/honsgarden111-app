@@ -161,9 +161,17 @@ export const useAuthStore = create<AuthState>()(
           
           const data = await res.json();
           set({ isLoading: false });
+          
+          if (data.email_sent === false) {
+            return { 
+              success: false, 
+              message: data.message || 'E-posttjänsten är inte tillgänglig just nu. Kontakta support.' 
+            };
+          }
+          
           return { 
             success: true, 
-            message: data.message || 'Om e-postadressen finns skickas ett återställningsmail.' 
+            message: data.message || 'Ett återställningsmail har skickats till din e-postadress.' 
           };
         } catch (error) {
           set({ isLoading: false });
