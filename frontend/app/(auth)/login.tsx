@@ -661,20 +661,6 @@ export default function LoginScreen() {
                   )}
                 </TouchableOpacity>
                 
-                <View style={styles.divider}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>eller</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-                
-                <TouchableOpacity 
-                  style={styles.googleButton}
-                  onPress={handleGoogleLogin}
-                >
-                  <Ionicons name="logo-google" size={20} color="#333" />
-                  <Text style={styles.googleButtonText}>Fortsätt med Google</Text>
-                </TouchableOpacity>
-                
                 <TouchableOpacity 
                   style={styles.switchButton}
                   onPress={() => setAuthMode('login')}
