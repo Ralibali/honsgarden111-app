@@ -4467,6 +4467,15 @@ async def serve_terms_page():
             return HTMLResponse(content=f.read())
     return HTMLResponse(content="<h1>Page not found</h1>", status_code=404)
 
+@api_router.get("/reset-password", response_class=HTMLResponse)
+async def serve_reset_password_page():
+    """Serve the password reset page"""
+    reset_file = ROOT_DIR / "webapp_dist" / "reset-password.html"
+    if reset_file.exists():
+        with open(reset_file, 'r', encoding='utf-8') as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Page not found</h1>", status_code=404)
+
 # Include the router in the main app
 app.include_router(api_router)
 
