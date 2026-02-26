@@ -242,7 +242,7 @@ class TestStaticPages:
     
     def test_reset_password_page_loads(self, api_client):
         """Test that reset-password page loads correctly"""
-        response = api_client.get(f"{BASE_URL}/api/reset-password-page")
+        response = api_client.get(f"{BASE_URL}/api/reset-password")
         assert response.status_code == 200, f"Reset password page failed to load, status: {response.status_code}"
         
         # Check it's HTML
@@ -256,7 +256,7 @@ class TestStaticPages:
     
     def test_register_page_loads(self, api_client):
         """Test that register page loads correctly"""
-        response = api_client.get(f"{BASE_URL}/api/register-page")
+        response = api_client.get(f"{BASE_URL}/api/register")
         assert response.status_code == 200, f"Register page failed to load, status: {response.status_code}"
         
         # Check it's HTML
