@@ -25,7 +25,7 @@ type AuthMode = 'welcome' | 'login' | 'register' | 'forgot' | 'verify-code' | 'n
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, register, forgotPassword, verifyResetCode, resetPasswordWithCode, isLoading, error, clearError } = useAuthStore();
+  const { login, register, forgotPassword, verifyResetCode, resetPasswordWithCode, verifyRegistration, resendVerification, isLoading, error, clearError } = useAuthStore();
   const { colors } = useThemeStore();
   
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
@@ -44,6 +44,10 @@ export default function LoginScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const codeInputRefs = useRef<(TextInput | null)[]>([]);
+  
+  // Registration verification code state
+  const [registerCode, setRegisterCode] = useState(['', '', '', '', '', '']);
+  const registerCodeRefs = useRef<(TextInput | null)[]>([]);
   
   // Cooldown timer for resend code
   const [resendCooldown, setResendCooldown] = useState(0);
