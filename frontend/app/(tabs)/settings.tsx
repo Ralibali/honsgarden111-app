@@ -23,6 +23,12 @@ import { useAuthStore } from '../../src/store/authStore';
 import i18n, { setLanguage, getLanguage } from '../../src/i18n';
 import * as Notifications from 'expo-notifications';
 import PremiumGateModal from '../../components/PremiumGateModal';
+import { 
+  registerForPushNotificationsAsync, 
+  scheduleEggReminder, 
+  cancelEggReminder,
+  sendTestNotification 
+} from '../../src/services/notifications';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
