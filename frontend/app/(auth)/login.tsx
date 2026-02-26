@@ -1083,4 +1083,35 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // Password reset code styles
+  codeInputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    gap: 8,
+  },
+  codeInput: {
+    width: 45,
+    height: 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  emailHighlight: {
+    color: '#4ade80',
+    fontWeight: '500',
+  },
+  resendButton: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  resendText: {
+    color: '#4ade80',
+    fontSize: 14,
+  },
 });
