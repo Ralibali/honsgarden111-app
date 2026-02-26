@@ -1278,34 +1278,37 @@ async def login_email(data: EmailLogin, request: Request, response: Response):
 
 @api_router.post("/auth/forgot-password")
 async def forgot_password(data: PasswordResetRequest):
-    """Request password reset email"""
+    """Request password reset with 6-digit code (for mobile app)"""
     user = await db.users.find_one({"email": data.email.lower()})
     
     # Always return success (don't reveal if email exists)
     if not user:
-        return {"message": "Om e-postadressen finns i systemet kommer du få ett återställningsmail."}
+        return {"message": "Om e-postadressen finns i systemet kommer du få en återställningskod.", "code_sent": False}
     
     # Check if user has password auth
     if not user.get("password_hash"):
-        return {"message": "Om e-postadressen finns i systemet kommer du få ett återställningsmail."}
+        return {"message": "Om e-postadressen finns i systemet kommer du få en återställningskod.", "code_sent": False}
     
-    # Generate reset token
-    reset_token = str(uuid.uuid4())
-    expires = datetime.now(timezone.utc) + timedelta(hours=1)
+    # Generate 6-digit code
+    import random
+    reset_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    expires = datetime.now(timezone.utc) + timedelta(minutes=15)  # 15 min expiry for code
+    
+    # Delete any existing codes for this user
+    await db.password_resets.delete_many({"user_id": user["id"]})
     
     await db.password_resets.insert_one({
         "user_id": user["id"],
-        "token": reset_token,
+        "email": data.email.lower(),
+        "code": reset_code,
         "expires_at": expires.isoformat(),
-        "used": False
+        "used": False,
+        "attempts": 0
     })
     
     # Send email via Resend
     email_sent = False
     try:
-        app_url = os.environ.get('APP_URL', 'https://honsgarden.se')
-        reset_link = f"{app_url}/reset-password?token={reset_token}"
-        
         if not RESEND_API_KEY:
             logger.warning("RESEND_API_KEY not configured, skipping password reset email")
         else:
@@ -1313,31 +1316,118 @@ async def forgot_password(data: PasswordResetRequest):
             resend.Emails.send({
                 "from": f"Hönsgården <{SENDER_EMAIL}>",
                 "to": data.email,
-                "subject": "Återställ ditt lösenord - Hönsgården",
+                "subject": "Din återställningskod - Hönsgården",
                 "html": f"""
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2>🐔 Hönsgården</h2>
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; text-align: center;">
+                    <h2 style="color: #4ade80;">🐔 Hönsgården</h2>
                     <p>Hej!</p>
-                    <p>Du har begärt att återställa ditt lösenord. Klicka på knappen nedan för att välja ett nytt lösenord:</p>
-                    <p style="margin: 24px 0;">
-                        <a href="{reset_link}" style="background: #4ade80; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
-                            Återställ lösenord
-                        </a>
-                    </p>
-                    <p>Länken är giltig i 1 timme.</p>
-                    <p>Om du inte begärde denna återställning kan du ignorera detta mail.</p>
-                    <p>Vänliga hälsningar,<br>Hönsgården</p>
+                    <p>Du har begärt att återställa ditt lösenord.</p>
+                    <p>Ange denna kod i appen:</p>
+                    <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 24px 0;">
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">{reset_code}</span>
+                    </div>
+                    <p style="color: #6b7280; font-size: 14px;">Koden är giltig i 15 minuter.</p>
+                    <p style="color: #6b7280; font-size: 14px;">Om du inte begärde denna återställning kan du ignorera detta mail.</p>
+                    <p style="margin-top: 24px;">Vänliga hälsningar,<br>Hönsgården</p>
                 </div>
                 """
             })
             email_sent = True
-            logger.info(f"Password reset email sent to {data.email}")
+            logger.info(f"Password reset code sent to {data.email}")
     except Exception as e:
         logger.error(f"Failed to send password reset email: {e}")
     
     if email_sent:
-        return {"message": "Ett återställningsmail har skickats till din e-postadress.", "email_sent": True}
+        return {"message": "En återställningskod har skickats till din e-postadress.", "code_sent": True}
     else:
+        return {"message": "E-posttjänsten är inte tillgänglig. Kontakta support.", "code_sent": False}
+
+@api_router.post("/auth/verify-reset-code")
+async def verify_reset_code(data: dict):
+    """Verify the 6-digit reset code"""
+    email = data.get("email", "").lower()
+    code = data.get("code", "")
+    
+    if not email or not code:
+        raise HTTPException(status_code=400, detail="E-post och kod krävs")
+    
+    reset = await db.password_resets.find_one({
+        "email": email,
+        "used": False
+    })
+    
+    if not reset:
+        raise HTTPException(status_code=400, detail="Ingen aktiv återställning hittades")
+    
+    # Check expiry
+    expires = datetime.fromisoformat(reset["expires_at"].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires:
+        raise HTTPException(status_code=400, detail="Koden har gått ut. Begär en ny kod.")
+    
+    # Check attempts (max 5)
+    if reset.get("attempts", 0) >= 5:
+        raise HTTPException(status_code=400, detail="För många försök. Begär en ny kod.")
+    
+    # Increment attempts
+    await db.password_resets.update_one(
+        {"_id": reset["_id"]},
+        {"$inc": {"attempts": 1}}
+    )
+    
+    # Verify code
+    if reset.get("code") != code:
+        remaining = 5 - reset.get("attempts", 0) - 1
+        raise HTTPException(status_code=400, detail=f"Felaktig kod. {remaining} försök kvar.")
+    
+    # Generate a temporary token for the password reset step
+    temp_token = str(uuid.uuid4())
+    await db.password_resets.update_one(
+        {"_id": reset["_id"]},
+        {"$set": {"verified_token": temp_token, "verified_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"success": True, "token": temp_token, "message": "Koden verifierad! Välj ett nytt lösenord."}
+
+@api_router.post("/auth/reset-password-with-code")
+async def reset_password_with_code(data: dict):
+    """Reset password using verified token from code flow"""
+    token = data.get("token", "")
+    new_password = data.get("new_password", "")
+    
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Token och nytt lösenord krävs")
+    
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Lösenordet måste vara minst 6 tecken")
+    
+    reset = await db.password_resets.find_one({
+        "verified_token": token,
+        "used": False
+    })
+    
+    if not reset:
+        raise HTTPException(status_code=400, detail="Ogiltig eller utgången token")
+    
+    # Check verified_at (must be within 10 minutes)
+    verified_at = datetime.fromisoformat(reset.get("verified_at", "2000-01-01T00:00:00+00:00").replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > verified_at + timedelta(minutes=10):
+        raise HTTPException(status_code=400, detail="Sessionen har gått ut. Börja om från början.")
+    
+    # Update password
+    hashed_pw = hash_password(new_password)
+    await db.users.update_one(
+        {"id": reset["user_id"]},
+        {"$set": {"password_hash": hashed_pw}}
+    )
+    
+    # Mark as used
+    await db.password_resets.update_one(
+        {"_id": reset["_id"]},
+        {"$set": {"used": True}}
+    )
+    
+    logger.info(f"Password reset completed for user {reset['user_id']}")
+    return {"success": True, "message": "Lösenordet har ändrats! Du kan nu logga in."}
         return {"message": "E-posttjänsten är inte konfigurerad. Kontakta support för att återställa ditt lösenord.", "email_sent": False}
 
 @api_router.post("/auth/reset-password")
