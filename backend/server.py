@@ -3619,6 +3619,143 @@ async def get_summary_statistics(request: Request):
         }
     }
 
+
+@api_router.get("/statistics/insights")
+async def get_statistics_insights(request: Request):
+    """Get advanced statistics insights including trends, best/worst days, and hen rankings"""
+    user_id = await get_user_id(request)
+    
+    today = date.today()
+    
+    # Get all egg records for this year
+    year_start = f"{today.year:04d}-01-01"
+    all_eggs = await db.egg_records.find(
+        {"user_id": user_id, "date": {"$gte": year_start}}, 
+        {"_id": 0}
+    ).to_list(10000)
+    
+    # Current and previous month data
+    current_month_start = f"{today.year:04d}-{today.month:02d}-01"
+    if today.month == 1:
+        prev_month_start = f"{today.year-1:04d}-12-01"
+        prev_month_end = f"{today.year-1:04d}-12-31"
+    else:
+        prev_month_start = f"{today.year:04d}-{today.month-1:02d}-01"
+        prev_month_end = f"{today.year:04d}-{today.month-1:02d}-31"
+    
+    current_month_eggs = [e for e in all_eggs if e['date'] >= current_month_start]
+    prev_month_eggs = [e for e in all_eggs if prev_month_start <= e['date'] <= prev_month_end]
+    
+    current_total = sum(e['count'] for e in current_month_eggs)
+    prev_total = sum(e['count'] for e in prev_month_eggs)
+    
+    # Calculate percentage change
+    if prev_total > 0:
+        change_percent = round(((current_total - prev_total) / prev_total) * 100, 1)
+    else:
+        change_percent = 100 if current_total > 0 else 0
+    
+    # Best and worst days (this month)
+    daily_totals = {}
+    for egg in current_month_eggs:
+        d = egg['date']
+        if d not in daily_totals:
+            daily_totals[d] = 0
+        daily_totals[d] += egg['count']
+    
+    best_day = None
+    worst_day = None
+    if daily_totals:
+        best_date = max(daily_totals, key=daily_totals.get)
+        worst_date = min(daily_totals, key=daily_totals.get)
+        best_day = {"date": best_date, "eggs": daily_totals[best_date]}
+        worst_day = {"date": worst_date, "eggs": daily_totals[worst_date]}
+    
+    # Hen rankings (top 5 most productive)
+    hen_totals = {}
+    for egg in current_month_eggs:
+        if egg.get('hen_id'):
+            hen_id = egg['hen_id']
+            if hen_id not in hen_totals:
+                hen_totals[hen_id] = 0
+            hen_totals[hen_id] += egg['count']
+    
+    # Get hen names
+    hen_rankings = []
+    if hen_totals:
+        sorted_hens = sorted(hen_totals.items(), key=lambda x: x[1], reverse=True)[:5]
+        for hen_id, eggs in sorted_hens:
+            hen = await db.hens.find_one({"id": hen_id}, {"_id": 0, "name": 1})
+            hen_name = hen['name'] if hen else "Okänd"
+            hen_rankings.append({"hen_id": hen_id, "name": hen_name, "eggs": eggs})
+    
+    # 7-day forecast (simple moving average based on last 14 days)
+    fourteen_days_ago = (today - timedelta(days=14)).isoformat()
+    recent_eggs = [e for e in all_eggs if e['date'] >= fourteen_days_ago]
+    
+    forecast_eggs = 0
+    if recent_eggs:
+        recent_daily = {}
+        for egg in recent_eggs:
+            d = egg['date']
+            if d not in recent_daily:
+                recent_daily[d] = 0
+            recent_daily[d] += egg['count']
+        
+        if recent_daily:
+            avg_per_day = sum(recent_daily.values()) / len(recent_daily)
+            forecast_eggs = round(avg_per_day * 7)
+    
+    # Week comparison (this week vs last week)
+    week_start = (today - timedelta(days=today.weekday())).isoformat()
+    last_week_start = (today - timedelta(days=today.weekday() + 7)).isoformat()
+    last_week_end = (today - timedelta(days=today.weekday() + 1)).isoformat()
+    
+    this_week_eggs = sum(e['count'] for e in all_eggs if e['date'] >= week_start)
+    last_week_eggs = sum(e['count'] for e in all_eggs if last_week_start <= e['date'] <= last_week_end)
+    
+    week_change = 0
+    if last_week_eggs > 0:
+        week_change = round(((this_week_eggs - last_week_eggs) / last_week_eggs) * 100, 1)
+    
+    # Average per weekday
+    weekday_totals = {i: [] for i in range(7)}
+    for egg in all_eggs:
+        try:
+            egg_date = datetime.strptime(egg['date'], '%Y-%m-%d').date()
+            weekday = egg_date.weekday()
+            weekday_totals[weekday].append(egg['count'])
+        except:
+            pass
+    
+    weekday_averages = {}
+    weekday_names = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+    for i, name in enumerate(weekday_names):
+        if weekday_totals[i]:
+            weekday_averages[name] = round(sum(weekday_totals[i]) / len(weekday_totals[i]), 1)
+        else:
+            weekday_averages[name] = 0
+    
+    return {
+        "month_comparison": {
+            "current_month_eggs": current_total,
+            "previous_month_eggs": prev_total,
+            "change_percent": change_percent,
+            "trend": "up" if change_percent > 0 else ("down" if change_percent < 0 else "stable")
+        },
+        "best_day": best_day,
+        "worst_day": worst_day,
+        "hen_rankings": hen_rankings,
+        "forecast_7_days": forecast_eggs,
+        "week_comparison": {
+            "this_week": this_week_eggs,
+            "last_week": last_week_eggs,
+            "change_percent": week_change
+        },
+        "weekday_averages": weekday_averages
+    }
+
+
 # ============ EMAIL REMINDERS ============
 class ReminderSettings(BaseModel):
     enabled: bool = True
