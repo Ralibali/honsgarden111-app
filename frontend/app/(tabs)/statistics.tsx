@@ -63,6 +63,28 @@ interface YearStats {
   }>;
 }
 
+interface AdvancedInsights {
+  hen_count: number;
+  period_days: number;
+  total_eggs_30d: number;
+  total_costs_30d: number;
+  total_sales_30d: number;
+  metrics: {
+    feed_conversion_ratio: { value: number | null; unit: string; description: string; optimal_range?: string };
+    laying_rate: { value: number | null; unit: string; description: string; optimal_range?: string };
+    cost_per_egg: { value: number | null; unit: string; description: string };
+    revenue_per_egg: { value: number | null; unit: string; description: string };
+    profit_per_egg: { value: number | null; unit: string; description: string };
+    feed_cost_per_egg: { value: number | null; unit: string; description: string };
+    eggs_per_hen_monthly: { value: number | null; unit: string; description: string };
+    eggs_per_hen_yearly_estimate: { value: number | null; unit: string; description: string };
+  };
+  insights: {
+    best_laying_day: string | null;
+    productivity_score: number | null;
+  };
+}
+
 export default function StatisticsScreen() {
   const { coopSettings, fetchCoopSettings } = useAppStore();
   const { isPremium } = usePremiumStore();
@@ -76,6 +98,7 @@ export default function StatisticsScreen() {
   const [monthStats, setMonthStats] = useState<MonthStats | null>(null);
   const [prevMonthStats, setPrevMonthStats] = useState<MonthStats | null>(null);
   const [yearStats, setYearStats] = useState<YearStats | null>(null);
+  const [advancedInsights, setAdvancedInsights] = useState<AdvancedInsights | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   
