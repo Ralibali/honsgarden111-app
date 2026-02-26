@@ -947,15 +947,26 @@
             try {
                 const originUrl = window.location.origin;
                 
+                // Get auth token from localStorage
+                const authToken = localStorage.getItem('auth_token') || localStorage.getItem('token');
+                
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add authorization header if token exists
+                if (authToken) {
+                    headers['Authorization'] = 'Bearer ' + authToken;
+                }
+                
                 const response = await fetch('/api/checkout/create', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: headers,
                     credentials: 'include',
                     body: JSON.stringify({
                         plan: selectedPlan,
-                        origin_url: originUrl
+                        origin_url: originUrl,
+                        user_id: currentUser.id || currentUser._id
                     })
                 });
                 
