@@ -4148,6 +4148,108 @@ async def get_weather(request: Request, lat: float = 59.33, lon: float = 18.07):
     return weather_data
 
 
+
+# ============ DAGENS TIPS - AGDA ============
+DAILY_TIPS_POOL = [
+    # ALLMÄNNA TIPS
+    {"category": "general", "tip": "Färska ägg sjunker i vatten. Ett enkelt test för att kolla hållbarheten!", "season": None},
+    {"category": "general", "tip": "Snäckskal vid sidan av fodret ger hönsen möjlighet att själva reglera sitt kalkintag.", "season": None},
+    {"category": "general", "tip": "En höna dricker 2-3 dl vatten per dag. Dubbelt så mycket vid värme!", "season": None},
+    {"category": "general", "tip": "Sandbad hjälper hönsen att hålla sig fria från parasiter – och de älskar det!", "season": None},
+    {"category": "general", "tip": "Ett välskött hönshus luktar trä och halm – inte ammoniak. Dags att städa?", "season": None},
+    {"category": "general", "tip": "Nya höns? Alltid 3 veckors karantän innan de släpps in i flocken.", "season": None},
+    {"category": "general", "tip": "Tvätta aldrig ägg i onödan – det naturliga skyddsskiktet är viktigt för hållbarheten.", "season": None},
+    {"category": "general", "tip": "En stressad höna värper sämre. Lugn och rutiner är nyckeln!", "season": None},
+    {"category": "general", "tip": "Hönsgödsel är guld för trädgården – men låt den kompostera först.", "season": None},
+    {"category": "general", "tip": "Reden ska vara mörka och lägre än sittpinnarna – annars sover hönsen där.", "season": None},
+    
+    # VINTERTIPS (dec, jan, feb)
+    {"category": "winter", "tip": "Minusgrader? Lite extra spannmål på kvällen hjälper hönsen hålla värmen över natten.", "season": [12, 1, 2]},
+    {"category": "winter", "tip": "Kontrollera vattnet dagligen – en enda dag utan vatten påverkar produktionen i flera dagar.", "season": [12, 1, 2]},
+    {"category": "winter", "tip": "14-16 timmars ljus hjälper produktionen, men överdriv inte – hönsen behöver vila.", "season": [12, 1, 2]},
+    {"category": "winter", "tip": "Dragfritt men ventilerat – kondens är farligare än kyla för dina höns.", "season": [12, 1, 2]},
+    {"category": "winter", "tip": "Frostrisk? Kontrollera kammar och haklapp – de kan få frostskador.", "season": [12, 1, 2]},
+    
+    # VÅRTIPS (mar, apr, maj)
+    {"category": "spring", "tip": "Våren är perfekt för en ordentlig storstädning av hönshuset!", "season": [3, 4, 5]},
+    {"category": "spring", "tip": "Ökande dagsljus = ökande produktion. Njut av fler ägg!", "season": [3, 4, 5]},
+    {"category": "spring", "tip": "Perfekt tid att kolla över rovdjursskyddet innan sommaren.", "season": [3, 4, 5]},
+    {"category": "spring", "tip": "Vårruggning kan förekomma. Lite protein-boost hjälper nya fjädrar.", "season": [3, 4, 5]},
+    
+    # SOMMARTIPS (jun, jul, aug)
+    {"category": "summer", "tip": "Värmestress? Höns flåsar – de svettas inte. Skugga och vatten är livsviktigt!", "season": [6, 7, 8]},
+    {"category": "summer", "tip": "Kall frukt som vattenmelon är ett uppskattat godis på varma dagar.", "season": [6, 7, 8]},
+    {"category": "summer", "tip": "Fler vattenstationer vid värme – ingen höna ska behöva vänta på att dricka.", "season": [6, 7, 8]},
+    {"category": "summer", "tip": "Undvik att störa hönsen under de varmaste timmarna mitt på dagen.", "season": [6, 7, 8]},
+    {"category": "summer", "tip": "Insekter, mask och grönt gör sommarägg extra goda!", "season": [6, 7, 8]},
+    
+    # HÖSTTIPS (sep, okt, nov)
+    {"category": "autumn", "tip": "Ruggningssäsong! Minskad produktion är naturligt nu. Informera dina kunder.", "season": [9, 10, 11]},
+    {"category": "autumn", "tip": "Extra protein under ruggningen hjälper nya fjädrar att växa snabbare.", "season": [9, 10, 11]},
+    {"category": "autumn", "tip": "Perfekt tid att förbereda hönshuset för vintern.", "season": [9, 10, 11]},
+    {"category": "autumn", "tip": "Kontrollera att det inte finns springor där kvalster kan gömma sig över vintern.", "season": [9, 10, 11]},
+    
+    # PRODUKTIONSTIPS
+    {"category": "production", "tip": "Under 70% produktivitet? Kolla ljus, foder, stress och hönsens ålder.", "season": None},
+    {"category": "production", "tip": "En höna värper som mest under sina första 2-3 år.", "season": None},
+    {"category": "production", "tip": "Blandade raser ger blandade ägg – kunder älskar variation!", "season": None},
+    {"category": "production", "tip": "Maran ger chokladbruna ägg, Araucana ger blågröna. Perfekt för merförsäljning!", "season": None},
+    
+    # EKONOMITIPS
+    {"category": "economy", "tip": "Håll koll på foderkostnad per ägg för att förstå din lönsamhet.", "season": None},
+    {"category": "economy", "tip": "Direktförsäljning ger bättre pris än att sälja via mellanhänder.", "season": None},
+    {"category": "economy", "tip": "Märk äggkartongerna med värpdatum – det signalerar kvalitet.", "season": None},
+    {"category": "economy", "tip": "Ekologiska och färgglada ägg kan motivera högre pris.", "season": None},
+]
+
+@api_router.get("/ai/daily-tip")
+async def get_daily_tip(request: Request):
+    """Get today's tip from Agda based on season, weather and flock data"""
+    user_id = await get_user_id(request)
+    
+    # Get current context
+    current_month = datetime.now().month
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    # Filter tips by season
+    relevant_tips = []
+    for tip_data in DAILY_TIPS_POOL:
+        if tip_data["season"] is None or current_month in tip_data["season"]:
+            relevant_tips.append(tip_data)
+    
+    # Use date as seed for consistent daily tip
+    import hashlib
+    seed = int(hashlib.md5(f"{user_id}-{today}".encode()).hexdigest()[:8], 16)
+    tip_index = seed % len(relevant_tips)
+    selected_tip = relevant_tips[tip_index]
+    
+    # Get weather for contextual addition
+    weather_tip = None
+    try:
+        weather = await db.weather_cache.find_one(
+            {"user_id": user_id, "cached_at": {"$gte": datetime.now(timezone.utc) - timedelta(hours=3)}},
+            {"_id": 0}
+        )
+        if weather and weather.get("data"):
+            temp = weather["data"].get("temperature") or weather["data"].get("temp")
+            if temp:
+                if temp < 0:
+                    weather_tip = "🥶 Minusgrader idag! Extra viktigt med vattenkollar."
+                elif temp > 25:
+                    weather_tip = "🌡️ Varmt idag! Se till att alla har tillgång till skugga och vatten."
+    except:
+        pass
+    
+    return {
+        "date": today,
+        "tip": selected_tip["tip"],
+        "category": selected_tip["category"],
+        "weather_tip": weather_tip,
+        "signature": "💛 Kacklande hälsningar, Agda 🐔"
+    }
+
+
+
 @api_router.put("/user-preferences/location")
 async def update_user_location(request: Request, lat: float, lon: float, location_name: str = ""):
     """Update user's location for weather data"""
