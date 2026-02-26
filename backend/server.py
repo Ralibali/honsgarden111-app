@@ -1301,35 +1301,44 @@ async def forgot_password(data: PasswordResetRequest):
     })
     
     # Send email via Resend
+    email_sent = False
     try:
         app_url = os.environ.get('APP_URL', 'https://honsgarden.se')
         reset_link = f"{app_url}/reset-password?token={reset_token}"
         
-        resend.api_key = os.environ.get('RESEND_API_KEY')
-        resend.Emails.send({
-            "from": os.environ.get('SENDER_EMAIL', 'noreply@honsgarden.se'),
-            "to": data.email,
-            "subject": "Återställ ditt lösenord - Hönsgården",
-            "html": f"""
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2>🐔 Hönsgården</h2>
-                <p>Hej!</p>
-                <p>Du har begärt att återställa ditt lösenord. Klicka på knappen nedan för att välja ett nytt lösenord:</p>
-                <p style="margin: 24px 0;">
-                    <a href="{reset_link}" style="background: #4ade80; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
-                        Återställ lösenord
-                    </a>
-                </p>
-                <p>Länken är giltig i 1 timme.</p>
-                <p>Om du inte begärde denna återställning kan du ignorera detta mail.</p>
-                <p>Vänliga hälsningar,<br>Hönsgården</p>
-            </div>
-            """
-        })
+        if not RESEND_API_KEY:
+            logger.warning("RESEND_API_KEY not configured, skipping password reset email")
+        else:
+            resend.api_key = RESEND_API_KEY
+            resend.Emails.send({
+                "from": f"Hönsgården <{SENDER_EMAIL}>",
+                "to": data.email,
+                "subject": "Återställ ditt lösenord - Hönsgården",
+                "html": f"""
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2>🐔 Hönsgården</h2>
+                    <p>Hej!</p>
+                    <p>Du har begärt att återställa ditt lösenord. Klicka på knappen nedan för att välja ett nytt lösenord:</p>
+                    <p style="margin: 24px 0;">
+                        <a href="{reset_link}" style="background: #4ade80; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+                            Återställ lösenord
+                        </a>
+                    </p>
+                    <p>Länken är giltig i 1 timme.</p>
+                    <p>Om du inte begärde denna återställning kan du ignorera detta mail.</p>
+                    <p>Vänliga hälsningar,<br>Hönsgården</p>
+                </div>
+                """
+            })
+            email_sent = True
+            logger.info(f"Password reset email sent to {data.email}")
     except Exception as e:
         logger.error(f"Failed to send password reset email: {e}")
     
-    return {"message": "Om e-postadressen finns i systemet kommer du få ett återställningsmail."}
+    if email_sent:
+        return {"message": "Ett återställningsmail har skickats till din e-postadress.", "email_sent": True}
+    else:
+        return {"message": "E-posttjänsten är inte konfigurerad. Kontakta support för att återställa ditt lösenord.", "email_sent": False}
 
 @api_router.post("/auth/reset-password")
 async def reset_password(data: PasswordReset, request: Request, response: Response):
