@@ -26,7 +26,7 @@ type AuthMode = 'welcome' | 'login' | 'register' | 'forgot' | 'verify-code' | 'n
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, register, forgotPassword, isLoading, error, clearError } = useAuthStore();
+  const { login, register, forgotPassword, verifyResetCode, resetPasswordWithCode, isLoading, error, clearError } = useAuthStore();
   const { colors } = useThemeStore();
   
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
@@ -38,6 +38,13 @@ export default function LoginScreen() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Password reset code state
+  const [resetCode, setResetCode] = useState(['', '', '', '', '', '']);
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const codeInputRefs = useRef<(TextInput | null)[]>([]);
   
   const handleLogin = async () => {
     clearError();
