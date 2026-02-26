@@ -2,330 +2,159 @@
 
 ## Senaste uppdatering: 26 Feb 2026
 
-### Deployment-status: ✅ FIXAR APPLICERADE (26 Feb 2026)
-- `eas.json` har nu `channel` för varje build-profil
-- ⚠️ `update`-sektion **BORTTAGEN** (orsakade valideringsfel i EAS CLI)
-- ✅ Hårdkodad Google Auth URL fixad i `login.tsx`
-- ✅ `@expo/config-plugins` flyttad till dependencies (krävs för EAS build)
-- ✅ `stripe` tillagd i backend requirements.txt
-- Deployment-kommando: `eas update --environment production`
-- Expo SDK version 54 (stabil)
-- `frontend/app.json` slug: `honsgarden-app`
-- Webapp ombyggd med Privacy/Terms-sidor
-- Backend och webapp fullt fungerande
-- Mobilapp har Premium Gate Modal
-- **Alla lint-fel fixade: 0 errors, 48 warnings**
-- **Production cleanup genomförd**
-
-## 🚀 PRODUCTION CLEANUP CHECKLIST (26 Feb 2026)
-
-### ✅ Kod-kvalitet
-- [x] Inga duplicerade variabler eller style-nycklar
-- [x] React hooks i korrekt ordning
-- [x] ESLint: 0 errors (48 warnings - icke-kritiska)
-
-### ✅ Säkerhet
-- [x] Inga hårdkodade API-nycklar eller secrets
-- [x] Alla känsliga värden i .env-filer
-- [x] Backend använder `os.environ.get()` korrekt
-- [x] Frontend använder `process.env.EXPO_PUBLIC_*` korrekt
-
-### ✅ Console Logs
-- [x] Logger i `/app/frontend/src/config/env.ts` filtrerar logs i production
-- [x] Endast `console.error` visas i production (för felsökning)
-
-### ✅ Build & Optimering
-- [x] Webapp byggd för production: 731 KB (gzipped: 211 KB)
-- [x] Metro cache rensad
-- [x] expo-notifications plugin tillagd i app.json
-- [x] Notification icons skapade
-
-### ✅ SEO & Metadata
-- [x] Open Graph meta-taggar
-- [x] Twitter Card meta-taggar
-- [x] Apple Web App meta-taggar
-- [x] Keywords och description
-
-### ✅ App Store Metadata (app.json)
-- [x] Appnamn: "Hönsgården"
-- [x] Bundle ID: `se.honsgarden.app`
-- [x] Version: 1.0.0
-- [x] iOS: Apple Sign-In aktiverat
-- [x] Android: Adaptive icon, permissions
-
-### ⚠️ Kvar att göra (av dig)
-- [ ] Skapa premium-sidan på `honsgarden.se/premium`
-- [ ] Deploya till EAS: `eas build --platform all`
-- [ ] Testa på fysisk enhet
-- [ ] Skicka till App Store / Google Play
-
-### Senaste ändringar (26 Feb 2026) - Nya funktioner:
-- ✅ **Agda AI Kunskapsbas Utökad** - Omfattande kunskap om hönsskötsel inlagd:
-  - Filosofi och värderingar kring hönshållning
-  - Hönsgårdens utformning och placering
-  - Hönshusets utformning (ventilation, sittpinnar, reden)
-  - Hönsraser för äggproduktion (värp-, traditions- och specialraser)
-  - Tuppens roll i flocken
-  - Foder och nutrition (protein, kalcium, säsongsanpassning)
-  - Vattnets betydelse
-  - Årstider och väderpåverkan
-  - Äggkvalitet och förvaring
-  - Prissättning och ekonomi
-  - Vanliga sjukdomar och förebyggande vård
-  - Hållbarhet och kretslopp
-- ✅ **AI Dagsrapport Förbättrad** - Inkluderar nu:
-  - Väderdata för kontextuella tips
-  - Säsongsanpassade råd
-  - Produktivitetsanalys
-  - Veckosnitt för jämförelse
-- ✅ **Nytt: Dagens Tips API** (`/api/ai/daily-tip`)
-  - 40+ tips sorterade efter säsong
-  - Automatiskt val baserat på datum
-  - Vädertips när data finns
-  - Signerat av Agda 🐔
-- ✅ **EAS.JSON Uppdaterad** - `--environment` flagga stöds nu
-
-### Befintliga funktioner (redan implementerade):
-- ✅ **Hälsologg** - Finns i `hens.tsx` med symptom-väljare och per-höna loggning
-- ✅ **Kläckningslogg** - Komplett i `hatching.tsx` (30KB)
-- ✅ **Avancerad statistik** - Komplett i `statistics.tsx` (1056 rader) med:
-  - Månads/Årsvy
-  - PDF-export
-  - Ekonomijämförelser
-  - Daglig/månatlig nedbrytning
-
-### Deployment-fixar (26 Feb 2026):
-- ✅ Fixade duplicerad `isSv` deklaration i `paywall.tsx`
-- ✅ Fixade duplicerade StyleSheet-nycklar i `index.tsx`
-- ✅ Fixade React hooks ordningsfel i `feed.tsx`
-- ✅ Uppdaterade `expo-localization` import till `getLocales()`
-
-### Ändringar (25 Feb 2026):
-- ✅ **DEPLOYMENT FIX:** Nedgraderade Expo SDK från 55 till 54
-- ✅ Tog bort `newArchEnabled` och `edgeToEdgeEnabled` från app.json (SDK 55-specifika)
-- ✅ Uppdaterade expo-paket till SDK 54-kompatibla versioner
-- ✅ Skapade `eas.json` för EAS builds
-- ✅ Tog bort hardkodad APP_URL fallback i server.py
-- ✅ Skapade `/privacy` och `/terms` sidor för App Store-krav
-- ✅ **PremiumGateModal** - Snygg uppgradera-modal i mobilappen
-- ✅ RevenueCat-kod behållen som backup men inaktiverad
-- ✅ Delad databas - premium-status synkas mellan webb och mobil automatiskt
-
-### Ny arkitektur för prenumerationer:
-- **Webb**: Stripe-betalning på honsgarden.se/premium (som du skapar)
-- **Mobil**: Visar PremiumGateModal → Öppnar webbläsaren till honsgarden.se/premium
-- **Synk**: Premium-status delas via MongoDB-databasen
-- **Fördel**: Undviker 15-30% App Store/Google Play avgifter
-
-### Premium Gate Modal (NY):
-- Fil: `/app/frontend/components/PremiumGateModal.tsx`
-- Visar feature-namn som triggade modalen
-- Lista med alla 8 premium-funktioner
-- Pris-kort för månads och årsprenumeration
-- "Spara 35%" badge på årlig
-- 7 dagars provperiod-info
-- CTA: "Prenumerera via honsgarden.se"
+### Status: In-App Password Reset - KOMPLETT
 
 ---
 
-## Landningssida (Login.tsx) - KOMPLETT BESKRIVNING
+## NYLIGEN GENOMFÖRT (26 Feb 2026)
 
-### **Hero-sektion:**
-- **Bakgrundsbild**: Kvinna som tar hand om höns (Pexels)
-- **Logo**: SVG med stiliserad höna + ägg (orange/gul färgschema)
-- **Rubrik**: "Hönsgården" (Playfair Display, 56px, vit, bold)
-- **Tagline**: "Din digitala assistent för din hönsgård"
-- **Undertitel**: "Håll koll på dina hönor, ägg och ekonomi – på ett enkelt sätt."
-- **CTA-knapp**: "Kom igång gratis" (vit bakgrund, grön text)
-- **Typsnitt Web**: Playfair Display (rubriker), Inter (brödtext)
-- **Typsnitt Mobil**: Playfair Display + Inter (via expo-font)
+### In-App Lösenordsåterställning med 6-siffrig kod
+**Status: ✅ KOMPLETT OCH TESTAD**
 
-### **GDPR-compliant Registration (Uppdaterad Feb 25, 2026):**
-- **Obligatoriska fält**: Namn, E-post, Lösenord, Användarvillkor
-- **Frivilligt fält**: Nyhetsbrev (GDPR-krav - inget samtycke för marknadsföring får vara obligatoriskt)
-- **Checkbox 1 (obligatorisk)**: "Jag har läst och godkänner användarvillkoren och integritetspolicyn för **honsgarden.se**" med klickbar länk
-- **Checkbox 2 (frivillig)**: "Jag godkänner att honsgarden.se skickar nyhetsbrev, erbjudanden och produktuppdateringar till min e-postadress"
-- **Glömt lösenord**: Länk på inloggningssidan + supporttext "Har du inget konto? Kontakta oss så hjälper vi dig."
-- **Terms Modal**: Fullständig GDPR-text med alla sektioner
-- **Admin-vy**: Visar GDPR-samtycke och Nyhetsbrev-status för varje användare
-- **Databaslagring**: accepted_terms, accepted_terms_at, accepted_marketing, accepted_marketing_at
-- **Google-login**: Tillgänglig som alternativ till e-post/lösenord
-- **Tagline**: "Din digitala assistent för hönsgården"
+Backend-endpoints (alla testade och fungerar):
+- `POST /api/auth/forgot-password` - Skickar 6-siffrig kod via e-post
+- `POST /api/auth/verify-reset-code` - Verifierar kod (max 5 försök, 15 min giltig)
+- `POST /api/auth/reset-password-with-code` - Sätter nytt lösenord med verifierad token
 
-### **Features-sektion (6 kort i grid):**
-1. 🥚 Äggdagbok - Registrera ägg snabbt och enkelt
-2. 🐔 Hönsprofiler - Håll koll på varje höna
-3. 📊 Statistik & Insikter - Se trender och analyser
-4. 💰 Ekonomi - Spåra kostnader och intäkter
-5. 🩺 Hälsologg - Dokumentera hälsoproblem
-6. 🏠 Flockhantering - Organisera flera flockar
+Frontend UI (login.tsx) uppdaterad med:
+- **forgot**: E-postformulär med "Skicka kod"-knapp
+- **verify-code**: 6 separata TextInput-fält för kodinmatning med auto-fokus
+- **new-password**: Nytt lösenord + bekräftelse-formulär
 
-### **Pristabell (3 kort):**
+authStore.ts uppdaterad med:
+- `verifyResetCode(email, code)` - Returnerar token vid giltig kod
+- `resetPasswordWithCode(token, newPassword)` - Återställer lösenord
 
-| **GRATIS (0 kr)** | **PREMIUM MÅNADSVIS (19 kr/mån)** | **PREMIUM ÅRSVIS (149 kr/år)** |
-|-------------------|-----------------------------------|--------------------------------|
-| ✓ 1 flock | ✓ Allt i Gratis | ✓ Allt i Gratis |
-| ✓ 30 dagars historik | ✓ Obegränsad historik | ✓ Obegränsad historik |
-| ✓ Grundläggande statistik | ✓ Obegränsade flockar | ✓ Obegränsade flockar |
-| ✓ Ägg- och ekonomilogg | ✓ **Hälsologg** | ✓ **Hälsologg** |
-| ✓ Äggproduktionsgraf | ✓ AI-genererad dagsrapport | ✓ AI-genererad dagsrapport |
-| ✓ Ekonomigraf | ✓ Äggprognos 7 dagar | ✓ Äggprognos 7 dagar |
-| | ✓ Avvikelsedetektion | ✓ Avvikelsedetektion |
-| | ✓ Ekonomijämförelse m/m | ✓ Ekonomijämförelse m/m |
-| | ✓ Kläckningsmodul | ✓ Kläckningsmodul |
-| | ✓ Anpassningsbara funktioner | ✓ Anpassningsbara funktioner |
-| | **Flexibelt, avsluta när som helst** | **Badge: "Bäst värde"** |
-| | | **12,40 kr/mån – spara 79 kr!** |
-
-### **Cookie-banner (lagkrav):**
-- Text: "Vi använder cookies för att förbättra din upplevelse. Genom att fortsätta godkänner du vår användning av cookies."
-- Knappar: "Endast nödvändiga" | "Godkänn alla"
-- Valet sparas i localStorage så bannern inte visas igen
-- **Design**: Diskret banner i hörnet (blockerar inte login-knapp)
+E-postmall (via Resend):
+- Snyggt formaterad HTML-mall med 6-siffrig kod
+- Avsändare: noreply@honsgarden.se (verifierad domän)
 
 ---
 
-## API Endpoints (Komplett)
+## Deployment-status
 
-### Core
+### EAS Build-konfiguration: ✅ REDO
+- `eas.json` konfigurerad med development/preview/production profiles
+- `app.json` uppdaterad med korrekt projectId och slug
+- `@expo/config-plugins` i dependencies (krävs för EAS)
+- Alla ikoner på plats (512x512, 1024x1024)
+
+### Expo SDK: 54 (stabil)
+
+### Deployment-kommandon:
+```bash
+# Bygg för testning
+eas build --platform all --profile preview
+
+# Bygg för produktion
+eas build --platform all --profile production
+
+# Uppdatera OTA
+eas update --environment production
+```
+
+---
+
+## Kända problem
+
+### Expo Web Rendering (BEFINTLIGT PROBLEM)
+- "import.meta" JavaScript-fel på webb-versionen
+- Orsakas av Metro bundler, inte relaterat till kodändringar
+- Påverkar INTE native iOS/Android-byggen
+- Webb-frontend på `/api/web` fungerar separat
+
+---
+
+## Komplett funktionslista
+
+### Autentisering
+| Funktion | Backend | Mobil |
+|----------|---------|-------|
+| E-post/lösenord-registrering | ✅ | ✅ |
+| E-post/lösenord-inloggning | ✅ | ✅ |
+| Google-inloggning | ✅ | ⚠️ (kräver native config) |
+| Apple-inloggning | ✅ | ✅ |
+| **Lösenordsåterställning (6-siffrig kod)** | ✅ | ✅ |
+| GDPR-samtycke vid registrering | ✅ | ✅ |
+
+### Premium-funktioner
+| Funktion | Backend | Mobil |
+|----------|---------|-------|
+| Obegränsade flockar | ✅ | ✅ |
+| Hälsologg | ✅ | ✅ |
+| Kläckningsmodul | ✅ | ✅ |
+| Foderhantering | ✅ | ✅ |
+| AI Dagsrapport | ✅ | ✅ |
+| Äggprognos 7 dagar | ✅ | ✅ |
+
+### Kärnfunktioner
+- Äggdagbok
+- Hönsprofiler med tuppar
+- Flockhantering
+- Ekonomispårning
+- Statistik och rapporter
+- Väderintegration
+- AI-rådgivare "Agda"
+
+---
+
+## API Endpoints
+
+### Autentisering
+- `POST /api/auth/register` - Registrering
+- `POST /api/auth/login` - Inloggning
+- `POST /api/auth/logout` - Utloggning
+- `GET /api/auth/me` - Nuvarande användare
+- `POST /api/auth/forgot-password` - Begär återställningskod
+- `POST /api/auth/verify-reset-code` - Verifiera kod
+- `POST /api/auth/reset-password-with-code` - Återställ lösenord
+- `POST /api/auth/google/mobile` - Google-inloggning (mobil)
+- `POST /api/auth/apple/mobile` - Apple-inloggning (mobil)
+
+### Data
 - `GET/POST /api/eggs` - Äggregistreringar
 - `GET/POST /api/hens` - Hönor
 - `GET/POST /api/flocks` - Flockar
-- `GET/POST /api/transactions` - Ekonomitransaktioner
+- `GET/POST /api/transactions` - Ekonomi
+- `GET/POST /api/feed` - Foder
+- `GET/POST /api/hatching` - Kläckning
+- `GET/POST /api/health-log` - Hälsologg
 
-### Authentication
-- `POST /api/auth/session` - Google OAuth exchange
-- `POST /api/auth/register` - Email/password registration
-- `POST /api/auth/login` - Email/password login
-- `POST /api/auth/forgot-password` - Password reset request
-- `POST /api/auth/reset-password` - Password reset with token
-- `GET /api/auth/me` - Get current user
-- `POST /api/auth/logout` - Logout
-
-### Payments (Stripe Subscription)
-- `POST /api/checkout/create` - Create Stripe checkout session (mode=subscription)
-- `GET /api/checkout/status/{session_id}` - Check payment status
-- `POST /api/webhook/stripe` - Stripe webhook handler
-- `GET /api/premium/status` - Get premium status
-- `POST /api/subscription/cancel` - Cancel subscription
-
-### Statistik
-- `GET /api/statistics/today` - Dagens statistik
-- `GET /api/statistics/summary` - Månads/total sammanfattning
-- `GET /api/statistics/month/{year}/{month}` - Månadsstatistik med daglig breakdown
-- `GET /api/insights` - Insikter (kostnad/ägg, toppvärpare, produktivitet)
-
-### Feed Management (Etapp 4 - Premium)
-- `GET/POST /api/feed` - Foderregistreringar
-- `DELETE /api/feed/{id}` - Ta bort
-- `GET /api/feed/inventory` - Lagerstatus + varningar
-- `PUT /api/feed/inventory/{type}` - Uppdatera trösklar
-- `GET /api/feed/statistics?days=30` - Foderstatistik
-
-### Hatching (Kläckning - Premium)
-- `GET/POST /api/hatching` - Kläckningar
-- `POST /api/hatching/{id}/complete` - Avsluta kläckning
-- `DELETE /api/hatching/{id}` - Ta bort
-
-### AI Features (Premium)
-- `GET /api/ai/daily-report` - AI-genererad dagsrapport
-- `GET /api/ai/egg-forecast` - 7-dagars äggprognos
-
----
-
-## Completed Features (February 2026)
-
-### Session 10 - Nya funktioner (February 25, 2026)
-- [x] **GDPR-compliant Registration Flow** - Helt ny registreringsprocess
-  - Obligatorisk checkbox för användarvillkor & integritetspolicy
-  - Frivillig checkbox för nyhetsbrev och marknadsföring (GDPR-korrekt)
-  - Full GDPR-text i modal med alla sektioner
-  - Admin-vy visar samtyckesstatus per användare
-  - Samtycke sparas med tidsstämpel i databasen
-  - Välkomstmail skickas vid registrering (via Resend)
-  - Glömt lösenord-funktion med supporttext
-  - Google-login återinlagd som alternativ
-  - Tagline ändrad till "Din digitala assistent för hönsgården"
-- [x] **Mobilapp synkad med webbapp**
-  - Inloggning/registrering med e-post + Google
-  - GDPR-samtycke vid registrering
-  - Glömt lösenord-funktion
-  - Utloggning i inställningar
-  - Konto-sektion med användarinfo
-- [x] **AI Hönsgårdsrådgivare "Agda"** - Premium-funktion som ger personliga råd baserat på flocken
-- [x] **Väderintegration** - Visar väder och ger tips (tips är premium-only)
-- [x] **Tupp-funktion** - Lägg till tuppar i flocken
-- [x] **Dashboard uppdaterad** - Visar väder och flockråd
-- [x] **Premium-sidan uppdaterad** - 12 funktioner listade
-
-### Session 9 - P0 Bug Fixes (February 25, 2026)
-- [x] **KRITISK FIX: Stripe checkout** - Bytte från emergentintegrations CheckoutSessionRequest (mode='payment' hårdkodat) till direkt stripe.checkout.Session.create() med mode='subscription' för prenumerationer
-- [x] **FIX: "Normal produktion" text** - Ändrade insights endpoint att visa "Inga ägg registrerade än" (status: no_data) för användare med 0 ägg istället för "Normal produktion"
-- [x] **FIX: Login redirect** - Fixade React Router basename till `/api/web` och email-login uppdaterar AuthContext state korrekt
-- [x] **UI/UX Komplett:**
-  - Dela statistik-modal med Facebook, Twitter, och "Ladda ner bild" för Instagram
-  - Animationer (fade-in, slide-up med delays)
-  - Responsiv design för mobil
-  - AI-insikter sektion på dashboard
-  - Snabbåtgärder-grid
-
-### Tidigare Sessioner
-- [x] Critical Auth Fix: Resolved login loop with missing `request` parameter
-- [x] Premium Feature Lockdown (Backend + Frontend)
-- [x] Email/Password Authentication
-- [x] AI-Powered Features (Daily Report, 7-Day Forecast)
-- [x] Dashboard & UX Redesign
-- [x] Cookie Banner Redesign
-- [x] Demo data for statistics graphs
-- [x] Share to Social Media function
-
----
-
-## Komplett Premium-funktionslista
-| Funktion | Backend | Webb | Mobil |
-|----------|---------|------|-------|
-| Obegränsade flockar | ✅ | ✅ | ✅ |
-| Hälsologg | ✅ | ✅ | ✅ |
-| Kläckningsmodul | ✅ | ✅ | ✅ |
-| Anpassa funktioner | ✅ | ✅ | ✅ |
-| Foderhantering | ✅ | ✅ | ✅ |
-| Obegränsad historik | ✅ | ✅ | ✅ |
-| AI Dagsrapport | ✅ | ✅ | ✅ |
-| Äggprognos 7 dagar | ✅ | ✅ | ✅ |
+### Premium & AI
+- `GET /api/premium/status` - Premium-status
+- `GET /api/ai/daily-report` - AI-dagsrapport
+- `GET /api/ai/egg-forecast` - Äggprognos
+- `GET /api/ai/daily-tip` - Dagens tips
 
 ---
 
 ## Teknisk Stack
-- **Backend**: FastAPI (Python), MongoDB
-- **Frontend Web**: React, Vite, TypeScript, Recharts
-- **Frontend Mobile**: React Native, Expo, expo-font
-- **Payments**: Stripe (Subscription Mode)
-- **Auth**: Google OAuth2 + Email/Password (bcrypt, JWT)
-- **AI**: emergentintegrations + OpenAI GPT-4o
-- **Fonts**: Playfair Display, Inter (Google Fonts)
+- **Backend**: FastAPI, MongoDB Atlas
+- **Mobil**: Expo (SDK 54), React Native
+- **E-post**: Resend
+- **Betalningar**: Stripe (web) / Web-redirect (mobil)
+- **AI**: OpenAI via emergentintegrations
 
 ---
 
-## P2 - Future/Backlog
-- [ ] Apple Sign-In (kod finns, behöver aktiveras)
-- [ ] Enhanced Analytics
-- [ ] User Onboarding guide
-- [ ] Affiliate-produktlänkar
+## Kommande uppgifter
 
-## Senaste verifiering (26 Feb 2026)
-### ✅ Bekräftade funktioner i mobilappen:
-- Admin Panel-länk i settings.tsx (rad 728-741) för admin-användare
-- Push-notifikationstjänst i `/app/frontend/src/services/notifications.ts`
-- AI Dagsrapport-modal och Äggprognos-modal i dashboard
+### P1 - Hög prioritet
+- [ ] Användartestning på fysisk enhet efter framgångsrikt EAS-bygge
+- [ ] Skapa premium-sidan på `honsgarden.se/premium`
+- [ ] Verifiera Google Sign-In native config
 
-### ⚠️ Deployment-info:
-- **Problem:** EAS CLI kräver `--environment` flagga för SDK 51+
-- **Lösning:** Uppdatera deployment-kommando till `eas update --environment production ...`
-- **OBS:** `update`-sektionen i `eas.json` var felaktig och har tagits bort
-- **Status:** ✅ Kodfixad - väntar på att användaren kör deployment
+### P2 - Framtida
+- [ ] Onboarding-guide för nya användare
+- [ ] Ta bort dormant RevenueCat-kod
+- [ ] Förbättrad statistikexport
 
 ---
 
-## Test Files
-- `/app/backend/tests/test_stripe_and_auth.py` - Stripe checkout + Auth tests
-- `/app/test_reports/iteration_7.json` - Latest test report
+## Testrapporter
+- `/app/test_reports/iteration_11.json` - Lösenordsåterställning (100% backend)
+- `/app/backend/tests/test_password_reset.py` - Backend-tester
+
+## Testanvändare
+- E-post: testuser@test.com
+- Lösenord: test123
