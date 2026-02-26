@@ -1513,8 +1513,8 @@ async def create_checkout_session(req: CreateCheckoutRequest, request: Request):
         raise HTTPException(status_code=500, detail="Stripe price not configured")
     
     # Build URLs
-    success_url = f"{req.origin_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{req.origin_url}/premium"
+    success_url = f"{req.origin_url}/api/checkout-success?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{req.origin_url}/api/premium-page"
     
     try:
         # Use Stripe SDK directly with mode="subscription" for recurring prices
