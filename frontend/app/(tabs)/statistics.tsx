@@ -1580,4 +1580,116 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontWeight: '600',
     color: colors.warning,
   },
+  // Trend Analysis Styles
+  trendSection: {
+    marginTop: 24,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+  },
+  trendBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    gap: 12,
+  },
+  trendBannerText: {
+    flex: 1,
+  },
+  trendStatus: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  trendMessage: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  periodComparison: {
+    marginBottom: 16,
+  },
+  comparisonTitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  comparisonGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  comparisonColumn: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  comparisonHeader: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginBottom: 4,
+  },
+  comparisonValue: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  comparisonSubtext: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  comparisonArrow: {
+    paddingHorizontal: 16,
+  },
+  changesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  changeItem: {
+    width: '48%',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+    borderRadius: 10,
+    padding: 12,
+    alignItems: 'center',
+  },
+  changeLabel: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginBottom: 4,
+  },
+  changeValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  changeValue: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  insightsList: {
+    borderTopWidth: 1,
+    borderTopColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+    paddingTop: 16,
+  },
+  insightsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  insightItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 8,
+  },
+  insightItemText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    flex: 1,
+    lineHeight: 18,
+  },
 });
