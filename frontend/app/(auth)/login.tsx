@@ -197,16 +197,6 @@ export default function LoginScreen() {
     }
   };
   
-  const handleGoogleLogin = () => {
-    // For mobile, we'd need to use expo-auth-session
-    // For now, show an alert that this feature needs native setup
-    Alert.alert(
-      'Google-inloggning',
-      'Google-inloggning kräver ytterligare konfiguration för mobilappen. Använd e-post/lösenord för tillfället.',
-      [{ text: 'OK' }]
-    );
-  };
-  
   const styles = createStyles(colors);
   
   return (
