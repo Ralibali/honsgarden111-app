@@ -88,6 +88,40 @@ export default function FeedScreen() {
   const [notes, setNotes] = useState('');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   
+  // Define callbacks BEFORE any conditional returns (React hooks rules)
+  const loadData = useCallback(async () => {
+    if (!isPremium) return;
+    try {
+      const [recordsRes, inventoryRes, statsRes] = await Promise.all([
+        fetch(`${API_URL}/api/feed?limit=50`, { credentials: 'include' }),
+        fetch(`${API_URL}/api/feed/inventory`, { credentials: 'include' }),
+        fetch(`${API_URL}/api/feed/statistics?days=30`, { credentials: 'include' }),
+      ]);
+      
+      if (recordsRes.ok) {
+        const data = await recordsRes.json();
+        setRecords(data);
+      }
+      if (inventoryRes.ok) {
+        const data = await inventoryRes.json();
+        setInventory(data.inventory || []);
+        setLowStockAlerts(data.low_stock_alerts || []);
+      }
+      if (statsRes.ok) {
+        const data = await statsRes.json();
+        setStats(data);
+      }
+    } catch (error) {
+      console.error('Failed to load feed data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [isPremium]);
+  
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+  
   // Show premium paywall if not premium
   if (!isPremium) {
     return (
@@ -116,38 +150,6 @@ export default function FeedScreen() {
       </SafeAreaView>
     );
   }
-  
-  const loadData = useCallback(async () => {
-    try {
-      const [recordsRes, inventoryRes, statsRes] = await Promise.all([
-        fetch(`${API_URL}/api/feed?limit=50`, { credentials: 'include' }),
-        fetch(`${API_URL}/api/feed/inventory`, { credentials: 'include' }),
-        fetch(`${API_URL}/api/feed/statistics?days=30`, { credentials: 'include' }),
-      ]);
-      
-      if (recordsRes.ok) {
-        const data = await recordsRes.json();
-        setRecords(data);
-      }
-      if (inventoryRes.ok) {
-        const data = await inventoryRes.json();
-        setInventory(data.inventory || []);
-        setLowStockAlerts(data.low_stock_alerts || []);
-      }
-      if (statsRes.ok) {
-        const data = await statsRes.json();
-        setStats(data);
-      }
-    } catch (error) {
-      console.error('Failed to load feed data:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-  
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
   
   const onRefresh = async () => {
     setRefreshing(true);
