@@ -2,9 +2,9 @@
 
 ## Senaste uppdatering: 26 Feb 2026
 
-### Deployment-status: ✅ EAS.JSON UPPDATERAD
+### Deployment-status: ✅ EAS.JSON FIXAD (26 Feb 2026)
 - `eas.json` har nu `channel` för varje build-profil
-- `update`-sektion tillagd för SDK 51+ kompatibilitet
+- ⚠️ `update`-sektion **BORTTAGEN** (orsakade valideringsfel i EAS CLI)
 - Deployment-kommando: `eas update --environment production`
 - Expo SDK version 54 (stabil)
 - `frontend/app.json` slug: `honsgarden-app`
