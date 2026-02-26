@@ -3772,34 +3772,88 @@ async def get_ai_daily_report(request: Request):
             }
         }
     
+    # Get weather data for contextual tips
+    weather_data = None
+    try:
+        weather_doc = await db.weather_cache.find_one(
+            {"user_id": user_id, "cached_at": {"$gte": datetime.now(timezone.utc) - timedelta(hours=3)}},
+            {"_id": 0}
+        )
+        if weather_doc:
+            weather_data = weather_doc.get("data", {})
+    except:
+        pass
+    
+    # Get recent egg production stats for context
+    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).strftime('%Y-%m-%d')
+    week_eggs = await db.egg_records.find({"user_id": user_id, "date": {"$gte": week_ago}}).to_list(500)
+    weekly_total = sum(e.get('count', 0) for e in week_eggs)
+    daily_average = weekly_total / 7 if week_eggs else 0
+    
+    # Determine productivity level
+    productivity_pct = (total_eggs / hen_count * 100) if hen_count > 0 else 0
+    
+    # Get current month and season context
+    current_month = datetime.now().month
+    season_context = ""
+    if current_month in [12, 1, 2]:
+        season_context = "Vinter - kortare dagar, extra fokus på ljus och värme"
+    elif current_month in [3, 4, 5]:
+        season_context = "Vår - ökande äggproduktion, möjlig ruggning"
+    elif current_month in [6, 7, 8]:
+        season_context = "Sommar - risk för värmestress, säkerställ skugga och vatten"
+    else:
+        season_context = "Höst - ruggningssäsong, minskad produktion naturligt"
+    
     # Generate AI report for premium users
     try:
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"daily-report-{user_id}-{today}",
-            system_message="""Du är Agda, en hjälpsam och erfaren hönsskötare-assistent med bondsk charm. 
-Du skriver korta, personliga och uppmuntrande rapporter på svenska. 
-Du har alltid tips om hönsskötsel och är varm och omtänksam i tonen.
-Använd emojis sparsamt (max 2-3 per rapport).
-Avsluta alltid med 'Kacklande hälsningar, Agda 🐔'"""
+            system_message=f"""Du är Agda, en erfaren och varm hönsgårdsrådgivare med över 10 års erfarenhet.
+Du skriver personliga, praktiska och uppmuntrande rapporter på svenska.
+Du använder din djupa kunskap om hönsskötsel för att ge relevanta tips baserat på säsong, väder och produktion.
+
+{HONSGARD_KNOWLEDGE}
+
+VIKTIGT:
+- Håll rapporten under 120 ord
+- Var varm och personlig i tonen
+- Ge ETT konkret, relevant tips baserat på data
+- Använd max 2-3 emojis
+- Avsluta alltid med 'Kacklande hälsningar, Agda 🐔'"""
         ).with_model("openai", "gpt-4o")
+        
+        weather_info = ""
+        if weather_data:
+            temp = weather_data.get("temperature", "okänd")
+            desc = weather_data.get("description", "")
+            weather_info = f"- Väder idag: {temp}°C, {desc}"
         
         prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
 
-Data för idag ({today}):
+DATA FÖR IDAG ({today}):
 - Antal ägg idag: {total_eggs}
 - Antal aktiva höns: {hen_count}
+- Produktivitet: {productivity_pct:.0f}% (förväntat ~70-85% för bra värpraser)
+- Veckosnitt: {daily_average:.1f} ägg/dag
 - Produktivitetsvarningar: {', '.join(alerts) if alerts else 'Inga'}
 - Senaste hälsoanteckningar: {len(health_logs)} loggade
+{weather_info}
+
+SÄSONG: {season_context}
 
 Rapporten ska innehålla:
 1. En personlig hälsning till {user_name}
-2. En kort sammanfattning av dagens produktion
-3. En observation eller uppmuntran
-4. Ett praktiskt tips (om relevant)
-5. Avsluta med din signatur
+2. Kort sammanfattning av produktion (jämför med veckosnitt/förväntat)
+3. ETT konkret, säsongsanpassat tips från din kunskap
+4. Din signatur
 
-Håll det under 100 ord och personligt."""
+Anpassa tipset efter:
+- Vädret (om data finns)
+- Säsongen ({season_context})
+- Produktionsnivån ({productivity_pct:.0f}%)
+- Eventuella varningar"""
         
         message = UserMessage(text=prompt)
         ai_response = await chat.send_message(message)
