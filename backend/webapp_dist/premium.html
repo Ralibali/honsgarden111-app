@@ -936,6 +936,11 @@
         }
         
         async function initiateCheckout() {
+            if (!currentUser) {
+                redirectToLogin();
+                return;
+            }
+            
             hideStatus();
             setButtonLoading(true);
             
@@ -947,11 +952,20 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         plan: selectedPlan,
                         origin_url: originUrl
                     })
                 });
+                
+                if (response.status === 401) {
+                    updateStatus('Du måste logga in för att prenumerera.', 'error');
+                    setButtonLoading(false);
+                    currentUser = null;
+                    updateButtonState();
+                    return;
+                }
                 
                 if (!response.ok) {
                     const error = await response.json();
@@ -973,7 +987,10 @@
         }
         
         // Initialize
-        document.addEventListener('DOMContentLoaded', checkReturnFromStripe);
+        document.addEventListener('DOMContentLoaded', () => {
+            checkReturnFromStripe();
+            checkAuthStatus();
+        });
     </script>
 </body>
 </html>
