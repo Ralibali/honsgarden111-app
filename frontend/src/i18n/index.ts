@@ -1,5 +1,5 @@
 import { I18n } from 'i18n-js';
-import * as Localization from 'expo-localization';
+import { getLocales } from 'expo-localization';
 import sv from './translations/sv';
 import en from './translations/en';
 
@@ -9,7 +9,8 @@ const i18n = new I18n({
 });
 
 // Set default locale based on device settings
-const deviceLocale = Localization.locale || 'sv';
+const locales = getLocales();
+const deviceLocale = locales?.[0]?.languageCode || 'sv';
 i18n.locale = deviceLocale.startsWith('sv') ? 'sv' : 'en';
 i18n.enableFallback = true;
 i18n.defaultLocale = 'sv';
