@@ -109,7 +109,20 @@ export default function StatisticsScreen() {
   useEffect(() => {
     fetchCoopSettings();
     loadStats();
+    loadAdvancedInsights();
   }, [viewMode, selectedYear, selectedMonth]);
+  
+  const loadAdvancedInsights = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/statistics/advanced-insights`);
+      if (response.ok) {
+        const data = await response.json();
+        setAdvancedInsights(data);
+      }
+    } catch (error) {
+      console.error('Failed to load advanced insights:', error);
+    }
+  };
   
   const loadStats = async () => {
     setLoading(true);
