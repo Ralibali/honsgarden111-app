@@ -733,6 +733,71 @@ export default function LoginScreen() {
                 </TouchableOpacity>
               </View>
             )}
+            
+            {/* Register Verification - Enter Code */}
+            {authMode === 'register-verify' && (
+              <View style={styles.formSection}>
+                <Text style={styles.formTitle}>Verifiera din e-post</Text>
+                <Text style={styles.formSubtitle}>
+                  En 6-siffrig kod har skickats till{'\n'}
+                  <Text style={styles.emailHighlight}>{email}</Text>
+                </Text>
+                
+                {error && <Text style={styles.errorText}>{error}</Text>}
+                {successMessage && <Text style={styles.successText}>{successMessage}</Text>}
+                
+                <View style={styles.codeInputContainer}>
+                  {registerCode.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      ref={(ref) => { registerCodeRefs.current[index] = ref; }}
+                      style={styles.codeInput}
+                      value={digit}
+                      onChangeText={(text) => handleRegisterCodeInput(text.replace(/[^0-9]/g, ''), index)}
+                      onKeyPress={(e) => handleRegisterCodeKeyPress(e, index)}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      selectTextOnFocus
+                    />
+                  ))}
+                </View>
+                
+                <TouchableOpacity 
+                  style={[styles.primaryButton, isLoading && styles.disabledButton]}
+                  onPress={handleVerifyRegistration}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>Verifiera</Text>
+                  )}
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.resendButton, resendCooldown > 0 && styles.resendButtonDisabled]}
+                  onPress={handleResendRegistrationCode}
+                  disabled={isLoading || resendCooldown > 0}
+                >
+                  <Text style={[styles.resendText, resendCooldown > 0 && styles.resendTextDisabled]}>
+                    {resendCooldown > 0 
+                      ? `Skicka ny kod (${resendCooldown}s)` 
+                      : 'Skicka ny kod'}
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.backButton}
+                  onPress={() => {
+                    setRegisterCode(['', '', '', '', '', '']);
+                    setSuccessMessage('');
+                    setAuthMode('register');
+                  }}
+                >
+                  <Text style={styles.backText}>← Ändra uppgifter</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
           
           {/* Footer */}
