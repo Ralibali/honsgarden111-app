@@ -666,6 +666,165 @@ export default function StatisticsScreen() {
     );
   };
   
+  const renderAdvancedInsights = () => {
+    if (!advancedInsights) return null;
+    
+    const { metrics, insights } = advancedInsights;
+    
+    // Helper to render a metric card
+    const MetricCard = ({ 
+      icon, 
+      label, 
+      value, 
+      unit, 
+      color,
+      optimal 
+    }: { 
+      icon: string; 
+      label: string; 
+      value: number | null; 
+      unit: string; 
+      color: string;
+      optimal?: string;
+    }) => (
+      <View style={styles.metricCard}>
+        <View style={styles.metricIconWrap}>
+          <Ionicons name={icon as any} size={20} color={color} />
+        </View>
+        <Text style={styles.metricLabel}>{label}</Text>
+        <Text style={[styles.metricValue, { color }]}>
+          {value !== null ? `${value} ${unit}` : '—'}
+        </Text>
+        {optimal && value !== null && (
+          <Text style={styles.metricOptimal}>{isSv ? 'Optimalt' : 'Optimal'}: {optimal}</Text>
+        )}
+      </View>
+    );
+    
+    return (
+      <View style={styles.advancedSection}>
+        <View style={styles.sectionHeader}>
+          <Ionicons name="analytics" size={24} color={colors.primary} />
+          <Text style={styles.sectionTitle}>
+            {isSv ? 'Avancerade insikter' : 'Advanced Insights'}
+          </Text>
+          {!isPremium && (
+            <View style={styles.premiumBadgeSmall}>
+              <Ionicons name="star" size={12} color={colors.warning} />
+            </View>
+          )}
+        </View>
+        
+        {!isPremium ? (
+          <View style={styles.premiumLockSmall}>
+            <Ionicons name="lock-closed" size={24} color={colors.warning} />
+            <Text style={styles.premiumLockSmallText}>
+              {isSv ? 'Uppgradera till Premium för avancerade insikter' : 'Upgrade to Premium for advanced insights'}
+            </Text>
+            <TouchableOpacity 
+              style={styles.upgradeButtonSmall}
+              onPress={() => router.push('/paywall')}
+            >
+              <Text style={styles.upgradeButtonSmallText}>
+                {isSv ? 'Uppgradera' : 'Upgrade'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            {/* Productivity Score */}
+            {insights.productivity_score !== null && (
+              <View style={styles.productivityScoreCard}>
+                <Text style={styles.productivityLabel}>
+                  {isSv ? 'Produktivitetspoäng' : 'Productivity Score'}
+                </Text>
+                <View style={styles.productivityScoreWrap}>
+                  <Text style={[
+                    styles.productivityScore,
+                    { color: insights.productivity_score >= 70 ? colors.success : 
+                             insights.productivity_score >= 40 ? colors.warning : colors.error }
+                  ]}>
+                    {insights.productivity_score}
+                  </Text>
+                  <Text style={styles.productivityMax}>/100</Text>
+                </View>
+                <View style={styles.productivityBar}>
+                  <View style={[
+                    styles.productivityBarFill,
+                    { 
+                      width: `${insights.productivity_score}%`,
+                      backgroundColor: insights.productivity_score >= 70 ? colors.success : 
+                                       insights.productivity_score >= 40 ? colors.warning : colors.error
+                    }
+                  ]} />
+                </View>
+              </View>
+            )}
+            
+            {/* Key Metrics Grid */}
+            <View style={styles.metricsGrid}>
+              <MetricCard 
+                icon="leaf" 
+                label={isSv ? 'Foderkonvertering' : 'Feed Conversion'} 
+                value={metrics.feed_conversion_ratio.value}
+                unit={metrics.feed_conversion_ratio.unit}
+                color={colors.success}
+                optimal={metrics.feed_conversion_ratio.optimal_range}
+              />
+              <MetricCard 
+                icon="trending-up" 
+                label={isSv ? 'Värpfrekvens' : 'Laying Rate'} 
+                value={metrics.laying_rate.value}
+                unit={metrics.laying_rate.unit}
+                color={colors.primary}
+                optimal={metrics.laying_rate.optimal_range}
+              />
+              <MetricCard 
+                icon="cash" 
+                label={isSv ? 'Kostnad/ägg' : 'Cost/egg'} 
+                value={metrics.cost_per_egg.value}
+                unit={metrics.cost_per_egg.unit}
+                color={colors.error}
+              />
+              <MetricCard 
+                icon="wallet" 
+                label={isSv ? 'Vinst/ägg' : 'Profit/egg'} 
+                value={metrics.profit_per_egg.value}
+                unit={metrics.profit_per_egg.unit}
+                color={metrics.profit_per_egg.value && metrics.profit_per_egg.value > 0 ? colors.success : colors.error}
+              />
+              <MetricCard 
+                icon="egg" 
+                label={isSv ? 'Ägg/höna (månad)' : 'Eggs/hen (month)'} 
+                value={metrics.eggs_per_hen_monthly.value}
+                unit=""
+                color={colors.warning}
+              />
+              <MetricCard 
+                icon="calendar" 
+                label={isSv ? 'Ägg/höna (år)' : 'Eggs/hen (year)'} 
+                value={metrics.eggs_per_hen_yearly_estimate.value}
+                unit=""
+                color={colors.primary}
+              />
+            </View>
+            
+            {/* Best Laying Day */}
+            {insights.best_laying_day && (
+              <View style={styles.insightCard}>
+                <Ionicons name="sunny" size={20} color={colors.warning} />
+                <Text style={styles.insightText}>
+                  {isSv ? 'Bästa värpdag: ' : 'Best laying day: '}
+                  <Text style={styles.insightHighlight}>{insights.best_laying_day}</Text>
+                </Text>
+              </View>
+            )}
+          </>
+        )}
+      </View>
+    );
+  };
+  
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
