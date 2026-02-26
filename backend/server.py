@@ -1088,12 +1088,10 @@ def verify_password(password: str, hashed: str) -> bool:
 
 @api_router.post("/auth/register")
 async def register_email(data: EmailRegister, request: Request, response: Response):
-    """Register a new user with email and password"""
+    """Start registration - sends verification code to email"""
     # Check if terms are accepted
     if not data.accepted_terms:
         raise HTTPException(status_code=400, detail="Du måste godkänna användarvillkoren")
-    
-    # Note: accepted_marketing is optional per GDPR - no validation required
     
     # Check if name is provided
     if not data.name or not data.name.strip():
@@ -1108,24 +1106,121 @@ async def register_email(data: EmailRegister, request: Request, response: Respon
     if len(data.password) < 6:
         raise HTTPException(status_code=400, detail="Lösenordet måste vara minst 6 tecken")
     
-    # Create user
-    user_id = str(uuid.uuid4())
+    # Generate 6-digit verification code
+    import random
+    verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+    
+    # Store pending registration
     hashed_pw = hash_password(data.password)
+    await db.pending_registrations.delete_many({"email": data.email.lower()})
+    
+    await db.pending_registrations.insert_one({
+        "email": data.email.lower(),
+        "name": data.name.strip(),
+        "password_hash": hashed_pw,
+        "accepted_terms": True,
+        "accepted_marketing": data.accepted_marketing,
+        "verification_code": verification_code,
+        "expires_at": expires.isoformat(),
+        "attempts": 0,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # Send verification email
+    email_sent = False
+    if RESEND_API_KEY:
+        try:
+            resend.api_key = RESEND_API_KEY
+            resend.Emails.send({
+                "from": f"Hönsgården <{SENDER_EMAIL}>",
+                "to": data.email.lower(),
+                "subject": "Verifiera din e-postadress - Hönsgården 🐔",
+                "html": f"""
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; text-align: center;">
+                    <h2 style="color: #4ade80;">🐔 Hönsgården</h2>
+                    <p>Hej {data.name.strip()}!</p>
+                    <p>Välkommen till Hönsgården! Verifiera din e-postadress genom att ange denna kod:</p>
+                    <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 24px 0;">
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">{verification_code}</span>
+                    </div>
+                    <p style="color: #6b7280; font-size: 14px;">Koden är giltig i 15 minuter.</p>
+                    <p style="margin-top: 24px;">Vänliga hälsningar,<br>Hönsgården</p>
+                </div>
+                """
+            })
+            email_sent = True
+            logger.info(f"Verification code sent to {data.email}")
+        except Exception as e:
+            logger.error(f"Failed to send verification email: {e}")
+    
+    if email_sent:
+        return {
+            "message": "En verifieringskod har skickats till din e-postadress.",
+            "email": data.email.lower(),
+            "requires_verification": True
+        }
+    else:
+        # If email fails, delete pending registration
+        await db.pending_registrations.delete_many({"email": data.email.lower()})
+        raise HTTPException(status_code=500, detail="Kunde inte skicka verifieringskod. Försök igen senare.")
+
+
+@api_router.post("/auth/verify-registration")
+async def verify_registration(data: dict, request: Request, response: Response):
+    """Verify registration with 6-digit code and complete account creation"""
+    email = data.get("email", "").lower()
+    code = data.get("code", "")
+    
+    if not email or not code:
+        raise HTTPException(status_code=400, detail="E-post och kod krävs")
+    
+    # Find pending registration
+    pending = await db.pending_registrations.find_one({"email": email})
+    if not pending:
+        raise HTTPException(status_code=400, detail="Ingen väntande registrering hittades. Börja om från början.")
+    
+    # Check expiry
+    expires_at = datetime.fromisoformat(pending["expires_at"].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires_at:
+        await db.pending_registrations.delete_one({"email": email})
+        raise HTTPException(status_code=400, detail="Koden har gått ut. Registrera dig igen.")
+    
+    # Check attempts
+    if pending.get("attempts", 0) >= 5:
+        await db.pending_registrations.delete_one({"email": email})
+        raise HTTPException(status_code=400, detail="För många försök. Registrera dig igen.")
+    
+    # Verify code
+    if pending["verification_code"] != code:
+        await db.pending_registrations.update_one(
+            {"email": email},
+            {"$inc": {"attempts": 1}}
+        )
+        remaining = 5 - (pending.get("attempts", 0) + 1)
+        raise HTTPException(status_code=400, detail=f"Felaktig kod. {remaining} försök kvar.")
+    
+    # Code is correct - create the user account
+    user_id = str(uuid.uuid4())
     
     user = {
         "id": user_id,
-        "email": data.email.lower(),
-        "password_hash": hashed_pw,
-        "name": data.name or data.email.split('@')[0],
+        "email": email,
+        "password_hash": pending["password_hash"],
+        "name": pending["name"],
         "picture": None,
         "auth_provider": "email",
+        "email_verified": True,
         "accepted_terms": True,
         "accepted_terms_at": datetime.now(timezone.utc).isoformat(),
-        "accepted_marketing": data.accepted_marketing,
-        "accepted_marketing_at": datetime.now(timezone.utc).isoformat() if data.accepted_marketing else None,
+        "accepted_marketing": pending.get("accepted_marketing", False),
+        "accepted_marketing_at": datetime.now(timezone.utc).isoformat() if pending.get("accepted_marketing") else None,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user)
+    
+    # Delete pending registration
+    await db.pending_registrations.delete_one({"email": email})
     
     # Give 7 days FREE trial premium
     trial_end = datetime.now(timezone.utc) + timedelta(days=7)
@@ -1166,18 +1261,75 @@ async def register_email(data: EmailRegister, request: Request, response: Respon
         domain=cookie_domain
     )
     
-    # Send welcome/confirmation email with logo
+    logger.info(f"New user registered and verified: {email}")
+    
+    return {
+        "user_id": user_id,
+        "email": email,
+        "name": pending["name"],
+        "message": "Kontot skapat! Välkommen till Hönsgården!"
+    }
+
+
+@api_router.post("/auth/resend-verification")
+async def resend_verification(data: dict):
+    """Resend verification code for pending registration"""
+    email = data.get("email", "").lower()
+    
+    if not email:
+        raise HTTPException(status_code=400, detail="E-post krävs")
+    
+    # Find pending registration
+    pending = await db.pending_registrations.find_one({"email": email})
+    if not pending:
+        raise HTTPException(status_code=400, detail="Ingen väntande registrering hittades.")
+    
+    # Generate new code
+    import random
+    new_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+    
+    # Update pending registration
+    await db.pending_registrations.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "verification_code": new_code,
+                "expires_at": expires.isoformat(),
+                "attempts": 0
+            }
+        }
+    )
+    
+    # Send email
+    email_sent = False
     if RESEND_API_KEY:
         try:
-            await asyncio.to_thread(resend.Emails.send, {
+            resend.api_key = RESEND_API_KEY
+            resend.Emails.send({
                 "from": f"Hönsgården <{SENDER_EMAIL}>",
-                "to": [data.email.lower()],
-                "subject": "Välkommen till Hönsgården! 🐔",
+                "to": email,
+                "subject": "Ny verifieringskod - Hönsgården 🐔",
                 "html": f"""
-                <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #4CAF50; font-family: 'Playfair Display', Georgia, serif; font-size: 32px;">🐔 Hönsgården</h1>
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; text-align: center;">
+                    <h2 style="color: #4ade80;">🐔 Hönsgården</h2>
+                    <p>Här är din nya verifieringskod:</p>
+                    <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 24px 0;">
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">{new_code}</span>
                     </div>
+                    <p style="color: #6b7280; font-size: 14px;">Koden är giltig i 15 minuter.</p>
+                </div>
+                """
+            })
+            email_sent = True
+            logger.info(f"New verification code sent to {email}")
+        except Exception as e:
+            logger.error(f"Failed to resend verification email: {e}")
+    
+    if email_sent:
+        return {"message": "Ny verifieringskod har skickats.", "code_sent": True}
+    else:
+        raise HTTPException(status_code=500, detail="Kunde inte skicka verifieringskod.")
                     
                     <h2 style="color: #333;">Välkommen, {user["name"]}! 👋</h2>
                     
