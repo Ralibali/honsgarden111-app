@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betalning genomförd - Hönsgården Premium</title>
+    <link rel="icon" type="image/svg+xml" href="/api/web/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-green: #4ade80;
+            --accent-gold: #ffd700;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon { font-size: 2rem; }
+        .logo-text { font-size: 1.25rem; font-weight: 700; }
+        
+        .main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .success-container {
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .success-icon ion-icon {
+            font-size: 3.5rem;
+            color: var(--accent-green);
+        }
+        
+        .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .success-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .features-unlocked {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        .features-title {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+        
+        .feature-item ion-icon {
+            color: var(--accent-green);
+            font-size: 1.25rem;
+        }
+        
+        .feature-item span {
+            font-size: 0.9375rem;
+        }
+        
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: #000;
+            font-size: 1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.4);
+        }
+        
+        .status-message {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .status-message.pending {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+            color: #f59e0b;
+        }
+        
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(74, 222, 128, 0.2);
+            border-top-color: var(--accent-green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            padding: 1.5rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .footer p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span class="logo-icon">🐔</span>
+                <span class="logo-text">Hönsgården</span>
+            </a>
+        </div>
+    </header>
+    
+    <main class="main">
+        <div class="success-container">
+            <!-- Loading State -->
+            <div id="loadingState">
+                <div class="spinner"></div>
+                <h1 class="success-title">Verifierar betalning...</h1>
+                <p class="success-subtitle">Vänta medan vi bekräftar din betalning.</p>
+            </div>
+            
+            <!-- Success State -->
+            <div id="successState" class="hidden">
+                <div class="success-icon">
+                    <ion-icon name="checkmark-circle"></ion-icon>
+                </div>
+                <h1 class="success-title">Välkommen till Premium! 🎉</h1>
+                <p class="success-subtitle">
+                    Tack för ditt köp! Du har nu tillgång till alla premium-funktioner i Hönsgården.
+                </p>
+                
+                <div class="features-unlocked">
+                    <div class="features-title">Nu upplåst för dig:</div>
+                    <div class="feature-item">
+                        <ion-icon name="checkmark-circle"></ion-icon>
+                        <span>AI Dagsrapport & Äggprognos</span>
+                    </div>
+                    <div class="feature-item">
+                        <ion-icon name="checkmark-circle"></ion-icon>
+                        <span>AI-rådgivare "Agda"</span>
+                    </div>
+                    <div class="feature-item">
+                        <ion-icon name="checkmark-circle"></ion-icon>
+                        <span>Hälsologg & Kläckningsmodul</span>
+                    </div>
+                    <div class="feature-item">
+                        <ion-icon name="checkmark-circle"></ion-icon>
+                        <span>Foderhantering & Avancerad statistik</span>
+                    </div>
+                    <div class="feature-item">
+                        <ion-icon name="checkmark-circle"></ion-icon>
+                        <span>Obegränsade flockar & historik</span>
+                    </div>
+                </div>
+                
+                <a href="/api/web" class="cta-button">
+                    <ion-icon name="home"></ion-icon>
+                    Gå till Hönsgården
+                </a>
+            </div>
+            
+            <!-- Error State -->
+            <div id="errorState" class="hidden">
+                <div class="success-icon" style="background: rgba(239, 68, 68, 0.1);">
+                    <ion-icon name="alert-circle" style="color: #ef4444;"></ion-icon>
+                </div>
+                <h1 class="success-title">Något gick fel</h1>
+                <p class="success-subtitle" id="errorMessage">
+                    Vi kunde inte verifiera din betalning. Kontrollera din e-post för bekräftelse eller kontakta support.
+                </p>
+                <a href="/api/premium-page" class="cta-button" style="background: #6b7280;">
+                    Försök igen
+                </a>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <p>
+            Behöver du hjälp? Kontakta oss på <a href="mailto:info@honsgarden.se" style="color: var(--accent-green);">info@honsgarden.se</a>
+        </p>
+    </footer>
+    
+    <script>
+        const loadingState = document.getElementById('loadingState');
+        const successState = document.getElementById('successState');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        function showSuccess() {
+            loadingState.classList.add('hidden');
+            successState.classList.remove('hidden');
+            errorState.classList.add('hidden');
+        }
+        
+        function showError(message) {
+            loadingState.classList.add('hidden');
+            successState.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            if (message) errorMessage.textContent = message;
+        }
+        
+        async function verifyPayment(sessionId, attempts = 0) {
+            const maxAttempts = 10;
+            const pollInterval = 2000;
+            
+            if (attempts >= maxAttempts) {
+                showError('Kunde inte verifiera betalningen. Kontrollera din e-post för bekräftelse.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/checkout/status/${sessionId}`, {
+                    credentials: 'include'
+                });
+                
+                if (response.status === 401) {
+                    // Not logged in - redirect to login
+                    window.location.href = '/api/web/login?redirect=/api/checkout-success?session_id=' + sessionId;
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Kunde inte kontrollera betalningsstatus');
+                }
+                
+                const data = await response.json();
+                
+                if (data.payment_status === 'paid' || data.status === 'complete') {
+                    showSuccess();
+                    return;
+                } else if (data.status === 'expired') {
+                    showError('Betalningssessionen har gått ut. Försök igen.');
+                    return;
+                }
+                
+                // Continue polling
+                setTimeout(() => verifyPayment(sessionId, attempts + 1), pollInterval);
+            } catch (error) {
+                console.error('Verification error:', error);
+                if (attempts >= 3) {
+                    showError(error.message);
+                } else {
+                    setTimeout(() => verifyPayment(sessionId, attempts + 1), pollInterval);
+                }
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session_id');
+            
+            if (sessionId) {
+                verifyPayment(sessionId);
+            } else {
+                showError('Ingen betalningssession hittades.');
+            }
+        });
+    </script>
+</body>
+</html>
