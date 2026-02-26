@@ -19,54 +19,54 @@ const { width, height } = Dimensions.get('window');
 const ONBOARDING_SLIDES = [
   {
     id: 1,
-    title: 'Välkommen till Hönsgården!',
-    subtitle: 'Din digitala hjälpreda för hönsgården',
-    description: 'Håll koll på ägg, hönor och ekonomi på ett enkelt sätt.',
-    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/470cd00d8265a1a08c013c8ad326df3c5dcb3e2f13499b7ac2e2ab2cfcbe9fb2.png',
+    title: 'Håll koll på äggen',
+    subtitle: 'Enkel daglig registrering',
+    description: 'Registrera dagens ägg med ett tryck. Se totaler per dag, vecka och månad. Spåra olika äggfärger och storlekar.',
+    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/753689ff2d0b82e1d55ba71f8229bfcd080b814e9e4c435f6f7124378321878a.png',
     color: '#4ade80',
     example: {
-      label: 'Exempel: Dagens ägg',
-      value: '24 ägg',
-      detail: 'Registrera med ett tryck!'
+      label: 'Funktioner:',
+      value: 'Äggdagbok',
+      detail: '• Snabb registrering\n• Färg & storlek\n• Historik & export'
     }
   },
   {
     id: 2,
-    title: 'Lär känna din flock',
-    subtitle: 'Håll koll på varje höna',
-    description: 'Skapa profiler med namn, ras, ålder och egenskaper.',
-    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/763b66fba29a555f2e56b7751e89137cac3ef4ad3b84bbef46809a8f95e06e94.png',
+    title: 'Känn din flock',
+    subtitle: 'Profiler för varje höna',
+    description: 'Skapa profiler med namn, ras, födelsedag och foto. Håll koll på vem som värper och hur mycket.',
+    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/4eb11f959062925926e157741ee6259e0b3d2cc3e62bb5f975c0ba4ec6ba5fc5.png',
     color: '#f59e0b',
     example: {
-      label: 'Exempel: Din flock',
-      value: '12 hönor',
-      detail: '🐔 Greta, Selma, Astrid...'
+      label: 'Funktioner:',
+      value: 'Hönsprofiler',
+      detail: '• Namn, ras & ålder\n• Produktionshistorik\n• Hälsoanteckningar'
     }
   },
   {
     id: 3,
-    title: 'Se dina resultat',
-    subtitle: 'Statistik och trender',
-    description: 'Följ produktionen över tid med grafer och rapporter.',
-    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/ad1aac5e3a63314c174658400d7cb77bcdeed421ec85a1918f158a6c1bf774e2.png',
+    title: 'Följ utvecklingen',
+    subtitle: 'Statistik & ekonomi',
+    description: 'Se trender i äggproduktion. Spåra inköp, försäljning och lönsamhet för din hönsgård.',
+    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/091b27dd4bd859b0711cf6dedb10e25441902c55e6d89ef2f92e1ef50ebbdc89.png',
     color: '#3b82f6',
     example: {
-      label: 'Exempel: Denna månad',
-      value: '+23%',
-      detail: '↑ Äggproduktionen ökar!'
+      label: 'Funktioner:',
+      value: 'Statistik',
+      detail: '• Grafer & trender\n• Ekonomiöversikt\n• PDF-rapporter'
     }
   },
   {
     id: 4,
-    title: 'Träffa Agda',
-    subtitle: 'Din AI-rådgivare',
-    description: 'Få personliga tips, prognoser och svar på dina frågor.',
-    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/a80bcb90250954abd2ffc8ee9525158941e86b3fa9f4bb9d065880cd116146f3.png',
+    title: 'Få smartare tips',
+    subtitle: 'AI-rådgivare & prognoser',
+    description: 'Agda analyserar din data och ger personliga råd. Få äggprognoser och vädertips anpassade för din flock.',
+    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/1f8c3576c9eb772a937b52001a2d828fa6ecd042d4499bbdece12d5550d357af.png',
     color: '#a855f7',
     example: {
-      label: 'Agda säger:',
-      value: '☀️ Perfekt väder!',
-      detail: 'Förväntad produktion: 28 ägg'
+      label: 'Premium-funktioner:',
+      value: 'AI & Prognoser',
+      detail: '• Personliga tips\n• 7-dagars prognos\n• Fråga Agda vad som helst'
     },
     isPremium: true
   },
