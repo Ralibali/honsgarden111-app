@@ -9,6 +9,9 @@
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
+      "ios": {
+        "simulator": true
+      },
       "env": {
         "APP_ENV": "development"
       }
@@ -16,18 +19,32 @@
     "preview": {
       "distribution": "internal",
       "channel": "preview",
+      "ios": {
+        "simulator": false
+      },
       "env": {
         "APP_ENV": "preview"
       }
     },
     "production": {
       "channel": "production",
+      "autoIncrement": true,
       "env": {
         "APP_ENV": "production"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "",
+        "ascAppId": "",
+        "appleTeamId": ""
+      },
+      "android": {
+        "serviceAccountKeyPath": "",
+        "track": "production"
+      }
+    }
   }
 }
