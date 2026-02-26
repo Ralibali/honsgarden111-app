@@ -917,12 +917,12 @@ export default function HomeScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setShowAiReportModal(false)}
       >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-          <View style={styles.modalHeader}>
+        <SafeAreaView style={[styles.aiModalContainer, { backgroundColor: colors.background }]}>
+          <View style={styles.aiModalHeader}>
             <TouchableOpacity onPress={() => setShowAiReportModal(false)}>
               <Ionicons name="close" size={28} color={colors.text} />
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
+            <Text style={[styles.aiModalTitle, { color: colors.text }]}>
               {isSv ? 'AI Dagsrapport' : 'AI Daily Report'}
             </Text>
             <TouchableOpacity onPress={loadAiReport}>
@@ -930,7 +930,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
           
-          <ScrollView style={styles.modalContent} contentContainerStyle={{ padding: 16 }}>
+          <ScrollView style={styles.aiModalContent} contentContainerStyle={{ padding: 16 }}>
             {aiReportLoading ? (
               <View style={styles.loadingContainer}>
                 <Text style={styles.loadingEmoji}>🤖</Text>
