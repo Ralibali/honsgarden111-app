@@ -190,14 +190,26 @@ export default function SettingsScreen() {
         );
         return;
       }
+      
+      // Register for push notifications
+      await registerForPushNotificationsAsync();
     }
     
     if (type === 'egg') {
       setEggReminderEnabled(enabled);
-      // TODO: Schedule/cancel notification
+      if (enabled) {
+        // Schedule daily reminder at 17:00
+        await scheduleEggReminder(17, 0, true);
+        Alert.alert(
+          isSv ? 'Påminnelse aktiverad' : 'Reminder enabled',
+          isSv ? 'Du får en daglig påminnelse kl 17:00 att registrera ägg.' : 'You will receive a daily reminder at 5 PM to register eggs.'
+        );
+      } else {
+        await cancelEggReminder();
+      }
     } else {
       setFeedReminderEnabled(enabled);
-      // TODO: Schedule/cancel notification
+      // Feed reminders - could be implemented similarly
     }
   };
   
