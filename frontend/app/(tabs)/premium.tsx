@@ -16,7 +16,7 @@ import { usePremiumStore } from '../../src/store/premiumStore';
 import { useAuthStore } from '../../src/store/authStore';
 import i18n from '../../src/i18n';
 
-const PREMIUM_WEB_URL = 'https://honsgarden.se/premium';
+const PREMIUM_WEB_URL = 'https://honsgarden.se/api/premium-page';
 
 const PREMIUM_FEATURES = [
   { 

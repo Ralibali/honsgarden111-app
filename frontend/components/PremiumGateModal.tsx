@@ -21,7 +21,7 @@ type PremiumGateModalProps = {
   featureIcon?: keyof typeof Ionicons.glyphMap;
 };
 
-const PREMIUM_WEB_URL = 'https://honsgarden.se/premium';
+const PREMIUM_WEB_URL = 'https://honsgarden.se/api/premium-page';
 
 const PREMIUM_FEATURES = [
   { icon: 'document-text', title: 'AI Dagsrapport', titleEn: 'AI Daily Report' },
