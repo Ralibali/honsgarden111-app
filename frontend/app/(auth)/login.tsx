@@ -319,8 +319,9 @@ export default function LoginScreen() {
                   <Text style={styles.primaryButtonText}>Kom igång gratis</Text>
                 </TouchableOpacity>
                 
-                <View style={styles.divider}>
-                  <TouchableOpacity 
+                <View style={styles.divider} />
+                
+                <TouchableOpacity 
                   style={styles.switchButton}
                   onPress={() => setAuthMode('login')}
                 >
