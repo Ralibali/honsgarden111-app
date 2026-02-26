@@ -821,6 +821,7 @@
     
     <script>
         let selectedPlan = 'yearly';
+        let currentUser = null;
         
         function selectPlan(plan) {
             selectedPlan = plan;
@@ -847,7 +848,46 @@
                 btn.innerHTML = '<div class="spinner"></div><span>Förbereder betalning...</span>';
             } else {
                 btn.disabled = false;
+                updateButtonState();
+            }
+        }
+        
+        function updateButtonState() {
+            const btn = document.getElementById('checkoutBtn');
+            if (currentUser) {
                 btn.innerHTML = '<ion-icon name="card-outline"></ion-icon><span>Starta din prenumeration</span>';
+                btn.onclick = initiateCheckout;
+            } else {
+                btn.innerHTML = '<ion-icon name="log-in-outline"></ion-icon><span>Logga in för att prenumerera</span>';
+                btn.onclick = redirectToLogin;
+            }
+        }
+        
+        function redirectToLogin() {
+            window.location.href = '/api/web/login?redirect=/api/premium-page';
+        }
+        
+        // Check if user is logged in
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    currentUser = await response.json();
+                    updateHeaderForLoggedIn();
+                }
+            } catch (error) {
+                console.log('Not logged in');
+            }
+            updateButtonState();
+        }
+        
+        function updateHeaderForLoggedIn() {
+            const headerCta = document.querySelector('.header-cta');
+            if (headerCta && currentUser) {
+                headerCta.textContent = currentUser.name || currentUser.email.split('@')[0];
+                headerCta.href = '/api/web';
             }
         }
         
