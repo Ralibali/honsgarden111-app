@@ -4470,13 +4470,22 @@ if WEBAPP_DIR.exists():
         from fastapi.responses import RedirectResponse
         return RedirectResponse(url="/api/web", status_code=302)
     
+    # Serve standalone premium page
+    @app.get("/premium")
+    async def serve_premium_page():
+        """Serve the standalone premium landing page"""
+        premium_file = WEBAPP_DIR / "premium.html"
+        if premium_file.exists():
+            return FileResponse(str(premium_file), media_type="text/html")
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/api/web", status_code=302)
+    
     @app.get("/login")
     @app.get("/eggs")
     @app.get("/hens")
     @app.get("/finance")
     @app.get("/statistics")
     @app.get("/settings")
-    @app.get("/premium")
     @app.get("/admin")
     @app.get("/checkout-success")
     async def redirect_webapp_routes():
