@@ -981,12 +981,12 @@ export default function HomeScreen() {
         presentationStyle="pageSheet"
         onRequestClose={() => setShowForecastModal(false)}
       >
-        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]}>
-          <View style={styles.modalHeader}>
+        <SafeAreaView style={[styles.aiModalContainer, { backgroundColor: colors.background }]}>
+          <View style={styles.aiModalHeader}>
             <TouchableOpacity onPress={() => setShowForecastModal(false)}>
               <Ionicons name="close" size={28} color={colors.text} />
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
+            <Text style={[styles.aiModalTitle, { color: colors.text }]}>
               {isSv ? 'Äggprognos' : 'Egg Forecast'}
             </Text>
             <TouchableOpacity onPress={loadEggForecast}>
@@ -994,7 +994,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
           
-          <ScrollView style={styles.modalContent} contentContainerStyle={{ padding: 16 }}>
+          <ScrollView style={styles.aiModalContent} contentContainerStyle={{ padding: 16 }}>
             {forecastLoading ? (
               <View style={styles.loadingContainer}>
                 <Text style={styles.loadingEmoji}>📈</Text>
