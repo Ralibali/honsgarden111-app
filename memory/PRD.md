@@ -57,14 +57,30 @@
 - [ ] Skicka till App Store / Google Play
 
 ### Senaste ändringar (26 Feb 2026) - Nya funktioner:
-- ✅ **AI Dagsrapport Modal** - Klickbart kort på dashboard som visar AI-genererad rapport
-- ✅ **Äggprognos Modal** - 7-dagars prognos med daglig nedbrytning och stapeldiagram
-- ✅ **Push Notifications Service** - Komplett notifikationstjänst (`/app/frontend/src/services/notifications.ts`)
-  - Äggregistrering påminnelse (daglig kl 17:00)
-  - Hälsokontroll påminnelse (veckovis)
-  - Kläckningspåminnelser (3 dagar, 1 dag, kläckningsdag)
-- ✅ **expo-device** installerat för push notifications
-- ✅ Settings.tsx uppdaterad med fungerande påminnelse-toggles
+- ✅ **Agda AI Kunskapsbas Utökad** - Omfattande kunskap om hönsskötsel inlagd:
+  - Filosofi och värderingar kring hönshållning
+  - Hönsgårdens utformning och placering
+  - Hönshusets utformning (ventilation, sittpinnar, reden)
+  - Hönsraser för äggproduktion (värp-, traditions- och specialraser)
+  - Tuppens roll i flocken
+  - Foder och nutrition (protein, kalcium, säsongsanpassning)
+  - Vattnets betydelse
+  - Årstider och väderpåverkan
+  - Äggkvalitet och förvaring
+  - Prissättning och ekonomi
+  - Vanliga sjukdomar och förebyggande vård
+  - Hållbarhet och kretslopp
+- ✅ **AI Dagsrapport Förbättrad** - Inkluderar nu:
+  - Väderdata för kontextuella tips
+  - Säsongsanpassade råd
+  - Produktivitetsanalys
+  - Veckosnitt för jämförelse
+- ✅ **Nytt: Dagens Tips API** (`/api/ai/daily-tip`)
+  - 40+ tips sorterade efter säsong
+  - Automatiskt val baserat på datum
+  - Vädertips när data finns
+  - Signerat av Agda 🐔
+- ✅ **EAS.JSON Uppdaterad** - `--environment` flagga stöds nu
 
 ### Befintliga funktioner (redan implementerade):
 - ✅ **Hälsologg** - Finns i `hens.tsx` med symptom-väljare och per-höna loggning
