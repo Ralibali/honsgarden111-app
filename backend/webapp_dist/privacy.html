@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integritetspolicy - Hönsgården</title>
+    <link rel="icon" type="image/svg+xml" href="/api/web/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-card: #1a1a24;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-green: #4ade80;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        
+        .header {
+            position: sticky;
+            top: 0;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon { font-size: 1.75rem; }
+        .logo-text { font-size: 1.125rem; font-weight: 700; }
+        
+        .back-link {
+            color: var(--accent-green);
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-link:hover { text-decoration: underline; }
+        
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 3rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-green);
+        }
+        
+        h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        ul {
+            color: var(--text-secondary);
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        li { margin-bottom: 0.5rem; }
+        
+        .highlight-box {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent-green);
+        }
+        
+        .highlight-box p { margin-bottom: 0; }
+        
+        a { color: var(--accent-green); }
+        
+        .footer {
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+        
+        .footer p {
+            font-size: 0.875rem;
+        }
+        
+        .footer a { margin: 0 0.5rem; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span class="logo-icon">🐔</span>
+                <span class="logo-text">Hönsgården</span>
+            </a>
+            <a href="/api/premium-page" class="back-link">
+                ← Tillbaka
+            </a>
+        </div>
+    </header>
+    
+    <main class="main">
+        <h1>Integritetspolicy</h1>
+        <p class="last-updated">Senast uppdaterad: 26 februari 2026</p>
+        
+        <p>
+            Hönsgården ("vi", "oss", "vår") värnar om din integritet. Denna integritetspolicy förklarar hur vi samlar in, 
+            använder och skyddar dina personuppgifter när du använder vår app och webbplats.
+        </p>
+        
+        <div class="highlight-box">
+            <p><strong>Sammanfattning:</strong> Vi samlar endast in data som behövs för att ge dig en bra upplevelse. 
+            Vi säljer aldrig din data till tredje part.</p>
+        </div>
+        
+        <h2>1. Vilka uppgifter vi samlar in</h2>
+        
+        <h3>Kontouppgifter</h3>
+        <ul>
+            <li>E-postadress (för inloggning och kommunikation)</li>
+            <li>Namn (valfritt)</li>
+            <li>Lösenord (krypterat)</li>
+        </ul>
+        
+        <h3>Användningsdata</h3>
+        <ul>
+            <li>Äggregistreringar och statistik</li>
+            <li>Information om dina hönor och flockar</li>
+            <li>Ekonomisk data (inköp, försäljning)</li>
+            <li>Hälsologgar</li>
+        </ul>
+        
+        <h3>Teknisk data</h3>
+        <ul>
+            <li>Enhetstyp och operativsystem</li>
+            <li>IP-adress (för säkerhet)</li>
+            <li>Platsdata (endast om du aktiverar väderintegration)</li>
+        </ul>
+        
+        <h2>2. Hur vi använder dina uppgifter</h2>
+        <p>Vi använder dina uppgifter för att:</p>
+        <ul>
+            <li>Tillhandahålla och förbättra Hönsgårdens funktioner</li>
+            <li>Skicka viktig information om ditt konto</li>
+            <li>Generera personliga AI-rapporter och prognoser</li>
+            <li>Hantera din prenumeration och betalningar</li>
+            <li>Skydda mot bedrägerier och missbruk</li>
+        </ul>
+        
+        <h2>3. Delning av uppgifter</h2>
+        <p>Vi delar dina uppgifter med:</p>
+        <ul>
+            <li><strong>Stripe</strong> – för säker betalningshantering</li>
+            <li><strong>OpenAI</strong> – för AI-funktioner (anonymiserad data)</li>
+            <li><strong>Resend</strong> – för e-postutskick</li>
+            <li><strong>MongoDB Atlas</strong> – för säker datalagring</li>
+        </ul>
+        <p>Vi säljer aldrig dina personuppgifter till tredje part för marknadsföring.</p>
+        
+        <h2>4. Dina rättigheter (GDPR)</h2>
+        <p>Du har rätt att:</p>
+        <ul>
+            <li><strong>Få tillgång</strong> till dina uppgifter</li>
+            <li><strong>Rätta</strong> felaktiga uppgifter</li>
+            <li><strong>Radera</strong> ditt konto och all data</li>
+            <li><strong>Exportera</strong> din data i maskinläsbart format</li>
+            <li><strong>Återkalla</strong> samtycke till marknadsföring</li>
+        </ul>
+        <p>Kontakta oss på <a href="mailto:info@honsgarden.se">info@honsgarden.se</a> för att utöva dessa rättigheter.</p>
+        
+        <h2>5. Datasäkerhet</h2>
+        <p>Vi skyddar dina uppgifter genom:</p>
+        <ul>
+            <li>Kryptering av all data under överföring (TLS/SSL)</li>
+            <li>Krypterade lösenord (bcrypt)</li>
+            <li>Säker molnlagring hos MongoDB Atlas</li>
+            <li>Regelbundna säkerhetskontroller</li>
+        </ul>
+        
+        <h2>6. Cookies</h2>
+        <p>Vi använder endast nödvändiga cookies för:</p>
+        <ul>
+            <li>Hålla dig inloggad (sessionscookie)</li>
+            <li>Komma ihåg dina inställningar</li>
+        </ul>
+        <p>Vi använder inga spårningscookies eller reklamcookies.</p>
+        
+        <h2>7. Datalagring</h2>
+        <p>
+            Vi lagrar dina uppgifter så länge du har ett aktivt konto. Om du raderar ditt konto tar vi bort 
+            all personlig data inom 30 dagar, förutom data vi måste behålla enligt lag (t.ex. fakturor i 7 år).
+        </p>
+        
+        <h2>8. Barn</h2>
+        <p>
+            Hönsgården är inte avsedd för barn under 16 år. Vi samlar inte medvetet in uppgifter från barn.
+        </p>
+        
+        <h2>9. Ändringar i policyn</h2>
+        <p>
+            Vi kan uppdatera denna policy vid behov. Väsentliga ändringar meddelas via e-post eller i appen.
+        </p>
+        
+        <h2>10. Kontakt</h2>
+        <p>
+            Har du frågor om vår integritetspolicy? Kontakta oss:
+        </p>
+        <ul>
+            <li>E-post: <a href="mailto:info@honsgarden.se">info@honsgarden.se</a></li>
+            <li>Adress: Hönsgården AB, Sverige</li>
+        </ul>
+    </main>
+    
+    <footer class="footer">
+        <p>
+            © 2026 Hönsgården · 
+            <a href="/api/privacy">Integritetspolicy</a> · 
+            <a href="/api/terms">Användarvillkor</a>
+        </p>
+    </footer>
+</body>
+</html>
