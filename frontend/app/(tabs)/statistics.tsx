@@ -85,6 +85,40 @@ interface AdvancedInsights {
   };
 }
 
+interface TrendAnalysis {
+  period: {
+    current: { start: string; end: string; days: number };
+    previous: { start: string; end: string; days: number };
+  };
+  hen_count: number;
+  current_period: {
+    total_eggs: number;
+    avg_eggs_per_day: number;
+    laying_rate: number | null;
+    total_costs: number;
+    total_sales: number;
+    profit: number;
+  };
+  previous_period: {
+    total_eggs: number;
+    avg_eggs_per_day: number;
+    laying_rate: number | null;
+    total_costs: number;
+    total_sales: number;
+    profit: number;
+  };
+  changes: {
+    eggs: { value: number | null; unit: string };
+    laying_rate: { value: number | null; unit: string };
+    costs: { value: number | null; unit: string };
+    sales: { value: number | null; unit: string };
+    profit: { value: number | null; unit: string };
+  };
+  overall_trend: 'improving' | 'declining' | 'stable';
+  trend_message: string;
+  insights: string[];
+}
+
 export default function StatisticsScreen() {
   const { coopSettings, fetchCoopSettings } = useAppStore();
   const { isPremium } = usePremiumStore();
@@ -99,6 +133,7 @@ export default function StatisticsScreen() {
   const [prevMonthStats, setPrevMonthStats] = useState<MonthStats | null>(null);
   const [yearStats, setYearStats] = useState<YearStats | null>(null);
   const [advancedInsights, setAdvancedInsights] = useState<AdvancedInsights | null>(null);
+  const [trendAnalysis, setTrendAnalysis] = useState<TrendAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   
@@ -110,6 +145,7 @@ export default function StatisticsScreen() {
     fetchCoopSettings();
     loadStats();
     loadAdvancedInsights();
+    loadTrendAnalysis();
   }, [viewMode, selectedYear, selectedMonth]);
   
   const loadAdvancedInsights = async () => {
@@ -121,6 +157,18 @@ export default function StatisticsScreen() {
       }
     } catch (error) {
       console.error('Failed to load advanced insights:', error);
+    }
+  };
+  
+  const loadTrendAnalysis = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/statistics/trend-analysis`);
+      if (response.ok) {
+        const data = await response.json();
+        setTrendAnalysis(data);
+      }
+    } catch (error) {
+      console.error('Failed to load trend analysis:', error);
     }
   };
   
