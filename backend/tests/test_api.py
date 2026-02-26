@@ -7,7 +7,7 @@ import requests
 import os
 from datetime import date, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://honsgarden-preview.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://payment-gateway-402.preview.emergentagent.com')
 if BASE_URL.endswith('/'):
     BASE_URL = BASE_URL.rstrip('/')
 
