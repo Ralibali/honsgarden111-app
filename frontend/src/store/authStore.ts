@@ -162,16 +162,69 @@ export const useAuthStore = create<AuthState>()(
           const data = await res.json();
           set({ isLoading: false });
           
-          if (data.email_sent === false) {
+          if (data.code_sent === false) {
             return { 
               success: false, 
-              message: data.message || 'E-posttjänsten är inte tillgänglig just nu. Kontakta support.' 
+              message: data.message || 'E-posttjänsten är inte tillgänglig just nu.' 
             };
           }
           
           return { 
             success: true, 
-            message: data.message || 'Ett återställningsmail har skickats till din e-postadress.' 
+            message: data.message || 'En återställningskod har skickats till din e-postadress.' 
+          };
+        } catch (error) {
+          set({ isLoading: false });
+          return { success: false, message: 'Kunde inte ansluta till servern' };
+        }
+      },
+      
+      verifyResetCode: async (email: string, code: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await fetch(`${API_URL}/api/auth/verify-reset-code`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, code }),
+          });
+          
+          const data = await res.json();
+          set({ isLoading: false });
+          
+          if (!res.ok) {
+            return { success: false, message: data.detail || 'Felaktig kod' };
+          }
+          
+          return { 
+            success: true, 
+            token: data.token,
+            message: data.message || 'Koden verifierad!' 
+          };
+        } catch (error) {
+          set({ isLoading: false });
+          return { success: false, message: 'Kunde inte ansluta till servern' };
+        }
+      },
+      
+      resetPasswordWithCode: async (token: string, newPassword: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await fetch(`${API_URL}/api/auth/reset-password-with-code`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, new_password: newPassword }),
+          });
+          
+          const data = await res.json();
+          set({ isLoading: false });
+          
+          if (!res.ok) {
+            return { success: false, message: data.detail || 'Kunde inte ändra lösenord' };
+          }
+          
+          return { 
+            success: true, 
+            message: data.message || 'Lösenordet har ändrats!' 
           };
         } catch (error) {
           set({ isLoading: false });
