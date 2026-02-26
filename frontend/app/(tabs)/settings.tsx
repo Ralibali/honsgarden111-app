@@ -771,6 +771,20 @@ export default function SettingsScreen() {
             
             <TouchableOpacity 
               style={styles.contactCard}
+              onPress={handleShowOnboarding}
+            >
+              <View style={[styles.contactIcon, { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
+                <Ionicons name="book" size={22} color="#a855f7" />
+              </View>
+              <View style={styles.contactContent}>
+                <Text style={styles.contactTitle}>{isSv ? 'Visa introduktion' : 'Show introduction'}</Text>
+                <Text style={styles.contactDesc}>{isSv ? 'Se guiden igen' : 'View the guide again'}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.contactCard}
               onPress={() => setShowFeedbackModal(true)}
             >
               <View style={styles.contactIcon}>
