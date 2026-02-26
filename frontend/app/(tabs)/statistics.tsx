@@ -1116,6 +1116,7 @@ export default function StatisticsScreen() {
         ) : (
           <>
             {viewMode === 'month' ? renderMonthView() : renderYearView()}
+            {renderTrendAnalysis()}
             {renderAdvancedInsights()}
           </>
         )}
