@@ -1,103 +1,133 @@
 <analysis>**original_problem_statement**:
-The user wants to finalize the Hönsgården application for deployment. This involves creating a robust email/password system, implementing social logins (Google, Apple), and ensuring GDPR compliance. Key features include an AI advisor (Agda), weather integration, and push notifications.
+The user wants to finalize the Hönsgården application for deployment. This involves creating a robust email/password system, implementing social logins (which was later revised to be removed), and ensuring GDPR compliance. Key features include an AI advisor (Agda), weather integration, and push notifications.
 
-A critical requirement is to achieve full feature parity between the React web app and the Expo mobile app. The monetization strategy for mobile is a web-redirect flow, where the app sends users to an external page () for subscriptions.
+A critical requirement is to achieve full feature parity between the web and the Expo mobile app. The monetization strategy is a web-redirect flow, where the app sends users to an external page () for subscriptions.
 
-The main goals are to resolve all deployment and build failures, prepare the app for a production release, and ensure all features are fully functional. The user is not a developer and relies on UI-based actions (Emergent, GitHub, Expo.dev).
+The main goals are to resolve all deployment and build failures, prepare the app for a production release, and ensure all features are fully functional. The user is not a developer and relies on UI-based actions.
 
-Most recently, the user reported that the Forgot Password flow is broken: it redirects to a non-functional webpage, and emails were not being sent. The user requested a new password reset flow that works entirely within the app using a verification code sent via email.
+Most recently, the user requested the removal of Google Sign-In in favor of a mandatory email verification flow for new registrations, a fix for the broken password reset, and the addition of more advanced statistical insights.
 
 **PRODUCT REQUIREMENTS (Consolidated & Updated):**
 
 1.  **Authentication & GDPR:**
-    *   Primary email/password system with email confirmation.
-    *   Google & Apple Sign-In (Google Sign-In is not fully configured for mobile).
-    *   **In-app Forgot Password flow using an email verification code (In Progress).**
-    *   Login page with premium feature highlights.
+    *   Primary email/password system with a mandatory 6-digit email verification code on registration **(Mobile UI Incomplete)**.
+    *   In-app Forgot Password flow using an email verification code **(Web & Mobile Complete)**.
+    *   Login/Register pages with premium feature highlights.
     *   GDPR & newsletter consent on registration.
     *   Admin user management view.
+    *   Google/Apple Sign-In have been **removed** per user request.
 
-2.  **Monetization & Feature Parity (Web & Mobile):**
-    *   Mobile app must redirect to  for all subscription management.
-    *   Ensure the Expo mobile app has the same features as the React web app.
+2.  **Monetization & Web Pages:**
+    *   A standalone web page for premium subscriptions () with Stripe checkout. **(Stripe user-linking is broken)**.
+    *   Standalone web pages for Privacy Policy and Terms of Service.
+    *   Feature parity between the Expo mobile app and web functionalities.
 
 3.  **New Features & UI/UX:**
-    *   AI Hönsgårdsrådgivare Agda: Provide personalized advice.
-    *   Legal Pages: Privacy Policy and Terms of Service.
+    *   AI Hönsgårdsrådgivare Agda.
+    *   Advanced statistical insights (Feed Conversion, Laying Rate, etc.) **(In Progress)**.
+    *   A user onboarding guide for the mobile app **(Completed)**.
 
 4.  **Deployment:**
     *   **Resolve all Expo/EAS build errors to allow for a successful App Store/Google Play submission (Recurring Blocker).**
-    *   Perform a full production cleanup (remove logs, dev helpers, etc.).
+    *   Perform a full production cleanup.
 
 **User's preferred language**: Swedish (Svenska). The next agent MUST respond in Swedish.
 
 **what currently exists?**
-The project is a full-stack application with a FastAPI backend and an Expo (React Native) mobile app frontend. The backend has been successfully migrated from a local MongoDB instance to a user-provided MongoDB Atlas cloud database.
+The project is a full-stack application with a FastAPI backend and an Expo (React Native) mobile frontend. A significant amount of work has been done to create standalone HTML pages served directly by the backend for critical user flows like registration, password reset, and premium subscriptions, aiming to unify the experience for both web and mobile-redirected users.
 
-The agent has been trying to resolve a series of recurring build and deployment failures for the Expo app. Numerous configuration files (, ) and dependency files (, ) have been modified to fix errors related to project IDs, slugs, and missing packages like  and .
+The authentication system has been completely overhauled to remove Google Sign-In and enforce a two-step email verification process for new registrations. While the backend and web-facing pages for this are complete, the mobile app's UI for completing registration is not yet finished.
 
-In response to a broken Forgot Password flow, the agent started implementing a new, fully in-app password reset mechanism using a 6-digit code. Backend endpoints have been partially added, and frontend modifications have just begun.
+The agent was in the process of adding new, advanced statistical insights to the application, as requested by the user, and had just created the necessary backend endpoint.
 
 **Last working item**:
--   Last item agent was working: Implementing the new in-app, code-based password reset flow. The agent was attempting to modify the frontend component  to add the UI for this flow after making several (messy) changes to the backend file .
+-   Last item agent was working: Implementing new advanced statistical insights. The agent created a new backend endpoint  in  to calculate metrics like feed conversion ratio, laying rate, and cost per egg. The frontend implementation has not started.
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? Both. The backend API endpoints need testing via . The end-to-end frontend flow needs testing with the screenshot tool or frontend testing agent.
+-   Which testing method agent to use? Both. The backend endpoint needs testing via . The new frontend components will need verification via the screenshot tool or frontend testing agent.
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Complete and test the in-app password reset flow.** (P0 - HIGHEST PRIORITY)
--   **Issue 2: Resolve recurring Expo/EAS build failures.** (P0 - CRITICAL BLOCKER)
--   **Issue 3: Finalize Google Sign-In for the mobile app.** (P2)
+-   **Issue 1: Complete the mobile app registration UI.** (P0 - CRITICAL BLOCKER)
+-   **Issue 2: Fix broken Stripe subscription user linking.** (P0 - CRITICAL BLOCKER)
+-   **Issue 3: Resolve recurring Expo/EAS mobile app build failures.** (P0 - CRITICAL BLOCKER)
+-   **Issue 4: Fix the Forgot Password link in the legacy web app.** (P1)
+-   **Issue 5: Implement frontend for Advanced Statistical Insights.** (P2 - Part of Last Working Item)
 
 **Issues Detail**:
--   **Issue 1: Complete and test the in-app password reset flow.**
-    -   **Description**: The current password reset feature is broken; it incorrectly redirects to a non-existent website. The user wants to replace it with a flow that works entirely within the app, where a user receives a 6-digit code via email to reset their password.
-    -   **Attempted fixes**: The agent added new endpoints (, ) to  and started UI work in . The backend implementation was done through multiple, messy edits and needs review. The frontend is incomplete. The Resend sender email has been corrected to use the user's verified domain.
+-   **Issue 1: Complete the mobile app registration UI.**
+    -   **Description**: The new registration flow requires users to enter a 6-digit code sent to their email. The mobile app's UI in  is missing the screen for the user to enter this code, which blocks all new user registrations on mobile.
+    -   **Attempted fixes**: The agent updated the  with the necessary functions but did not complete the UI changes in .
     -   **Next debug checklist**:
-        1.  Review and clean up the password reset logic in . Consolidate the multiple edits into a single, clean implementation.
-        2.  Complete the UI implementation in  for the full reset flow: a) request code form, b) code and new password form, c) state management for user feedback (loading, success, error).
-        3.  Thoroughly test the backend endpoints via  to confirm code generation, email sending, and password updates.
-        4.  Perform an end-to-end test of the feature from the frontend UI.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical authentication feature that is currently broken and providing a poor user experience. Fixing it is a top priority for the user.
+        1.  In , add a new view for .
+        2.  This view must include a 6-digit code input field, a Verify button, and a Resend code button.
+        3.  Update the  logic to switch to this new view upon success.
+        4.  Implement  to call the auth store and log the user in.
+        5.  Test the entire registration flow in the mobile app.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker. No new users can currently register through the mobile app.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on other issue**: No
+
+-   **Issue 2: Fix broken Stripe subscription user linking.**
+    -   **Description**: The standalone premium page () initiates a Stripe checkout, but the request to the backend does not include the user's authentication token. As a result, the backend cannot associate the created subscription with the logged-in user, and the user will not receive premium access after paying.
+    -   **Attempted fixes**: The agent added a JavaScript check for a login token but did not modify the  request to include it in the authorization header.
+    -   **Next debug checklist**:
+        1.  Modify the  JavaScript function in .
+        2.  Retrieve the auth token from  and add it as a  token in the  header of the  request to .
+        3.  Protect the  endpoint in  to require a valid token.
+        4.  Extract the  from the token and pass it to the Stripe session creation call, likely in .
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker for monetization. The payment flow is non-functional.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on other issue**: No
 
--   **Issue 2: Resolve recurring Expo/EAS build failures.**
-    -   **Description**: The user is unable to build the mobile app due to a continuous stream of errors from Expo's EAS build service. Past errors included invalid  config,  and  mismatches, and missing dependencies. The most recent error was .
-    -   **Attempted fixes**: The agent has made numerous fixes: corrected  and ; added  to ; and moved  from  to  in .
+-   **Issue 3: Resolve recurring Expo/EAS mobile app build failures.**
+    -   **Description**: The user is unable to build the mobile app due to a continuous stream of errors from Expo's EAS build service. This has been a persistent problem throughout the project.
+    -   **Attempted fixes**: Numerous configuration changes have been made to , , and  in past sessions.
     -   **Next debug checklist**:
-        1.  Ask the user to Save to Github to ensure all latest fixes are pushed.
-        2.  Instruct the user to trigger a new build on Expo.dev.
-        3.  If the build fails again, carefully analyze the new logs. Pay close attention to any errors related to , dependency resolution, or config plugins. The build environment may require yarn install v1.22.22
-[1/4] Resolving packages...
-success Already up-to-date.
-Done in 0.33s. to be run explicitly.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a hard blocker preventing the app from being published to the App Store or Google Play.
-    -   **Status**: IN PROGRESS
+        1.  Instruct the user to Save to Github to ensure all recent changes are pushed.
+        2.  Instruct the user to trigger a new build on expo.dev.
+        3.  If the build fails, carefully analyze the new logs for dependency, configuration, or native module errors.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a hard blocker preventing the app from being published to app stores.
+    -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: N/A. A successful build is the test.
+    -   **Should Test frontend/backend/both after fix?**: N/A (A successful build is the test).
     -   **Blocked on other issue**: No
 
--   **Issue 3: Finalize Google Sign-In for the mobile app.**
-    -   **Description**: The app displays a message Google-inloggning kräver ytterliggare konfiguration för mobilappen, indicating that the native configuration for Google Sign-In is incomplete.
-    -   **Attempted fixes**: None. The issue was only acknowledged.
+-   **Issue 4: Fix the Forgot Password link in the legacy web app.**
+    -   **Description**: The project contains a pre-compiled legacy web app in . Its login page has a Forgot Password? link pointing to an old, broken endpoint. A new, functional standalone page exists at , but the link has not been updated.
+    -   **Attempted fixes**: None. The agent created the new page but did not update the link in the legacy app.
     -   **Next debug checklist**:
-        1.  Verify the Google client IDs in  are correct.
-        2.  Check  to ensure the Google Sign-In plugin is configured with the correct  and .
-        3.  Guide the user on what to check in their Google Cloud Console, as this often requires user-side configuration related to the OAuth consent screen and client ID credentials.
-    -   **Why fix this issue and what will be achieved with the fix?**: Fulfills a core product requirement for social login.
+        1.  Use  on the compiled .
+        2.  Find the  for the Glömt lösenord? link.
+        3.  Replace its value with .
+    -   **Why fix this issue and what will be achieved with the fix?**: Improves user experience and fixes a broken core feature for users of the old web interface.
     -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
+    -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: Issue 2. This cannot be tested without a successful mobile app build.
+    -   **Blocked on other issue**: No
+
+-   **Issue 5: Implement frontend for Advanced Statistical Insights.**
+    -   **Description**: The backend is ready to provide advanced statistics. The UI in the mobile app needs to be created to display this data.
+    -   **Attempted fixes**: Backend endpoint  was created.
+    -   **Next debug checklist**:
+        1.  First, test the backend endpoint with  to ensure it works as expected.
+        2.  Modify .
+        3.  Add a new component/section to display the new insights (e.g., Feed Conversion, Laying Rate).
+        4.  Call the new API endpoint and populate the UI with the returned data.
+    -   **Why fix this issue and what will be achieved with the fix?**: Fulfills a direct user feature request and adds value to the app.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on other issue**: No
 
 **In progress Task List**:
--   **Task 1: Complete code-based password reset.**
-    -   **Where to resume**: Review and clean , then continue building the UI and logic in .
-    -   **What will be achieved with this?**: A fully functional, in-app password reset experience.
+-   **Task 1: Add advanced statistical insights.**
+    -   **Where to resume**: The backend endpoint in  is complete. Resume by building the frontend UI in  to display the new data.
+    -   **What will be achieved with this?**: A more feature-rich statistics page for users.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on something**: No.
@@ -105,116 +135,118 @@ Done in 0.33s. to be run explicitly.
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
     -   (P1) User Testing: Guide the user to test the full application flow on a physical device once a build is successful.
-    -   (P1) User-Side Web Page: Remind the user they must build the premium subscription page at .
     -   (P2) Admin Panel UI: Verify the Admin link appears correctly for admin users in the mobile app.
-
 -   **Future Tasks:**
     -   (P2) Integrate affiliate product links.
-    -   (P3) Implement a user onboarding/welcome tour.
     -   (P3) Refactor and remove dormant RevenueCat code.
 
 **Completed work in this session**
--   **Database Migration**: Migrated the backend to use the user's MongoDB Atlas database by updating .
--   **Email Service Fix**: Corrected the  in  to use the user's verified Resend domain ().
--   **Deployment/Build Fixes**:
-    -   Reverted an invalid configuration in .
-    -   Corrected  and  mismatches in .
-    -   Added  to .
-    -   Added  dependency to .
-    -   Moved  to  in .
--   **Asset Creation**: Generated and served a 512x512 app icon for the user.
--   **Password Reset**: Started the implementation of a new in-app, code-based password reset flow.
+-   **Authentication Overhaul**:
+    -   Removed Google Sign-In from all parts of the application.
+    -   Implemented a new registration flow with a 6-digit email verification code.
+    -   Created a standalone web page for registration ().
+    -   Created a standalone web page for password reset () and fixed the underlying logic.
+-   **Premium & Legal Pages**:
+    -   Created a standalone premium page () with pricing, FAQ, and a Stripe checkout button.
+    -   Created standalone pages for Privacy Policy (), Terms of Service (), and a checkout success page.
+-   **Mobile App UI**:
+    -   Added a Premium tab to the main navigation.
+    -   Created a multi-step onboarding guide () with realistic images.
+    -   Added logic to show the guide on first launch and a button in settings to view it again.
+-   **Backend**: Added multiple new endpoints to  to support all the new standalone pages and authentication flows.
 
 **Earlier issues found/mentioned but not fixed**
-(Covered in the pending issue list)
+(All are captured in the pending issue list)
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork**: Deployment and build failures.
 -   **Recurrence count**: 5+
--   **Status**: **IN PROGRESS**. Issue #2 is the latest manifestation of this problem.
+-   **Status**: **IN PROGRESS** (Tracked as Issue #3).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend (Mobile)**: Expo (SDK 54), React Native, Expo Router, EAS CLI.
--   **Backend**: FastAPI, MongoDB (on Atlas), Pydantic.
--   **Email**: Resend.
+-   **Frontend (Mobile)**: Expo (SDK 54), React Native, Expo Router, Zustand ().
+-   **Frontend (Web)**: A mix of a pre-compiled legacy React app and new standalone HTML pages served by FastAPI.
+-   **Backend**: FastAPI, MongoDB (on Atlas), Pydantic, Resend (emails), Jinja2 for templates.
 -   **Deployment**: EAS Build for mobile, Emergent Deployment for backend.
 
 **key DB schema**
-- No changes made to the schema.
+-   No major schema changes, but user documents now have fields like , , and .
 
 **changes in tech stack**
--   **Database**: Migrated from a local development MongoDB to a production MongoDB Atlas instance.
+-   The authentication model has shifted away from social logins to a pure email/password system with mandatory verification.
 
 **All files of reference**
--   : Contains the in-progress password reset logic.
--   : UI for login and the new password reset flow.
--   : Manages frontend dependencies.
--   : Manages backend dependencies.
--   : Expo app configuration.
--   : EAS build configuration.
--   : Stores secrets like the database URL and Resend API key.
+-   : The single source of truth for all backend logic.
+-   : The most critical mobile app file that needs to be fixed.
+-   : The monetization page where the Stripe flow is broken.
+-   : The target for implementing the new user-requested feature.
+-   : Contains all mobile authentication state and logic.
 
 **Areas that need refactoring**:
--   The password reset implementation in  was created through multiple, messy  operations and should be cleaned up.
--   Dormant RevenueCat endpoints and related code can be removed to simplify the codebase.
+-   The  file has grown very large and is responsible for API logic, serving static files, and HTML templating. It could be broken down into smaller, more manageable modules (e.g., routers for auth, stripe, pages).
+-   The co-existence of the legacy web app () and the new standalone pages is confusing and creates duplicate functionality. A clear strategy to either fully embrace the standalone pages or properly update the React app is needed.
 
 **key api endpoints**
--    (New, In Progress)
--    (New, In Progress)
--    (Being replaced)
+-   : (New) Starts the registration process.
+-   : (New) Verifies the registration code and creates the user.
+-   : (Updated) Sends a password reset code.
+-   : (Updated) Resets the password using a code.
+-   : (Needs fix) Creates a Stripe payment session.
+-   : (New) Provides new calculated metrics.
+-   , , : Serve the new standalone HTML pages.
 
 **Critical Info for New Agent**
--   The user is **not a developer** and can only perform actions through web UIs (Emergent, GitHub, Expo.dev, MongoDB Atlas). Do not provide CLI commands unless they are for the agent's own use.
--   Your two highest priorities are **(1) fixing the in-app password reset flow** and **(2) resolving the recurring mobile app build failures**. These are critical blockers.
--   When a build fails, you must ask the user for the new logs. The most recent, recurring error is , which may persist despite the latest fix.
--   The backend now connects to a production **MongoDB Atlas** database. The Resend email service is now correctly configured to use the user's verified domain .
+-   **Multiple Frontends**: Be extremely mindful of the three frontend contexts: the **Expo mobile app** (), the **legacy web app** (), and the new **standalone HTML pages** (). The user often does not distinguish between them, so you must clarify which one a reported issue applies to.
+-   **Critical Blockers**: The top priorities are fixing the **mobile registration flow (Issue #1)** and the **Stripe payment flow (Issue #2)**. The application is fundamentally broken for new mobile users and for monetization.
+-   **User is non-technical**: All instructions for the user must be via UIs (Emergent, GitHub, etc.). Do not ask them to run CLI commands.
 
 **documents and test reports created in this job**
--    (updated)
+-    (updated throughout the session)
+-    (from testing the password reset flow)
+-    (from testing the premium page creation)
+-    (from testing the onboarding guide)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Reports that Forgot Password is not working (redirects to broken site, no emails). This initiated the current password reset task. **Status: IN PROGRESS**
-2.  **User**: Asks if their domain registrar is the cause of the email issue. **Status: Answered**
-3.  **User**: Shows a screenshot of their verified domain in Resend. **Status: Acknowledged**
-4.  **User**: Provides their MongoDB Atlas connection string. **Status: Completed**
-5.  **User**: Asks for guidance on the MongoDB Atlas Drivers page. **Status: Answered**
-6.  **User**: Provides DB username/password. **Status: Completed**
-7.  **User**: Asks for next steps after creating the Atlas cluster. **Status: Answered**
-8.  **User**: Asks for confirmation on their Atlas setup screenshot. **Status: Answered**
-9.  **User**: Asks about publishing to app stores and mentions an  error from Expo.dev. **Status: Addressed**
-10. **User**: Provides a series of build errors from Expo.dev related to project ID, slug, and missing credentials. **Status: Addressed (but likely to recur)**
+1.  **User**: Requested an onboarding guide with nice pictures. (Completed)
+2.  **User**: Requested more realistic pictures for the onboarding guide showing app functionality. (Completed)
+3.  **User**: Reported the password reset is not working and sends them back to the start page. (This led to creating a separate web reset page).
+4.  **User**: Clarified that the code input box for reset doesn't appear. (Root cause was identified and fixed for the web).
+5.  **User**: Asked if the confirmation step after a successful password reset was necessary. (Agent removed it for a smoother flow).
+6.  **User**: Asked for an honest assessment of the app's status and what's missing. (Agent provided a breakdown, which led to the next tasks).
+7.  **User**: Approved the plan to remove Google Sign-In and add a mandatory email verification step for registration. (Implementation started).
+8.  **User**: Update now so that everything in the app works. Every single function!!!!! (High-level directive to fix all broken parts).
+9.  **User**: Asked for ideas to further develop the app, specifically improving the statistics page. (This initiated the current task).
+10. **User**: Asked for the logo download link and approved implementing all suggested statistical insights. (Agent provided the link and began implementation).
 
 **Project Health Check:**
 -   **Broken**:
-    -   Password Reset functionality.
-    -   Mobile App build process via EAS.
-    -   Google Sign-In for mobile.
+    -   New user registration on the mobile app.
+    -   Monetization via Stripe (subscriptions are not linked to users).
+    -   Mobile app build process (recurring failure).
+    -   Password reset link on the legacy web app.
 
 **3rd Party Integrations**
 -   **OpenAI via **: For AI features (Uses Emergent LLM Key).
--   **Stripe**: For web subscriptions.
+-   **Stripe**: For web subscriptions (Requires API key, flow is broken).
 -   **Resend**: For transactional emails (Configured with verified domain).
 -   **MongoDB Atlas**: Production database.
--   **Google Sign-In**: For authentication (Needs native configuration).
--   **Apple Sign-In**: For authentication.
--   **Expo Push Notifications**: Basic integration complete.
--   **RevenueCat**: Code exists but is **inactive**.
+-   **Expo Push Notifications**: Basic integration exists.
+-   **RevenueCat**: Dormant code exists, can be removed.
 
 **Testing status**
--   Testing agent used after significant changes: NO
+-   Testing agent used after significant changes: YES (3 times)
 -   Troubleshoot agent used after agent stuck in loop: NO
--   Test files created: None in this session.
--   Known regressions: The project has a history of build configuration regressions. Each fix seems to uncover a new issue in the CI/CD pipeline.
+-   Test files created: 
+-   Known regressions: The EAS build process is a known point of recurring failure.
 
 **Credentials to test flow:**
 -   Credentials for MongoDB Atlas and Resend are located in .
+-   Stripe keys are also in .
 
 **What agent forgot to execute**
--   The agent did not run yarn install v1.22.22
-[1/4] Resolving packages...
-success Already up-to-date.
-Done in 0.31s. in the  directory after modifying . This is a crucial step to ensure dependencies are correctly installed before any build process.
--   The agent got stuck in a loop of  calls on  instead of creating a clean, consolidated version of the file, leading to inefficiency and potential errors.</analysis>
+-   The agent created the standalone  page but forgot to update the link in the legacy web app (), leaving a broken user flow.
+-   The agent implemented a check for a user token on the  page but forgot to actually *send* the token to the backend, leaving the monetization flow broken.
+-   The agent did not complete the UI for the mobile registration verification flow in  before moving to another task.</analysis>

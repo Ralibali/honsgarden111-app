@@ -12,7 +12,7 @@ import requests
 import uuid
 import os
 
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://payment-gateway-402.preview.emergentagent.com')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://stripe-checkout-test-4.preview.emergentagent.com')
 
 
 class TestGDPRRegistration:
