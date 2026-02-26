@@ -6,33 +6,35 @@
 
 ## NYLIGEN GENOMFÖRT (26 Feb 2026)
 
-### 1. In-App Lösenordsåterställning med 6-siffrig kod ✅
-- Backend: 3 endpoints för kod-baserat flöde
-- Frontend: 3-stegs UI med 60 sek cooldown
+### 1. Onboarding-guide med bilder ✅ (NY)
+**Status: KOMPLETT**
 
-### 2. Premium Tab i mobilappen ✅
-- Ny tab med priskort och funktionslista
+4 skärmar med AI-genererade bilder och exempelresultat:
+1. **Välkommen** (grön) - Äggregistrering, exempel: "24 ägg"
+2. **Lär känna din flock** (amber) - Hönsprofiler, exempel: "12 hönor"
+3. **Se dina resultat** (blå) - Statistik, exempel: "+23%"
+4. **Träffa Agda** (lila/PREMIUM) - AI-rådgivare, exempel: "28 ägg prognos"
 
-### 3. Fristående Premium-webbsida ✅
+Funktioner:
+- Visas automatiskt för nya användare
+- "Hoppa över"-knapp i hörnet
+- "Nästa" / "Kom igång!"-knappar
+- Dot-navigation för progress
+- Premium-badge på AI-skärmen
+- "Visa introduktion"-knapp i Inställningar
+
+### 2. Premium-webbsida med Stripe ✅
 - URL: `/api/premium-page`
 - Inloggningskrav före checkout
-- Snygg landningssida med mörkt tema
+- Success-sida efter betalning
 
-### 4. Checkout Success-sida ✅
-- URL: `/api/checkout-success?session_id=xxx`
-- Visar "Välkommen till Premium!" vid lyckad betalning
-- Listar upplåsta funktioner
-- Hanterar fel gracefully
+### 3. Integritetspolicy & Användarvillkor ✅
+- `/api/privacy` - GDPR-kompatibel
+- `/api/terms` - Fullständiga villkor
 
-### 5. Integritetspolicy (GDPR) ✅
-- URL: `/api/privacy`
-- 10 sektioner (datainsamling, rättigheter, cookies, etc.)
-- På svenska
-
-### 6. Användarvillkor ✅
-- URL: `/api/terms`
-- 13 sektioner (prenumeration, ansvar, återbetalning, etc.)
-- På svenska
+### 4. Lösenordsåterställning med kod ✅
+- 6-siffrig kod via e-post
+- 60 sek cooldown för ny kod
 
 ---
 
@@ -45,18 +47,6 @@
 | Integritetspolicy | `/api/privacy` |
 | Användarvillkor | `/api/terms` |
 | Webb-app | `/api/web` |
-| Login | `/api/web/login` |
-
----
-
-## Betalningsflöde
-
-1. Användare besöker `/api/premium-page`
-2. Om inte inloggad → "Logga in för att prenumerera"-knapp
-3. Efter inloggning → "Starta din prenumeration"-knapp
-4. Klick → Stripe Checkout med vald plan
-5. Efter betalning → `/api/checkout-success?session_id=xxx`
-6. Success-sidan verifierar betalning och visar bekräftelse
 
 ---
 
@@ -77,10 +67,13 @@
 
 ### P2 - Framtida
 - [ ] Google Sign-In native config
-- [ ] Onboarding-guide
-- [ ] Ta bort RevenueCat-kod
 
 ---
+
+## Testrapporter
+- `/app/test_reports/iteration_11.json` - Backend (lösenord)
+- `/app/test_reports/iteration_12.json` - Frontend (premium)
+- `/app/test_reports/iteration_13.json` - Onboarding (100%)
 
 ## Testanvändare
 - E-post: testuser@test.com
