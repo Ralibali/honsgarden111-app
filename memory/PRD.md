@@ -1,10 +1,10 @@
 # Hönsgården - Product Requirements Document
 
-## Senaste uppdatering: 26 Feb 2026 (Session 2 - Fortsättning)
+## Senaste uppdatering: 26 Feb 2026 (Session 2 - Slutförd)
 
 ---
 
-## NYLIGEN GENOMFÖRT (26 Feb 2026 - Session 2 Fortsättning)
+## NYLIGEN GENOMFÖRT (26 Feb 2026 - Session 2 Slutförd)
 
 ### 1. Trend-analys ✅ (NY)
 **Ny backend-endpoint: `/api/statistics/trend-analysis`**
@@ -34,6 +34,16 @@ Jämför senaste 30 dagar med föregående 30 dagar:
 - UI för 6-siffrig verifieringskod finns redan i `login.tsx`
 - `authMode === 'register-verify'` visar kod-input
 - Inkluderar "Skicka ny kod"-knapp med cooldown
+
+### 5. EAS/Expo Byggkonfiguration ✅ (Issue #3)
+- Tog bort `expo-apple-authentication` (ej längre använd)
+- Tog bort `usesAppleSignIn: true` från app.json
+- Uppdaterade eas.json med förbättrad konfiguration
+- Auto-increment för produktionsbyggen
+
+### 6. Glömt Lösenord ✅ (Issue #4 - VERIFIERAT)
+- Gamla webbappen har korrekt `/api/auth/forgot-password` endpoint
+- Fristående reset-password.html finns och fungerar
 
 ---
 
