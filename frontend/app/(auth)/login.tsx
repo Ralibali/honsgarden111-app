@@ -104,8 +104,25 @@ export default function LoginScreen() {
     const result = await forgotPassword(email);
     if (result.success) {
       setSuccessMessage(result.message);
+      startCooldown(); // Start 60 second cooldown
       // Move to code verification step
       setAuthMode('verify-code');
+    } else {
+      Alert.alert('Fel', result.message);
+    }
+  };
+  
+  const handleResendCode = async () => {
+    if (resendCooldown > 0) return;
+    
+    clearError();
+    setSuccessMessage('');
+    
+    const result = await forgotPassword(email);
+    if (result.success) {
+      setSuccessMessage('Ny kod skickad!');
+      startCooldown();
+      setResetCode(['', '', '', '', '', '']);
     } else {
       Alert.alert('Fel', result.message);
     }
