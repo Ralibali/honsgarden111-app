@@ -9,7 +9,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://hens-premium-beta.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://rooster-registry-1.preview.emergentagent.com').rstrip('/')
 
 class TestStripeCheckout:
     """P0: Test Stripe checkout endpoint returns valid checkout.stripe.com URL"""
@@ -41,7 +41,7 @@ class TestStripeCheckout:
         
         response = session.post(f"{BASE_URL}/api/checkout/create", json={
             "plan": "monthly",
-            "origin_url": "https://hens-premium-beta.preview.emergentagent.com"
+            "origin_url": "https://rooster-registry-1.preview.emergentagent.com"
         })
         
         # Validate response
@@ -65,7 +65,7 @@ class TestStripeCheckout:
         
         response = session.post(f"{BASE_URL}/api/checkout/create", json={
             "plan": "yearly",
-            "origin_url": "https://hens-premium-beta.preview.emergentagent.com"
+            "origin_url": "https://rooster-registry-1.preview.emergentagent.com"
         })
         
         # Validate response
@@ -82,7 +82,7 @@ class TestStripeCheckout:
         """Test that /api/checkout/create requires authentication"""
         response = requests.post(f"{BASE_URL}/api/checkout/create", json={
             "plan": "monthly",
-            "origin_url": "https://hens-premium-beta.preview.emergentagent.com"
+            "origin_url": "https://rooster-registry-1.preview.emergentagent.com"
         })
         
         assert response.status_code == 401, f"Expected 401 for unauthenticated request, got {response.status_code}"
@@ -94,7 +94,7 @@ class TestStripeCheckout:
         
         response = session.post(f"{BASE_URL}/api/checkout/create", json={
             "plan": "invalid_plan",
-            "origin_url": "https://hens-premium-beta.preview.emergentagent.com"
+            "origin_url": "https://rooster-registry-1.preview.emergentagent.com"
         })
         
         assert response.status_code == 400, f"Expected 400 for invalid plan, got {response.status_code}"

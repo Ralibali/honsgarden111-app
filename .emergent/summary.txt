@@ -17,77 +17,279 @@ Finally, the user needs to fix recurring production deployment failures, connect
     *   On registration, include a mandatory GDPR checkbox for terms and an optional one for newsletters.
     *   Create an Admin view to manage users.
 
-2.  **Feature Parity (Web & Mobile):**
-    *   Ensure the Expo mobile app has the exact same functionality as the React web app. This is the current main focus.
+2.  **Monetization & Feature Parity (Web & Mobile):**
+    *   **New Strategy:** The user has pivoted away from native in-app purchases. The mobile app must now redirect users to a web page () for all subscription management. The user is responsible for creating this web page.
+    *   Ensure the Expo mobile app has the same features as the React web app.
 
-3.  **In-App Purchases (Mobile):**
-    *   Implement Premium subscriptions via RevenueCat for iOS (App Store IAP) and Android (Google Play Billing). Stripe is for web only.
-    *   Backend must verify receipts from Apple/Google.
-    -   Users must be able to restore purchases.
-    -   The premium status must sync between web and mobile platforms.
-
-4.  **Premium Gating (Mobile):**
-    *   Implement a central function () to lock/unlock premium features.
-    *   Locked features should show a premium badge and prompt an upgrade modal on press.
+3.  **Premium Gating (Mobile):**
+    *   When a non-premium user tries to access a premium feature, a visually appealing modal () must be displayed, prompting them to upgrade. This modal then links to the external premium page.
     *   Features to gate: AI reports/forecasts, health log, advanced stats, incubation log, smart reminders.
 
-5.  **New Features & UI/UX:**
+4.  **New Features & UI/UX:**
     *   **AI Hönsgårdsrådgivare Agda:** Provide personalized advice.
     *   **Väderintegration (Weather):** Display weather, with tips being a premium feature.
-    *   **Push-notifikationer (Mobile):** For reminders and alerts (Free + Premium tiers).
+    *   **Push-notifikationer (Mobile):** For reminders and alerts.
     *   **Admin Panel:** Accessible from the UI for designated admin users.
-    *   **Version Banner:** A build timestamp in the web app footer to identify the current deployment version.
+    *   **Version Banner:** A build timestamp in the web app footer.
+    *   **Legal Pages:** Create and link Privacy Policy and Terms of Service pages, as required for App Store submission.
 
-6.  **Deployment & Domain:**
-    *   Resolve all deployment build errors.
-    *   Guide the user on connecting their custom domain () and activating SSL.
-    *   Prepare the mobile app for App Store and Google Play submission.
+5.  **Deployment:**
+    *   Resolve all deployment build errors to enable a successful production launch of the mobile app.
 
 **User's preferred language**: Swedish (Svenska). The next agent MUST respond in Swedish.
 
 **what currently exists?**
-A full-stack application with a FastAPI backend, a feature-complete React web app (), and an Expo mobile app () that is undergoing major development.
+A full-stack application with a FastAPI backend, a stable React web app (), and an Expo mobile app ().
 
-**Web App:** The web application is stable and includes full authentication (Email, Google), a Forgot Password flow, premium feature previews, an admin panel, and a build version banner in the footer. Most user-requested UI tweaks and bug fixes have been completed.
+The mobile app's monetization strategy has been changed from native IAPs (RevenueCat) to a web-based flow. The app now displays a  for locked features, which directs users to an external URL () for payment. The code for RevenueCat is still present but inactive, kept as a backup per the user's request.
 
-**Mobile App:** The focus has shifted entirely to the mobile app. **Phase 1 (Release-critical)** is in progress. The RevenueCat SDK for in-app purchases has been installed and configured with the user's API key. A  component has been created. Scaffolding for native Google & Apple sign-in is complete, with client IDs provided by the user added to the configuration. Backend endpoints to support mobile IAP verification and social logins have been created.
+The web app has been updated with required Privacy Policy and Terms of Service pages.
 
-**Backend:** The FastAPI server supports all web app features and now includes new endpoints for mobile IAP receipt validation (, ) and mobile social logins (, ). Admin user emails are configured in the  file.
+A comprehensive specification document detailing all application features, API endpoints, and database schemas has been created at .
+
+The Expo SDK was downgraded from 55 to 54 as a workaround for a deployment issue. However, the deployment is still failing due to a new syntax error.
 
 **Last working item**:
--   Last item agent was working: Creating Privacy Policy and Terms of Service pages for the web application, a requirement for app store submission. The agent created the component files (, ).
+-   Last item agent was working: Fixing a deployment-blocking syntax error in the mobile app. The build logs show the error is  in . The agent identified the issue but did not yet apply the fix.
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? Frontend testing agent. After adding the routes and rebuilding the web app, use the screenshot tool to verify the pages are accessible.
+-   Which testing method agent to use? After fixing the code, run yarn run v1.22.22
+$ expo lint
+env: load .env
+env: export EXPO_PACKAGER_HOSTNAME EXPO_PACKAGER_PROXY_URL EXPO_PUBLIC_BACKEND_URL EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY EXPO_PUBLIC_REVENUECAT_API_KEY EXPO_PUBLIC_REVENUECAT_IOS_API_KEY EXPO_TUNNEL_SUBDOMAIN EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT
+$ /app/frontend/node_modules/.bin/eslint /app/frontend/src /app/frontend/app /app/frontend/components --fix=false --cache=true --cache-location=/app/frontend/.expo/cache/eslint/
+
+/app/frontend/app/(auth)/login.tsx
+  22:7  warning  'API_URL' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  23:7  warning  'GOOGLE_AUTH_URL' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/_layout.tsx
+  4:20  warning  'StyleSheet' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/eggs.tsx
+  44:6  warning  React Hook useEffect has missing dependencies: 'loadData' and 'loadHens'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/(tabs)/finance.tsx
+  57:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/(tabs)/hens.tsx
+    1:38  warning  'useCallback' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+   24:9   warning  'width' is assigned a value but never used                                                                   @typescript-eslint/no-unused-vars
+   91:10  warning  'loading' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  138:6   warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/(tabs)/index.tsx
+    57:27  warning  'setDismissedBanner' is assigned a value but never used                                                                                                                                   @typescript-eslint/no-unused-vars
+    65:10  warning  'showWeatherModal' is assigned a value but never used                                                                                                                                     @typescript-eslint/no-unused-vars
+    85:6   warning  React Hook useEffect has missing dependencies: 'loadData', 'loadDataLimits', 'loadHens', 'loadProductivityAlerts', and 'loadWeather'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   139:6   warning  React Hook useEffect has a missing dependency: 'showUndoSnackbar'. Either include it or remove the dependency array                                                                       react-hooks/exhaustive-deps
+  1758:3   error    Duplicate key 'unlockButton'                                                                                                                                                              no-dupe-keys
+  1771:3   error    Duplicate key 'unlockButtonText'                                                                                                                                                          no-dupe-keys
+
+/app/frontend/app/(tabs)/settings.tsx
+   32:28  warning  'expiresAt' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+   74:6   warning  React Hook useEffect has a missing dependency: 'fetchCoopSettings'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   85:14  warning  'error' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+  221:14  warning  'error' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+  259:14  warning  'error' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/statistics.tsx
+  37:20  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                                             @typescript-eslint/array-type
+  43:19  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                                             @typescript-eslint/array-type
+  57:22  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                                             @typescript-eslint/array-type
+  89:6   warning  React Hook useEffect has missing dependencies: 'fetchCoopSettings' and 'loadStats'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/_layout.tsx
+  28:36  warning  'colors' is assigned a value but never used                                                                                                                 @typescript-eslint/no-unused-vars
+  29:22  warning  'isAuthenticated' is assigned a value but never used                                                                                                        @typescript-eslint/no-unused-vars
+  57:6   warning  React Hook useEffect has missing dependencies: 'checkAuth', 'initializePremium', and 'initializeTheme'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/feed.tsx
+   67:19  warning  'isDark' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+   74:10  warning  'loading' is assigned a value but never used                                                                                    @typescript-eslint/no-unused-vars
+  120:20  error    React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  148:3   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render    react-hooks/rules-of-hooks
+
+/app/frontend/app/hatching.tsx
+  55:10  warning  'loading' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  79:6   warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/paywall.tsx
+    1:27  warning  'useEffect' is defined but never used                  @typescript-eslint/no-unused-vars
+    9:3   warning  'Platform' is defined but never used                   @typescript-eslint/no-unused-vars
+   31:11  warning  'restorePurchases' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  182:9   warning  'isSv' is already defined                              @typescript-eslint/no-redeclare
+
+/app/frontend/src/components/EggRegistrationModal.tsx
+  12:10  warning  'Ionicons' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/RevenueCatPaywall.tsx
+   24:3   warning  'ENTITLEMENT_ID' is defined but never used  @typescript-eslint/no-unused-vars
+  140:14  warning  'e' is defined but never used               @typescript-eslint/no-unused-vars
+
+/app/frontend/src/i18n/index.ts
+  12:35  error  'locale' not found in imported namespace 'Localization'  import/namespace
+
+/app/frontend/src/services/pdfExport.ts
+  17:15  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  18:10  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  29:9   warning  't' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+
+/app/frontend/src/store/appStore.ts
+   54:20  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+   83:16  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+   91:21  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  274:14  warning  'error' is defined but never used                            @typescript-eslint/no-unused-vars
+
+/app/frontend/src/store/authStore.ts
+   67:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  108:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  148:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  168:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/store/premiumStore.ts
+  9:3  warning  'purchasePackage' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 53 problems (5 errors, 48 warnings)
+  0 errors and 8 warnings potentially fixable with the `--fix` option.
+
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. inside  to catch any other syntax errors. The final verification is a successful deployment, which the user will trigger.
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Complete Mobile App Phase 1 (Release-critical).** (P0)
-    -   **Description:** The mobile app's core infrastructure for release is partially built but untested on real devices. This includes In-App Purchases and Social Logins.
-    -   **Attempted fixes:** The code has been written and configured.
+-   **Issue 1: Fix Deployment Failure.** (P0)
+    -   **Description**: The production deployment for the Expo app is failing due to a JavaScript syntax error. The logs point to a redeclared variable  in .
+    -   **Attempted fixes**: The Expo SDK was downgraded from 55 to 54 to solve a previous deployment issue, which revealed this new error.
     -   **Next debug checklist**:
-        1.  Guide the user to create the subscription products (, ) in App Store Connect and Google Play Console.
-        2.  Trigger an EAS Build for both iOS (TestFlight) and Android (Internal Testing).
-        3.  Instruct the user to test the full IAP flow (purchase, restore) and social logins (Google, Apple) on their physical devices using the test builds.
-        4.  Implement loading/error states for all network-dependent views in the mobile app (e.g., login, data fetching, IAP flow) as requested.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the primary blocker for submitting the app to the App Stores.
+        1.  View the file .
+        2.  Locate the duplicate declaration of the  constant.
+        3.  Use the  tool to remove the redundant declaration.
+        4.  Execute yarn run v1.22.22
+$ expo lint
+env: load .env
+env: export EXPO_PACKAGER_HOSTNAME EXPO_PACKAGER_PROXY_URL EXPO_PUBLIC_BACKEND_URL EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY EXPO_PUBLIC_REVENUECAT_API_KEY EXPO_PUBLIC_REVENUECAT_IOS_API_KEY EXPO_TUNNEL_SUBDOMAIN EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT
+$ /app/frontend/node_modules/.bin/eslint /app/frontend/src /app/frontend/app /app/frontend/components --fix=false --cache=true --cache-location=/app/frontend/.expo/cache/eslint/
+
+/app/frontend/app/(auth)/login.tsx
+  22:7  warning  'API_URL' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  23:7  warning  'GOOGLE_AUTH_URL' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/_layout.tsx
+  4:20  warning  'StyleSheet' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/eggs.tsx
+  44:6  warning  React Hook useEffect has missing dependencies: 'loadData' and 'loadHens'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/(tabs)/finance.tsx
+  57:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/(tabs)/hens.tsx
+    1:38  warning  'useCallback' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+   24:9   warning  'width' is assigned a value but never used                                                                   @typescript-eslint/no-unused-vars
+   91:10  warning  'loading' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  138:6   warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/(tabs)/index.tsx
+    57:27  warning  'setDismissedBanner' is assigned a value but never used                                                                                                                                   @typescript-eslint/no-unused-vars
+    65:10  warning  'showWeatherModal' is assigned a value but never used                                                                                                                                     @typescript-eslint/no-unused-vars
+    85:6   warning  React Hook useEffect has missing dependencies: 'loadData', 'loadDataLimits', 'loadHens', 'loadProductivityAlerts', and 'loadWeather'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   139:6   warning  React Hook useEffect has a missing dependency: 'showUndoSnackbar'. Either include it or remove the dependency array                                                                       react-hooks/exhaustive-deps
+  1758:3   error    Duplicate key 'unlockButton'                                                                                                                                                              no-dupe-keys
+  1771:3   error    Duplicate key 'unlockButtonText'                                                                                                                                                          no-dupe-keys
+
+/app/frontend/app/(tabs)/settings.tsx
+   32:28  warning  'expiresAt' is assigned a value but never used                                                                        @typescript-eslint/no-unused-vars
+   74:6   warning  React Hook useEffect has a missing dependency: 'fetchCoopSettings'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   85:14  warning  'error' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+  221:14  warning  'error' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+  259:14  warning  'error' is defined but never used                                                                                     @typescript-eslint/no-unused-vars
+
+/app/frontend/app/(tabs)/statistics.tsx
+  37:20  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                                             @typescript-eslint/array-type
+  43:19  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                                             @typescript-eslint/array-type
+  57:22  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead                                                                             @typescript-eslint/array-type
+  89:6   warning  React Hook useEffect has missing dependencies: 'fetchCoopSettings' and 'loadStats'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/_layout.tsx
+  28:36  warning  'colors' is assigned a value but never used                                                                                                                 @typescript-eslint/no-unused-vars
+  29:22  warning  'isAuthenticated' is assigned a value but never used                                                                                                        @typescript-eslint/no-unused-vars
+  57:6   warning  React Hook useEffect has missing dependencies: 'checkAuth', 'initializePremium', and 'initializeTheme'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/feed.tsx
+   67:19  warning  'isDark' is assigned a value but never used                                                                                     @typescript-eslint/no-unused-vars
+   74:10  warning  'loading' is assigned a value but never used                                                                                    @typescript-eslint/no-unused-vars
+  120:20  error    React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  148:3   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render    react-hooks/rules-of-hooks
+
+/app/frontend/app/hatching.tsx
+  55:10  warning  'loading' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  79:6   warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/frontend/app/paywall.tsx
+    1:27  warning  'useEffect' is defined but never used                  @typescript-eslint/no-unused-vars
+    9:3   warning  'Platform' is defined but never used                   @typescript-eslint/no-unused-vars
+   31:11  warning  'restorePurchases' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  182:9   warning  'isSv' is already defined                              @typescript-eslint/no-redeclare
+
+/app/frontend/src/components/EggRegistrationModal.tsx
+  12:10  warning  'Ionicons' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/components/RevenueCatPaywall.tsx
+   24:3   warning  'ENTITLEMENT_ID' is defined but never used  @typescript-eslint/no-unused-vars
+  140:14  warning  'e' is defined but never used               @typescript-eslint/no-unused-vars
+
+/app/frontend/src/i18n/index.ts
+  12:35  error  'locale' not found in imported namespace 'Localization'  import/namespace
+
+/app/frontend/src/services/pdfExport.ts
+  17:15  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  18:10  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  29:9   warning  't' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+
+/app/frontend/src/store/appStore.ts
+   54:20  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+   83:16  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+   91:21  warning  Array type using 'Array<T>' is forbidden. Use 'T[]' instead  @typescript-eslint/array-type
+  274:14  warning  'error' is defined but never used                            @typescript-eslint/no-unused-vars
+
+/app/frontend/src/store/authStore.ts
+   67:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  108:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  148:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  168:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/frontend/src/store/premiumStore.ts
+  9:3  warning  'purchasePackage' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 53 problems (5 errors, 48 warnings)
+  0 errors and 8 warnings potentially fixable with the `--fix` option.
+
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. inside the  directory to ensure there are no other syntax issues.
+        5.  Inform the user that the fix is ready and ask them to try deploying again.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker preventing the app from being deployed and updated.
     -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: Y (Deployment failures have occurred multiple times with different root causes).
+    -   **Should Test frontend/backend/both after fix?**: Frontend (validation is a successful deployment).
+    -   **Blocked on other issue**: No.
+
+-   **Issue 2: User-Side Tasks for App Launch.** (P1)
+    -   **Description**: Several tasks that depend on the user need to be completed before the app can be fully tested and launched.
+    -   **Next debug checklist**:
+        1.  **User needs to build the premium page:** Remind the user they must create the subscription page at .
+        2.  **User needs to test on a device:** Once deployment is successful, instruct the user to create an EAS build (An Expo user account is required to proceed.
+
+Log in to EAS with email or username (exit and run eas login --help to see other login options)
+Input is required, but stdin is not readable. Failed to display prompt: Email or username) and test the entire user flow on a physical device, especially the upgrade process.
+    -   **Why fix this issue and what will be achieved with the fix?**: These are the final steps required to launch the app on the App Stores.
+    -   **Status**: BLOCKED
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both (via user testing on device).
-    -   **Blocked on other issue**: User action (App Store/Google Play setup).
-
--   **Issue 2: Custom Domain Activation & SSL.** (P1)
-    -   **Description:** The user cannot find the Link Domain option in the Emergent UI to finalize the  setup and activate SSL. The agent identified this is likely due to the deployment type being Expo and advised the user to contact support.
-    -   **Status**: BLOCKED (on Emergent Support).
-    -   **Is recurring issue?**: Y
+    -   **Blocked on other issue**: Issue 1: Fix Deployment Failure.
 
 **In progress Task List**:
--   **Task 1: Finalize Privacy Policy & Terms Pages.** (P0)
-    -   **Where to resume**: The component files  and  exist. You must add the routes for  and  in , then rebuild the web app.
-    -   **What will be achieved with this?**: Fulfills a legal requirement for app store submission.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Frontend.
-    -   **Blocked on something**: No.
+(None - all current work is captured in the P0 issue above)
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks (Mobile App - Phase 2):**
@@ -103,83 +305,100 @@ A full-stack application with a FastAPI backend, a feature-complete React web ap
     -   (P3) User Onboarding / Welcome Tour.
 
 **Completed work in this session**
--   Fixed the critical EAS deployment error by changing the  in .
--   Fully implemented and fixed the Forgot Password flow for the web app by creating .
--   Resolved the production issue where the web app was being downloaded instead of rendered by adding  to the backend .
--   Fixed Google OAuth redirect URL issues on the web app.
--   Implemented a large batch of UI/UX improvements on the web app (admin link, price cards on login, CSS fixes, updated dashboard actions).
--   Added designated admin user emails to the backend  file.
--   Added a build timestamp/version banner to the web app's footer for easier debugging.
--   Ran a full test suite on the web app using , which passed successfully after fixing one minor backend bug.
--   **Started Mobile App Phase 1 (Release Critical):**
-    -   Installed and fully configured the RevenueCat SDK for in-app purchases.
-    -   Created a  component using RevenueCat's UI library.
-    -   Added backend endpoints for IAP receipt verification and restoration.
-    -   Implemented scaffolding and configuration for native Google Sign-In (iOS/Android) and Apple Sign-In (iOS).
-    -   Guided the user through the complete setup of Entitlements, Products, and Offerings in their RevenueCat dashboard.
--   Created placeholder pages for Privacy Policy and Terms of Service.
+-   Pivoted mobile monetization from native IAP (RevenueCat) to a web-based subscription flow.
+-   Created and implemented  for a consistent premium upsell experience in the mobile app.
+-   Refactored , , and other mobile components to use the new modal and link to the external premium page.
+-   Created and added routes for Privacy Policy and Terms of Service pages in the  app.
+-   Generated a comprehensive application specification document: .
+-   Diagnosed a deployment failure related to Expo SDK 55.
+-   As a workaround, successfully downgraded the Expo SDK and all related  dependencies to version 54.
+
+**Earlier issues found/mentioned but not fixed**
+(None in this session)
+
+**Known issue recurrence from previous fork**
+-   **Issue recurrence in previous fork**: Deployment failures.
+-   **Recurrence count**: 3+
+-   **Status**: IN PROGRESS (The current P0 issue is another instance of this). The root cause changes, but the symptom of a failed deployment persists.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
 -   **Backend**: FastAPI, Pydantic, Motor (async MongoDB), Resend.
--   **Frontend (Web)**: React, Vite, TypeScript, .
--   **Frontend (Mobile)**: Expo, React Native, Expo Router, Zustand, **RevenueCat**.
--   **Authentication**: JWT, Google Sign-In (Web & Mobile), Apple Sign-In (Mobile).
--   **Deployment**: Web app is built and served by FastAPI. Mobile app is built via EAS.
+-   **Frontend (Web)**: React, Vite, TypeScript.
+-   **Frontend (Mobile)**: Expo (SDK 54), React Native, Expo Router, Zustand.
+-   **Authentication**: JWT, Google Sign-In, Apple Sign-In.
+-   **Monetization (Mobile)**: **Web flow.** Uses  to direct users to an external website for payment. RevenueCat is no longer in active use.
 
 **key DB schema**
--   : { , , , , , ,  ('monthly', 'yearly'),  ('web', 'ios', 'android'), ,  }
+-   : { , , , , , , , , ,  }
 -   : { , , ,  }
--   : { Wed Feb 25 23:03:51 UTC 2026, , ,  }
+-   : { Wed Feb 25 23:59:07 UTC 2026, , ,  }
+
+**changes in tech stack**
+-   **Expo SDK:** Downgraded from 55 to 54.
+-   **RevenueCat SDK:** No longer used in the primary user flow, but kept as a backup.
 
 **All files of reference**
--   : Needs to be edited to add routes for the new legal pages.
--   : Contains the core RevenueCat logic for the mobile app.
--   : Contains the mobile social login logic.
--   : Holds the Google Client IDs for the mobile app.
--   : The single source of truth for all backend logic, including new IAP and mobile auth endpoints.
--   : Contains scheme and package identifiers for mobile builds and deep linking.
+-   : **Contains the deployment-blocking syntax error.**
+-   : Shows the downgraded Expo SDK and dependencies.
+-   : Expo configuration, updated for SDK 54.
+-   : The new UI component for premium gating.
+-   : Core backend logic.
+-   : Detailed application specification document.
+
+**Areas that need refactoring**:
+-   The backend contains now-dormant endpoints for RevenueCat (, ). These could be removed if the user decides to fully abandon the native IAP backup plan.
+
+**key api endpoints**
+-   No new endpoints were added. The monetization logic shifted to be purely client-side (linking out).
 
 **Critical Info for New Agent**
--   Your primary focus is the **mobile app ()** and getting it ready for release. The web app is largely complete.
--   The immediate next step is to finish the Privacy/Terms pages task, then move on to guiding the user through setting up their App Store/Google Play products so you can create a test build (EAS).
--   Do not attempt to fix the custom domain () issue. It is blocked on Emergent Support. You should follow up with the user on their support ticket status.
--   The user is now very technical and specific with their requests. Follow the phased implementation plan (Phase 1, Phase 2) they provided for the mobile app.
+-   Your **number one priority** is to fix the syntax error in  to unblock deployment.
+-   The mobile app's subscription model is now web-based. The app's role is to send the user to . The user is responsible for building that page. Do not attempt to work on it.
+-   Do not upgrade the Expo SDK back to 55. The downgrade to 54 was an intentional workaround for a platform-level issue in the deployment environment.
+-   Refer to  for a complete understanding of the application's features and architecture.
+
+**documents and test reports created in this job**
+-   
+-    (continuously updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks for help integrating RevenueCat with specific API keys and requirements. **Status: Completed**.
-2.  **User**: Asks for guidance on setting up the RevenueCat dashboard. **Status: Completed**.
-3.  **User**: Sends a screenshot of their RevenueCat Offering for verification. **Status: Completed**. Agent provided feedback to correct the structure.
-4.  **User**: Sends an updated screenshot of the Offering. **Status: Completed**. Agent confirmed it is correct.
-5.  **User**: Expresses confusion about Test Store in RevenueCat. **Status: Addressed**. Agent explained it's the correct sandbox environment for testing.
-6.  **User**: Asks what is left to do before the app can be launched on the app stores. **Status: Addressed**. Agent provided a detailed checklist.
-7.  **User**: Asks agent to generate and implement Privacy Policy & Terms of Service pages. **Status: In Progress**. This is the current task.
-8.  **User**: Asks for help creating iOS and Android OAuth clients in Google Cloud. **Status: Completed**.
-9.  **User**: Provides the iOS Client ID. **Status: Completed**.
-10. **User**: Provides the Android Client ID. **Status: Completed**.
+1.  **User**: Asks agent to explain the app's full functionality. **Status: Completed**. The agent created .
+2.  **User**: Asks if everything is working. **Status: Addressed**. The agent confirmed local functionality and outlined pending user tasks.
+3.  **User**: States domain linking isn't needed for an app. **Status: Acknowledged**.
+4.  **User**: Provides deployment error logs (related to Expo SDK 55). **Status: In Progress**.
+5.  **User**: Asks if contacting support costs money. **Status: Addressed**. Agent confirmed it is free.
+6.  **User**: Rejects contacting support and requests to downgrade the Expo SDK to fix the deployment error. **Status: Completed**.
+7.  **User**: Provides new deployment error logs after the downgrade. **Status: In Progress**. This is the current P0 issue.
+8.  **User**: Fungerar allting nu då? (Is everything working now?) - **Addressed** by agent, who did checks.
+9.  **User**: Förbättra premium-gating i mobilappen... (Improve premium-gating in the mobile app...) - **Completed**. The  was created in response to this.
+10. **User**: Följer min app alla GDPR-lagar?... (Does my app follow all GDPR laws?...) - **Addressed**. Agent did a full review and created the spec doc.
 
 **Project Health Check:**
--   **Broken**: Custom domain  is not serving with HTTPS and is not correctly linked in the Emergent platform. This is **blocked** on Emergent Support.
+-   **Broken**: The Expo app deployment is failing due to a JavaScript syntax error in . This is a P0 blocker.
 -   **Mocked**:
-    -   The In-App Purchase flow is implemented but untested on a real device. It is mocked until verified via an EAS build in a sandbox environment.
-    -   Weather data remains mocked due to the user's inactive OpenWeatherMap API key.
+    -   The new web-based subscription flow is incomplete as it depends on an external URL () that the user must create.
+    -   Weather data integration remains mocked due to an inactive API key.
 
 **3rd Party Integrations**
--   **Stripe**: Web subscriptions.
--   **Resend**: Transactional emails.
--   **OpenWeatherMap**: Weather data (key inactive).
--   **OpenAI via **: AI features (Uses Emergent LLM Key).
--   **Google Sign-In**: For both web and mobile.
--   **Apple Sign-In**: For mobile (iOS).
--   **RevenueCat**: For mobile in-app purchases (iOS/Android).
+-   **Stripe**: For web subscriptions.
+-   **Resend**: For transactional emails.
+-   **OpenWeatherMap**: For weather data (key inactive).
+-   **OpenAI via **: For AI features (Uses Emergent LLM Key).
+-   **Google Sign-In**: For web and mobile authentication.
+-   **Apple Sign-In**: For mobile (iOS) authentication.
+-   **RevenueCat**: For mobile in-app purchases (code exists but is **inactive**; kept as a backup).
 
 **Testing status**
--   Testing agent used after significant changes: **YES**, on the web application.
+-   Testing agent used after significant changes: NO (in this session).
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: None.
--   Known regressions: The custom domain functionality has been historically unstable.
+-   Known regressions: Recurring deployment failures, although with different causes each time.
+
+**Credentials to test flow:**
+(Not applicable, no new credentials added or required)
 
 **What agent forgot to execute**
--   The agent was in the middle of a task. The routes for the newly created  and  pages have not been added to . This should be the immediate next action.</analysis>
+The agent correctly identified the syntax error () in  as the cause of the latest deployment failure but the session ended before the  command could be executed to fix it. This is the immediate next step.</analysis>
