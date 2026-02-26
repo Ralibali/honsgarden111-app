@@ -8,13 +8,11 @@ import {
   Linking,
   Alert,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeStore } from '../../src/store/themeStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
-import { useAuthStore } from '../../src/store/authStore';
 import i18n from '../../src/i18n';
 
 const PREMIUM_WEB_URL = 'https://honsgarden.se/premium';
