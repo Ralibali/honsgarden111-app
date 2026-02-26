@@ -6,35 +6,27 @@
 
 ## NYLIGEN GENOMFÖRT (26 Feb 2026)
 
-### 1. Onboarding-guide med bilder ✅ (NY)
-**Status: KOMPLETT**
+### 1. Autentisering - Endast E-post/Lösenord ✅
+**Google Sign-In har tagits bort.** Enklare och säkrare.
 
-4 skärmar med AI-genererade bilder och exempelresultat:
-1. **Välkommen** (grön) - Äggregistrering, exempel: "24 ägg"
-2. **Lär känna din flock** (amber) - Hönsprofiler, exempel: "12 hönor"
-3. **Se dina resultat** (blå) - Statistik, exempel: "+23%"
-4. **Träffa Agda** (lila/PREMIUM) - AI-rådgivare, exempel: "28 ägg prognos"
+**Registrering med e-postverifiering:**
+- Steg 1: Fyll i namn, e-post, lösenord + godkänn villkor
+- Steg 2: Ange 6-siffrig kod från e-post
+- Steg 3: Konto skapat! (+ 7 dagars gratis Premium)
 
-Funktioner:
-- Visas automatiskt för nya användare
-- "Hoppa över"-knapp i hörnet
-- "Nästa" / "Kom igång!"-knappar
-- Dot-navigation för progress
-- Premium-badge på AI-skärmen
-- "Visa introduktion"-knapp i Inställningar
+**Backend endpoints:**
+- `POST /api/auth/register` - Startar registrering, skickar kod
+- `POST /api/auth/verify-registration` - Verifierar kod, skapar konto
+- `POST /api/auth/resend-verification` - Skickar ny kod
 
-### 2. Premium-webbsida med Stripe ✅
-- URL: `/api/premium-page`
-- Inloggningskrav före checkout
-- Success-sida efter betalning
+### 2. Lösenordsåterställning ✅
+- `GET /api/reset-password` - Fristående webbsida
+- 3-stegs flöde: E-post → Kod → Nytt lösenord
 
-### 3. Integritetspolicy & Användarvillkor ✅
-- `/api/privacy` - GDPR-kompatibel
-- `/api/terms` - Fullständiga villkor
-
-### 4. Lösenordsåterställning med kod ✅
-- 6-siffrig kod via e-post
-- 60 sek cooldown för ny kod
+### 3. Registreringssida för webb ✅
+- `GET /api/register` - Fristående webbsida
+- Visar "7 dagars gratis Premium!" badge
+- Checkboxar för villkor och nyhetsbrev
 
 ---
 
@@ -42,6 +34,8 @@ Funktioner:
 
 | Sida | URL |
 |------|-----|
+| **Registrering** | `/api/register` |
+| **Återställ lösenord** | `/api/reset-password` |
 | Premium-sida | `/api/premium-page` |
 | Checkout Success | `/api/checkout-success` |
 | Integritetspolicy | `/api/privacy` |
@@ -50,10 +44,42 @@ Funktioner:
 
 ---
 
+## Autentiseringsflöden
+
+### Registrering (nytt)
+```
+Användare → /api/register
+    ↓
+Fyller i: namn, e-post, lösenord
+    ↓
+Backend skickar 6-siffrig kod via e-post
+    ↓
+Användare anger koden
+    ↓
+Konto skapas + 7 dagars Premium trial
+    ↓
+Automatisk inloggning → /api/web
+```
+
+### Återställ lösenord
+```
+Användare → /api/reset-password
+    ↓
+Anger e-post
+    ↓
+Backend skickar 6-siffrig kod
+    ↓
+Anger kod + nytt lösenord
+    ↓
+Lösenord ändrat → /api/web
+```
+
+---
+
 ## Teknisk Stack
 - **Backend**: FastAPI, MongoDB Atlas
 - **Mobil**: Expo (SDK 54), React Native
-- **E-post**: Resend
+- **E-post**: Resend (noreply@honsgarden.se)
 - **Betalningar**: Stripe
 - **AI**: OpenAI via emergentintegrations
 
@@ -61,19 +87,15 @@ Funktioner:
 
 ## Kommande uppgifter
 
-### P1 - Hög prioritet
-- [ ] Bygg appen via EAS
-- [ ] Testa på fysisk enhet
+### P1 - Att göra
+- [ ] Länka "Glömt lösenord?" i webb-appen till `/api/reset-password`
+- [ ] Länka "Skapa konto" i webb-appen till `/api/register`
+- [ ] Bygg mobilappen via EAS
 
 ### P2 - Framtida
-- [ ] Google Sign-In native config
+- [ ] Uppdatera mobilappens registreringsflöde med verifiering
 
 ---
-
-## Testrapporter
-- `/app/test_reports/iteration_11.json` - Backend (lösenord)
-- `/app/test_reports/iteration_12.json` - Frontend (premium)
-- `/app/test_reports/iteration_13.json` - Onboarding (100%)
 
 ## Testanvändare
 - E-post: testuser@test.com
