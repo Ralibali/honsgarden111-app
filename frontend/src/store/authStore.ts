@@ -23,6 +23,8 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>;
+  verifyResetCode: (email: string, code: string) => Promise<{ success: boolean; message: string; token?: string }>;
+  resetPasswordWithCode: (token: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
   clearError: () => void;
   setUser: (user: User | null) => void;
 }
