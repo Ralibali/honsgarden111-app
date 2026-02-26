@@ -3974,6 +3974,182 @@ async def get_advanced_insights(request: Request):
     }
 
 
+@api_router.get("/statistics/trend-analysis")
+async def get_trend_analysis(request: Request):
+    """Get trend analysis - compare current period with previous period."""
+    user_id = await get_user_id(request)
+    
+    today = date.today()
+    
+    # Current period (last 30 days)
+    current_start = (today - timedelta(days=30)).isoformat()
+    current_end = today.isoformat()
+    
+    # Previous period (30-60 days ago)
+    prev_start = (today - timedelta(days=60)).isoformat()
+    prev_end = (today - timedelta(days=30)).isoformat()
+    
+    # Get coop settings for hen count
+    coop = await db.coop_settings.find_one({"user_id": user_id}, {"_id": 0})
+    if not coop:
+        coop = await db.coops.find_one({"user_id": user_id}, {"_id": 0})
+    hen_count = coop.get("hen_count", 0) if coop else 0
+    
+    # Current period data
+    eggs_current = await db.egg_records.find(
+        {"user_id": user_id, "date": {"$gte": current_start, "$lte": current_end}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Previous period data
+    eggs_prev = await db.egg_records.find(
+        {"user_id": user_id, "date": {"$gte": prev_start, "$lt": prev_end}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Calculate totals
+    total_eggs_current = sum(e['count'] for e in eggs_current)
+    total_eggs_prev = sum(e['count'] for e in eggs_prev)
+    
+    # Get costs
+    costs_current = await db.transactions.find(
+        {"user_id": user_id, "date": {"$gte": current_start}, "type": "cost"},
+        {"_id": 0}
+    ).to_list(1000)
+    costs_prev = await db.transactions.find(
+        {"user_id": user_id, "date": {"$gte": prev_start, "$lt": prev_end}, "type": "cost"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    total_costs_current = sum(c.get('amount', 0) for c in costs_current)
+    total_costs_prev = sum(c.get('amount', 0) for c in costs_prev)
+    
+    # Get sales
+    sales_current = await db.transactions.find(
+        {"user_id": user_id, "date": {"$gte": current_start}, "type": "sale"},
+        {"_id": 0}
+    ).to_list(1000)
+    sales_prev = await db.transactions.find(
+        {"user_id": user_id, "date": {"$gte": prev_start, "$lt": prev_end}, "type": "sale"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    total_sales_current = sum(s.get('amount', 0) for s in sales_current)
+    total_sales_prev = sum(s.get('amount', 0) for s in sales_prev)
+    
+    # Calculate daily averages
+    days_with_data_current = len(set(e['date'] for e in eggs_current)) or 1
+    days_with_data_prev = len(set(e['date'] for e in eggs_prev)) or 1
+    
+    avg_eggs_current = total_eggs_current / days_with_data_current
+    avg_eggs_prev = total_eggs_prev / days_with_data_prev if days_with_data_prev > 0 else 0
+    
+    # Calculate laying rates
+    laying_rate_current = (avg_eggs_current / hen_count * 100) if hen_count > 0 else None
+    laying_rate_prev = (avg_eggs_prev / hen_count * 100) if hen_count > 0 else None
+    
+    # Calculate profit
+    profit_current = total_sales_current - total_costs_current
+    profit_prev = total_sales_prev - total_costs_prev
+    
+    # Helper function to calculate percentage change
+    def calc_change(current, prev):
+        if prev == 0 or prev is None:
+            return None if current == 0 else 100.0
+        return round(((current - prev) / prev) * 100, 1)
+    
+    # Calculate changes
+    eggs_change = calc_change(total_eggs_current, total_eggs_prev)
+    laying_rate_change = calc_change(laying_rate_current, laying_rate_prev) if laying_rate_current and laying_rate_prev else None
+    costs_change = calc_change(total_costs_current, total_costs_prev)
+    sales_change = calc_change(total_sales_current, total_sales_prev)
+    profit_change = calc_change(profit_current, profit_prev) if profit_prev != 0 else None
+    
+    # Determine overall trend
+    positive_indicators = 0
+    negative_indicators = 0
+    
+    if eggs_change is not None:
+        if eggs_change > 0:
+            positive_indicators += 1
+        elif eggs_change < 0:
+            negative_indicators += 1
+    
+    if profit_change is not None:
+        if profit_change > 0:
+            positive_indicators += 1
+        elif profit_change < 0:
+            negative_indicators += 1
+    
+    if laying_rate_change is not None:
+        if laying_rate_change > 0:
+            positive_indicators += 1
+        elif laying_rate_change < 0:
+            negative_indicators += 1
+    
+    if positive_indicators > negative_indicators:
+        overall_trend = "improving"
+        trend_message = "Din flock presterar bättre än förra månaden!"
+    elif negative_indicators > positive_indicators:
+        overall_trend = "declining"
+        trend_message = "Produktiviteten har minskat jämfört med förra månaden."
+    else:
+        overall_trend = "stable"
+        trend_message = "Produktiviteten är stabil."
+    
+    # Generate insights
+    insights = []
+    
+    if eggs_change is not None:
+        if eggs_change > 10:
+            insights.append(f"Äggproduktionen har ökat med {eggs_change}%!")
+        elif eggs_change < -10:
+            insights.append(f"Äggproduktionen har minskat med {abs(eggs_change)}%. Kontrollera foderkvalitet och hönsens hälsa.")
+    
+    if profit_change is not None:
+        if profit_change > 0:
+            insights.append(f"Vinsten har förbättrats med {profit_change}%.")
+        elif profit_change < -10:
+            insights.append(f"Vinsten har minskat med {abs(profit_change)}%. Granska kostnader och prissättning.")
+    
+    if costs_change is not None and costs_change > 20:
+        insights.append(f"Kostnaderna har ökat med {costs_change}%. Överväg att se över leverantörer.")
+    
+    return {
+        "period": {
+            "current": {"start": current_start, "end": current_end, "days": 30},
+            "previous": {"start": prev_start, "end": prev_end, "days": 30}
+        },
+        "hen_count": hen_count,
+        "current_period": {
+            "total_eggs": total_eggs_current,
+            "avg_eggs_per_day": round(avg_eggs_current, 1),
+            "laying_rate": round(laying_rate_current, 1) if laying_rate_current else None,
+            "total_costs": round(total_costs_current, 2),
+            "total_sales": round(total_sales_current, 2),
+            "profit": round(profit_current, 2)
+        },
+        "previous_period": {
+            "total_eggs": total_eggs_prev,
+            "avg_eggs_per_day": round(avg_eggs_prev, 1),
+            "laying_rate": round(laying_rate_prev, 1) if laying_rate_prev else None,
+            "total_costs": round(total_costs_prev, 2),
+            "total_sales": round(total_sales_prev, 2),
+            "profit": round(profit_prev, 2)
+        },
+        "changes": {
+            "eggs": {"value": eggs_change, "unit": "%"},
+            "laying_rate": {"value": laying_rate_change, "unit": "%"},
+            "costs": {"value": costs_change, "unit": "%"},
+            "sales": {"value": sales_change, "unit": "%"},
+            "profit": {"value": profit_change, "unit": "%"}
+        },
+        "overall_trend": overall_trend,
+        "trend_message": trend_message,
+        "insights": insights
+    }
+
+
 # ============ EMAIL REMINDERS ============
 class ReminderSettings(BaseModel):
     enabled: bool = True
