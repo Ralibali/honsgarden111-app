@@ -69,6 +69,14 @@ export default function HomeScreen() {
   const [premiumFeatureName, setPremiumFeatureName] = useState('');
   const [premiumFeatureIcon, setPremiumFeatureIcon] = useState<keyof typeof Ionicons.glyphMap>('star');
   
+  // AI Report & Forecast state
+  const [aiReport, setAiReport] = useState<any>(null);
+  const [aiReportLoading, setAiReportLoading] = useState(false);
+  const [showAiReportModal, setShowAiReportModal] = useState(false);
+  const [eggForecast, setEggForecast] = useState<any>(null);
+  const [forecastLoading, setForecastLoading] = useState(false);
+  const [showForecastModal, setShowForecastModal] = useState(false);
+  
   // Animation refs
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const undoOpacity = useRef(new Animated.Value(0)).current;
