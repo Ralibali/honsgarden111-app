@@ -701,7 +701,11 @@ export default function HomeScreen() {
           </View>
           
           {/* AI Daily Report Card */}
-          <View style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}>
+          <TouchableOpacity 
+            style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
+            onPress={handleAiReportPress}
+            activeOpacity={0.7}
+          >
             <View style={styles.aiCardIcon}>
               <Ionicons name="document-text" size={24} color={isPremium ? colors.primary : '#9ca3af'} />
             </View>
@@ -709,7 +713,7 @@ export default function HomeScreen() {
               <Text style={styles.aiCardTitle}>{isSv ? 'AI Dagsrapport' : 'AI Daily Report'}</Text>
               {isPremium ? (
                 <Text style={styles.aiCardDescription}>
-                  {isSv ? 'Personlig sammanfattning och tips baserat på din data' : 'Personal summary and tips based on your data'}
+                  {isSv ? 'Tryck för att se din personliga AI-analys' : 'Tap to see your personal AI analysis'}
                 </Text>
               ) : (
                 <Text style={styles.aiCardDescriptionBlurred}>
@@ -717,18 +721,21 @@ export default function HomeScreen() {
                 </Text>
               )}
             </View>
-            {!isPremium && (
-              <TouchableOpacity 
-                style={styles.unlockButton}
-                onPress={() => showPremiumGate(isSv ? 'AI Dagsrapport' : 'AI Daily Report', 'document-text')}
-              >
+            {isPremium ? (
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            ) : (
+              <View style={styles.unlockButton}>
                 <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
-              </TouchableOpacity>
+              </View>
             )}
-          </View>
+          </TouchableOpacity>
           
           {/* Egg Forecast Card */}
-          <View style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}>
+          <TouchableOpacity 
+            style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
+            onPress={handleForecastPress}
+            activeOpacity={0.7}
+          >
             <View style={styles.aiCardIcon}>
               <Ionicons name="trending-up" size={24} color={isPremium ? colors.success : '#9ca3af'} />
             </View>
@@ -736,7 +743,7 @@ export default function HomeScreen() {
               <Text style={styles.aiCardTitle}>{isSv ? 'Äggprognos 7 dagar' : '7-Day Egg Forecast'}</Text>
               {isPremium ? (
                 <Text style={styles.aiCardDescription}>
-                  {isSv ? 'Förutsäg produktion baserat på historik' : 'Predict production based on history'}
+                  {isSv ? 'Tryck för att se din prognos' : 'Tap to see your forecast'}
                 </Text>
               ) : (
                 <Text style={styles.aiCardDescriptionBlurred}>
@@ -744,15 +751,14 @@ export default function HomeScreen() {
                 </Text>
               )}
             </View>
-            {!isPremium && (
-              <TouchableOpacity 
-                style={styles.unlockButton}
-                onPress={() => showPremiumGate(isSv ? 'Äggprognos' : 'Egg Forecast', 'trending-up')}
-              >
+            {isPremium ? (
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            ) : (
+              <View style={styles.unlockButton}>
                 <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
-              </TouchableOpacity>
+              </View>
             )}
-          </View>
+          </TouchableOpacity>
           
           {/* Blurred overlay hint for free users */}
           {!isPremium && (
