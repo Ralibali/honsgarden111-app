@@ -2070,4 +2070,154 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     color: colors.primary,
     fontWeight: '600',
   },
+  // AI Report Modal styles
+  modalContainer: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  modalContent: {
+    flex: 1,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  loadingEmoji: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  reportCard: {
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  reportDate: {
+    fontSize: 13,
+    marginBottom: 12,
+    textTransform: 'capitalize',
+  },
+  reportText: {
+    fontSize: 15,
+    lineHeight: 24,
+  },
+  tipsCard: {
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  tipsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  tipRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  tipBullet: {
+    fontSize: 14,
+    color: colors.primary,
+    marginRight: 8,
+    marginTop: 2,
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  loadReportBtn: {
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  loadReportBtnText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  // Forecast Modal styles
+  forecastSummaryCard: {
+    alignItems: 'center',
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  forecastSummaryIcon: {
+    fontSize: 48,
+    marginBottom: 8,
+  },
+  forecastSummaryValue: {
+    fontSize: 48,
+    fontWeight: 'bold',
+  },
+  forecastSummaryLabel: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  dailyForecastCard: {
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  dailyForecastTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  dailyForecastRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  dailyForecastDay: {
+    width: 40,
+    fontSize: 13,
+  },
+  dailyForecastBar: {
+    flex: 1,
+    height: 8,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 4,
+    marginHorizontal: 12,
+    overflow: 'hidden',
+  },
+  dailyForecastBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  dailyForecastValue: {
+    width: 24,
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+  confidenceNote: {
+    flexDirection: 'row',
+    padding: 14,
+    borderRadius: 12,
+    gap: 10,
+  },
+  confidenceNoteText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 18,
+  },
 });
