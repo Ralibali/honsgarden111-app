@@ -91,7 +91,69 @@ export default function LoginScreen() {
     
     const result = await register(email, password, name.trim(), acceptedTerms, acceptedMarketing);
     if (result.success) {
-      router.replace('/(tabs)');
+      if (result.requiresVerification) {
+        // Go to verification step
+        setSuccessMessage(result.message || 'Verifieringskod skickad!');
+        startCooldown();
+        setAuthMode('register-verify');
+      } else {
+        // Legacy: direct login
+        router.replace('/(tabs)');
+      }
+    } else {
+      Alert.alert('Fel', result.message || 'Registrering misslyckades');
+    }
+  };
+  
+  const handleVerifyRegistration = async () => {
+    clearError();
+    setSuccessMessage('');
+    
+    const code = registerCode.join('');
+    if (code.length !== 6) {
+      Alert.alert('Fel', 'Ange den 6-siffriga koden');
+      return;
+    }
+    
+    const result = await verifyRegistration(email, code);
+    if (result.success) {
+      Alert.alert('Välkommen!', result.message || 'Kontot skapat!', [
+        { text: 'OK', onPress: () => router.replace('/(tabs)') }
+      ]);
+    } else {
+      Alert.alert('Fel', result.message || 'Verifiering misslyckades');
+    }
+  };
+  
+  const handleResendRegistrationCode = async () => {
+    if (resendCooldown > 0) return;
+    
+    clearError();
+    setSuccessMessage('');
+    
+    const result = await resendVerification(email);
+    if (result.success) {
+      setSuccessMessage('Ny kod skickad!');
+      startCooldown();
+      setRegisterCode(['', '', '', '', '', '']);
+    } else {
+      Alert.alert('Fel', result.message || 'Kunde inte skicka ny kod');
+    }
+  };
+  
+  const handleRegisterCodeInput = (text: string, index: number) => {
+    const newCode = [...registerCode];
+    newCode[index] = text;
+    setRegisterCode(newCode);
+    
+    if (text && index < 5) {
+      registerCodeRefs.current[index + 1]?.focus();
+    }
+  };
+  
+  const handleRegisterCodeKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !registerCode[index] && index > 0) {
+      registerCodeRefs.current[index - 1]?.focus();
     }
   };
   
