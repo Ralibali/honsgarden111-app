@@ -482,11 +482,15 @@ export default function LoginScreen() {
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
-                  style={styles.resendButton}
-                  onPress={handleForgotPassword}
-                  disabled={isLoading}
+                  style={[styles.resendButton, resendCooldown > 0 && styles.resendButtonDisabled]}
+                  onPress={handleResendCode}
+                  disabled={isLoading || resendCooldown > 0}
                 >
-                  <Text style={styles.resendText}>Skicka ny kod</Text>
+                  <Text style={[styles.resendText, resendCooldown > 0 && styles.resendTextDisabled]}>
+                    {resendCooldown > 0 
+                      ? `Skicka ny kod (${resendCooldown}s)` 
+                      : 'Skicka ny kod'}
+                  </Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
