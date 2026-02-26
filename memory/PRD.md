@@ -11,89 +11,84 @@
 
 Backend-endpoints:
 - `POST /api/auth/forgot-password` - Skickar 6-siffrig kod via e-post
-- `POST /api/auth/verify-reset-code` - Verifierar kod (max 5 försök, 15 min giltig)
+- `POST /api/auth/verify-reset-code` - Verifierar kod
 - `POST /api/auth/reset-password-with-code` - Sätter nytt lösenord
 
-Frontend UI (login.tsx):
-- **forgot**: E-postformulär med "Skicka kod"-knapp
-- **verify-code**: 6 separata TextInput-fält med auto-fokus
-- **new-password**: Nytt lösenord + bekräftelse
-- **60 sek cooldown** för "Skicka ny kod"-knappen
+Frontend (login.tsx):
+- 3-stegs UI: E-post → Kodinmatning → Nytt lösenord
+- 60 sek cooldown för "Skicka ny kod"
 
-### 2. Premium Tab & Sida ✅
+### 2. Premium Tab i mobilappen ✅
 **Status: KOMPLETT**
 
-Ny tab i navigationen med stjärnikon som visar:
-- Hero-sektion med "Uppgradera till Premium"
-- Priskort: **19 kr/mån** (månatlig) och **149 kr/år** (årlig med "SPARA 35%")
-- 10 premium-funktioner med ikoner och beskrivningar
+Ny tab med stjärnikon som visar:
+- Priskort: 19 kr/mån och 149 kr/år
+- 10 premium-funktioner med beskrivningar
+- CTA-knapp → honsgarden.se/api/premium-page
+
+### 3. Fristående Premium-webbsida ✅
+**Status: KOMPLETT**
+
+URL: `/api/premium-page`
+
+Snygg landningssida med:
+- Hero-sektion: "Lås upp hela Hönsgården"
+- Interaktiva priskort (månadsvis/årlig)
 - 7 dagars gratis provperiod-banner
-- CTA-knapp som öppnar honsgarden.se/premium
-- FAQ-sektion (2 frågor)
-- Visar premium-status om användaren redan är premium
+- 10 premium-funktioner med ikoner
+- FAQ-sektion (5 frågor)
+- Stripe checkout-integration
+- Mörkt tema som matchar appen
 
 ---
 
 ## Deployment-status
 
 ### EAS Build-konfiguration: ✅ REDO
-- `eas.json` konfigurerad med development/preview/production
-- `app.json` med korrekt projectId och slug
+- `eas.json` och `app.json` konfigurerade
 - Alla ikoner på plats
 
-### Deployment-kommandon:
-```bash
-# Bygg för testning
-eas build --platform all --profile preview
-
-# Bygg för produktion
-eas build --platform all --profile production
-```
+### URLs:
+- **Premium-sida**: `https://honsgarden.se/api/premium-page`
+- **Webb-app**: `https://honsgarden.se/api/web`
 
 ---
 
 ## Komplett funktionslista
 
-### Autentisering
-| Funktion | Status |
-|----------|--------|
-| E-post/lösenord-registrering | ✅ |
-| E-post/lösenord-inloggning | ✅ |
-| Google-inloggning | ⚠️ Webb OK, mobil kräver config |
-| Apple-inloggning | ✅ |
-| Lösenordsåterställning (6-siffrig kod) | ✅ |
-| GDPR-samtycke vid registrering | ✅ |
+### Autentisering ✅
+- E-post/lösenord registrering och inloggning
+- Google Sign-In (webb)
+- Apple Sign-In
+- Lösenordsåterställning (6-siffrig kod)
+- GDPR-samtycke
 
-### Premium & Monetisering
-| Funktion | Status |
-|----------|--------|
-| Premium-sida med priser | ✅ |
-| Webb-redirect för betalning | ✅ |
-| Premium-status visning | ✅ |
+### Premium & Monetisering ✅
+- Premium-sida med Stripe checkout
+- Webb-redirect för mobilbetalning
+- Premium-status i appen
 
-### Kärnfunktioner
-| Funktion | Status |
-|----------|--------|
-| Äggdagbok | ✅ |
-| Hönsprofiler | ✅ |
-| Flockhantering | ✅ |
-| Ekonomispårning | ✅ |
-| Statistik | ✅ |
-| AI-rådgivare Agda | ✅ |
-| AI Dagsrapport | ✅ |
-| Äggprognos | ✅ |
-| Väderintegration | ✅ |
-| Hälsologg | ✅ |
-| Kläckningsmodul | ✅ |
-| Foderhantering | ✅ |
+### Kärnfunktioner ✅
+- Äggdagbok
+- Hönsprofiler med tuppar
+- Flockhantering
+- Ekonomispårning
+- Statistik
+- AI-rådgivare Agda
+- AI Dagsrapport
+- Äggprognos
+- Väderintegration
+- Hälsologg
+- Kläckningsmodul
+- Foderhantering
 
 ---
 
 ## Teknisk Stack
 - **Backend**: FastAPI, MongoDB Atlas
 - **Mobil**: Expo (SDK 54), React Native
-- **E-post**: Resend (noreply@honsgarden.se)
-- **Betalningar**: Stripe via honsgarden.se/premium
+- **E-post**: Resend
+- **Betalningar**: Stripe
 - **AI**: OpenAI via emergentintegrations
 
 ---
@@ -101,20 +96,19 @@ eas build --platform all --profile production
 ## Kommande uppgifter
 
 ### P1 - Hög prioritet
-- [ ] Bygg appen via Expo/EAS
-- [ ] Användartestning på fysisk enhet
-- [ ] Skapa premium-sidan på honsgarden.se/premium (extern webbsida)
+- [ ] Bygg appen via EAS
+- [ ] Testa på fysisk enhet
 
 ### P2 - Framtida
 - [ ] Google Sign-In native config
-- [ ] Onboarding-guide för nya användare
-- [ ] Ta bort dormant RevenueCat-kod
+- [ ] Onboarding-guide
+- [ ] Ta bort RevenueCat-kod
 
 ---
 
 ## Testrapporter
-- `/app/test_reports/iteration_11.json` - Lösenordsåterställning backend (100%)
-- `/app/test_reports/iteration_12.json` - Premium tab & cooldown (verifierad)
+- `/app/test_reports/iteration_11.json` - Backend
+- `/app/test_reports/iteration_12.json` - Frontend
 
 ## Testanvändare
 - E-post: testuser@test.com
