@@ -397,8 +397,9 @@ export default function LoginScreen() {
                   )}
                 </TouchableOpacity>
                 
-                <View style={styles.divider}>
-                  <TouchableOpacity 
+                <View style={styles.divider} />
+                
+                <TouchableOpacity 
                   style={styles.switchButton}
                   onPress={() => setAuthMode('register')}
                 >
