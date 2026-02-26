@@ -350,16 +350,15 @@ export default function LoginScreen() {
               </View>
             )}
             
-            {/* Forgot Password Form */}
+            {/* Forgot Password - Step 1: Enter Email */}
             {authMode === 'forgot' && (
               <View style={styles.formSection}>
                 <Text style={styles.formTitle}>Glömt lösenord?</Text>
                 <Text style={styles.formSubtitle}>
-                  Ange din e-postadress så skickar vi en återställningslänk.
+                  Ange din e-postadress så skickar vi en 6-siffrig kod.
                 </Text>
                 
                 {error && <Text style={styles.errorText}>{error}</Text>}
-                {successMessage && <Text style={styles.successText}>{successMessage}</Text>}
                 
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>E-postadress</Text>
@@ -383,7 +382,7 @@ export default function LoginScreen() {
                   {isLoading ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text style={styles.primaryButtonText}>Skicka återställningslänk</Text>
+                    <Text style={styles.primaryButtonText}>Skicka kod</Text>
                   )}
                 </TouchableOpacity>
                 
@@ -402,6 +401,140 @@ export default function LoginScreen() {
                   onPress={() => setAuthMode('login')}
                 >
                   <Text style={styles.backText}>← Tillbaka till inloggning</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            
+            {/* Forgot Password - Step 2: Enter Code */}
+            {authMode === 'verify-code' && (
+              <View style={styles.formSection}>
+                <Text style={styles.formTitle}>Ange koden</Text>
+                <Text style={styles.formSubtitle}>
+                  En 6-siffrig kod har skickats till{'\n'}
+                  <Text style={styles.emailHighlight}>{email}</Text>
+                </Text>
+                
+                {error && <Text style={styles.errorText}>{error}</Text>}
+                {successMessage && <Text style={styles.successText}>{successMessage}</Text>}
+                
+                <View style={styles.codeInputContainer}>
+                  {resetCode.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      ref={(ref) => { codeInputRefs.current[index] = ref; }}
+                      style={styles.codeInput}
+                      value={digit}
+                      onChangeText={(text) => handleCodeInput(text.replace(/[^0-9]/g, ''), index)}
+                      onKeyPress={(e) => handleCodeKeyPress(e, index)}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      selectTextOnFocus
+                    />
+                  ))}
+                </View>
+                
+                <TouchableOpacity 
+                  style={[styles.primaryButton, isLoading && styles.disabledButton]}
+                  onPress={handleVerifyCode}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>Verifiera kod</Text>
+                  )}
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.resendButton}
+                  onPress={handleForgotPassword}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.resendText}>Skicka ny kod</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.backButton}
+                  onPress={() => {
+                    setResetCode(['', '', '', '', '', '']);
+                    setSuccessMessage('');
+                    setAuthMode('forgot');
+                  }}
+                >
+                  <Text style={styles.backText}>← Ändra e-postadress</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            
+            {/* Forgot Password - Step 3: New Password */}
+            {authMode === 'new-password' && (
+              <View style={styles.formSection}>
+                <Text style={styles.formTitle}>Nytt lösenord</Text>
+                <Text style={styles.formSubtitle}>
+                  Välj ett nytt lösenord för ditt konto.
+                </Text>
+                
+                {error && <Text style={styles.errorText}>{error}</Text>}
+                
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Nytt lösenord</Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={styles.passwordInput}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      placeholder="Minst 6 tecken"
+                      placeholderTextColor={colors.textMuted}
+                      secureTextEntry={!showPassword}
+                      autoComplete="new-password"
+                    />
+                    <TouchableOpacity 
+                      style={styles.eyeButton}
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Ionicons 
+                        name={showPassword ? 'eye-off' : 'eye'} 
+                        size={20} 
+                        color={colors.textSecondary} 
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Bekräfta lösenord</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    placeholder="Upprepa lösenordet"
+                    placeholderTextColor={colors.textMuted}
+                    secureTextEntry={!showPassword}
+                    autoComplete="new-password"
+                  />
+                </View>
+                
+                <TouchableOpacity 
+                  style={[styles.primaryButton, isLoading && styles.disabledButton]}
+                  onPress={handleResetPassword}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>Spara nytt lösenord</Text>
+                  )}
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.backButton}
+                  onPress={() => {
+                    setNewPassword('');
+                    setConfirmPassword('');
+                    setAuthMode('login');
+                  }}
+                >
+                  <Text style={styles.backText}>← Avbryt</Text>
                 </TouchableOpacity>
               </View>
             )}
