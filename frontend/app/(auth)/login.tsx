@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -22,7 +22,7 @@ import { useThemeStore } from '../../src/store/themeStore';
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 const GOOGLE_AUTH_URL = `${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/auth/v1/env/oauth/google`;
 
-type AuthMode = 'welcome' | 'login' | 'register' | 'forgot';
+type AuthMode = 'welcome' | 'login' | 'register' | 'forgot' | 'verify-code' | 'new-password';
 
 export default function LoginScreen() {
   const router = useRouter();
