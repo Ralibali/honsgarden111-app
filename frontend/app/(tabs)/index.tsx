@@ -140,6 +140,66 @@ export default function HomeScreen() {
     }
   };
   
+  // Load AI Daily Report
+  const loadAiReport = async () => {
+    if (!isPremium) return;
+    setAiReportLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/ai/daily-report`);
+      if (res.ok) {
+        const data = await res.json();
+        setAiReport(data);
+      }
+    } catch (error) {
+      console.error('Failed to load AI report:', error);
+    } finally {
+      setAiReportLoading(false);
+    }
+  };
+  
+  // Load Egg Forecast
+  const loadEggForecast = async () => {
+    if (!isPremium) return;
+    setForecastLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/ai/egg-forecast`);
+      if (res.ok) {
+        const data = await res.json();
+        setEggForecast(data);
+      }
+    } catch (error) {
+      console.error('Failed to load egg forecast:', error);
+    } finally {
+      setForecastLoading(false);
+    }
+  };
+  
+  // Handle AI Report card click
+  const handleAiReportPress = () => {
+    if (!isPremium) {
+      showPremiumGate(isSv ? 'AI Dagsrapport' : 'AI Daily Report', 'document-text');
+      return;
+    }
+    if (!aiReport) {
+      loadAiReport();
+    }
+    setShowAiReportModal(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+  
+  // Handle Forecast card click
+  const handleForecastPress = () => {
+    if (!isPremium) {
+      showPremiumGate(isSv ? 'Äggprognos' : 'Egg Forecast', 'trending-up');
+      return;
+    }
+    if (!eggForecast) {
+      loadEggForecast();
+    }
+    setShowForecastModal(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+  
   useEffect(() => {
     if (lastAction && lastAction.type === 'egg_record') {
       showUndoSnackbar(lastAction.data.count);
