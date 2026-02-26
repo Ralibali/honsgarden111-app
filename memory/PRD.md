@@ -6,7 +6,7 @@
 - `eas.json` har nu `channel` för varje build-profil
 - ⚠️ `update`-sektion **BORTTAGEN** (orsakade valideringsfel i EAS CLI)
 - ✅ Hårdkodad Google Auth URL fixad i `login.tsx`
-- ✅ `@expo/config-plugins` tillagd i devDependencies
+- ✅ `@expo/config-plugins` flyttad till dependencies (krävs för EAS build)
 - ✅ `stripe` tillagd i backend requirements.txt
 - Deployment-kommando: `eas update --environment production`
 - Expo SDK version 54 (stabil)
