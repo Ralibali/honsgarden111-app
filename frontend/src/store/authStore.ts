@@ -127,6 +127,65 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       
+      verifyRegistration: async (email: string, code: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await fetch(`${API_URL}/api/auth/verify-registration`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, code }),
+          });
+          
+          const data = await res.json();
+          set({ isLoading: false });
+          
+          if (!res.ok) {
+            return { success: false, message: data.detail || 'Verifiering misslyckades' };
+          }
+          
+          // User is now logged in
+          set({
+            user: {
+              user_id: data.user_id,
+              email: data.email,
+              name: data.name || '',
+              picture: null,
+            },
+            isAuthenticated: true,
+            error: null,
+          });
+          
+          return { success: true, message: data.message || 'Kontot skapat!' };
+        } catch (error) {
+          set({ isLoading: false });
+          return { success: false, message: 'Kunde inte ansluta till servern' };
+        }
+      },
+      
+      resendVerification: async (email: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          const res = await fetch(`${API_URL}/api/auth/resend-verification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+          
+          const data = await res.json();
+          set({ isLoading: false });
+          
+          if (!res.ok) {
+            return { success: false, message: data.detail || 'Kunde inte skicka ny kod' };
+          }
+          
+          return { success: true, message: data.message || 'Ny kod skickad!' };
+        } catch (error) {
+          set({ isLoading: false });
+          return { success: false, message: 'Kunde inte ansluta till servern' };
+        }
+      },
+      
       logout: async () => {
         try {
           await fetch(`${API_URL}/api/auth/logout`, {
