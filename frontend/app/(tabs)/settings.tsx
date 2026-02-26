@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppStore } from '../../src/store/appStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import { useThemeStore, ThemeColors, ThemeMode } from '../../src/store/themeStore';
@@ -31,6 +32,7 @@ import {
 } from '../../src/services/notifications';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const ONBOARDING_KEY = '@honsgarden_onboarding_complete';
 
 export default function SettingsScreen() {
   const router = useRouter();
