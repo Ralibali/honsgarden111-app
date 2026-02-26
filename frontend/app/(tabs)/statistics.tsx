@@ -873,6 +873,151 @@ export default function StatisticsScreen() {
     );
   };
   
+  const renderTrendAnalysis = () => {
+    if (!trendAnalysis) return null;
+    
+    const { current_period, previous_period, changes, overall_trend, trend_message, insights } = trendAnalysis;
+    
+    const getTrendIcon = () => {
+      switch (overall_trend) {
+        case 'improving': return 'trending-up';
+        case 'declining': return 'trending-down';
+        default: return 'remove';
+      }
+    };
+    
+    const getTrendColor = () => {
+      switch (overall_trend) {
+        case 'improving': return colors.success;
+        case 'declining': return colors.error;
+        default: return colors.warning;
+      }
+    };
+    
+    const ChangeIndicator = ({ value, label }: { value: number | null; label: string }) => {
+      if (value === null) return null;
+      const isPositive = value > 0;
+      const isNegative = value < 0;
+      
+      return (
+        <View style={styles.changeItem}>
+          <Text style={styles.changeLabel}>{label}</Text>
+          <View style={styles.changeValueRow}>
+            <Ionicons 
+              name={isPositive ? 'arrow-up' : isNegative ? 'arrow-down' : 'remove'} 
+              size={16} 
+              color={isPositive ? colors.success : isNegative ? colors.error : colors.textMuted} 
+            />
+            <Text style={[
+              styles.changeValue,
+              { color: isPositive ? colors.success : isNegative ? colors.error : colors.textMuted }
+            ]}>
+              {Math.abs(value)}%
+            </Text>
+          </View>
+        </View>
+      );
+    };
+    
+    return (
+      <View style={styles.trendSection}>
+        <View style={styles.sectionHeader}>
+          <Ionicons name="pulse" size={24} color={colors.primary} />
+          <Text style={styles.sectionTitle}>
+            {isSv ? 'Trend-analys' : 'Trend Analysis'}
+          </Text>
+          {!isPremium && (
+            <View style={styles.premiumBadgeSmall}>
+              <Ionicons name="star" size={12} color={colors.warning} />
+            </View>
+          )}
+        </View>
+        
+        {!isPremium ? (
+          <View style={styles.premiumLockSmall}>
+            <Ionicons name="lock-closed" size={24} color={colors.warning} />
+            <Text style={styles.premiumLockSmallText}>
+              {isSv ? 'Uppgradera till Premium för trend-analys' : 'Upgrade to Premium for trend analysis'}
+            </Text>
+            <TouchableOpacity 
+              style={styles.upgradeButtonSmall}
+              onPress={() => router.push('/paywall')}
+            >
+              <Text style={styles.upgradeButtonSmallText}>
+                {isSv ? 'Uppgradera' : 'Upgrade'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            {/* Overall Trend Banner */}
+            <View style={[styles.trendBanner, { backgroundColor: getTrendColor() + '20' }]}>
+              <Ionicons name={getTrendIcon()} size={28} color={getTrendColor()} />
+              <View style={styles.trendBannerText}>
+                <Text style={[styles.trendStatus, { color: getTrendColor() }]}>
+                  {overall_trend === 'improving' 
+                    ? (isSv ? 'Förbättring' : 'Improving')
+                    : overall_trend === 'declining' 
+                      ? (isSv ? 'Nedgång' : 'Declining')
+                      : (isSv ? 'Stabil' : 'Stable')}
+                </Text>
+                <Text style={styles.trendMessage}>{trend_message}</Text>
+              </View>
+            </View>
+            
+            {/* Period Comparison */}
+            <View style={styles.periodComparison}>
+              <Text style={styles.comparisonTitle}>
+                {isSv ? 'Jämförelse: Senaste 30 dagar vs föregående 30 dagar' : 'Comparison: Last 30 days vs previous 30 days'}
+              </Text>
+              
+              <View style={styles.comparisonGrid}>
+                <View style={styles.comparisonColumn}>
+                  <Text style={styles.comparisonHeader}>{isSv ? 'Nu' : 'Now'}</Text>
+                  <Text style={styles.comparisonValue}>{current_period.total_eggs}</Text>
+                  <Text style={styles.comparisonSubtext}>{isSv ? 'ägg' : 'eggs'}</Text>
+                </View>
+                <View style={styles.comparisonArrow}>
+                  <Ionicons 
+                    name={changes.eggs.value && changes.eggs.value > 0 ? 'arrow-up' : changes.eggs.value && changes.eggs.value < 0 ? 'arrow-down' : 'remove'} 
+                    size={24} 
+                    color={changes.eggs.value && changes.eggs.value > 0 ? colors.success : changes.eggs.value && changes.eggs.value < 0 ? colors.error : colors.textMuted} 
+                  />
+                </View>
+                <View style={styles.comparisonColumn}>
+                  <Text style={styles.comparisonHeader}>{isSv ? 'Förra' : 'Previous'}</Text>
+                  <Text style={[styles.comparisonValue, { color: colors.textSecondary }]}>{previous_period.total_eggs}</Text>
+                  <Text style={styles.comparisonSubtext}>{isSv ? 'ägg' : 'eggs'}</Text>
+                </View>
+              </View>
+            </View>
+            
+            {/* Change Indicators */}
+            <View style={styles.changesGrid}>
+              <ChangeIndicator value={changes.eggs.value} label={isSv ? 'Ägg' : 'Eggs'} />
+              <ChangeIndicator value={changes.laying_rate.value} label={isSv ? 'Värpfrekvens' : 'Laying Rate'} />
+              <ChangeIndicator value={changes.profit.value} label={isSv ? 'Vinst' : 'Profit'} />
+              <ChangeIndicator value={changes.costs.value} label={isSv ? 'Kostnader' : 'Costs'} />
+            </View>
+            
+            {/* Insights */}
+            {insights.length > 0 && (
+              <View style={styles.insightsList}>
+                <Text style={styles.insightsTitle}>{isSv ? 'Insikter' : 'Insights'}</Text>
+                {insights.map((insight, index) => (
+                  <View key={index} style={styles.insightItem}>
+                    <Ionicons name="bulb" size={16} color={colors.warning} />
+                    <Text style={styles.insightItemText}>{insight}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </>
+        )}
+      </View>
+    );
+  };
+  
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
