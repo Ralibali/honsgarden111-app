@@ -19,7 +19,9 @@ interface AuthState {
   
   // Actions
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string, acceptedTerms: boolean, acceptedMarketing: boolean) => Promise<{ success: boolean; message?: string }>;
+  register: (email: string, password: string, name: string, acceptedTerms: boolean, acceptedMarketing: boolean) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string }>;
+  verifyRegistration: (email: string, code: string) => Promise<{ success: boolean; message: string }>;
+  resendVerification: (email: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   forgotPassword: (email: string) => Promise<{ success: boolean; message: string }>;
