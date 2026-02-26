@@ -1,10 +1,43 @@
 # Hönsgården - Product Requirements Document
 
-## Senaste uppdatering: 26 Feb 2026 (Session 2)
+## Senaste uppdatering: 26 Feb 2026 (Session 2 - Fortsättning)
 
 ---
 
-## NYLIGEN GENOMFÖRT (26 Feb 2026 - Session 2)
+## NYLIGEN GENOMFÖRT (26 Feb 2026 - Session 2 Fortsättning)
+
+### 1. Trend-analys ✅ (NY)
+**Ny backend-endpoint: `/api/statistics/trend-analysis`**
+
+Jämför senaste 30 dagar med föregående 30 dagar:
+- **Äggproduktion** (förändring i %)
+- **Värpfrekvens** (förändring i %)
+- **Kostnader** (förändring i %)
+- **Försäljning** (förändring i %)
+- **Vinst** (förändring i %)
+- **Overall trend**: "improving" / "declining" / "stable"
+- **Trend-meddelande** på svenska
+- **Automatiska insikter** baserade på data
+
+### 2. Trend-analys Frontend ✅ (NY)
+- Trend-banner med färgkodad status (grön/röd/gul)
+- Period-jämförelse med nuvarande vs tidigare äggantal
+- Förändringsindikatorer för alla nyckeltal
+- Lista med automatiska insikter
+
+### 3. Stripe Token-fix ✅ (Issue #2)
+- `premium.html` uppdaterad för att skicka auth token med checkout
+- Hämtar token från `localStorage` och lägger i `Authorization` header
+- Skickar även `user_id` i request body för säker koppling
+
+### 4. Mobilappens registrerings-UI ✅ (Issue #1 - VERIFIERAT)
+- UI för 6-siffrig verifieringskod finns redan i `login.tsx`
+- `authMode === 'register-verify'` visar kod-input
+- Inkluderar "Skicka ny kod"-knapp med cooldown
+
+---
+
+## GENOMFÖRT (26 Feb 2026 - Session 2)
 
 ### 1. Avancerade Statistiska Insikter ✅
 **Ny backend-endpoint: `/api/statistics/advanced-insights`**
