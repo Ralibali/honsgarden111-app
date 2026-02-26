@@ -48,7 +48,7 @@ export default function LoginScreen() {
   
   // Cooldown timer for resend code
   const [resendCooldown, setResendCooldown] = useState(0);
-  const cooldownRef = useRef<NodeJS.Timeout | null>(null);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   // Start cooldown timer
   const startCooldown = () => {
