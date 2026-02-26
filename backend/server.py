@@ -4440,6 +4440,33 @@ async def serve_premium_page_api():
             return HTMLResponse(content=f.read())
     return HTMLResponse(content="<h1>Premium page not found</h1>", status_code=404)
 
+@api_router.get("/checkout-success", response_class=HTMLResponse)
+async def serve_checkout_success_page():
+    """Serve the checkout success page"""
+    success_file = ROOT_DIR / "webapp_dist" / "checkout-success.html"
+    if success_file.exists():
+        with open(success_file, 'r', encoding='utf-8') as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Page not found</h1>", status_code=404)
+
+@api_router.get("/privacy", response_class=HTMLResponse)
+async def serve_privacy_page():
+    """Serve the privacy policy page"""
+    privacy_file = ROOT_DIR / "webapp_dist" / "privacy.html"
+    if privacy_file.exists():
+        with open(privacy_file, 'r', encoding='utf-8') as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Page not found</h1>", status_code=404)
+
+@api_router.get("/terms", response_class=HTMLResponse)
+async def serve_terms_page():
+    """Serve the terms of service page"""
+    terms_file = ROOT_DIR / "webapp_dist" / "terms.html"
+    if terms_file.exists():
+        with open(terms_file, 'r', encoding='utf-8') as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Page not found</h1>", status_code=404)
+
 # Include the router in the main app
 app.include_router(api_router)
 
