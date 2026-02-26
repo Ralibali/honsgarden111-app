@@ -287,6 +287,15 @@ export default function SettingsScreen() {
     Linking.openURL('mailto:support@honsgarden.se?subject=Support%20-%20H%C3%B6nsg%C3%A5rden');
   };
   
+  const handleShowOnboarding = async () => {
+    try {
+      await AsyncStorage.removeItem(ONBOARDING_KEY);
+      router.replace('/onboarding');
+    } catch (e) {
+      console.log('Error resetting onboarding');
+    }
+  };
+  
   const styles = createStyles(colors, isDark);
   
   return (
