@@ -3756,6 +3756,224 @@ async def get_statistics_insights(request: Request):
     }
 
 
+@api_router.get("/statistics/advanced-insights")
+async def get_advanced_insights(request: Request):
+    """Get advanced statistics insights - Feed Conversion, Laying Rate, Cost Per Egg etc."""
+    user_id = await get_user_id(request)
+    
+    today = date.today()
+    thirty_days_ago = (today - timedelta(days=30)).isoformat()
+    year_start = f"{today.year:04d}-01-01"
+    
+    # Get coop settings for hen count
+    coop = await db.coop_settings.find_one({"user_id": user_id}, {"_id": 0})
+    if not coop:
+        coop = await db.coops.find_one({"user_id": user_id}, {"_id": 0})
+    hen_count = coop.get("hen_count", 0) if coop else 0
+    
+    # Get egg records for calculations
+    eggs_30d = await db.egg_records.find(
+        {"user_id": user_id, "date": {"$gte": thirty_days_ago}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    eggs_year = await db.egg_records.find(
+        {"user_id": user_id, "date": {"$gte": year_start}},
+        {"_id": 0}
+    ).to_list(10000)
+    
+    total_eggs_30d = sum(e['count'] for e in eggs_30d)
+    total_eggs_year = sum(e['count'] for e in eggs_year)
+    
+    # Get feed consumption for last 30 days
+    feed_30d = await db.feed_records.find(
+        {"user_id": user_id, "date": {"$gte": thirty_days_ago}, "is_purchase": False},
+        {"_id": 0}
+    ).to_list(1000)
+    total_feed_kg_30d = sum(f.get('amount_kg', 0) for f in feed_30d)
+    
+    # Get costs for last 30 days
+    costs_30d = await db.transactions.find(
+        {"user_id": user_id, "date": {"$gte": thirty_days_ago}, "type": "cost"},
+        {"_id": 0}
+    ).to_list(1000)
+    total_costs_30d = sum(c.get('amount', 0) for c in costs_30d)
+    
+    # Get sales for last 30 days
+    sales_30d = await db.transactions.find(
+        {"user_id": user_id, "date": {"$gte": thirty_days_ago}, "type": "sale"},
+        {"_id": 0}
+    ).to_list(1000)
+    total_sales_30d = sum(s.get('amount', 0) for s in sales_30d)
+    
+    # ===== CALCULATIONS =====
+    
+    # 1. Feed Conversion Ratio (kg feed per dozen eggs)
+    feed_conversion = None
+    if total_eggs_30d > 0 and total_feed_kg_30d > 0:
+        dozens = total_eggs_30d / 12
+        feed_conversion = round(total_feed_kg_30d / dozens, 2)
+    
+    # 2. Laying Rate (% of hens laying per day)
+    laying_rate = None
+    if hen_count > 0 and len(eggs_30d) > 0:
+        # Calculate actual days with data
+        days_with_eggs = len(set(e['date'] for e in eggs_30d))
+        if days_with_eggs > 0:
+            avg_eggs_per_day = total_eggs_30d / days_with_eggs
+            laying_rate = round((avg_eggs_per_day / hen_count) * 100, 1)
+    
+    # 3. Cost Per Egg
+    cost_per_egg = None
+    if total_eggs_30d > 0 and total_costs_30d > 0:
+        cost_per_egg = round(total_costs_30d / total_eggs_30d, 2)
+    
+    # 4. Revenue Per Egg
+    revenue_per_egg = None
+    if total_eggs_30d > 0 and total_sales_30d > 0:
+        revenue_per_egg = round(total_sales_30d / total_eggs_30d, 2)
+    
+    # 5. Profit Per Egg
+    profit_per_egg = None
+    if cost_per_egg is not None:
+        revenue = revenue_per_egg if revenue_per_egg else 0
+        profit_per_egg = round(revenue - cost_per_egg, 2)
+    
+    # 6. Eggs Per Hen (monthly)
+    eggs_per_hen_monthly = None
+    if hen_count > 0:
+        eggs_per_hen_monthly = round(total_eggs_30d / hen_count, 1)
+    
+    # 7. Eggs Per Hen (yearly estimate)
+    eggs_per_hen_yearly = None
+    if hen_count > 0 and total_eggs_year > 0:
+        days_this_year = (today - date(today.year, 1, 1)).days + 1
+        yearly_estimate = (total_eggs_year / days_this_year) * 365
+        eggs_per_hen_yearly = round(yearly_estimate / hen_count)
+    
+    # 8. Feed Cost Per Egg
+    feed_cost_per_egg = None
+    feed_costs = [c for c in costs_30d if c.get('category') == 'feed']
+    total_feed_cost = sum(c.get('amount', 0) for c in feed_costs)
+    if total_eggs_30d > 0 and total_feed_cost > 0:
+        feed_cost_per_egg = round(total_feed_cost / total_eggs_30d, 2)
+    
+    # 9. Best Laying Day of Week (based on historical data)
+    weekday_totals = {i: 0 for i in range(7)}
+    weekday_counts = {i: 0 for i in range(7)}
+    for egg in eggs_year:
+        try:
+            egg_date = datetime.strptime(egg['date'], '%Y-%m-%d').date()
+            weekday = egg_date.weekday()
+            weekday_totals[weekday] += egg['count']
+            weekday_counts[weekday] += 1
+        except:
+            pass
+    
+    best_laying_day = None
+    best_avg = 0
+    weekday_names = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+    for i in range(7):
+        if weekday_counts[i] > 0:
+            avg = weekday_totals[i] / weekday_counts[i]
+            if avg > best_avg:
+                best_avg = avg
+                best_laying_day = weekday_names[i]
+    
+    # 10. Productivity Score (0-100 based on multiple factors)
+    productivity_score = None
+    if hen_count > 0:
+        score = 0
+        factors = 0
+        
+        # Factor 1: Laying rate (target 80%)
+        if laying_rate is not None:
+            rate_score = min(laying_rate / 80 * 100, 100)
+            score += rate_score
+            factors += 1
+        
+        # Factor 2: Feed conversion (target 1.5 kg per dozen)
+        if feed_conversion is not None:
+            if feed_conversion <= 1.5:
+                conv_score = 100
+            elif feed_conversion <= 2.5:
+                conv_score = 100 - ((feed_conversion - 1.5) * 50)
+            else:
+                conv_score = max(0, 50 - ((feed_conversion - 2.5) * 25))
+            score += conv_score
+            factors += 1
+        
+        # Factor 3: Profitability
+        if profit_per_egg is not None:
+            if profit_per_egg >= 2:
+                profit_score = 100
+            elif profit_per_egg >= 0:
+                profit_score = 50 + (profit_per_egg / 2) * 50
+            else:
+                profit_score = max(0, 50 + profit_per_egg * 25)
+            score += profit_score
+            factors += 1
+        
+        if factors > 0:
+            productivity_score = round(score / factors)
+    
+    return {
+        "hen_count": hen_count,
+        "period_days": 30,
+        "total_eggs_30d": total_eggs_30d,
+        "total_costs_30d": round(total_costs_30d, 2),
+        "total_sales_30d": round(total_sales_30d, 2),
+        "metrics": {
+            "feed_conversion_ratio": {
+                "value": feed_conversion,
+                "unit": "kg/dussin",
+                "description": "Kg foder per dussin ägg",
+                "optimal_range": "1.3-1.8 kg/dussin"
+            },
+            "laying_rate": {
+                "value": laying_rate,
+                "unit": "%",
+                "description": "Andel höns som värper dagligen",
+                "optimal_range": "70-85%"
+            },
+            "cost_per_egg": {
+                "value": cost_per_egg,
+                "unit": "kr",
+                "description": "Total kostnad per ägg"
+            },
+            "revenue_per_egg": {
+                "value": revenue_per_egg,
+                "unit": "kr",
+                "description": "Intäkt per ägg"
+            },
+            "profit_per_egg": {
+                "value": profit_per_egg,
+                "unit": "kr",
+                "description": "Vinst per ägg"
+            },
+            "feed_cost_per_egg": {
+                "value": feed_cost_per_egg,
+                "unit": "kr",
+                "description": "Foderkostnad per ägg"
+            },
+            "eggs_per_hen_monthly": {
+                "value": eggs_per_hen_monthly,
+                "unit": "ägg/månad",
+                "description": "Ägg per höna senaste 30 dagarna"
+            },
+            "eggs_per_hen_yearly_estimate": {
+                "value": eggs_per_hen_yearly,
+                "unit": "ägg/år",
+                "description": "Uppskattade ägg per höna per år"
+            }
+        },
+        "insights": {
+            "best_laying_day": best_laying_day,
+            "productivity_score": productivity_score
+        }
+    }
+
+
 # ============ EMAIL REMINDERS ============
 class ReminderSettings(BaseModel):
     enabled: bool = True
