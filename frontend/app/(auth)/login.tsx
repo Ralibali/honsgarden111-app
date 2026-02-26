@@ -20,7 +20,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useThemeStore } from '../../src/store/themeStore';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-const GOOGLE_AUTH_URL = 'https://demobackend.emergentagent.com/auth/v1/env/oauth/google';
+const GOOGLE_AUTH_URL = `${process.env.EXPO_PUBLIC_BACKEND_URL || ''}/auth/v1/env/oauth/google`;
 
 type AuthMode = 'welcome' | 'login' | 'register' | 'forgot';
 
