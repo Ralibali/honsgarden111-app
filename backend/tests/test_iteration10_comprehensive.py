@@ -7,7 +7,7 @@ import requests
 import uuid
 import time
 
-BASE_URL = "https://flock-manager-11.preview.emergentagent.com"
+BASE_URL = "https://honsgarden-preview.preview.emergentagent.com"
 
 
 class TestHealthAndBasics:
