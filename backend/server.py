@@ -4581,6 +4581,15 @@ async def serve_reset_password_page():
             return HTMLResponse(content=f.read())
     return HTMLResponse(content="<h1>Page not found</h1>", status_code=404)
 
+@api_router.get("/register", response_class=HTMLResponse)
+async def serve_register_page():
+    """Serve the registration page"""
+    register_file = ROOT_DIR / "webapp_dist" / "register.html"
+    if register_file.exists():
+        with open(register_file, 'r', encoding='utf-8') as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Page not found</h1>", status_code=404)
+
 # Include the router in the main app
 app.include_router(api_router)
 
