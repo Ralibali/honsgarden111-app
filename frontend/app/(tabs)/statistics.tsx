@@ -921,7 +921,10 @@ export default function StatisticsScreen() {
             <Text style={styles.loadingText}>{t('common.loading')}</Text>
           </View>
         ) : (
-          viewMode === 'month' ? renderMonthView() : renderYearView()
+          <>
+            {viewMode === 'month' ? renderMonthView() : renderYearView()}
+            {renderAdvancedInsights()}
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
