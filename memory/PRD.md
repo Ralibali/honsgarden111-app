@@ -5,6 +5,7 @@
 ### Deployment-status: ✅ EAS.JSON FIXAD (26 Feb 2026)
 - `eas.json` har nu `channel` för varje build-profil
 - ⚠️ `update`-sektion **BORTTAGEN** (orsakade valideringsfel i EAS CLI)
+- ✅ Hårdkodad Google Auth URL fixad i `login.tsx`
 - Deployment-kommando: `eas update --environment production`
 - Expo SDK version 54 (stabil)
 - `frontend/app.json` slug: `honsgarden-app`
