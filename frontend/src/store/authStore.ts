@@ -164,16 +164,12 @@ export const useAuthStore = create<AuthState>()(
           const data = await res.json();
           set({ isLoading: false });
           
-          if (data.code_sent === false) {
-            return { 
-              success: false, 
-              message: data.message || 'E-posttjänsten är inte tillgänglig just nu.' 
-            };
-          }
-          
+          // Always return success to not reveal if email exists
+          // The user will find out when they try to verify the code
           return { 
             success: true, 
-            message: data.message || 'En återställningskod har skickats till din e-postadress.' 
+            message: data.message || 'Om e-postadressen finns kommer du få en kod.',
+            codeSent: data.code_sent === true
           };
         } catch (error) {
           set({ isLoading: false });
