@@ -10,11 +10,30 @@
 - Mobilapp har ny Premium Gate Modal
 - **Alla lint-fel fixade (26 Feb 2026)**
 
-### Senaste ändringar (26 Feb 2026):
-- ✅ **DEPLOYMENT FIX:** Fixade duplicerad `isSv` deklaration i `paywall.tsx`
-- ✅ **DEPLOYMENT FIX:** Fixade duplicerade StyleSheet-nycklar i `index.tsx`
-- ✅ **DEPLOYMENT FIX:** Fixade React hooks ordningsfel i `feed.tsx`
-- ✅ **DEPLOYMENT FIX:** Uppdaterade `expo-localization` import till `getLocales()`
+### Senaste ändringar (26 Feb 2026) - Nya funktioner:
+- ✅ **AI Dagsrapport Modal** - Klickbart kort på dashboard som visar AI-genererad rapport
+- ✅ **Äggprognos Modal** - 7-dagars prognos med daglig nedbrytning och stapeldiagram
+- ✅ **Push Notifications Service** - Komplett notifikationstjänst (`/app/frontend/src/services/notifications.ts`)
+  - Äggregistrering påminnelse (daglig kl 17:00)
+  - Hälsokontroll påminnelse (veckovis)
+  - Kläckningspåminnelser (3 dagar, 1 dag, kläckningsdag)
+- ✅ **expo-device** installerat för push notifications
+- ✅ Settings.tsx uppdaterad med fungerande påminnelse-toggles
+
+### Befintliga funktioner (redan implementerade):
+- ✅ **Hälsologg** - Finns i `hens.tsx` med symptom-väljare och per-höna loggning
+- ✅ **Kläckningslogg** - Komplett i `hatching.tsx` (30KB)
+- ✅ **Avancerad statistik** - Komplett i `statistics.tsx` (1056 rader) med:
+  - Månads/Årsvy
+  - PDF-export
+  - Ekonomijämförelser
+  - Daglig/månatlig nedbrytning
+
+### Deployment-fixar (26 Feb 2026):
+- ✅ Fixade duplicerad `isSv` deklaration i `paywall.tsx`
+- ✅ Fixade duplicerade StyleSheet-nycklar i `index.tsx`
+- ✅ Fixade React hooks ordningsfel i `feed.tsx`
+- ✅ Uppdaterade `expo-localization` import till `getLocales()`
 
 ### Ändringar (25 Feb 2026):
 - ✅ **DEPLOYMENT FIX:** Nedgraderade Expo SDK från 55 till 54
