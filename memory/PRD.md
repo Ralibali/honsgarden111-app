@@ -1,6 +1,6 @@
 # Hönsgården - Product Requirements Document
 
-## Senaste uppdatering: 25 Feb 2026
+## Senaste uppdatering: 26 Feb 2026
 
 ### Deployment-status: ✅ REDO FÖR DEPLOYMENT
 - Expo SDK nedgraderad till version 54 (från 55) för att lösa EAS deployment-fel
@@ -8,8 +8,15 @@
 - Webapp ombyggd med Privacy/Terms-sidor
 - Backend och webapp fullt fungerande
 - Mobilapp har ny Premium Gate Modal
+- **Alla lint-fel fixade (26 Feb 2026)**
 
-### Senaste ändringar (25 Feb 2026):
+### Senaste ändringar (26 Feb 2026):
+- ✅ **DEPLOYMENT FIX:** Fixade duplicerad `isSv` deklaration i `paywall.tsx`
+- ✅ **DEPLOYMENT FIX:** Fixade duplicerade StyleSheet-nycklar i `index.tsx`
+- ✅ **DEPLOYMENT FIX:** Fixade React hooks ordningsfel i `feed.tsx`
+- ✅ **DEPLOYMENT FIX:** Uppdaterade `expo-localization` import till `getLocales()`
+
+### Ändringar (25 Feb 2026):
 - ✅ **DEPLOYMENT FIX:** Nedgraderade Expo SDK från 55 till 54
 - ✅ Tog bort `newArchEnabled` och `edgeToEdgeEnabled` från app.json (SDK 55-specifika)
 - ✅ Uppdaterade expo-paket till SDK 54-kompatibla versioner
