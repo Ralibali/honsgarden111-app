@@ -315,10 +315,11 @@
 - Push-notifikationstjänst i `/app/frontend/src/services/notifications.ts`
 - AI Dagsrapport-modal och Äggprognos-modal i dashboard
 
-### ⚠️ Deployment-blockering:
+### ⚠️ Deployment-info:
 - **Problem:** EAS CLI kräver `--environment` flagga för SDK 51+
 - **Lösning:** Uppdatera deployment-kommando till `eas update --environment production ...`
-- **Status:** Väntar på åtgärd från användaren
+- **OBS:** `update`-sektionen i `eas.json` var felaktig och har tagits bort
+- **Status:** ✅ Kodfixad - väntar på att användaren kör deployment
 
 ---
 
