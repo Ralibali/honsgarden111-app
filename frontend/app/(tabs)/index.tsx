@@ -2071,10 +2071,10 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontWeight: '600',
   },
   // AI Report Modal styles
-  modalContainer: {
+  aiModalContainer: {
     flex: 1,
   },
-  modalHeader: {
+  aiModalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -2082,11 +2082,11 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  modalTitle: {
+  aiModalTitle: {
     fontSize: 18,
     fontWeight: '600',
   },
-  modalContent: {
+  aiModalContent: {
     flex: 1,
   },
   loadingContainer: {
