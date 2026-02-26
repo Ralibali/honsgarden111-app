@@ -85,6 +85,79 @@ export default function LoginScreen() {
     const result = await forgotPassword(email);
     if (result.success) {
       setSuccessMessage(result.message);
+      // Move to code verification step
+      setAuthMode('verify-code');
+    } else {
+      Alert.alert('Fel', result.message);
+    }
+  };
+  
+  const handleCodeInput = (text: string, index: number) => {
+    const newCode = [...resetCode];
+    newCode[index] = text;
+    setResetCode(newCode);
+    
+    // Auto-focus next input
+    if (text && index < 5) {
+      codeInputRefs.current[index + 1]?.focus();
+    }
+  };
+  
+  const handleCodeKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !resetCode[index] && index > 0) {
+      codeInputRefs.current[index - 1]?.focus();
+    }
+  };
+  
+  const handleVerifyCode = async () => {
+    clearError();
+    setSuccessMessage('');
+    
+    const code = resetCode.join('');
+    if (code.length !== 6) {
+      Alert.alert('Fel', 'Ange den 6-siffriga koden');
+      return;
+    }
+    
+    const result = await verifyResetCode(email, code);
+    if (result.success && result.token) {
+      setResetToken(result.token);
+      setSuccessMessage(result.message);
+      setAuthMode('new-password');
+    } else {
+      Alert.alert('Fel', result.message);
+    }
+  };
+  
+  const handleResetPassword = async () => {
+    clearError();
+    setSuccessMessage('');
+    
+    if (newPassword.length < 6) {
+      Alert.alert('Fel', 'Lösenordet måste vara minst 6 tecken');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Fel', 'Lösenorden matchar inte');
+      return;
+    }
+    
+    const result = await resetPasswordWithCode(resetToken, newPassword);
+    if (result.success) {
+      Alert.alert('Klart!', result.message, [
+        { text: 'OK', onPress: () => {
+          // Reset all state and go to login
+          setResetCode(['', '', '', '', '', '']);
+          setResetToken('');
+          setNewPassword('');
+          setConfirmPassword('');
+          setSuccessMessage('');
+          setAuthMode('login');
+        }}
+      ]);
+    } else {
+      Alert.alert('Fel', result.message);
     }
   };
   
