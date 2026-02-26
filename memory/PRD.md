@@ -7,80 +7,56 @@
 ## NYLIGEN GENOMFÖRT (26 Feb 2026)
 
 ### 1. In-App Lösenordsåterställning med 6-siffrig kod ✅
-**Status: KOMPLETT OCH TESTAD**
-
-Backend-endpoints:
-- `POST /api/auth/forgot-password` - Skickar 6-siffrig kod via e-post
-- `POST /api/auth/verify-reset-code` - Verifierar kod
-- `POST /api/auth/reset-password-with-code` - Sätter nytt lösenord
-
-Frontend (login.tsx):
-- 3-stegs UI: E-post → Kodinmatning → Nytt lösenord
-- 60 sek cooldown för "Skicka ny kod"
+- Backend: 3 endpoints för kod-baserat flöde
+- Frontend: 3-stegs UI med 60 sek cooldown
 
 ### 2. Premium Tab i mobilappen ✅
-**Status: KOMPLETT**
-
-Ny tab med stjärnikon som visar:
-- Priskort: 19 kr/mån och 149 kr/år
-- 10 premium-funktioner med beskrivningar
-- CTA-knapp → honsgarden.se/api/premium-page
+- Ny tab med priskort och funktionslista
 
 ### 3. Fristående Premium-webbsida ✅
-**Status: KOMPLETT**
+- URL: `/api/premium-page`
+- Inloggningskrav före checkout
+- Snygg landningssida med mörkt tema
 
-URL: `/api/premium-page`
+### 4. Checkout Success-sida ✅
+- URL: `/api/checkout-success?session_id=xxx`
+- Visar "Välkommen till Premium!" vid lyckad betalning
+- Listar upplåsta funktioner
+- Hanterar fel gracefully
 
-Snygg landningssida med:
-- Hero-sektion: "Lås upp hela Hönsgården"
-- Interaktiva priskort (månadsvis/årlig)
-- 7 dagars gratis provperiod-banner
-- 10 premium-funktioner med ikoner
-- FAQ-sektion (5 frågor)
-- Stripe checkout-integration
-- Mörkt tema som matchar appen
+### 5. Integritetspolicy (GDPR) ✅
+- URL: `/api/privacy`
+- 10 sektioner (datainsamling, rättigheter, cookies, etc.)
+- På svenska
 
----
-
-## Deployment-status
-
-### EAS Build-konfiguration: ✅ REDO
-- `eas.json` och `app.json` konfigurerade
-- Alla ikoner på plats
-
-### URLs:
-- **Premium-sida**: `https://honsgarden.se/api/premium-page`
-- **Webb-app**: `https://honsgarden.se/api/web`
+### 6. Användarvillkor ✅
+- URL: `/api/terms`
+- 13 sektioner (prenumeration, ansvar, återbetalning, etc.)
+- På svenska
 
 ---
 
-## Komplett funktionslista
+## Alla sidor & URLs
 
-### Autentisering ✅
-- E-post/lösenord registrering och inloggning
-- Google Sign-In (webb)
-- Apple Sign-In
-- Lösenordsåterställning (6-siffrig kod)
-- GDPR-samtycke
+| Sida | URL |
+|------|-----|
+| Premium-sida | `/api/premium-page` |
+| Checkout Success | `/api/checkout-success` |
+| Integritetspolicy | `/api/privacy` |
+| Användarvillkor | `/api/terms` |
+| Webb-app | `/api/web` |
+| Login | `/api/web/login` |
 
-### Premium & Monetisering ✅
-- Premium-sida med Stripe checkout
-- Webb-redirect för mobilbetalning
-- Premium-status i appen
+---
 
-### Kärnfunktioner ✅
-- Äggdagbok
-- Hönsprofiler med tuppar
-- Flockhantering
-- Ekonomispårning
-- Statistik
-- AI-rådgivare Agda
-- AI Dagsrapport
-- Äggprognos
-- Väderintegration
-- Hälsologg
-- Kläckningsmodul
-- Foderhantering
+## Betalningsflöde
+
+1. Användare besöker `/api/premium-page`
+2. Om inte inloggad → "Logga in för att prenumerera"-knapp
+3. Efter inloggning → "Starta din prenumeration"-knapp
+4. Klick → Stripe Checkout med vald plan
+5. Efter betalning → `/api/checkout-success?session_id=xxx`
+6. Success-sidan verifierar betalning och visar bekräftelse
 
 ---
 
@@ -105,10 +81,6 @@ Snygg landningssida med:
 - [ ] Ta bort RevenueCat-kod
 
 ---
-
-## Testrapporter
-- `/app/test_reports/iteration_11.json` - Backend
-- `/app/test_reports/iteration_12.json` - Frontend
 
 ## Testanvändare
 - E-post: testuser@test.com
