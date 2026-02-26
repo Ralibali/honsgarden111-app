@@ -10,7 +10,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "se.honsgarden.app",
-      "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Tillåt Hönsgården att använda kameran för att ta bilder av dina hönor.",
         "NSPhotoLibraryUsageDescription": "Tillåt Hönsgården att komma åt ditt fotobibliotek för att spara bilder av dina hönor."
@@ -35,7 +34,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {
