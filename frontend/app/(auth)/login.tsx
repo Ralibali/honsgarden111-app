@@ -46,6 +46,25 @@ export default function LoginScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const codeInputRefs = useRef<(TextInput | null)[]>([]);
   
+  // Cooldown timer for resend code
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const cooldownRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Start cooldown timer
+  const startCooldown = () => {
+    setResendCooldown(60);
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          if (cooldownRef.current) clearInterval(cooldownRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+  
   const handleLogin = async () => {
     clearError();
     const success = await login(email, password);
