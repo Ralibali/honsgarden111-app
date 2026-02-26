@@ -179,8 +179,6 @@ export default function PaywallScreen() {
     return plan === 'yearly' ? YEARLY_PRICE : MONTHLY_PRICE;
   };
   
-  const isSv = i18n.locale.startsWith('sv');
-  
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
