@@ -649,6 +649,70 @@ export default function AdminPanel() {
             </View>
           )}
           
+          {/* Community Tab */}
+          {activeTab === 'community' && (
+            <View style={styles.list}>
+              {communityPosts.map((post) => (
+                <View 
+                  key={post.id} 
+                  style={[
+                    styles.card, 
+                    { backgroundColor: colors.surface },
+                    post.is_hidden && { opacity: 0.5, borderLeftWidth: 4, borderLeftColor: '#ef4444' }
+                  ]}
+                >
+                  <View style={styles.cardHeader}>
+                    <View style={styles.userInfo}>
+                      <Text style={[styles.userName, { color: colors.text }]}>{post.user_name}</Text>
+                      <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
+                        {post.category || 'other'}
+                      </Text>
+                    </View>
+                    {post.is_hidden && (
+                      <View style={[styles.badge, { backgroundColor: '#ef4444' }]}>
+                        <Text style={styles.badgeText}>Dold</Text>
+                      </View>
+                    )}
+                  </View>
+                  
+                  <Text style={[styles.feedbackMessage, { color: colors.text }]} numberOfLines={3}>
+                    {post.content}
+                  </Text>
+                  
+                  <View style={styles.cardDetails}>
+                    <Text style={[styles.detailText, { color: colors.textSecondary }]}>
+                      {formatDate(post.created_at)} • {post.likes || 0} likes
+                    </Text>
+                  </View>
+                  
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                    {!post.is_hidden && (
+                      <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: '#f59e0b20' }]}
+                        onPress={() => handleHidePost(post.id)}
+                      >
+                        <Ionicons name="eye-off" size={14} color="#f59e0b" />
+                        <Text style={{ color: '#f59e0b', marginLeft: 4 }}>Dölj</Text>
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                      style={[styles.actionButton, { backgroundColor: '#ef444420' }]}
+                      onPress={() => handleDeletePost(post.id)}
+                    >
+                      <Ionicons name="trash" size={14} color="#ef4444" />
+                      <Text style={{ color: '#ef4444', marginLeft: 4 }}>Radera</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+              {communityPosts.length === 0 && (
+                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                  Inga community-inlägg än
+                </Text>
+              )}
+            </View>
+          )}
+          
           <View style={{ height: 40 }} />
         </ScrollView>
       )}
