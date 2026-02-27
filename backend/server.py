@@ -415,7 +415,7 @@ class PasswordReset(BaseModel):
 # ============ COOP/DATA MODELS ============
 class CoopSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str = "default_user"
+    user_id: str  # Required - no default
     coop_name: str = "Min Hönsgård"
     hen_count: int = 0
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -494,7 +494,7 @@ class Hatching(BaseModel):
 
 class Hen(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str = "default_user"
+    user_id: str  # Required - no default
     name: str
     breed: Optional[str] = None
     color: Optional[str] = None
@@ -558,7 +558,7 @@ class HenUpdate(BaseModel):
 
 class EggRecord(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str = "default_user"
+    user_id: str  # Required - no default
     date: str
     count: int
     hen_id: Optional[str] = None
@@ -578,7 +578,7 @@ class EggRecordUpdate(BaseModel):
 
 class Transaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str = "default_user"
+    user_id: str  # Required - no default
     date: str
     type: TransactionType
     category: TransactionCategory
