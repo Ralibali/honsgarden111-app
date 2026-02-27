@@ -6510,6 +6510,7 @@ async def check_smart_notifications(request: Request):
 
 
 @api_router.get("/recommendations")
+async def get_product_recommendations(request: Request):
     """Get personalized product recommendations based on user's flock data"""
     user = await get_current_user(request)
     user_id = user.user_id if user else None
