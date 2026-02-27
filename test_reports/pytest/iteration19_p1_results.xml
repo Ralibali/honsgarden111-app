@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="12" time="21.877" timestamp="2026-02-27T18:27:48.534085+00:00" hostname="agent-env-35040fa3-63e7-4253-a886-637b24b6d8eb"><testcase classname="tests.test_p1_hen_rooster_ai.TestHenTypeFeature" name="test_create_hen_default_type" time="2.690" /><testcase classname="tests.test_p1_hen_rooster_ai.TestHenTypeFeature" name="test_create_rooster_explicit_type" time="0.702" /><testcase classname="tests.test_p1_hen_rooster_ai.TestHenTypeFeature" name="test_update_hen_to_rooster" time="2.082" /><testcase classname="tests.test_p1_hen_rooster_ai.TestHenTypeFeature" name="test_get_hens_returns_hen_type" time="0.483" /><testcase classname="tests.test_p1_hen_rooster_ai.TestHenTypeFeature" name="test_flock_statistics_hen_rooster_count" time="0.475" /><testcase classname="tests.test_p1_hen_rooster_ai.TestAIDailyTip" name="test_daily_tip_requires_auth" time="0.148" /><testcase classname="tests.test_p1_hen_rooster_ai.TestAIDailyTip" name="test_daily_tip_for_logged_in_user" time="0.450" /><testcase classname="tests.test_p1_hen_rooster_ai.TestAskAgda" name="test_ask_agda_requires_auth" time="0.167" /><testcase classname="tests.test_p1_hen_rooster_ai.TestAskAgda" name="test_ask_agda_for_logged_in_user" time="11.926" /><testcase classname="tests.test_p1_hen_rooster_ai.TestPaywallPricing" name="test_premium_page_accessible" time="0.079"><failure message="requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">/root/.venv/lib/python3.11/site-packages/requests/models.py:976: in json
+    return complexjson.loads(self.text, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+tests/test_p1_hen_rooster_ai.py:259: in test_premium_page_accessible
+    data = response.json()
+           ^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/models.py:980: in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E   requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)</failure></testcase><testcase classname="tests.test_p1_hen_rooster_ai.TestPaywallPricing" name="test_pricing_values" time="0.000" /><testcase classname="tests.test_p1_hen_rooster_ai.TestCleanup" name="test_cleanup_test_hens" time="2.560" /></testsuite></testsuites>
