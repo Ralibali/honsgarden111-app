@@ -5857,19 +5857,36 @@ async def get_ai_daily_report(request: Request):
                 alerts.append(f"Flockens produktion ({daily_avg:.1f} ägg/dag) är under förväntat ({expected_min:.0f}+ ägg/dag)")
     
     if not is_premium:
-        # Return blurred/preview data for free users
-        return {
-            "is_premium": False,
-            "preview": True,
-            "used_fallback": False,
-            "report": {
-                "summary": "🔒 Din AI-genererade dagsrapport är klar! Uppgradera till Premium för att läsa den.",
-                "blurred_preview": f"Idag har du samlat {total_eggs} ägg från {hen_count} höns. [Uppgradera för full rapport med rekommendationer och analys...]",
-                "eggs_today": total_eggs,
-                "hen_count": hen_count,
-                "alerts_count": len(alerts)
+        # Check if user has free AI report available (one per week for free users)
+        free_ai_key = f"free_ai_report_{user_id}"
+        free_usage = await db.free_ai_usage.find_one({"user_id": user_id, "type": "daily_report"})
+        
+        week_ago_dt = datetime.now(timezone.utc) - timedelta(days=7)
+        has_free_report = not free_usage or (free_usage.get("used_at") and free_usage["used_at"] < week_ago_dt)
+        
+        if not has_free_report:
+            # No free report available - show preview
+            days_until_free = 7 - (datetime.now(timezone.utc) - free_usage["used_at"]).days if free_usage else 0
+            return {
+                "is_premium": False,
+                "preview": True,
+                "free_report_available": False,
+                "days_until_free": max(0, days_until_free),
+                "used_fallback": False,
+                "report": {
+                    "summary": f"🔒 Din nästa gratis AI-rapport blir tillgänglig om {days_until_free} dagar. Uppgradera till Premium för obegränsad tillgång!",
+                    "blurred_preview": f"Idag har du samlat {total_eggs} ägg från {hen_count} höns. [Uppgradera för full rapport med rekommendationer och analys...]",
+                    "eggs_today": total_eggs,
+                    "hen_count": hen_count,
+                    "alerts_count": len(alerts)
+                }
             }
-        }
+        # Mark free report as used
+        await db.free_ai_usage.update_one(
+            {"user_id": user_id, "type": "daily_report"},
+            {"$set": {"used_at": datetime.now(timezone.utc)}},
+            upsert=True
+        )
     
     # Get weather data for contextual tips
     weather_data = None
