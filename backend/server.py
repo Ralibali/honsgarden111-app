@@ -812,19 +812,25 @@ async def get_current_user(request: Request, response: Response = None) -> Optio
                 logger.debug(f"[Auth] Session refreshed from remember_token for user {user.user_id}")
                 return user
     
-    # DEV: Log auth debug info for 401 debugging
+    # Enhanced logging for debugging native auth issues
+    request_path = request.url.path
+    user_agent = request.headers.get("user-agent", "unknown")[:50]
+    
     if not session_token:
         auth_header = request.headers.get("Authorization")
-        logger.debug(f"[Auth Debug] No session_token found")
-        logger.debug(f"[Auth Debug] Authorization header: {'present (masked)' if auth_header else 'MISSING'}")
-        logger.debug(f"[Auth Debug] Cookie session_token: {'present' if request.cookies.get('session_token') else 'MISSING'}")
-        logger.debug(f"[Auth Debug] Host: {request.headers.get('host', 'unknown')}")
-        logger.debug(f"[Auth Debug] Origin: {request.headers.get('origin', 'unknown')}")
+        logger.warning(f"[Auth 401] No session_token found for {request_path}")
+        logger.warning(f"[Auth 401] Authorization header: {'present - ' + auth_header[:20] + '...' if auth_header else 'MISSING'}")
+        logger.warning(f"[Auth 401] Cookie session_token: {'present' if request.cookies.get('session_token') else 'MISSING'}")
+        logger.warning(f"[Auth 401] Host: {request.headers.get('host', 'unknown')}")
+        logger.warning(f"[Auth 401] Origin: {request.headers.get('origin', 'unknown')}")
+        logger.warning(f"[Auth 401] User-Agent: {user_agent}")
+        logger.warning(f"[Auth 401] All headers: {dict(request.headers)}")
         return None
     
     session = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
     if not session:
-        logger.debug(f"[Auth Debug] Session not found in DB for token ...{session_token[-6:]} (source: {token_source})")
+        logger.warning(f"[Auth 401] Session NOT FOUND in DB for token ...{session_token[-6:]} (source: {token_source})")
+        logger.warning(f"[Auth 401] Path: {request_path}, User-Agent: {user_agent}")
         return None
     
     # Check expiry
@@ -834,6 +840,7 @@ async def get_current_user(request: Request, response: Response = None) -> Optio
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < datetime.now(timezone.utc):
+        logger.warning(f"[Auth 401] Session EXPIRED for token ...{session_token[-6:]}, expired at {expires_at}")
         return None
     
     user = await db.users.find_one({"id": session["user_id"]}, {"_id": 0})
@@ -841,11 +848,15 @@ async def get_current_user(request: Request, response: Response = None) -> Optio
         # Try with user_id field as fallback (for older records)
         user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
     if not user:
+        logger.warning(f"[Auth 401] User NOT FOUND for session user_id: {session['user_id']}")
         return None
     
     # Normalize user_id field
     if "id" in user and "user_id" not in user:
         user["user_id"] = user["id"]
+    
+    # Log successful auth for debugging
+    logger.debug(f"[Auth OK] User {user['user_id']} authenticated via {token_source} for {request_path}")
     
     return User(**user)
 
