@@ -33,6 +33,7 @@ export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_400Regular,
@@ -46,34 +47,32 @@ export default function RootLayout() {
   });
   
   useEffect(() => {
-    // On web, redirect to the React webapp which handles auth better
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      const currentPath = window.location.pathname;
-      // If not already on /api/web, redirect there
-      if (!currentPath.startsWith('/api/web')) {
-        window.location.href = '/api/web';
-        return;
-      }
-    }
-    
-    // Check if user has seen onboarding
-    const checkOnboarding = async () => {
+    const initialize = async () => {
       try {
-        const value = await AsyncStorage.getItem(ONBOARDING_KEY);
-        console.log('Onboarding check result:', value);
-        setHasSeenOnboarding(value === 'true');
+        // Check if user has seen onboarding
+        if (Platform.OS !== 'web') {
+          const value = await AsyncStorage.getItem(ONBOARDING_KEY);
+          console.log('Onboarding check result:', value);
+          setHasSeenOnboarding(value === 'true');
+        } else {
+          // On web, skip onboarding by default (web users go to /api/web separately)
+          setHasSeenOnboarding(true);
+        }
+        
+        // Initialize theme and premium status on app launch
+        await initializeTheme();
+        await initializePremium();
+        await checkAuth();
+        
+        setIsInitialized(true);
       } catch (e) {
-        console.log('Onboarding check error:', e);
+        console.log('Initialization error:', e);
         setHasSeenOnboarding(true); // Default to skipping onboarding on error
+        setIsInitialized(true);
       }
     };
     
-    checkOnboarding();
-    
-    // Initialize theme and premium status on app launch
-    initializeTheme();
-    initializePremium();
-    checkAuth();
+    initialize();
   }, []);
   
   // Handle navigation based on auth state and onboarding
