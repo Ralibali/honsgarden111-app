@@ -949,7 +949,15 @@ export default function SettingsScreen() {
         animationType="slide"
         onRequestClose={() => setShowFeedbackModal(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <TouchableOpacity 
+            style={{ flex: 1 }} 
+            activeOpacity={1} 
+            onPress={() => setShowFeedbackModal(false)}
+          />
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>💬 {isSv ? 'Skicka feedback' : 'Send feedback'}</Text>
             <Text style={styles.modalSubtitle}>
@@ -980,27 +988,29 @@ export default function SettingsScreen() {
               ))}
             </View>
             
-            <Text style={styles.inputLabel}>{isSv ? 'Ditt meddelande' : 'Your message'} *</Text>
-            <TextInput
-              style={styles.feedbackInput}
-              value={feedbackMessage}
-              onChangeText={setFeedbackMessage}
-              placeholder={isSv ? 'Beskriv din feedback...' : 'Describe your feedback...'}
-              placeholderTextColor={colors.textMuted}
-              multiline
-              numberOfLines={4}
-            />
-            
-            <Text style={styles.inputLabel}>{isSv ? 'E-post (valfritt)' : 'Email (optional)'}</Text>
-            <TextInput
-              style={styles.emailInput}
-              value={feedbackEmail}
-              onChangeText={setFeedbackEmail}
-              placeholder={isSv ? 'din@email.se' : 'your@email.com'}
-              placeholderTextColor={colors.textMuted}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            <ScrollView style={{ maxHeight: 200 }} keyboardShouldPersistTaps="handled">
+              <Text style={styles.inputLabel}>{isSv ? 'Ditt meddelande' : 'Your message'} *</Text>
+              <TextInput
+                style={styles.feedbackInput}
+                value={feedbackMessage}
+                onChangeText={setFeedbackMessage}
+                placeholder={isSv ? 'Beskriv din feedback...' : 'Describe your feedback...'}
+                placeholderTextColor={colors.textMuted}
+                multiline
+                numberOfLines={4}
+              />
+              
+              <Text style={styles.inputLabel}>{isSv ? 'E-post (valfritt)' : 'Email (optional)'}</Text>
+              <TextInput
+                style={styles.emailInput}
+                value={feedbackEmail}
+                onChangeText={setFeedbackEmail}
+                placeholder={isSv ? 'din@email.se' : 'your@email.com'}
+                placeholderTextColor={colors.textMuted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </ScrollView>
             
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -1020,7 +1030,7 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
       
       {/* Cancel Subscription Modal */}
