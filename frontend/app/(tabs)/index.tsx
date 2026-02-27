@@ -836,6 +836,7 @@ export default function HomeScreen() {
                   {isPremium ? (summaryStats?.total_eggs_all_time || 0) : '847'}
                 </Text>
                 <Text style={styles.insightLabelFull}>{isSv ? 'Totalt ägg' : 'Total eggs'}</Text>
+                {!isPremium && <Text style={styles.exampleLabel}>{isSv ? 'Exempel' : 'Example'}</Text>}
               </TouchableOpacity>
               
               {/* Best day record */}
@@ -854,6 +855,7 @@ export default function HomeScreen() {
                   {isPremium ? (insights.best_day?.eggs || '-') : '12'}
                 </Text>
                 <Text style={styles.insightLabelFull}>{isSv ? 'Rekord ägg/dag' : 'Record eggs/day'}</Text>
+                {!isPremium && <Text style={styles.exampleLabel}>{isSv ? 'Exempel' : 'Example'}</Text>}
               </TouchableOpacity>
               
               {/* Feed cost per egg */}
@@ -872,6 +874,7 @@ export default function HomeScreen() {
                   {isPremium ? `${(insights.feed_cost_per_egg || 0).toFixed(2)} kr` : '2.45 kr'}
                 </Text>
                 <Text style={styles.insightLabelFull}>{isSv ? 'Foderkostnad/ägg' : 'Feed cost/egg'}</Text>
+                {!isPremium && <Text style={styles.exampleLabel}>{isSv ? 'Exempel' : 'Example'}</Text>}
               </TouchableOpacity>
               
               {/* Revenue per egg */}
@@ -892,6 +895,7 @@ export default function HomeScreen() {
                     : isPremium ? '0.00 kr' : '5.80 kr'}
                 </Text>
                 <Text style={styles.insightLabelFull}>{isSv ? 'Intäkt per ägg' : 'Revenue/egg'}</Text>
+                {!isPremium && <Text style={styles.exampleLabel}>{isSv ? 'Exempel' : 'Example'}</Text>}
               </TouchableOpacity>
             </ScrollView>
           </View>
