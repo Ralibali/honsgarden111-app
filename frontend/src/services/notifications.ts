@@ -245,6 +245,223 @@ export async function cancelAllNotifications(): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
+// ============ SMART NOTIFICATIONS ============
+
+// Send immediate notification for achievements/warnings/updates
+export async function sendSmartNotification(
+  type: 'achievement' | 'warning' | 'celebration' | 'tip' | 'trend_up' | 'trend_down' | 'milestone',
+  title: string,
+  body: string
+): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      sound: true,
+      priority: type === 'warning' 
+        ? Notifications.AndroidNotificationPriority.HIGH 
+        : Notifications.AndroidNotificationPriority.DEFAULT,
+    },
+    trigger: null, // Immediate
+  });
+}
+
+// Pre-defined smart notifications
+export const SmartNotifications = {
+  // ACHIEVEMENTS & MILESTONES
+  firstEgg: () => sendSmartNotification(
+    'celebration',
+    '🎉 Första ägget!',
+    'Grattis! Du har registrerat ditt första ägg i Hönsgården!'
+  ),
+  
+  eggMilestone: (count: number) => sendSmartNotification(
+    'milestone',
+    `🏆 ${count} ägg!`,
+    `Fantastiskt! Du har nu samlat totalt ${count} ägg. Fortsätt så!`
+  ),
+  
+  weekStreak: (weeks: number) => sendSmartNotification(
+    'achievement',
+    `🔥 ${weeks} veckors streak!`,
+    `Du har registrerat ägg varje dag i ${weeks} veckor. Imponerande!`
+  ),
+  
+  perfectDay: (eggCount: number, henCount: number) => sendSmartNotification(
+    'celebration',
+    '⭐ Perfekt dag!',
+    `Alla ${henCount} hönor värpte idag! ${eggCount} ägg totalt.`
+  ),
+  
+  newRecord: (eggCount: number) => sendSmartNotification(
+    'celebration',
+    '🎊 Nytt rekord!',
+    `${eggCount} ägg idag - ditt bästa resultat någonsin!`
+  ),
+
+  // POSITIVE TRENDS
+  productionUp: (percent: number) => sendSmartNotification(
+    'trend_up',
+    '📈 Produktionen ökar!',
+    `Äggproduktionen har ökat med ${percent}% senaste veckan. Bra jobbat!`
+  ),
+  
+  healthyFlock: () => sendSmartNotification(
+    'celebration',
+    '💚 Frisk flock!',
+    'Alla dina hönor verkar vara vid god hälsa. Fortsätt med den goda omsorgen!'
+  ),
+  
+  profitUp: (amount: number) => sendSmartNotification(
+    'trend_up',
+    '💰 Ekonomin går uppåt!',
+    `Din vinst har ökat med ${amount} kr denna månad. Snyggt!`
+  ),
+
+  // WARNINGS & ALERTS
+  productionDown: (percent: number) => sendSmartNotification(
+    'warning',
+    '📉 Minskad produktion',
+    `Äggproduktionen har minskat med ${percent}% senaste veckan. Kolla om allt är okej med hönorna.`
+  ),
+  
+  noEggsToday: () => sendSmartNotification(
+    'warning',
+    '🥚 Inga ägg idag?',
+    'Du har inte registrerat några ägg idag. Glömde du, eller är något fel?'
+  ),
+  
+  henNotLaying: (henName: string, days: number) => sendSmartNotification(
+    'warning',
+    `⚠️ ${henName} värper inte`,
+    `${henName} har inte värpt på ${days} dagar. Det kan vara värt att kolla upp.`
+  ),
+  
+  lowProductivity: (henName: string) => sendSmartNotification(
+    'warning',
+    `📊 Låg produktivitet`,
+    `${henName} har haft låg äggproduktion på sistone. Kanske dags för en hälsokoll?`
+  ),
+  
+  expensesHigh: () => sendSmartNotification(
+    'warning',
+    '💸 Höga utgifter',
+    'Dina utgifter för hönsgården är högre än vanligt denna månad.'
+  ),
+
+  // TIPS & REMINDERS
+  seasonalTip: (tip: string) => sendSmartNotification(
+    'tip',
+    '💡 Säsongstips',
+    tip
+  ),
+  
+  weatherWarning: (message: string) => sendSmartNotification(
+    'warning',
+    '🌡️ Vädervarning',
+    message
+  ),
+  
+  // ENCOURAGEMENT
+  keepGoing: () => sendSmartNotification(
+    'tip',
+    '🌟 Du gör det bra!',
+    'Dina hönor har det fint tack vare din omsorg. Fortsätt så!'
+  ),
+  
+  comeBack: (days: number) => sendSmartNotification(
+    'tip',
+    '🐔 Vi saknar dig!',
+    `Det var ${days} dagar sedan du senast besökte Hönsgården. Dina hönor väntar!`
+  ),
+};
+
+// Check and send smart notifications based on data
+export async function checkAndSendSmartNotifications(data: {
+  todayEggs?: number;
+  yesterdayEggs?: number;
+  weekAverage?: number;
+  lastWeekAverage?: number;
+  totalEggs?: number;
+  henCount?: number;
+  hensLaying?: number;
+  monthlyProfit?: number;
+  lastMonthProfit?: number;
+  daysWithoutVisit?: number;
+  newRecord?: boolean;
+}): Promise<void> {
+  const {
+    todayEggs = 0,
+    yesterdayEggs = 0,
+    weekAverage = 0,
+    lastWeekAverage = 0,
+    totalEggs = 0,
+    henCount = 0,
+    hensLaying = 0,
+    monthlyProfit,
+    lastMonthProfit,
+    daysWithoutVisit = 0,
+    newRecord = false,
+  } = data;
+
+  // New record!
+  if (newRecord && todayEggs > 0) {
+    await SmartNotifications.newRecord(todayEggs);
+    return; // Don't spam with multiple notifications
+  }
+
+  // Perfect day - all hens laid
+  if (henCount > 0 && hensLaying === henCount && todayEggs >= henCount) {
+    await SmartNotifications.perfectDay(todayEggs, henCount);
+    return;
+  }
+
+  // Egg milestones
+  const milestones = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
+  for (const milestone of milestones) {
+    if (totalEggs >= milestone && totalEggs - todayEggs < milestone) {
+      await SmartNotifications.eggMilestone(milestone);
+      return;
+    }
+  }
+
+  // Production trends
+  if (lastWeekAverage > 0 && weekAverage > 0) {
+    const percentChange = ((weekAverage - lastWeekAverage) / lastWeekAverage) * 100;
+    
+    if (percentChange >= 15) {
+      await SmartNotifications.productionUp(Math.round(percentChange));
+      return;
+    } else if (percentChange <= -20) {
+      await SmartNotifications.productionDown(Math.round(Math.abs(percentChange)));
+      return;
+    }
+  }
+
+  // Profit trends
+  if (monthlyProfit !== undefined && lastMonthProfit !== undefined) {
+    const profitIncrease = monthlyProfit - lastMonthProfit;
+    if (profitIncrease > 100) {
+      await SmartNotifications.profitUp(profitIncrease);
+      return;
+    } else if (monthlyProfit < -200 && lastMonthProfit >= 0) {
+      await SmartNotifications.expensesHigh();
+      return;
+    }
+  }
+
+  // Come back reminder
+  if (daysWithoutVisit >= 3) {
+    await SmartNotifications.comeBack(daysWithoutVisit);
+    return;
+  }
+
+  // Random encouragement (10% chance when nothing else triggers)
+  if (Math.random() < 0.1 && todayEggs > 0) {
+    await SmartNotifications.keepGoing();
+  }
+}
+
 // Add notification listeners
 export function addNotificationReceivedListener(
   callback: (notification: Notifications.Notification) => void
