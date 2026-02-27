@@ -175,11 +175,18 @@ export default function LoginScreen() {
       setSuccessMessage(result.message);
       startCooldown(); // Start 60 second cooldown
       // Show success alert and move to code verification step
-      Alert.alert(
-        'Kod skickad!', 
-        'Om e-postadressen finns i vårt system har vi skickat en 6-siffrig kod. Kolla din inkorg (och skräppost).',
-        [{ text: 'OK', onPress: () => setAuthMode('verify-code') }]
-      );
+      if (Platform.OS === 'web') {
+        // On web, Alert doesn't have proper callback support
+        // So we show the alert and then navigate
+        window.alert('Om e-postadressen finns i vårt system har vi skickat en 6-siffrig kod. Kolla din inkorg (och skräppost).');
+        setAuthMode('verify-code');
+      } else {
+        Alert.alert(
+          'Kod skickad!', 
+          'Om e-postadressen finns i vårt system har vi skickat en 6-siffrig kod. Kolla din inkorg (och skräppost).',
+          [{ text: 'OK', onPress: () => setAuthMode('verify-code') }]
+        );
+      }
     } else {
       Alert.alert('Fel', result.message);
     }
