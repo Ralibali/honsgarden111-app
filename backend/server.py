@@ -874,6 +874,60 @@ async def logout(request: Request, response: Response):
     response.delete_cookie(key="session_token", path="/", secure=True, samesite="none")
     return {"message": "Logged out"}
 
+class DeleteAccountRequest(BaseModel):
+    password: str
+    confirmation: str = "DELETE"
+
+@api_router.delete("/auth/delete-account")
+async def delete_account(request: Request, response: Response, delete_req: DeleteAccountRequest, user: User = Depends(require_user)):
+    """
+    Delete user account and all associated data.
+    Required for Google Play policy compliance.
+    """
+    # Verify confirmation text
+    if delete_req.confirmation != "DELETE":
+        raise HTTPException(status_code=400, detail="Bekräftelsestexten måste vara 'DELETE'")
+    
+    # Verify password
+    user_data = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+    if not user_data:
+        raise HTTPException(status_code=404, detail="Användare hittades inte")
+    
+    stored_password = user_data.get("password_hash")
+    if stored_password:
+        if not verify_password(delete_req.password, stored_password):
+            raise HTTPException(status_code=401, detail="Fel lösenord")
+    
+    try:
+        user_id = user.user_id
+        
+        # Delete all user data from all collections
+        await db.users.delete_one({"user_id": user_id})
+        await db.user_sessions.delete_many({"user_id": user_id})
+        await db.coop_settings.delete_many({"user_id": user_id})
+        await db.hens.delete_many({"user_id": user_id})
+        await db.eggs.delete_many({"user_id": user_id})
+        await db.notes.delete_many({"user_id": user_id})
+        await db.hen_photos.delete_many({"user_id": user_id})
+        await db.health_logs.delete_many({"user_id": user_id})
+        await db.feed_logs.delete_many({"user_id": user_id})
+        await db.feed_inventory.delete_many({"user_id": user_id})
+        await db.hatching_batches.delete_many({"user_id": user_id})
+        await db.subscriptions.delete_many({"user_id": user_id})
+        await db.stripe_customers.delete_many({"user_id": user_id})
+        await db.user_preferences.delete_many({"user_id": user_id})
+        await db.chat_messages.delete_many({"user_id": user_id})
+        
+        # Clear session cookie
+        response.delete_cookie(key="session_token", path="/", secure=True, samesite="none")
+        
+        logger.info(f"Account deleted: {user_id}")
+        return {"message": "Ditt konto och all data har raderats", "success": True}
+        
+    except Exception as e:
+        logger.error(f"Error deleting account: {e}")
+        raise HTTPException(status_code=500, detail="Kunde inte radera kontot. Försök igen.")
+
 # ============ MOBILE AUTH ENDPOINTS ============
 
 class GoogleMobileAuth(BaseModel):
