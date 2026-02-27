@@ -64,6 +64,11 @@ export default function AdminPanel() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [subscriptionSearchQuery, setSubscriptionSearchQuery] = useState('');
+  
+  // Multi-select state for users
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [isSelectMode, setIsSelectMode] = useState(false);
   
   const [isAdmin, setIsAdmin] = useState(false);
 
