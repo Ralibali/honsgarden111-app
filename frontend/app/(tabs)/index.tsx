@@ -626,7 +626,7 @@ export default function HomeScreen() {
           </View>
         </View>
         
-        {/* Insights Section */}
+        {/* Insights Section - Enhanced */}
         {insights && (
           <View style={styles.card}>
             <View style={styles.cardHeaderRow}>
@@ -656,6 +656,28 @@ export default function HomeScreen() {
                 <Text style={styles.insightValueLarge}>{insights.productivity_index}%</Text>
                 <Text style={styles.insightLabelFull}>{t('home.productivity', { defaultValue: 'Produktivitet' })}</Text>
               </View>
+              {/* New insights */}
+              <View style={styles.insightCard}>
+                <Text style={styles.insightIcon}>🥚</Text>
+                <Text style={styles.insightValueLarge}>{summaryStats?.average_eggs_per_day?.toFixed(1) || '0'}</Text>
+                <Text style={styles.insightLabelFull}>{isSv ? 'Ägg/dag snitt' : 'Eggs/day avg'}</Text>
+              </View>
+              {todayStats?.hen_count && todayStats.hen_count > 0 && (
+                <View style={styles.insightCard}>
+                  <Text style={styles.insightIcon}>🐔</Text>
+                  <Text style={styles.insightValueLarge}>{((todayStats.egg_count || 0) / todayStats.hen_count * 100).toFixed(0)}%</Text>
+                  <Text style={styles.insightLabelFull}>{isSv ? 'Värpning idag' : 'Laying today'}</Text>
+                </View>
+              )}
+              {summaryStats?.this_month?.net !== undefined && (
+                <View style={styles.insightCard}>
+                  <Text style={styles.insightIcon}>{summaryStats.this_month.net >= 0 ? '💚' : '🔴'}</Text>
+                  <Text style={[styles.insightValueLarge, { color: summaryStats.this_month.net >= 0 ? '#4ade80' : '#ef4444' }]}>
+                    {summaryStats.this_month.net >= 0 ? '+' : ''}{summaryStats.this_month.net} kr
+                  </Text>
+                  <Text style={styles.insightLabelFull}>{isSv ? 'Resultat denna mån' : 'This month'}</Text>
+                </View>
+              )}
             </ScrollView>
           </View>
         )}
