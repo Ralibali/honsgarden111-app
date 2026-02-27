@@ -121,20 +121,20 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
       
-      login: async (email: string, password: string) => {
+      login: async (email: string, password: string, rememberMe: boolean = false) => {
         set({ isLoading: true, error: null });
         loginInProgress = true;
         
         try {
           if (__DEV__) {
-            console.log('[Auth] Login attempt to:', API_URL);
+            console.log('[Auth] Login attempt to:', API_URL, 'rememberMe:', rememberMe);
           }
           
           const res = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ email, password, remember_me: rememberMe }),
           });
           
           const data = await res.json();
