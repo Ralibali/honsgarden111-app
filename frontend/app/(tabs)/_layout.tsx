@@ -68,23 +68,23 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="premium"
+        name="statistics"
         options={{
-          title: 'Premium',
+          title: t('nav.statistics'),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="star" size={size} color={color} />
+            <Ionicons name="stats-chart" size={size} color={color} />
           ),
         }}
       />
       
       {/* Hidden tabs - accessible via other means */}
       <Tabs.Screen
-        name="statistics"
+        name="premium"
         options={{
-          href: null, // Hidden - accessible from home Quick Actions
-          title: t('nav.statistics'),
+          href: null, // Hidden - accessible from paywall or settings
+          title: 'Premium',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart" size={size} color={color} />
+            <Ionicons name="star" size={size} color={color} />
           ),
         }}
       />
