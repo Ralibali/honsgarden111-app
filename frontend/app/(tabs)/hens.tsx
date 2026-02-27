@@ -731,6 +731,29 @@ export default function HensScreen() {
               placeholderTextColor={colors.textMuted}
             />
             
+            {/* Hen Type Toggle - Höna/Tupp */}
+            <Text style={styles.inputLabel}>{isSv ? 'Typ' : 'Type'}</Text>
+            <View style={styles.henTypeToggle}>
+              {HEN_TYPE_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.henTypeOption,
+                    henType === option.value && styles.henTypeOptionSelected,
+                  ]}
+                  onPress={() => setHenType(option.value as 'hen' | 'rooster')}
+                >
+                  <Text style={styles.henTypeEmoji}>{option.emoji}</Text>
+                  <Text style={[
+                    styles.henTypeLabel,
+                    henType === option.value && styles.henTypeLabelSelected,
+                  ]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
             <Text style={styles.inputLabel}>{isSv ? 'Flock (valfritt)' : 'Flock (optional)'}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.flockSelect}>
               <TouchableOpacity
