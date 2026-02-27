@@ -337,6 +337,14 @@ export default function LoginScreen() {
                     Har du redan ett konto? <Text style={styles.switchLink}>Logga in</Text>
                   </Text>
                 </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.guideButton}
+                  onPress={() => router.push('/onboarding')}
+                >
+                  <Ionicons name="help-circle-outline" size={18} color="rgba(255,255,255,0.6)" />
+                  <Text style={styles.guideText}>Se introduktionsguiden igen</Text>
+                </TouchableOpacity>
               </View>
             )}
             
