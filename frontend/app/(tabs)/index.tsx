@@ -270,6 +270,11 @@ export default function HomeScreen() {
   };
   
   // Ask Agda (AI Advisor)
+  // State for free user teaser
+  const [showFreeAgdaTeaser, setShowFreeAgdaTeaser] = useState(false);
+  const [freeTeaserTip, setFreeTeaserTip] = useState('');
+  const [freeTeaserLoading, setFreeTeaserLoading] = useState(false);
+  
   const askAgda = async () => {
     if (!agdaQuestion.trim()) return;
     
@@ -297,9 +302,41 @@ export default function HomeScreen() {
     }
   };
   
+  // Get a free teaser tip for free users
+  const getFreeTeaserTip = async () => {
+    setFreeTeaserLoading(true);
+    try {
+      // Use a simple tip endpoint that gives a short teaser
+      const response = await fetch(`${API_URL}/api/ai/free-tip`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setFreeTeaserTip(data.tip || (isSv 
+          ? 'Visste du att höns behöver 14-16 timmar ljus per dygn för optimal värpning? Uppgradera för fler tips!'
+          : 'Did you know hens need 14-16 hours of light per day for optimal laying? Upgrade for more tips!'));
+      } else {
+        setFreeTeaserTip(isSv 
+          ? 'Visste du att höns behöver 14-16 timmar ljus per dygn för optimal värpning? Uppgradera för fler tips!'
+          : 'Did you know hens need 14-16 hours of light per day for optimal laying? Upgrade for more tips!');
+      }
+    } catch (error) {
+      setFreeTeaserTip(isSv 
+        ? 'Visste du att höns behöver 14-16 timmar ljus per dygn för optimal värpning? Uppgradera för fler tips!'
+        : 'Did you know hens need 14-16 hours of light per day for optimal laying? Upgrade for more tips!');
+    }
+    setFreeTeaserLoading(false);
+  };
+  
   const openAgdaModal = () => {
     if (!isPremium) {
-      showPremiumGate(isSv ? 'Fråga Agda' : 'Ask Agda', 'chatbubbles');
+      // Show free teaser modal instead of premium gate
+      setShowFreeAgdaTeaser(true);
+      getFreeTeaserTip();
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       return;
     }
     setAgdaQuestion('');
