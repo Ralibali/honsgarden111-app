@@ -874,6 +874,16 @@ export default function LoginScreen() {
                 honsgarden.se{'\n'}
                 E-post: info@honsgarden.se
               </Text>
+              
+              {/* External links */}
+              <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 16, gap: 16 }}>
+                <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy')}>
+                  <Text style={[styles.linkText, { fontSize: 14 }]}>Läs fullständig integritetspolicy</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/terms')}>
+                  <Text style={[styles.linkText, { fontSize: 14 }]}>Läs fullständiga villkor</Text>
+                </TouchableOpacity>
+              </View>
             </ScrollView>
             <TouchableOpacity 
               style={[styles.modalButton, { backgroundColor: colors.primary }]}
