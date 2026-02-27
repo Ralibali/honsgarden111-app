@@ -102,6 +102,9 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
   platform: null,
   loading: false,
   initialized: false,
+  isTrial: false,
+  daysRemaining: null,
+  trialExpiryWarning: null,
   
   initializePremium: async () => {
     if (get().initialized) return;
