@@ -99,25 +99,18 @@ export default function PremiumScreen() {
   const { colors } = useThemeStore();
   const { isPremium, plan, expiresAt, loading, checkPremiumStatus } = usePremiumStore();
   const { user } = useAuthStore();
+  const router = useRouter();
   const isSv = i18n.locale.startsWith('sv');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
-  const [offerings, setOfferings] = useState<any>(null);
-  const [purchasing, setPurchasing] = useState(false);
   
   // Determine payment method based on platform
   // iOS = RevenueCat (App Store IAP)
   // Android & Web = Stripe (Web payment)
   const isIOS = Platform.OS === 'ios';
-  const useInAppPurchase = isIOS;
   
   useEffect(() => {
     checkPremiumStatus();
-    loadOfferings();
   }, []);
-  
-  const loadOfferings = async () => {
-    if (useInAppPurchase) {
-      const currentOffering = await getOfferings();
       if (currentOffering) {
         setOfferings(currentOffering);
       }
