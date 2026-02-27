@@ -1415,7 +1415,8 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   lastSeenRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border },
   lastSeenText: { fontSize: 12, color: colors.textMuted },
   markSeenBtn: { backgroundColor: '#4ade80', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  markSeenText: { color: '#FFF', fontSize: 12, fontWeight: '600' },
+  markSeenBtnHighlight: { backgroundColor: '#22c55e', shadowColor: '#22c55e', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 4 },
+  markSeenText: { color: '#FFF', fontSize: 11, fontWeight: '600' },
   
   // Action Buttons
   henActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
