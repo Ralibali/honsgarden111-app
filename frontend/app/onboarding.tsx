@@ -22,45 +22,67 @@ const ONBOARDING_SLIDES = [
     id: 1,
     title: 'Håll koll på äggen',
     subtitle: 'Enkel daglig registrering',
-    description: 'Registrera dagens ägg med ett tryck. Se totaler, spåra färger och storlekar.',
+    description: 'Registrera dagens ägg med ett tryck. Se totaler och spåra produktionen.',
     icon: 'egg',
     color: '#4ade80',
     gradientColors: ['#4ade80', '#22c55e'],
     bgGradient: ['rgba(74,222,128,0.15)', 'rgba(74,222,128,0.02)'],
-    features: ['Snabb registrering', 'Färg & storlek', 'Historik & export']
+    features: ['Snabb registrering', 'Per höna eller totalt', 'Historik & statistik']
   },
   {
     id: 2,
     title: 'Känn din flock',
     subtitle: 'Profiler för varje höna',
-    description: 'Skapa profiler med namn, ras och foto. Se vem som presterar bäst.',
+    description: 'Skapa profiler med namn och ras. Se vem som presterar bäst.',
     icon: 'heart',
     color: '#f59e0b',
     gradientColors: ['#f59e0b', '#d97706'],
     bgGradient: ['rgba(245,158,11,0.15)', 'rgba(245,158,11,0.02)'],
-    features: ['Namn, ras & ålder', 'Produktionshistorik', 'Hälsoanteckningar']
+    features: ['Namn & ras', 'Produktionshistorik', 'Snabb äggregistrering']
   },
   {
     id: 3,
-    title: 'Följ utvecklingen',
-    subtitle: 'Statistik & ekonomi',
-    description: 'Se trender och följ lönsamheten för din hönsgård i realtid.',
-    icon: 'trending-up',
-    color: '#3b82f6',
-    gradientColors: ['#3b82f6', '#2563eb'],
-    bgGradient: ['rgba(59,130,246,0.15)', 'rgba(59,130,246,0.02)'],
-    features: ['Grafer & trender', 'Ekonomiöversikt', 'PDF-rapporter']
+    title: 'Dagens sysslor',
+    subtitle: 'Glöm aldrig en uppgift',
+    description: 'Få dagliga påminnelser om vattenkoll, foder och hälsokontroll.',
+    icon: 'checkbox',
+    color: '#06b6d4',
+    gradientColors: ['#06b6d4', '#0891b2'],
+    bgGradient: ['rgba(6,182,212,0.15)', 'rgba(6,182,212,0.02)'],
+    features: ['Dagliga checklistor', 'Säsongsanpassat', 'Push-notiser kl 07:30']
   },
   {
     id: 4,
-    title: 'Få smartare tips',
-    subtitle: 'AI-rådgivare Agda',
-    description: 'Agda analyserar din data och ger personliga råd för bättre produktion.',
+    title: 'Statistik & ekonomi',
+    subtitle: 'Följ utvecklingen',
+    description: 'Se trender med grafer och följ lönsamheten för din hönsgård.',
+    icon: 'stats-chart',
+    color: '#3b82f6',
+    gradientColors: ['#3b82f6', '#2563eb'],
+    bgGradient: ['rgba(59,130,246,0.15)', 'rgba(59,130,246,0.02)'],
+    features: ['Månads- & årsgrafer', 'Kostnad per ägg', 'Intäkter & utgifter']
+  },
+  {
+    id: 5,
+    title: 'Community',
+    subtitle: 'Dela erfarenheter',
+    description: 'Ställ frågor, dela tips och lär av andra hönsägare.',
+    icon: 'chatbubbles',
+    color: '#10b981',
+    gradientColors: ['#10b981', '#059669'],
+    bgGradient: ['rgba(16,185,129,0.15)', 'rgba(16,185,129,0.02)'],
+    features: ['Frågor & svar', 'Dela din statistik', 'Lär av andra']
+  },
+  {
+    id: 6,
+    title: 'AI-rådgivare Agda',
+    subtitle: 'Personliga tips',
+    description: 'Agda analyserar din data och ger råd för bättre produktion och hälsa.',
     icon: 'sparkles',
     color: '#a855f7',
     gradientColors: ['#a855f7', '#9333ea'],
     bgGradient: ['rgba(168,85,247,0.15)', 'rgba(168,85,247,0.02)'],
-    features: ['Personliga tips', '7-dagars prognos', 'Fråga vad som helst'],
+    features: ['Fråga vad som helst', 'Dagliga tips', 'Väderanpassade råd'],
     isPremium: true
   },
 ];
