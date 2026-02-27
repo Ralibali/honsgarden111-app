@@ -5208,6 +5208,103 @@ async def serve_premium_page_api():
             return HTMLResponse(content=f.read())
     return HTMLResponse(content="<h1>Premium page not found</h1>", status_code=404)
 
+@api_router.get("/checkout/confirm")
+async def confirm_checkout_session(session_id: str = Query(...)):
+    """
+    Confirm a Stripe checkout session and activate premium.
+    This is called by the success page to ensure premium is activated
+    even if the webhook hasn't arrived yet.
+    """
+    if not STRIPE_API_KEY:
+        return {"ok": False, "error": "Stripe not configured"}
+    
+    try:
+        import stripe
+        stripe.api_key = STRIPE_API_KEY
+        
+        # Retrieve the checkout session with subscription expanded
+        session = stripe.checkout.Session.retrieve(
+            session_id,
+            expand=['subscription', 'customer']
+        )
+        
+        if not session:
+            return {"ok": False, "error": "Session not found"}
+        
+        # Get user_id from metadata
+        user_id = session.metadata.get('user_id') if session.metadata else None
+        
+        if not user_id:
+            logger.warning(f"Checkout session {session_id} missing user_id in metadata")
+            return {"ok": False, "error": "User not associated with session"}
+        
+        # Check payment status
+        if session.payment_status != 'paid':
+            return {"ok": False, "error": "Payment not completed", "status": session.payment_status}
+        
+        # Determine plan from line items or subscription
+        plan = "monthly"
+        expires_at = None
+        
+        if session.subscription:
+            sub = session.subscription
+            if isinstance(sub, str):
+                sub = stripe.Subscription.retrieve(sub)
+            
+            if sub.items and sub.items.data:
+                price_id = sub.items.data[0].price.id
+                if price_id == STRIPE_PRICE_YEARLY or "yearly" in price_id.lower() or "annual" in price_id.lower():
+                    plan = "yearly"
+            
+            # Get expiration from subscription
+            if sub.current_period_end:
+                expires_at = datetime.fromtimestamp(sub.current_period_end, tz=timezone.utc)
+        else:
+            # Fallback: calculate from plan
+            if plan == "yearly":
+                expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+            else:
+                expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+        
+        # Update subscription in database
+        await db.subscriptions.update_one(
+            {"user_id": user_id},
+            {"$set": {
+                "is_active": True,
+                "plan": plan,
+                "expires_at": expires_at,
+                "stripe_subscription_id": session.subscription if isinstance(session.subscription, str) else session.subscription.id if session.subscription else None,
+                "stripe_customer_id": session.customer if isinstance(session.customer, str) else session.customer.id if session.customer else None,
+                "purchase_source": "stripe_web",
+                "confirmed_via": "checkout_confirm",
+                "updated_at": datetime.now(timezone.utc)
+            }},
+            upsert=True
+        )
+        
+        # Log the transaction
+        await db.payment_transactions.update_one(
+            {"stripe_session_id": session_id},
+            {"$set": {
+                "status": "paid",
+                "confirmed_at": datetime.now(timezone.utc)
+            }}
+        )
+        
+        logger.info(f"Checkout confirmed for user {user_id}, plan: {plan}")
+        
+        return {
+            "ok": True,
+            "is_premium": True,
+            "plan": plan,
+            "expires_at": expires_at.isoformat() if expires_at else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Checkout confirm error: {e}")
+        return {"ok": False, "error": str(e)}
+
+
 @api_router.get("/checkout-success", response_class=HTMLResponse)
 async def serve_checkout_success_page():
     """Serve the checkout success page"""
