@@ -5,6 +5,43 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2025-02-27)
 
+### Session 3: Bug Fixes & UI Improvements (2025-02-27 23:00)
+
+#### Väder-API Bytt till Open-Meteo ✅
+- **Problem:** OpenWeatherMap krävde API-nyckel och användaren ville ha gratis alternativ
+- **Lösning:** Bytte till Open-Meteo (helt gratis, ingen nyckel krävs)
+- Konverterar vindhastighet från km/h till m/s
+- WMO weather codes mappade till svenska beskrivningar
+- Top-level fields för frontend: `temperature`, `humidity`, `wind_speed`, `description`
+
+#### Tab-navigation Omorganiserad ✅
+- **Premium-flik flyttad FÖRST** i navigationsbaren (användarens önskemål)
+- **Community-flik dold från navbar** (`href: null`) - tillgänglig via Quick Actions istället
+- Ordning: Premium → Hem → Ägg → Hönor → Ekonomi → Statistik → Inställningar
+
+#### Community Quick Action på Hemskärmen ✅
+- Ny Community-knapp (grön) i Quick Actions-sektionen
+- Navigerar till `/(tabs)/community`
+- Ger snabbare åtkomst utan att fylla navbar
+
+#### Utökad Insikter-sektion ✅
+- Nytt: **Ägg/dag snitt** (average_eggs_per_day)
+- Nytt: **Värpning idag** (% av hönor som värpt)
+- Nytt: **Resultat denna månad** (netto med färgkodning grön/röd)
+- Befintligt: Kostnad/ägg, Toppvärpare, Produktivitet
+
+#### Premium Store Error Handling ✅
+- **Problem:** Vit/svart skärm efter premium-köp i Expo Go
+- **Lösning:** Förbättrad error handling i `premiumStore.ts`:
+  - try/catch runt RevenueCat listener
+  - Safe access med optional chaining (`?.`)
+  - Backend sync-fel är non-blocking (loggas men kraschar inte appen)
+  - Loading state sätts till false även vid fel
+
+#### Väder-tips Rendering Fix ✅
+- Tips kan vara både string eller objekt med `message`
+- Nu hanteras båda formaten korrekt i UI
+
 ### Batch 2: UI & Feature Improvements (2025-02-27)
 
 #### Admin Panel Förbättringar ✅
