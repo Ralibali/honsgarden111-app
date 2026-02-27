@@ -8,7 +8,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://coop-hub-1.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://egg-tracker-premium.preview.emergentagent.com')
 
 # Test data - generated unique email
 TIMESTAMP = int(time.time())
