@@ -94,6 +94,11 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
           
+          // Save session token for native app auth
+          if (data.session_token) {
+            await setSessionToken(data.session_token);
+          }
+          
           set({
             user: {
               user_id: data.user_id,
