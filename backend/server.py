@@ -2062,19 +2062,6 @@ async def _fallback_iap_verify(user, iap_data: IAPVerifyRequest):
         "expires_at": expires_at.isoformat(),
         "warning": "Verified via fallback - not secure for production"
     }
-                "expires_at": expires_at.isoformat(),
-                "message": "Köpet verifierat och premium aktiverat"
-            }
-        else:
-            return {
-                "success": False,
-                "is_premium": False,
-                "message": "Kunde inte verifiera köpet"
-            }
-            
-    except Exception as e:
-        logger.error(f"IAP verification error: {e}")
-        raise HTTPException(status_code=500, detail="Fel vid verifiering av köp")
 
 @api_router.post("/iap/restore")
 async def restore_iap_purchases(request: Request, restore_data: IAPRestoreRequest):
