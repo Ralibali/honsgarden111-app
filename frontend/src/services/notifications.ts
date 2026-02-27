@@ -201,6 +201,40 @@ export async function sendTestNotification(): Promise<void> {
   });
 }
 
+// Schedule daily chores reminder
+export async function scheduleDailyChoresReminder(hour: number = 7, minute: number = 30, enabled: boolean = true): Promise<string | undefined> {
+  // Cancel existing chores reminders
+  await cancelDailyChoresReminder();
+  
+  if (!enabled) return undefined;
+  
+  const identifier = await Notifications.scheduleNotificationAsync({
+    content: {
+      title: '🐔 God morgon från Hönsgården!',
+      body: 'Dags att kolla in dagens sysslor. Dina hönor väntar på dig!',
+      sound: true,
+      priority: Notifications.AndroidNotificationPriority.HIGH,
+    },
+    trigger: {
+      hour,
+      minute,
+      repeats: true,
+    },
+  });
+  
+  return identifier;
+}
+
+// Cancel daily chores reminder
+export async function cancelDailyChoresReminder(): Promise<void> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  for (const notification of scheduled) {
+    if (notification.content.title?.includes('God morgon') || notification.content.title?.includes('sysslor')) {
+      await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    }
+  }
+}
+
 // Get all scheduled notifications
 export async function getScheduledNotifications(): Promise<Notifications.NotificationRequest[]> {
   return await Notifications.getAllScheduledNotificationsAsync();
