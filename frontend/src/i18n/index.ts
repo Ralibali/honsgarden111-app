@@ -19,6 +19,17 @@ i18n.defaultLocale = 'sv';
 // This prevents React errors when a translation key is missing
 i18n.missingBehavior = 'guess';
 
+// Override the t function to ensure it always returns a string
+const originalT = i18n.t.bind(i18n);
+i18n.t = (key: string, options?: any): string => {
+  const result = originalT(key, options);
+  // If result is an object (MissingTranslation), return the key or defaultValue
+  if (result && typeof result === 'object') {
+    return options?.defaultValue || key.split('.').pop() || key;
+  }
+  return result;
+};
+
 export default i18n;
 
 // Helper function to format currency based on locale
