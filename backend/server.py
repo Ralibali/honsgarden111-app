@@ -5126,10 +5126,22 @@ async def serve_register_page():
 # Include the router in the main app
 app.include_router(api_router)
 
+# CORS Configuration - Explicit origins for security
+# With credentials=True, we must specify explicit origins (not *)
+ALLOWED_ORIGINS = [
+    "https://honsgarden.se",
+    "https://www.honsgarden.se",
+    "http://localhost:3000",
+    "http://localhost:8081",
+    "http://localhost:19006",
+    # Add preview domains for development
+    "https://production-ready-71.preview.emergentagent.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
