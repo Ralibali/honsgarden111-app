@@ -35,8 +35,10 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Stripe config
-STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_emergent')
+# Stripe config - No fallback, will fail if not set
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+if not STRIPE_API_KEY:
+    print("WARNING: STRIPE_API_KEY not set - Stripe payments will not work")
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
 STRIPE_PRICE_MONTHLY = os.environ.get('STRIPE_PRICE_MONTHLY', '')
 STRIPE_PRICE_YEARLY = os.environ.get('STRIPE_PRICE_YEARLY', '')
