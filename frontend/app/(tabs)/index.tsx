@@ -256,7 +256,9 @@ export default function HomeScreen() {
     if (!isPremium) return;
     setAiReportLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/ai/daily-report`);
+      const res = await fetch(`${API_URL}/api/ai/daily-report`, {
+        credentials: 'include',
+      });
       if (res.ok) {
         const data = await res.json();
         setAiReport(data);
@@ -273,7 +275,9 @@ export default function HomeScreen() {
     if (!isPremium) return;
     setForecastLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/ai/egg-forecast`);
+      const res = await fetch(`${API_URL}/api/ai/egg-forecast`, {
+        credentials: 'include',
+      });
       if (res.ok) {
         const data = await res.json();
         setEggForecast(data);
