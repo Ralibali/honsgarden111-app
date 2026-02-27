@@ -9,8 +9,29 @@ import {
   purchasePackage,
   ENTITLEMENT_ID,
 } from '../services/revenuecat';
+import { useAuthStore } from './authStore';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+
+// API fetch helper with auth handling
+const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+  
+  // Handle 401 - user needs to login
+  if (response.status === 401) {
+    useAuthStore.getState().setUser(null);
+    throw new Error('AUTH_REQUIRED');
+  }
+  
+  return response;
+};
 
 export interface PremiumState {
   isPremium: boolean;
@@ -130,25 +151,35 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
       }
       
       // Fallback: verify with backend
-      const response = await fetch(`${API_URL}/api/premium/status`);
-      if (response.ok) {
-        const data = await response.json();
-        set({
-          isPremium: data.is_premium,
-          subscriptionId: data.subscription_id,
-          expiresAt: data.expires_at,
-          plan: data.plan,
-          loading: false,
-        });
-        
-        await AsyncStorage.setItem('premium_status', JSON.stringify({
-          isPremium: data.is_premium,
-          subscriptionId: data.subscription_id,
-          expiresAt: data.expires_at,
-          plan: data.plan,
-        }));
-      } else {
-        set({ loading: false });
+      try {
+        const response = await apiFetch(`${API_URL}/api/premium/status`);
+        if (response.ok) {
+          const data = await response.json();
+          set({
+            isPremium: data.is_premium,
+            subscriptionId: data.subscription_id,
+            expiresAt: data.expires_at,
+            plan: data.plan,
+            loading: false,
+          });
+          
+          await AsyncStorage.setItem('premium_status', JSON.stringify({
+            isPremium: data.is_premium,
+            subscriptionId: data.subscription_id,
+            expiresAt: data.expires_at,
+            plan: data.plan,
+          }));
+        } else {
+          set({ loading: false });
+        }
+      } catch (error: any) {
+        if (error.message === 'AUTH_REQUIRED') {
+          // User not logged in - premium status is false
+          set({ isPremium: false, loading: false });
+        } else {
+          console.error('Failed to check premium status:', error);
+          set({ loading: false });
+        }
       }
     } catch (error) {
       console.error('Failed to check premium status:', error);
@@ -200,22 +231,30 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
       }
       
       // For web, verify with backend
-      const response = await fetch(`${API_URL}/api/premium/restore`, {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.is_premium) {
-          set({
-            isPremium: true,
-            subscriptionId: data.subscription_id,
-            expiresAt: data.expires_at,
-            plan: data.plan,
-            loading: false,
-          });
-          return true;
+      try {
+        const response = await apiFetch(`${API_URL}/api/premium/restore`, {
+          method: 'POST',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.is_premium) {
+            set({
+              isPremium: true,
+              subscriptionId: data.subscription_id,
+              expiresAt: data.expires_at,
+              plan: data.plan,
+              loading: false,
+            });
+            return true;
+          }
         }
+      } catch (error: any) {
+        if (error.message === 'AUTH_REQUIRED') {
+          set({ loading: false });
+          return false;
+        }
+        throw error;
       }
       
       set({ loading: false });
