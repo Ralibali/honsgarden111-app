@@ -1287,4 +1287,16 @@ const createStyles = (colors: any) => StyleSheet.create({
   resendTextDisabled: {
     color: 'rgba(74, 222, 128, 0.5)',
   },
+  // Remember me styles
+  rememberMeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+    paddingVertical: 4,
+  },
+  rememberMeText: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+  },
 });
