@@ -903,7 +903,15 @@ export default function HomeScreen() {
         
         {/* Quick Actions */}
         <View style={styles.quickActionsSection}>
-          <Text style={styles.cardTitle}>⚡ {isSv ? 'Snabbåtgärder' : 'Quick Actions'}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={styles.cardTitle}>⚡ {isSv ? 'Snabbåtgärder' : 'Quick Actions'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 12, color: colors.textSecondary, marginRight: 4 }}>
+                {isSv ? 'Svep' : 'Swipe'}
+              </Text>
+              <Ionicons name="arrow-forward" size={14} color={colors.textSecondary} />
+            </View>
+          </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickActionsScroll}>
             <TouchableOpacity
               style={styles.quickActionCard}
