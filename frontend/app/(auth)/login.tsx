@@ -174,8 +174,12 @@ export default function LoginScreen() {
     if (result.success) {
       setSuccessMessage(result.message);
       startCooldown(); // Start 60 second cooldown
-      // Move to code verification step
-      setAuthMode('verify-code');
+      // Show success alert and move to code verification step
+      Alert.alert(
+        'Kod skickad!', 
+        'Om e-postadressen finns i vårt system har vi skickat en 6-siffrig kod. Kolla din inkorg (och skräppost).',
+        [{ text: 'OK', onPress: () => setAuthMode('verify-code') }]
+      );
     } else {
       Alert.alert('Fel', result.message);
     }
