@@ -223,6 +223,7 @@ export const useAuthStore = create<AuthState>()(
             await setSessionToken(data.session_token);
             if (__DEV__) {
               console.log('[Auth] Login successful, token received and stored');
+              console.log('[Auth] Token now in memory, ready for API calls');
             }
           } else {
             if (__DEV__) {
@@ -249,7 +250,8 @@ export const useAuthStore = create<AuthState>()(
             });
           }
           
-          loginInProgress = false;
+          // NOTE: loginInProgress is cleared by setSessionToken after a delay
+          // This ensures grace period remains active for a short while after login completes
           return true;
         } catch (error) {
           loginInProgress = false;
