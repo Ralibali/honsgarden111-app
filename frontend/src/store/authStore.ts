@@ -62,8 +62,12 @@ const initializeToken = async (): Promise<void> => {
   tokenInitialized = true;
 };
 
-// Start initialization immediately
-tokenInitPromise = initializeToken();
+// Start initialization immediately (but only in client environment)
+if (typeof window !== 'undefined') {
+  tokenInitPromise = initializeToken();
+} else {
+  tokenInitialized = true;
+}
 
 // Export function to wait for token initialization
 export const waitForTokenInit = async (): Promise<void> => {
