@@ -701,4 +701,36 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: 40,
   },
+  multiSelectBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 12,
+    marginBottom: 8,
+    borderRadius: 10,
+    marginHorizontal: 12,
+  },
+  selectModeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  selectAllButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  deleteSelectedButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginLeft: 'auto',
+  },
+  checkbox: {
+    marginRight: 0,
+  },
 });
