@@ -5942,10 +5942,17 @@ async def get_egg_forecast(request: Request):
 
 
 @api_router.post("/ai/advisor")
-async def get_ai_advisor(request: Request, question: str = ""):
+async def get_ai_advisor(request: Request):
     """AI Hönsgårdsrådgivare 'Agda' - Premium only
     Gives personalized advice based on user's flock and question"""
     user_id = await require_user_id(request)
+    
+    # Get question from body
+    try:
+        body = await request.json()
+        question = body.get('question', '')
+    except:
+        question = ''
     
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
