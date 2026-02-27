@@ -263,6 +263,8 @@ honsgarden.se      ALIAS  [deployment-url].emergent.host
 - [x] **Native Auth Fix** - Användare loggades ut direkt (FIXAT 2025-02-27)
 - [x] Användaren har konfigurerat production environment variables i Emergent
 - [x] **Väder-API bytt till Open-Meteo** (FIXAT 2025-02-27) - Gratis, ingen nyckel
+- [x] **Bottom Nav förenklad** (FIXAT 2025-02-28) - 5 tabs istället för 8
+- [x] **Avatar-ikon för inställningar** (FIXAT 2025-02-28) - Google-style i header
 - [ ] Verifiera deployment fungerar med rätt databas (väntar på användarbekräftelse)
 - [ ] **Testa vit/svart skärm efter premium-köp** - Fixen är implementerad, behöver verifieras i Expo Go
 
