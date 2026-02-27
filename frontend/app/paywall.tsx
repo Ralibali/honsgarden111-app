@@ -17,7 +17,7 @@ import { usePremiumStore } from '../src/store/premiumStore';
 import i18n from '../src/i18n';
 import { RevenueCatPaywall } from '../src/components/RevenueCatPaywall';
 
-// Web premium URL - only used for Android and Web
+// Web premium URL - only used for Web platform (Stripe checkout)
 const PREMIUM_WEB_URL = 'https://honsgarden.se/premium';
 
 export default function PaywallScreen() {
