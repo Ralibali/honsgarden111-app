@@ -559,20 +559,60 @@ export default function HomeScreen() {
               <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
             </View>
             
-            {/* Compact Weather Widget */}
-            {weather && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              {/* Compact Weather Widget */}
+              {weather && (
+                <TouchableOpacity 
+                  style={styles.weatherWidget}
+                  onPress={() => setShowWeatherModal(true)}
+                  data-testid="weather-widget"
+                >
+                  <Text style={styles.weatherWidgetIcon}>
+                    {getWeatherIcon(weather.description)}
+                  </Text>
+                  <Text style={styles.weatherWidgetTemp}>{Math.round(weather.temperature)}°</Text>
+                </TouchableOpacity>
+              )}
+              
+              {/* Avatar - Settings Button */}
               <TouchableOpacity 
-                style={styles.weatherWidget}
-                onPress={() => setShowWeatherModal(true)}
-                data-testid="weather-widget"
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: colors.primary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                }}
+                onPress={() => router.push('/(tabs)/settings')}
+                data-testid="avatar-settings-btn"
               >
-                <Text style={styles.weatherWidgetIcon}>
-                  {getWeatherIcon(weather.description)}
+                <Text style={{ 
+                  color: '#fff', 
+                  fontSize: 18, 
+                  fontWeight: '700',
+                }}>
+                  {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
                 </Text>
-                <Text style={styles.weatherWidgetTemp}>{Math.round(weather.temperature)}°</Text>
-                <Ionicons name="chevron-forward" size={14} color={colors.textSecondary} />
+                {/* Small settings indicator */}
+                <View style={{
+                  position: 'absolute',
+                  bottom: -2,
+                  right: -2,
+                  width: 16,
+                  height: 16,
+                  borderRadius: 8,
+                  backgroundColor: colors.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}>
+                  <Ionicons name="settings" size={10} color={colors.textSecondary} />
+                </View>
               </TouchableOpacity>
-            )}
+            </View>
           </View>
           <Text style={styles.date}>{dateString}</Text>
         </View>
