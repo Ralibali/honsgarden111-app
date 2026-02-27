@@ -1,10 +1,39 @@
 # Hönsgården - Product Requirements Document
 
-## Senaste uppdatering: 26 Feb 2026 (Session 2 - Slutförd)
+## Senaste uppdatering: 27 Feb 2026 (Session 3 - Kritiska buggar fixade)
 
 ---
 
-## NYLIGEN GENOMFÖRT (26 Feb 2026 - Session 2 Slutförd - Del 2)
+## NYLIGEN GENOMFÖRT (27 Feb 2026 - Session 3)
+
+### 1. KRITISK FIX: Appen fastnade på laddningsskärmen ✅
+**Root Cause**: Metro bundler använde ESM-filer från `zustand` som innehöll `import.meta.env` referenser, vilket inte stöds i React Native/Web-miljöer.
+
+**Lösning**:
+- Lade till `config.resolver.unstable_enablePackageExports = false;` i `metro.config.js`
+- Detta tvingar Metro att använda CommonJS-filer istället för ESM
+- Rensade Metro-cache och startade om Expo
+
+**Filer ändrade**:
+- `/app/frontend/metro.config.js`
+
+### 2. KRITISK FIX: "Glömt lösenord"-flödet ✅
+- Bekräftade att flödet nu fungerar korrekt efter laddningsskärmsfixen
+- Användaren kan nu navigera: Logga in → Glömt lösenord? → Ange e-post → Skicka kod
+
+### 3. RevenueCat Web-kompatibilitet ✅
+- Refaktorerade `/app/frontend/src/services/revenuecat.ts` för att använda dynamisk import
+- Lade till null-checks för `Purchases` objekt på alla funktioner
+- Web-plattformen använder nu mock-läge korrekt
+
+### 4. Layout-initialisering ✅
+- Förbättrade `/app/frontend/app/_layout.tsx` med bättre async/await hantering
+- Lade till `isInitialized` state för mer robust navigationslogik
+- Web-plattformen hoppar nu över onboarding automatiskt
+
+---
+
+## TIDIGARE (26 Feb 2026 - Session 2 - Slutförd)
 
 ### 1. Förbättrad Felhantering vid Login ✅
 - Lagt till Alert.alert för att visa tydligt felmeddelande när login misslyckas
