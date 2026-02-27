@@ -1824,10 +1824,10 @@ async def get_premium_status(request: Request):
     user = await get_current_user(request)
     
     if not user:
-        # For mobile app compatibility, check default_user
-        subscription = await db.subscriptions.find_one({"user_id": "default_user"})
-    else:
-        subscription = await db.subscriptions.find_one({"user_id": user.user_id})
+        # Not logged in - return not premium (no default_user fallback)
+        return PremiumStatusResponse(is_premium=False)
+    
+    subscription = await db.subscriptions.find_one({"user_id": user.user_id})
     
     if not subscription:
         return PremiumStatusResponse(is_premium=False)
