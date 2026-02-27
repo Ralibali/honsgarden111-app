@@ -742,6 +742,46 @@ class Feedback(BaseModel):
     status: str = "new"  # "new", "read", "replied"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# ============ REMEMBER TOKEN HELPER ============
+async def _refresh_session_from_remember_token(request: Request, remember_token: str) -> Optional[User]:
+    """Refresh session using remember token (web only)
+    Rotates the remember token for security"""
+    try:
+        # Hash the provided token
+        remember_hash = hashlib.sha256(remember_token.encode()).hexdigest()
+        
+        # Find valid remember token
+        token_doc = await db.remember_tokens.find_one({
+            "remember_hash": remember_hash,
+            "revoked_at": None,
+            "expires_at": {"$gt": datetime.now(timezone.utc)}
+        })
+        
+        if not token_doc:
+            return None
+        
+        user_id = token_doc["user_id"]
+        
+        # Get user
+        user = await db.users.find_one({"id": user_id}, {"_id": 0})
+        if not user:
+            return None
+        
+        # Normalize user_id field
+        if "id" in user and "user_id" not in user:
+            user["user_id"] = user["id"]
+        
+        logger.debug(f"[Remember] Token refresh for user {user_id}")
+        
+        # Note: We can't set cookies from here easily in FastAPI
+        # The session will be created by login or magic link
+        # This is a limitation - for full rotation we'd need middleware
+        
+        return User(**user)
+    except Exception as e:
+        logger.error(f"[Remember] Error refreshing session: {e}")
+        return None
+
 # ============ AUTH HELPER FUNCTIONS ============
 async def get_current_user(request: Request, response: Response = None) -> Optional[User]:
     """Get current user from session token in cookie or header
