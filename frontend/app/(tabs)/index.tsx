@@ -124,6 +124,13 @@ export default function HomeScreen() {
     loadCommunityPosts();
   }, []);
   
+  // Refresh community posts when screen gets focus
+  useFocusEffect(
+    useCallback(() => {
+      loadCommunityPosts();
+    }, [])
+  );
+  
   // Show trial expiry warning when needed
   useEffect(() => {
     if (trialExpiryWarning && !trialWarningDismissed) {
