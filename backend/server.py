@@ -2697,7 +2697,10 @@ async def get_premium_status(request: Request):
             "expires_at": None,
             "stripe_customer_id": None,
             "source": None,
-            "last_verified_at": None
+            "last_verified_at": None,
+            "is_trial": False,
+            "days_remaining": None,
+            "trial_expiry_warning": None
         }
     
     subscription = await db.subscriptions.find_one({"user_id": user.user_id}, {"_id": 0})
@@ -2710,23 +2713,46 @@ async def get_premium_status(request: Request):
             "expires_at": None,
             "stripe_customer_id": None,
             "source": None,
-            "last_verified_at": None
+            "last_verified_at": None,
+            "is_trial": False,
+            "days_remaining": None,
+            "trial_expiry_warning": None
         }
     
     is_active = subscription.get('is_active', False)
     expires_at = subscription.get('expires_at')
+    is_trial = subscription.get('plan') == 'trial'
+    days_remaining = None
+    trial_expiry_warning = None
     
     if expires_at:
         if isinstance(expires_at, str):
             expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
         if expires_at.tzinfo is None:
             expires_at = expires_at.replace(tzinfo=timezone.utc)
-        if expires_at < datetime.now(timezone.utc):
+        
+        now = datetime.now(timezone.utc)
+        if expires_at < now:
             is_active = False
             await db.subscriptions.update_one(
                 {"user_id": subscription.get("user_id")},
                 {"$set": {"is_active": False}}
             )
+        else:
+            # Calculate days remaining
+            delta = expires_at - now
+            days_remaining = max(0, delta.days)
+            
+            # Generate trial expiry warning for trials with 3 or fewer days left
+            if is_trial and days_remaining <= 3:
+                if days_remaining == 0:
+                    trial_expiry_warning = "last_day"
+                elif days_remaining == 1:
+                    trial_expiry_warning = "one_day"
+                elif days_remaining == 2:
+                    trial_expiry_warning = "two_days"
+                elif days_remaining == 3:
+                    trial_expiry_warning = "three_days"
     
     # Determine source from purchase_source field
     purchase_source = subscription.get('purchase_source', '')
@@ -2744,7 +2770,10 @@ async def get_premium_status(request: Request):
         "expires_at": expires_at.isoformat() if expires_at else None,
         "stripe_customer_id": subscription.get('stripe_customer_id'),
         "source": source,
-        "last_verified_at": subscription.get('updated_at').isoformat() if subscription.get('updated_at') else None
+        "last_verified_at": subscription.get('updated_at').isoformat() if subscription.get('updated_at') else None,
+        "is_trial": is_trial,
+        "days_remaining": days_remaining,
+        "trial_expiry_warning": trial_expiry_warning
     }
 
 # ============ CANCEL SUBSCRIPTION ENDPOINT ============
