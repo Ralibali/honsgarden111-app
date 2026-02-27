@@ -493,9 +493,9 @@ export default function HensScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>{isSv ? 'Mina Hönor' : 'My Hens'}</Text>
+          <Text style={styles.title}>{isSv ? 'Mina Hönor & Tuppar' : 'My Hens & Roosters'}</Text>
           <Text style={styles.subtitle}>
-            {hens.length} {isSv ? 'hönor registrerade' : 'hens registered'}
+            {hens.filter(h => h.hen_type !== 'rooster').length} {isSv ? 'hönor' : 'hens'} • {hens.filter(h => h.hen_type === 'rooster').length} {isSv ? 'tuppar' : 'roosters'}
           </Text>
         </View>
         
