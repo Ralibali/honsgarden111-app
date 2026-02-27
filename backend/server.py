@@ -6339,7 +6339,15 @@ async def get_community_posts(
             "liked_by_me": user_id in post.get("liked_by", []) if user_id else False,
             "is_mine": post.get("user_id") == user_id if user_id else False,
             "coop_stats": post.get("coop_stats"),  # Include coop stats if present
+            "is_sponsored": False,
         })
+    
+    # Get a relevant sponsored post to inject (max 1 per feed load)
+    sponsored_post = await get_relevant_sponsored_post(category)
+    if sponsored_post and offset == 0:  # Only inject on first page
+        # Insert sponsored post at position 2-3 in the feed
+        insert_position = min(2, len(formatted_posts))
+        formatted_posts.insert(insert_position, sponsored_post)
     
     total = await db.community_posts.count_documents(query)
     
@@ -6356,6 +6364,99 @@ async def get_community_posts(
             {"value": "feed", "label": "🍽️ Foder"},
             {"value": "other", "label": "❓ Övrigt"},
         ]
+    }
+
+
+async def get_relevant_sponsored_post(category: Optional[str] = None) -> Optional[dict]:
+    """Get a relevant sponsored post based on season/conditions"""
+    import hashlib
+    
+    # Determine current conditions
+    current_month = now_stockholm().month
+    conditions = ["always"]
+    
+    if current_month in [11, 12, 1, 2]:
+        conditions.append("winter")
+    elif current_month in [6, 7, 8]:
+        conditions.append("summer")
+    elif current_month in [3, 4, 5]:
+        conditions.append("spring")
+    else:
+        conditions.append("autumn")
+    
+    # Get today's date for consistent selection
+    today = today_str_stockholm()
+    
+    # Try to get sponsored posts from DB first
+    db_sponsored = await db.sponsored_posts.find(
+        {"is_active": True},
+        {"_id": 0}
+    ).to_list(50)
+    
+    # Combine with default posts if DB is empty
+    all_sponsored = db_sponsored if db_sponsored else DEFAULT_SPONSORED_POSTS
+    
+    # Filter by date range and conditions
+    valid_posts = []
+    for post in all_sponsored:
+        # Check date range
+        if post.get("start_date") and post["start_date"] > today:
+            continue
+        if post.get("end_date") and post["end_date"] < today:
+            continue
+        
+        # Check if any condition matches
+        post_conditions = post.get("trigger_conditions", ["always"])
+        if any(cond in post_conditions for cond in conditions):
+            valid_posts.append(post)
+        
+        # Also include if category matches
+        if category and post.get("category") == category:
+            valid_posts.append(post)
+    
+    # Remove duplicates
+    seen_ids = set()
+    unique_posts = []
+    for post in valid_posts:
+        if post["id"] not in seen_ids:
+            seen_ids.add(post["id"])
+            unique_posts.append(post)
+    
+    if not unique_posts:
+        return None
+    
+    # Sort by priority and select one (consistent per day)
+    unique_posts.sort(key=lambda x: -x.get("priority", 1))
+    
+    # Use date as seed for consistent daily selection
+    seed = int(hashlib.md5(f"sponsor-{today}".encode()).hexdigest()[:8], 16)
+    selected = unique_posts[seed % len(unique_posts)]
+    
+    # Track impression
+    if selected.get("id"):
+        await db.sponsored_posts.update_one(
+            {"id": selected["id"]},
+            {"$inc": {"impressions": 1}},
+            upsert=False
+        )
+    
+    # Format as community post
+    return {
+        "id": f"sponsored-{selected['id']}",
+        "user_name": "🎁 Agdas Tips",
+        "content": selected.get("content", ""),
+        "title": selected.get("title"),
+        "category": selected.get("category", "other"),
+        "category_label": CATEGORY_LABELS.get(selected.get("category", "other"), {}).get("sv", "Tips"),
+        "created_at": now_stockholm().isoformat(),
+        "likes": 0,
+        "liked_by_me": False,
+        "is_mine": False,
+        "is_sponsored": True,
+        "affiliate_url": selected.get("affiliate_url"),
+        "discount_code": selected.get("discount_code"),
+        "discount_percent": selected.get("discount_percent"),
+        "image_url": selected.get("image_url"),
     }
 
 
