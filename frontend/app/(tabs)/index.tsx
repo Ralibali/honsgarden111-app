@@ -28,6 +28,7 @@ import { format } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
 import PremiumGateModal from '../../components/PremiumGateModal';
 import { scheduleDailyChoresReminder } from '../../src/services/notifications';
+import { useAuthStore } from '../../src/store/authStore';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -48,6 +49,7 @@ export default function HomeScreen() {
   
   const { isPremium, isTrial, daysRemaining, trialExpiryWarning } = usePremiumStore();
   const { colors, isDark } = useThemeStore();
+  const { user } = useAuthStore();
   
   const [refreshing, setRefreshing] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
