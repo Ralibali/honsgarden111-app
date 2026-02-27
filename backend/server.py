@@ -743,8 +743,9 @@ class Feedback(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 # ============ AUTH HELPER FUNCTIONS ============
-async def get_current_user(request: Request) -> Optional[User]:
-    """Get current user from session token in cookie or header"""
+async def get_current_user(request: Request, response: Response = None) -> Optional[User]:
+    """Get current user from session token in cookie or header
+    Also supports remember_token rotation for web"""
     session_token = request.cookies.get("session_token")
     token_source = "cookie" if session_token else None
     
@@ -753,6 +754,16 @@ async def get_current_user(request: Request) -> Optional[User]:
         if auth_header and auth_header.startswith("Bearer "):
             session_token = auth_header.split(" ")[1]
             token_source = "header"
+    
+    # If no session token, try remember_token (web only)
+    if not session_token:
+        remember_token = request.cookies.get("remember_token")
+        if remember_token:
+            # Try to refresh session using remember token
+            user = await _refresh_session_from_remember_token(request, remember_token)
+            if user:
+                logger.debug(f"[Auth] Session refreshed from remember_token for user {user.user_id}")
+                return user
     
     # DEV: Log auth debug info for 401 debugging
     if not session_token:
