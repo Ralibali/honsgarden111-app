@@ -101,33 +101,28 @@ export default function PremiumGateModal({
               ))}
             </View>
             
-            {/* Pricing */}
+            {/* Pricing - simplified for modal, actual prices shown in paywall */}
             <View style={styles.pricingSection}>
               <View style={styles.priceCard}>
                 <Text style={styles.priceLabel}>
                   {isSv ? 'Månatlig' : 'Monthly'}
                 </Text>
-                <View style={styles.priceRow}>
-                  <Text style={styles.priceAmount}>19</Text>
-                  <Text style={styles.priceCurrency}>kr/mån</Text>
-                </View>
+                <Text style={styles.priceAmount}>
+                  {isSv ? 'Flexibelt' : 'Flexible'}
+                </Text>
               </View>
               
               <View style={[styles.priceCard, styles.priceCardPopular]}>
                 <View style={styles.popularBadge}>
                   <Text style={styles.popularBadgeText}>
-                    {isSv ? 'Spara 35%' : 'Save 35%'}
+                    {isSv ? 'Populärast' : 'Most popular'}
                   </Text>
                 </View>
                 <Text style={styles.priceLabel}>
                   {isSv ? 'Årlig' : 'Yearly'}
                 </Text>
-                <View style={styles.priceRow}>
-                  <Text style={styles.priceAmount}>149</Text>
-                  <Text style={styles.priceCurrency}>kr/år</Text>
-                </View>
-                <Text style={styles.priceSubtext}>
-                  {isSv ? '12,42 kr/månad' : '12.42 kr/month'}
+                <Text style={styles.priceAmount}>
+                  {isSv ? 'Bäst värde' : 'Best value'}
                 </Text>
               </View>
             </View>
