@@ -653,11 +653,18 @@ export default function HensScreen() {
                   {/* Warning Badge */}
                   {lastSeenWarning && (
                     <View style={styles.warningBadge}>
-                      <Text style={styles.warningBadgeText}>⚠️ {isSv ? 'Ej sedd på länge' : 'Not seen recently'}</Text>
+                      <Text style={styles.warningBadgeText}>💤 {isSv ? 'Längesen du kollade på denna höna' : 'Check on this hen'}</Text>
                     </View>
                   )}
                   
                   <View style={styles.henCardContent}>
+                    {/* Productivity Status Dot */}
+                    <View style={[
+                      styles.productivityDot,
+                      !lastSeenWarning && (henStats[hen.id] || 0) > 0 ? styles.productivityGreen :
+                      lastSeenWarning ? styles.productivityYellow :
+                      styles.productivityRed
+                    ]} />
                     <View style={[
                       styles.henAvatar,
                       { backgroundColor: getColorStyle(hen.color || 'brown') + '33' }
