@@ -3560,6 +3560,168 @@ async def get_hen_profile(hen_id: str, request: Request):
         "egg_graph_data": egg_graph_data
     }
 
+@api_router.get("/hens/{hen_id}/health-score")
+async def get_hen_health_score(hen_id: str, request: Request):
+    """Calculate Hen Health Score (0-100) based on production, activity, and health data"""
+    user_id = await require_user_id(request)
+    
+    hen = await db.hens.find_one({"id": hen_id, "user_id": user_id}, {"_id": 0})
+    if not hen:
+        raise HTTPException(status_code=404, detail="Hen not found")
+    
+    today = date.today()
+    
+    # Factor 1: Egg Production (30 points max)
+    # Compare recent egg production to historical average
+    eggs_30d = await db.egg_records.find({
+        "user_id": user_id, "hen_id": hen_id,
+        "date": {"$gte": (today - timedelta(days=30)).isoformat()}
+    }, {"_id": 0, "count": 1}).to_list(1000)
+    eggs_7d = await db.egg_records.find({
+        "user_id": user_id, "hen_id": hen_id,
+        "date": {"$gte": (today - timedelta(days=7)).isoformat()}
+    }, {"_id": 0, "count": 1}).to_list(1000)
+    
+    total_30d = sum(e['count'] for e in eggs_30d)
+    total_7d = sum(e['count'] for e in eggs_7d)
+    avg_daily_30d = total_30d / 30 if total_30d > 0 else 0
+    avg_daily_7d = total_7d / 7 if total_7d > 0 else 0
+    
+    # Score based on production (expect 0.7-1 egg/day for healthy hen)
+    if avg_daily_7d >= 0.7:
+        production_score = 30
+    elif avg_daily_7d >= 0.5:
+        production_score = 25
+    elif avg_daily_7d >= 0.3:
+        production_score = 15
+    elif avg_daily_7d > 0:
+        production_score = 10
+    else:
+        production_score = 0
+    
+    # Factor 2: Activity/Last Seen (25 points max)
+    activity_score = 25
+    days_since_seen = None
+    if hen.get('last_seen'):
+        last_seen_date = datetime.strptime(hen['last_seen'], '%Y-%m-%d').date()
+        days_since_seen = (today - last_seen_date).days
+        if days_since_seen == 0:
+            activity_score = 25
+        elif days_since_seen <= 1:
+            activity_score = 22
+        elif days_since_seen <= 3:
+            activity_score = 15
+        elif days_since_seen <= 7:
+            activity_score = 8
+        else:
+            activity_score = 0
+    else:
+        activity_score = 10  # No tracking yet
+    
+    # Factor 3: Health History (25 points max)
+    # Recent health issues reduce score
+    health_logs = await db.health_logs.find({
+        "user_id": user_id, "hen_id": hen_id,
+        "date": {"$gte": (today - timedelta(days=30)).isoformat()}
+    }, {"_id": 0, "type": 1}).to_list(100)
+    
+    health_score = 25
+    negative_types = ['sick', 'injury', 'vet_visit']
+    for log in health_logs:
+        if log.get('type') in negative_types:
+            health_score -= 8  # Deduct for each negative event
+    health_score = max(0, health_score)
+    
+    # Factor 4: Consistency (20 points max)
+    # Steady production vs. erratic
+    consistency_score = 20
+    if avg_daily_30d > 0:
+        variance = abs(avg_daily_7d - avg_daily_30d) / avg_daily_30d
+        if variance <= 0.1:
+            consistency_score = 20
+        elif variance <= 0.3:
+            consistency_score = 15
+        elif variance <= 0.5:
+            consistency_score = 10
+        else:
+            consistency_score = 5
+    
+    total_score = production_score + activity_score + health_score + consistency_score
+    total_score = min(100, max(0, total_score))
+    
+    # Determine status
+    if total_score >= 80:
+        status = "excellent"
+        status_text = "Utmärkt hälsa"
+        status_color = "#22c55e"
+    elif total_score >= 60:
+        status = "good"
+        status_text = "Bra hälsa"
+        status_color = "#84cc16"
+    elif total_score >= 40:
+        status = "fair"
+        status_text = "Medelbra hälsa"
+        status_color = "#fbbf24"
+    elif total_score >= 20:
+        status = "poor"
+        status_text = "Sämre hälsa"
+        status_color = "#f97316"
+    else:
+        status = "critical"
+        status_text = "Kritiskt"
+        status_color = "#ef4444"
+    
+    return {
+        "hen_id": hen_id,
+        "hen_name": hen.get('name', 'Okänd'),
+        "health_score": round(total_score),
+        "status": status,
+        "status_text": status_text,
+        "status_color": status_color,
+        "breakdown": {
+            "production": {"score": production_score, "max": 30, "label": "Äggproduktion"},
+            "activity": {"score": activity_score, "max": 25, "label": "Aktivitet"},
+            "health": {"score": health_score, "max": 25, "label": "Hälsohistorik"},
+            "consistency": {"score": consistency_score, "max": 20, "label": "Konsistens"}
+        },
+        "metrics": {
+            "avg_eggs_7d": round(avg_daily_7d, 2),
+            "avg_eggs_30d": round(avg_daily_30d, 2),
+            "days_since_seen": days_since_seen,
+            "recent_health_issues": len([l for l in health_logs if l.get('type') in negative_types])
+        }
+    }
+
+@api_router.get("/hens/health-scores")
+async def get_all_hen_health_scores(request: Request):
+    """Get health scores for all active hens"""
+    user_id = await require_user_id(request)
+    
+    hens = await db.hens.find({
+        "user_id": user_id, 
+        "is_active": True,
+        "status": "active"
+    }, {"_id": 0, "id": 1, "name": 1}).to_list(100)
+    
+    scores = []
+    for hen in hens:
+        try:
+            # Create a mock request object for the inner function
+            score_data = await get_hen_health_score(hen['id'], request)
+            scores.append(score_data)
+        except Exception as e:
+            logger.error(f"Error calculating health score for hen {hen['id']}: {e}")
+            continue
+    
+    # Sort by score ascending (worst first for attention)
+    scores.sort(key=lambda x: x['health_score'])
+    
+    return {
+        "scores": scores,
+        "average_score": round(sum(s['health_score'] for s in scores) / len(scores)) if scores else 0,
+        "hens_needing_attention": len([s for s in scores if s['health_score'] < 60])
+    }
+
 # ============ HEALTH LOG ENDPOINTS ============
 @api_router.post("/health-logs", response_model=HealthLog)
 async def create_health_log(log: HealthLogCreate, request: Request):
