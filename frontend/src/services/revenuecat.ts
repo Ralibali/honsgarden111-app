@@ -191,7 +191,7 @@ export const checkPremiumEntitlement = async (): Promise<{
  * Get available offerings (subscription packages)
  */
 export const getOfferings = async (): Promise<PurchasesOffering | null> => {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web' || !Purchases) return null;
   
   try {
     const offerings = await Purchases.getOfferings();
@@ -213,7 +213,7 @@ export const getOfferings = async (): Promise<PurchasesOffering | null> => {
  * Get all available offerings
  */
 export const getAllOfferings = async (): Promise<{ [key: string]: PurchasesOffering }> => {
-  if (Platform.OS === 'web') return {};
+  if (Platform.OS === 'web' || !Purchases) return {};
   
   try {
     const offerings = await Purchases.getOfferings();
@@ -233,7 +233,7 @@ export const purchasePackage = async (pkg: PurchasesPackage): Promise<{
   error?: string;
   userCancelled?: boolean;
 }> => {
-  if (Platform.OS === 'web') {
+  if (Platform.OS === 'web' || !Purchases) {
     return { success: false, error: 'Purchases not available on web' };
   }
   
@@ -280,7 +280,7 @@ export const restorePurchases = async (): Promise<{
   customerInfo?: CustomerInfo;
   error?: string;
 }> => {
-  if (Platform.OS === 'web') {
+  if (Platform.OS === 'web' || !Purchases) {
     return { success: false, isPremium: false, error: 'Not available on web' };
   }
   
@@ -310,7 +310,7 @@ export const restorePurchases = async (): Promise<{
 export const addCustomerInfoListener = (
   callback: (customerInfo: CustomerInfo) => void
 ): (() => void) => {
-  if (Platform.OS === 'web') {
+  if (Platform.OS === 'web' || !Purchases) {
     return () => {};
   }
   
