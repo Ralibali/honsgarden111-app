@@ -133,6 +133,11 @@ export default function HensScreen() {
   const [selectedHen, setSelectedHen] = useState<Hen | null>(null);
   const [henProfile, setHenProfile] = useState<any>(null);
   
+  // Health score state
+  const [healthScores, setHealthScores] = useState<any>({});
+  const [showHealthScoreModal, setShowHealthScoreModal] = useState(false);
+  const [selectedHealthScore, setSelectedHealthScore] = useState<any>(null);
+  
   // Quick action bottom sheet
   const [showQuickAction, setShowQuickAction] = useState(false);
   const [quickActionHen, setQuickActionHen] = useState<Hen | null>(null);
