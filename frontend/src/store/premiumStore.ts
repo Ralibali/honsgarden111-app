@@ -108,34 +108,45 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
       if (Platform.OS === 'ios' || Platform.OS === 'android') {
         await initRevenueCat();
         
-        // Add listener for subscription changes
+        // Add listener for subscription changes - wrapped in try/catch
         addCustomerInfoListener(async (customerInfo) => {
-          const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
-          if (entitlement) {
-            // Sync with backend when purchase detected
-            const platform = Platform.OS as 'ios' | 'android';
-            await get().verifyPurchaseWithBackend(
-              platform,
-              JSON.stringify(customerInfo),
-              entitlement.productIdentifier,
-              customerInfo.originalAppUserId
-            );
-            
-            set({
-              isPremium: true,
-              expiresAt: entitlement.expirationDate || null,
-              subscriptionId: entitlement.productIdentifier,
-              plan: entitlement.productIdentifier?.includes('yearly') ? 'yearly' : 'monthly',
-              platform,
-            });
-          } else {
-            set({
-              isPremium: false,
-              expiresAt: null,
-              subscriptionId: null,
-              plan: null,
-              platform: null,
-            });
+          try {
+            const entitlement = customerInfo.entitlements?.active?.[ENTITLEMENT_ID];
+            if (entitlement) {
+              // Sync with backend when purchase detected - don't crash if it fails
+              const platform = Platform.OS as 'ios' | 'android';
+              try {
+                await get().verifyPurchaseWithBackend(
+                  platform,
+                  JSON.stringify(customerInfo),
+                  entitlement.productIdentifier,
+                  customerInfo.originalAppUserId
+                );
+              } catch (backendError) {
+                console.warn('Premium backend sync failed (non-blocking):', backendError);
+              }
+              
+              set({
+                isPremium: true,
+                expiresAt: entitlement.expirationDate || null,
+                subscriptionId: entitlement.productIdentifier,
+                plan: entitlement.productIdentifier?.includes('yearly') ? 'yearly' : 'monthly',
+                platform,
+                loading: false,
+              });
+            } else {
+              set({
+                isPremium: false,
+                expiresAt: null,
+                subscriptionId: null,
+                plan: null,
+                platform: null,
+                loading: false,
+              });
+            }
+          } catch (listenerError) {
+            console.error('Premium listener error:', listenerError);
+            // Don't crash the app - just keep current state
           }
         });
       }
@@ -146,7 +157,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
       await get().checkPremiumStatus();
     } catch (error) {
       console.error('Failed to initialize premium:', error);
-      set({ initialized: true });
+      set({ initialized: true, loading: false });
     }
   },
   
