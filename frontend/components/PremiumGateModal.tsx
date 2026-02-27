@@ -12,6 +12,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import i18n from '../src/i18n';
+import { getOfferings, formatPackagePrice } from '../src/services/revenuecat';
+import { PurchasesOffering } from 'react-native-purchases';
 
 // TypeScript interface for props
 type PremiumGateModalProps = {
@@ -40,6 +42,39 @@ export default function PremiumGateModal({
 }: PremiumGateModalProps) {
   const isSv = i18n.locale.startsWith('sv');
   const router = useRouter();
+  
+  // State for prices
+  const [monthlyPrice, setMonthlyPrice] = useState<string | null>(null);
+  const [yearlyPrice, setYearlyPrice] = useState<string | null>(null);
+  const [loadingPrices, setLoadingPrices] = useState(false);
+  
+  // Load prices when modal becomes visible
+  useEffect(() => {
+    if (visible && Platform.OS !== 'web') {
+      loadPrices();
+    }
+  }, [visible]);
+  
+  const loadPrices = async () => {
+    setLoadingPrices(true);
+    try {
+      const offering = await getOfferings();
+      if (offering) {
+        const monthly = offering.monthly || offering.availablePackages.find(p => p.packageType === 'MONTHLY');
+        const yearly = offering.annual || offering.availablePackages.find(p => p.packageType === 'ANNUAL');
+        
+        if (monthly) {
+          setMonthlyPrice(monthly.product.priceString);
+        }
+        if (yearly) {
+          setYearlyPrice(yearly.product.priceString);
+        }
+      }
+    } catch (e) {
+      console.log('Could not load prices for modal:', e);
+    }
+    setLoadingPrices(false);
+  };
   
   // Navigate to paywall - this handles both iOS (IAP) and Android (web) correctly
   const handleUpgrade = () => {
