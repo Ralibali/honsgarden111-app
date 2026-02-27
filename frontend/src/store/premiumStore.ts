@@ -170,14 +170,35 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
   checkPremiumStatus: async () => {
     set({ loading: true });
     try {
-      // For native platforms, use RevenueCat
+      // For native platforms, also check backend for trial info
       if (Platform.OS === 'ios' || Platform.OS === 'android') {
         const result = await checkPremiumEntitlement();
+        
+        // Also get trial info from backend
+        let isTrial = false;
+        let daysRemaining = null;
+        let trialExpiryWarning = null;
+        
+        try {
+          const response = await apiFetch(`${API_URL}/api/premium/status`);
+          if (response.ok) {
+            const data = await response.json();
+            isTrial = data.is_trial || false;
+            daysRemaining = data.days_remaining;
+            trialExpiryWarning = data.trial_expiry_warning;
+          }
+        } catch (err) {
+          // Ignore - use RevenueCat data as fallback
+        }
+        
         set({
           isPremium: result.isPremium,
           expiresAt: result.expiresAt,
           subscriptionId: result.productId,
           plan: result.productId?.includes('yearly') ? 'yearly' : result.productId ? 'monthly' : null,
+          isTrial,
+          daysRemaining,
+          trialExpiryWarning,
           loading: false,
         });
         
@@ -186,6 +207,9 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
           isPremium: result.isPremium,
           expiresAt: result.expiresAt,
           subscriptionId: result.productId,
+          isTrial,
+          daysRemaining,
+          trialExpiryWarning,
         }));
         
         return;
@@ -201,6 +225,9 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
             subscriptionId: parsed.subscriptionId,
             expiresAt: parsed.expiresAt,
             plan: parsed.plan,
+            isTrial: parsed.isTrial || false,
+            daysRemaining: parsed.daysRemaining,
+            trialExpiryWarning: parsed.trialExpiryWarning,
             loading: false,
           });
           return;
@@ -217,6 +244,9 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
             subscriptionId: data.subscription_id,
             expiresAt: data.expires_at,
             plan: data.plan,
+            isTrial: data.is_trial || false,
+            daysRemaining: data.days_remaining,
+            trialExpiryWarning: data.trial_expiry_warning,
             loading: false,
           });
           
@@ -225,6 +255,9 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
             subscriptionId: data.subscription_id,
             expiresAt: data.expires_at,
             plan: data.plan,
+            isTrial: data.is_trial || false,
+            daysRemaining: data.days_remaining,
+            trialExpiryWarning: data.trial_expiry_warning,
           }));
         } else {
           set({ loading: false });
