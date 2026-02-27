@@ -30,16 +30,7 @@ export default function TabLayout() {
         },
       }}
     >
-      {/* Premium tab FIRST (user request) */}
-      <Tabs.Screen
-        name="premium"
-        options={{
-          title: 'Premium',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="star" size={size} color={color} />
-          ),
-        }}
-      />
+      {/* Main tabs - simplified navigation */}
       <Tabs.Screen
         name="index"
         options={{
@@ -77,19 +68,30 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="premium"
+        options={{
+          title: 'Premium',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="star" size={size} color={color} />
+          ),
+        }}
+      />
+      
+      {/* Hidden tabs - accessible via other means */}
+      <Tabs.Screen
         name="statistics"
         options={{
+          href: null, // Hidden - accessible from home Quick Actions
           title: t('nav.statistics'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="stats-chart" size={size} color={color} />
           ),
         }}
       />
-      {/* Community tab hidden from navbar - accessible from home screen */}
       <Tabs.Screen
         name="community"
         options={{
-          href: null, // Hide from tab bar
+          href: null, // Hidden - accessible from home screen
           title: isSv ? 'Community' : 'Community',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubbles" size={size} color={color} />
@@ -99,6 +101,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
+          href: null, // Hidden - accessible via avatar icon in header
           title: t('nav.settings'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings" size={size} color={color} />
