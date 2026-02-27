@@ -566,11 +566,87 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     borderRadius: 16,
     padding: 16,
   },
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   listTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.textSecondary,
-    marginBottom: 12,
+  },
+  swipeHint: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontStyle: 'italic',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  filterButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceSecondary,
+    alignItems: 'center',
+  },
+  filterButtonActive: {
+    backgroundColor: colors.primary,
+  },
+  filterText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+  filterTextActive: {
+    color: '#fff',
+  },
+  swipeContainer: {
+    position: 'relative',
+    marginBottom: 2,
+  },
+  swipeActions: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  swipeAction: {
+    width: 60,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  editAction: {
+    backgroundColor: colors.primary,
+  },
+  deleteAction: {
+    backgroundColor: colors.error,
+  },
+  swipeActionText: {
+    color: '#fff',
+    fontSize: 10,
+    marginTop: 2,
+  },
+  trendBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  trendText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  recordRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   emptyState: {
     alignItems: 'center',
