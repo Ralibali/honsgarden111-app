@@ -857,6 +857,17 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             )}
             
+            {/* Invite Friends */}
+            <TouchableOpacity 
+              style={[styles.logoutButton, { backgroundColor: '#22c55e20', marginBottom: 12 }]}
+              onPress={() => router.push('/invite')}
+            >
+              <Ionicons name="gift-outline" size={20} color="#22c55e" />
+              <Text style={[styles.logoutText, { color: '#22c55e' }]}>
+                {isSv ? 'Bjud in vänner – få 7 dagars Premium!' : 'Invite friends – get 7 days Premium!'}
+              </Text>
+            </TouchableOpacity>
+            
             <TouchableOpacity 
               style={styles.logoutButton}
               onPress={() => {
