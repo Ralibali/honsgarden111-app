@@ -9,15 +9,23 @@ import {
   purchasePackage,
   ENTITLEMENT_ID,
 } from '../services/revenuecat';
-import { useAuthStore, getAuthHeaders, setSessionToken, hasSessionToken, getMaskedToken, shouldIgnore401 } from './authStore';
+import { useAuthStore, getAuthHeaders, setSessionToken, hasSessionToken, getMaskedToken, shouldIgnore401, getSessionToken } from './authStore';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 // Robust API fetch helper with auth handling and logging
 const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  // Build headers robustly - handle both object and Headers
-  const baseHeaders = getAuthHeaders();
-  const headers = new Headers(baseHeaders);
+  // Build headers using a fresh Headers object for robustness
+  const headers = new Headers();
+  
+  // Always set Content-Type first
+  headers.set('Content-Type', 'application/json');
+  
+  // Get the current token DIRECTLY (not through getAuthHeaders to ensure freshness)
+  const currentToken = getSessionToken();
+  if (currentToken) {
+    headers.set('Authorization', `Bearer ${currentToken}`);
+  }
   
   // Merge in any additional headers from options
   if (options.headers) {
@@ -25,15 +33,19 @@ const apiFetch = async (url: string, options: RequestInit = {}): Promise<Respons
       ? options.headers 
       : new Headers(options.headers as Record<string, string>);
     optHeaders.forEach((value, key) => {
-      headers.set(key, value);
+      if (key.toLowerCase() !== 'authorization' || !currentToken) {
+        headers.set(key, value);
+      }
     });
   }
   
+  const endpoint = url.replace(API_URL, '');
+  
   // DEV logging
   if (__DEV__) {
-    const endpoint = url.replace(API_URL, '');
     console.log(`[premiumFetch] ${options.method || 'GET'} ${endpoint}`);
-    console.log(`[premiumFetch] hasToken: ${hasSessionToken()}, token: ${getMaskedToken()}`);
+    console.log(`[premiumFetch] Token: ${currentToken ? `...${currentToken.slice(-6)}` : 'NULL'}`);
+    console.log(`[premiumFetch] Auth header: ${headers.has('Authorization') ? 'present' : 'MISSING'}`);
   }
   
   const response = await fetch(url, {
@@ -44,8 +56,6 @@ const apiFetch = async (url: string, options: RequestInit = {}): Promise<Respons
   
   // Handle 401 - user needs to login
   if (response.status === 401) {
-    const endpoint = url.replace(API_URL, '');
-    
     if (__DEV__) {
       console.warn(`[premiumFetch] 401 from ${endpoint}`);
     }
