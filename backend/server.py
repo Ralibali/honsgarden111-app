@@ -436,6 +436,7 @@ class EmailRegister(BaseModel):
 class EmailLogin(BaseModel):
     email: EmailStr
     password: str
+    remember_me: bool = False  # For web "Kom ihåg mig" feature
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr
@@ -443,6 +444,9 @@ class PasswordResetRequest(BaseModel):
 class PasswordReset(BaseModel):
     token: str
     new_password: str
+
+class MagicLinkRequest(BaseModel):
+    next_url: Optional[str] = "/"  # Where to redirect after login
 
 # ============ COOP/DATA MODELS ============
 class CoopSettings(BaseModel):
