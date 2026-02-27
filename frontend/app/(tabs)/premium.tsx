@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useThemeStore } from '../../src/store/themeStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import { useAuthStore } from '../../src/store/authStore';
 import i18n from '../../src/i18n';
-import { getOfferings, purchasePackage, PurchasesPackage } from '../../src/services/revenuecat';
+import { getManagementURL } from '../../src/services/revenuecat';
 
 // Stripe URL for Android/Web users
 const PREMIUM_WEB_URL = 'https://honsgarden.se/api/premium-page';
