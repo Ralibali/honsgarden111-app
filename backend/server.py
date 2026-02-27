@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, date, timezone, timedelta
+from zoneinfo import ZoneInfo
 from enum import Enum
 import httpx
 import resend
@@ -24,8 +25,35 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# AI Key
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# AI Key - verify and log status at startup
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+if not EMERGENT_LLM_KEY:
+    logger.error("⚠️ CRITICAL: EMERGENT_LLM_KEY is not set! AI features will use fallback responses.")
+else:
+    logger.info("✅ EMERGENT_LLM_KEY is configured")
+
+# Stockholm timezone helper
+STOCKHOLM_TZ = ZoneInfo("Europe/Stockholm")
+
+def today_str_stockholm() -> str:
+    """Get today's date as YYYY-MM-DD string in Stockholm timezone"""
+    return datetime.now(STOCKHOLM_TZ).strftime('%Y-%m-%d')
+
+def now_stockholm() -> datetime:
+    """Get current datetime in Stockholm timezone"""
+    return datetime.now(STOCKHOLM_TZ)
+
+def days_ago_stockholm(days: int) -> str:
+    """Get date X days ago as YYYY-MM-DD string in Stockholm timezone"""
+    return (datetime.now(STOCKHOLM_TZ) - timedelta(days=days)).strftime('%Y-%m-%d')
+
+def days_ahead_stockholm(days: int) -> str:
+    """Get date X days ahead as YYYY-MM-DD string in Stockholm timezone"""
+    return (datetime.now(STOCKHOLM_TZ) + timedelta(days=days)).strftime('%Y-%m-%d')
 
 # Webapp static files path
 WEBAPP_DIR = ROOT_DIR / 'webapp_dist'
