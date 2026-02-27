@@ -29,7 +29,7 @@ class TestStatisticsSummary:
         
         # Login to get session token
         login_response = self.session.post(
-            f"{BASE_URL}/api/auth/email/login",
+            f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
         
@@ -118,7 +118,7 @@ class TestHealthScores:
         self.session.headers.update({"Content-Type": "application/json"})
         
         login_response = self.session.post(
-            f"{BASE_URL}/api/auth/email/login",
+            f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
         
@@ -180,7 +180,7 @@ class TestAIDailyReport:
         self.session.headers.update({"Content-Type": "application/json"})
         
         login_response = self.session.post(
-            f"{BASE_URL}/api/auth/email/login",
+            f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
         
@@ -250,7 +250,7 @@ class TestFrontendUIFeatures:
         self.session.headers.update({"Content-Type": "application/json"})
         
         login_response = self.session.post(
-            f"{BASE_URL}/api/auth/email/login",
+            f"{BASE_URL}/api/auth/login",
             json={"email": TEST_EMAIL, "password": TEST_PASSWORD}
         )
         
