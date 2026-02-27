@@ -191,7 +191,7 @@ export default function PremiumScreen() {
           
           <View style={styles.featuresGrid}>
             {PREMIUM_FEATURES.map((feature, index) => (
-              <View key={index} style={styles.featureCard}>
+              <View key={index} style={[styles.featureCard, isNarrow && styles.featureCardNarrow]}>
                 <View style={styles.featureIconContainer}>
                   <Ionicons 
                     name={feature.icon as keyof typeof Ionicons.glyphMap} 
