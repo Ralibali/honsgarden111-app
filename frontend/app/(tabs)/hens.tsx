@@ -108,6 +108,7 @@ export default function HensScreen() {
   const [selectedColor, setSelectedColor] = useState('');
   const [notes, setNotes] = useState('');
   const [henFlockId, setHenFlockId] = useState('');
+  const [henType, setHenType] = useState<'hen' | 'rooster'>('hen');
   const [saving, setSaving] = useState(false);
   
   // Flock modal
