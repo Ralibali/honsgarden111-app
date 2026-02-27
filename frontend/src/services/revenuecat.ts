@@ -322,7 +322,7 @@ export const addCustomerInfoListener = (
  * Get subscription management URL (for "Manage Subscription" button)
  */
 export const getManagementURL = async (): Promise<string | null> => {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web' || !Purchases) return null;
   
   try {
     const customerInfo = await Purchases.getCustomerInfo();
