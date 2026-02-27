@@ -1387,8 +1387,11 @@ async def verify_registration(data: dict, request: Request, response: Response):
         "user_id": user_id,
         "plan": "trial",
         "is_active": True,
+        "expires_at": trial_end.isoformat(),
         "trial_end": trial_end.isoformat(),
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "purchase_source": "trial",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
     }
     await db.subscriptions.insert_one(subscription)
     
