@@ -62,6 +62,7 @@ export default function CommunityScreen() {
   const [showNewPostModal, setShowNewPostModal] = useState(false);
   const [newPostContent, setNewPostContent] = useState('');
   const [newPostCategory, setNewPostCategory] = useState('other');
+  const [includeMyStats, setIncludeMyStats] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   
   const loadPosts = useCallback(async () => {
