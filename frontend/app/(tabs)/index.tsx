@@ -77,6 +77,17 @@ export default function HomeScreen() {
   const [forecastLoading, setForecastLoading] = useState(false);
   const [showForecastModal, setShowForecastModal] = useState(false);
   
+  // AI Daily Tip state
+  const [dailyTip, setDailyTip] = useState<string>('');
+  const [dailyTipLoading, setDailyTipLoading] = useState(false);
+  const [showDailyTipModal, setShowDailyTipModal] = useState(false);
+  
+  // Fråga Agda (AI Advisor) state
+  const [showAgdaModal, setShowAgdaModal] = useState(false);
+  const [agdaQuestion, setAgdaQuestion] = useState('');
+  const [agdaAnswer, setAgdaAnswer] = useState('');
+  const [agdaLoading, setAgdaLoading] = useState(false);
+  
   // Animation refs
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const undoOpacity = useRef(new Animated.Value(0)).current;
