@@ -3,14 +3,40 @@
  * Full subscription management with Paywall and Customer Center support
  */
 import { Platform } from 'react-native';
-import Purchases, { 
-  LOG_LEVEL, 
-  CustomerInfo, 
-  PurchasesOffering,
-  PurchasesPackage,
-  PURCHASES_ERROR_CODE,
-} from 'react-native-purchases';
-import Constants from 'expo-constants';
+
+// Web platform mock types
+interface MockCustomerInfo {
+  entitlements: { active: {} };
+  originalAppUserId: string;
+  managementURL: string | null;
+}
+
+// Only import RevenueCat on native platforms
+let Purchases: any = null;
+let LOG_LEVEL: any = { ERROR: 0, VERBOSE: 4 };
+let PURCHASES_ERROR_CODE: any = { 
+  PURCHASE_CANCELLED_ERROR: 'PURCHASE_CANCELLED',
+  PRODUCT_ALREADY_PURCHASED_ERROR: 'PRODUCT_ALREADY_PURCHASED'
+};
+
+// Lazy load RevenueCat only on native platforms
+const loadRevenueCat = async () => {
+  if (Platform.OS !== 'web' && !Purchases) {
+    try {
+      const RC = await import('react-native-purchases');
+      Purchases = RC.default;
+      LOG_LEVEL = RC.LOG_LEVEL;
+      PURCHASES_ERROR_CODE = RC.PURCHASES_ERROR_CODE;
+    } catch (error) {
+      console.warn('RevenueCat not available:', error);
+    }
+  }
+};
+
+// Type definitions for external use
+export type CustomerInfo = MockCustomerInfo;
+export type PurchasesOffering = any;
+export type PurchasesPackage = any;
 
 // RevenueCat API Key - Use your test key
 const REVENUECAT_API_KEY = 'test_hyDYIzhCbqNxMdjcHEIfFjEFJpO';
@@ -19,8 +45,9 @@ const REVENUECAT_API_KEY = 'test_hyDYIzhCbqNxMdjcHEIfFjEFJpO';
 const REVENUECAT_IOS_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || REVENUECAT_API_KEY;
 const REVENUECAT_ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || REVENUECAT_API_KEY;
 
-// Environment check
-const IS_PRODUCTION = !__DEV__ || Constants.expoConfig?.extra?.APP_ENV === 'production';
+// Environment check - use typeof to avoid web bundling issues
+const IS_DEV = typeof __DEV__ !== 'undefined' ? __DEV__ : true;
+const IS_PRODUCTION = !IS_DEV;
 
 // Entitlement ID - MUST match your RevenueCat dashboard
 export const ENTITLEMENT_ID = 'Hönsgården app Pro';
