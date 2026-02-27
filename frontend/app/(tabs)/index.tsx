@@ -327,6 +327,19 @@ export default function HomeScreen() {
   const t = i18n.t.bind(i18n);
   const isSv = i18n.locale.startsWith('sv');
   
+  // Helper function to get weather icon based on description
+  const getWeatherIcon = (description: string): string => {
+    const desc = description?.toLowerCase() || '';
+    if (desc.includes('sol') || desc.includes('klar') || desc.includes('clear') || desc.includes('sun')) return '☀️';
+    if (desc.includes('moln') || desc.includes('cloud') || desc.includes('över')) return '☁️';
+    if (desc.includes('regn') || desc.includes('rain') || desc.includes('dugg')) return '🌧️';
+    if (desc.includes('snö') || desc.includes('snow')) return '❄️';
+    if (desc.includes('dimma') || desc.includes('fog') || desc.includes('dis')) return '🌫️';
+    if (desc.includes('åska') || desc.includes('thunder') || desc.includes('storm')) return '⛈️';
+    if (desc.includes('delvis') || desc.includes('partly')) return '⛅';
+    return '🌤️'; // Default
+  };
+  
   const styles = createStyles(colors, isDark);
   
   return (
