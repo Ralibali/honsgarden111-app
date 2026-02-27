@@ -5,6 +5,28 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2025-02-27)
 
+### Native Auth Fix ✅ (KRITISKT - 2025-02-27)
+**Problem:** Användare loggades ut direkt efter inloggning i Expo Go (native app).
+
+**Lösning:**
+1. **Token-hantering i authStore.ts:**
+   - Token sätts SYNKRONT i minnet innan async AsyncStorage-operationer
+   - Ny `getSessionToken()` export för direkt minnesåtkomst
+   - Grace period ökad till 10 sekunder
+   - `loginInProgress` flagga hanteras via timeout (inte manuellt)
+
+2. **apiFetch() i appStore.ts/premiumStore.ts:**
+   - Använder `new Headers()` för robust header-hantering
+   - Hämtar token direkt via `getSessionToken()` (inte via `getAuthHeaders()`)
+   - Consecutive 401 counter: logout sker först efter 3 på varandra följande 401-fel
+   - Förbättrad logging för debugging
+
+3. **Backend get_current_user():**
+   - Förbättrad logging vid 401-fel (visar alla headers, host, origin)
+   - Loggar framgångsrik auth med token-källa (cookie/header)
+
+**Verifierat:** Alla 11 backend-tester passerade (test_native_auth_bearer_token.py)
+
 ### 7-dagars Gratis Trial Premium ✅
 - Nya användare får automatiskt 7 dagars gratis Premium vid registrering
 - `expires_at` sätts korrekt i subscription
@@ -19,7 +41,7 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
   - `GET /api/referral/info` - Hämta din kod och statistik
   - `GET /api/referral/list` - Se lista över värvade vänner
 - **Ny UI-sida:** `/invite` - Bjud in vänner med delning och statistik
-- **Knapp i Settings:** "Bjud in vänner – få 7 dagars Premium!"
+- **Knapp i Settings:** "Bjud in vänner – få sju dagars Premium!"
 
 ### Native Admin-panel ✅
 - Flyttad från webb till native app
