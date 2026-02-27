@@ -708,29 +708,30 @@ export default function CommunityScreen() {
                 {/* Regular post footer */}
                 {!post.is_sponsored && (
                   <View style={styles.postFooter}>
-                  <TouchableOpacity 
-                    style={styles.likeButton}
-                    onPress={() => handleLike(post.id)}
-                  >
-                    <Ionicons 
-                      name={post.liked_by_me ? "heart" : "heart-outline"} 
-                      size={20} 
-                      color={post.liked_by_me ? "#ef4444" : colors.textSecondary} 
-                    />
-                    <Text style={[styles.likeCount, post.liked_by_me && { color: '#ef4444' }]}>
-                      {post.likes}
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  {post.is_mine && (
                     <TouchableOpacity 
-                      style={styles.deleteButton}
-                      onPress={() => handleDelete(post.id)}
+                      style={styles.likeButton}
+                      onPress={() => handleLike(post.id)}
                     >
-                      <Ionicons name="trash-outline" size={18} color={colors.textMuted} />
+                      <Ionicons 
+                        name={post.liked_by_me ? "heart" : "heart-outline"} 
+                        size={20} 
+                        color={post.liked_by_me ? "#ef4444" : colors.textSecondary} 
+                      />
+                      <Text style={[styles.likeCount, post.liked_by_me && { color: '#ef4444' }]}>
+                        {post.likes}
+                      </Text>
                     </TouchableOpacity>
-                  )}
-                </View>
+                    
+                    {post.is_mine && (
+                      <TouchableOpacity 
+                        style={styles.deleteButton}
+                        onPress={() => handleDelete(post.id)}
+                      >
+                        <Ionicons name="trash-outline" size={18} color={colors.textMuted} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
               </View>
             ))
           )}
