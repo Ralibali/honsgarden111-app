@@ -274,12 +274,14 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   customInput: {
     flex: 1,
-    height: 50,
+    height: 56,
+    minWidth: 140,
     backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     paddingHorizontal: 16,
-    fontSize: 18,
+    fontSize: 20,
     color: colors.text,
+    textAlign: 'center',
   },
   customAddBtn: {
     height: 50,
