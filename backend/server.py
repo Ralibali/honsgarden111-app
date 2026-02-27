@@ -1067,6 +1067,85 @@ class CommunityPost(BaseModel):
     # Optional coop stats
     coop_stats: Optional[dict] = None  # {"coop_name": "", "hen_count": 5, "eggs_this_week": 20, "avg_per_day": 2.8}
 
+# ============ SPONSORED/AFFILIATE POSTS ============
+class SponsoredPostCreate(BaseModel):
+    """Admin creates sponsored posts that appear in the community feed"""
+    title: str
+    content: str
+    category: str = "other"
+    affiliate_url: Optional[str] = None
+    discount_code: Optional[str] = None
+    discount_percent: Optional[int] = None
+    image_url: Optional[str] = None
+    # Targeting
+    trigger_conditions: List[str] = []  # ["winter", "summer", "low_eggs", "always"]
+    start_date: Optional[str] = None  # YYYY-MM-DD
+    end_date: Optional[str] = None    # YYYY-MM-DD
+    is_active: bool = True
+    priority: int = 1  # Higher = more likely to show
+
+class SponsoredPost(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    content: str
+    category: str = "other"
+    affiliate_url: Optional[str] = None
+    discount_code: Optional[str] = None
+    discount_percent: Optional[int] = None
+    image_url: Optional[str] = None
+    trigger_conditions: List[str] = []
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    is_active: bool = True
+    priority: int = 1
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    clicks: int = 0  # Track affiliate link clicks
+    impressions: int = 0  # Track how many times shown
+
+# Pre-configured sponsored posts (can be managed via admin later)
+DEFAULT_SPONSORED_POSTS = [
+    {
+        "id": "sponsor-winter-light",
+        "title": "Tips för mörka vinterdagar! 💡",
+        "content": "Visste du att höns behöver 14-16 timmar ljus för att värpa optimalt? En LED-lampa med timer kan göra stor skillnad på vintern. Kolla in våra rekommenderade belysningslösningar!",
+        "category": "housing",
+        "affiliate_url": "https://www.bonden.se/1853-foderutrustning",
+        "trigger_conditions": ["winter"],
+        "is_active": True,
+        "priority": 2
+    },
+    {
+        "id": "sponsor-calcium",
+        "title": "Mjuka skal? Prova detta! 🥚",
+        "content": "Kalciumbrist är en vanlig orsak till tunna äggskal. Ostronskalskal ger dina höns det kalcium de behöver för starka, fina ägg. Naturligt och effektivt!",
+        "category": "feed",
+        "affiliate_url": "https://www.bonden.se/1853-foderutrustning",
+        "trigger_conditions": ["always"],
+        "is_active": True,
+        "priority": 1
+    },
+    {
+        "id": "sponsor-summer-water",
+        "title": "Håll dina höns svala i värmen! ☀️",
+        "content": "Sommarvärme kan vara farligt för höns. En extra vattenautomat och skuggplats kan rädda liv. Kolla in våra tips och produkter för en sval sommar!",
+        "category": "housing",
+        "affiliate_url": "https://www.bonden.se/1853-foderutrustning",
+        "trigger_conditions": ["summer"],
+        "is_active": True,
+        "priority": 2
+    },
+    {
+        "id": "sponsor-mites",
+        "title": "Kvalster? Agera nu! 🐛",
+        "content": "Röda hönskvalster är vanligast på sommaren och kan orsaka blodbrist och nedsatt värpning. Kiselgur är ett naturligt och effektivt sätt att bekämpa dem.",
+        "category": "health",
+        "affiliate_url": "https://www.bonden.se/1853-foderutrustning",
+        "trigger_conditions": ["summer"],
+        "is_active": True,
+        "priority": 1
+    },
+]
+
 # Forbidden patterns for content moderation (GDPR, phone numbers, etc.)
 FORBIDDEN_PATTERNS = [
     r'\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b',  # Phone numbers (XXX-XXX-XXXX)
