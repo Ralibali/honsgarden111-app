@@ -142,11 +142,11 @@ export default function InviteFriendsPage() {
         <View style={[styles.heroCard, { backgroundColor: colors.primary + '15' }]}>
           <Text style={styles.heroEmoji}>🎁</Text>
           <Text style={[styles.heroTitle, { color: colors.text }]}>
-            {isSv ? 'Ge & Få 7 dagars Premium!' : 'Give & Get 7 Days Premium!'}
+            {isSv ? 'Ge & Få sju dagars Premium!' : 'Give & Get 7 Days Premium!'}
           </Text>
           <Text style={[styles.heroText, { color: colors.textSecondary }]}>
             {isSv 
-              ? 'När en vän skapar ett konto med din kod får ni båda 7 dagars gratis Premium.'
+              ? 'När en vän skapar ett konto med din kod får ni båda sju dagars gratis Premium.'
               : 'When a friend creates an account with your code, you both get 7 days free Premium.'}
           </Text>
         </View>
@@ -276,7 +276,7 @@ export default function InviteFriendsPage() {
               <Text style={styles.stepNumberText}>3</Text>
             </View>
             <Text style={[styles.stepText, { color: colors.textSecondary }]}>
-              {isSv ? 'Ni får båda 7 dagars gratis Premium!' : 'You both get 7 days free Premium!'}
+              {isSv ? 'Ni får båda sju dagars gratis Premium!' : 'You both get 7 days free Premium!'}
             </Text>
           </View>
         </View>
