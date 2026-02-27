@@ -448,6 +448,12 @@ class PasswordReset(BaseModel):
 class MagicLinkRequest(BaseModel):
     next_url: Optional[str] = "/"  # Where to redirect after login
 
+class ReferralInfo(BaseModel):
+    referral_code: str
+    referral_link: str
+    referrals_count: int
+    bonus_days_earned: int
+
 # ============ COOP/DATA MODELS ============
 class CoopSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
