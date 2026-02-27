@@ -1368,6 +1368,12 @@ async def verify_registration(data: dict, request: Request, response: Response):
     # Code is correct - create the user account
     user_id = str(uuid.uuid4())
     
+    # Generate unique referral code for this user
+    referral_code = secrets.token_urlsafe(6).upper()[:8]  # 8 character code
+    
+    # Check if user was referred by someone
+    referred_by = pending.get("referred_by")
+    
     user = {
         "id": user_id,
         "email": email,
@@ -1380,6 +1386,8 @@ async def verify_registration(data: dict, request: Request, response: Response):
         "accepted_terms_at": datetime.now(timezone.utc).isoformat(),
         "accepted_marketing": pending.get("accepted_marketing", False),
         "accepted_marketing_at": datetime.now(timezone.utc).isoformat() if pending.get("accepted_marketing") else None,
+        "referral_code": referral_code,
+        "referred_by": referred_by,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user)
