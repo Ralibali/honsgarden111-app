@@ -362,6 +362,47 @@ export default function HensScreen() {
         })
       });
       await loadData();
+      
+      // Check for smart notifications after egg registration
+      if (Platform.OS !== 'web') {
+        try {
+          const notifRes = await fetch(`${API_URL}/api/notifications/smart-check`);
+          if (notifRes.ok) {
+            const notifData = await notifRes.json();
+            if (notifData.should_notify) {
+              switch (notifData.notification_type) {
+                case 'new_record':
+                  await SmartNotifications.newRecord(notifData.notification_data.egg_count);
+                  break;
+                case 'perfect_day':
+                  await SmartNotifications.perfectDay(
+                    notifData.notification_data.egg_count,
+                    notifData.notification_data.hen_count
+                  );
+                  break;
+                case 'first_egg':
+                  await SmartNotifications.firstEgg();
+                  break;
+                case 'milestone':
+                  await SmartNotifications.eggMilestone(notifData.notification_data.count);
+                  break;
+                case 'production_up':
+                  await SmartNotifications.productionUp(notifData.notification_data.percent);
+                  break;
+                case 'production_down':
+                  await SmartNotifications.productionDown(notifData.notification_data.percent);
+                  break;
+                case 'encouragement':
+                  await SmartNotifications.keepGoing();
+                  break;
+              }
+            }
+          }
+        } catch (notifError) {
+          console.log('Smart notification check failed:', notifError);
+        }
+      }
+      
       // Keep modal open to allow adding more
       Alert.alert('🥚', `${count} ägg registrerat för ${quickActionHen.name}!`);
     } catch (error) {
