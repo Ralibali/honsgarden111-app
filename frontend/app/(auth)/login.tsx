@@ -1003,21 +1003,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.4)',
     fontSize: 13,
   },
-  googleButton: {
-    width: '100%',
-    backgroundColor: '#fff',
-    paddingVertical: 14,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  googleButtonText: {
-    color: '#333',
-    fontSize: 15,
-    fontWeight: '500',
-  },
   switchButton: {
     marginTop: 20,
   },
