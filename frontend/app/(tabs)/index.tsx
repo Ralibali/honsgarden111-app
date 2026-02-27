@@ -776,6 +776,16 @@ export default function HomeScreen() {
               </View>
               <Text style={styles.quickActionLabel}>{isSv ? 'Statistik' : 'Stats'}</Text>
             </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.quickActionCard}
+              onPress={() => setShowChoresModal(true)}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: '#06b6d4' }]}>
+                <Ionicons name="checkbox" size={20} color="#FFF" />
+              </View>
+              <Text style={styles.quickActionLabel}>{isSv ? 'Sysslor' : 'Chores'}</Text>
+            </TouchableOpacity>
           </ScrollView>
         </View>
         
