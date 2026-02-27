@@ -140,9 +140,86 @@ export default function AdminPanel() {
     }
   };
 
+  const loadCommunityPosts = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/community/posts?include_hidden=true`, {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCommunityPosts(data.posts || []);
+      }
+    } catch (error) {
+      console.error('Failed to load community posts:', error);
+    }
+  };
+
+  const handleHidePost = async (postId: string) => {
+    Alert.alert(
+      'Dölj inlägg',
+      'Är du säker på att du vill dölja detta inlägg? Det kommer inte längre synas för användare.',
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Dölj',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await fetch(`${API_URL}/api/community/posts/${postId}/hide`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: getAuthHeaders(),
+              });
+              if (res.ok) {
+                Alert.alert('Klart', 'Inlägget har dolts');
+                loadCommunityPosts();
+              } else {
+                Alert.alert('Fel', 'Kunde inte dölja inlägget');
+              }
+            } catch (error) {
+              Alert.alert('Fel', 'Kunde inte ansluta till servern');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    Alert.alert(
+      'Radera inlägg',
+      'Är du säker på att du vill radera detta inlägg permanent?',
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Radera',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await fetch(`${API_URL}/api/community/posts/${postId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: getAuthHeaders(),
+              });
+              if (res.ok) {
+                Alert.alert('Klart', 'Inlägget har raderats');
+                loadCommunityPosts();
+              } else {
+                Alert.alert('Fel', 'Kunde inte radera inlägget');
+              }
+            } catch (error) {
+              Alert.alert('Fel', 'Kunde inte ansluta till servern');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([loadUsers(), loadSubscriptions(), loadFeedback()]);
+    await Promise.all([loadUsers(), loadSubscriptions(), loadFeedback(), loadCommunityPosts()]);
     setLoading(false);
   };
 
