@@ -339,7 +339,7 @@ export const useAuthStore = create<AuthState>()(
               user_id: data.user_id,
               email: data.email,
               name: data.name || '',
-              picture: null,
+              picture: undefined,
             },
             isAuthenticated: true,
             error: null,
