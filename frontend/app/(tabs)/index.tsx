@@ -1118,6 +1118,34 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   header: {
     marginBottom: 20,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerTitleSection: {
+    flex: 1,
+  },
+  // Weather widget in header
+  weatherWidget: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  weatherWidgetIcon: {
+    fontSize: 20,
+  },
+  weatherWidgetTemp: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
