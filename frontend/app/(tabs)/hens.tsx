@@ -153,11 +153,12 @@ export default function HensScreen() {
   
   const loadData = async () => {
     try {
-      const [hensRes, flocksRes, eggsRes, logsRes] = await Promise.all([
+      const [hensRes, flocksRes, eggsRes, logsRes, scoresRes] = await Promise.all([
         fetch(`${API_URL}/api/hens?active_only=${!showInactive}`, { credentials: 'include' }),
         fetch(`${API_URL}/api/flocks`, { credentials: 'include' }),
         fetch(`${API_URL}/api/eggs?limit=1000`, { credentials: 'include' }),
-        fetch(`${API_URL}/api/health-logs`, { credentials: 'include' })
+        fetch(`${API_URL}/api/health-logs`, { credentials: 'include' }),
+        fetch(`${API_URL}/api/hens/health-scores`, { credentials: 'include' })
       ]);
       
       if (hensRes.ok) {
