@@ -1,217 +1,121 @@
 # Hönsgården - Product Requirements Document
 
-## Senaste uppdatering: 27 Feb 2026 (Session 3 - Kritiska buggar fixade)
+## Projektöversikt
+Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb. Appen hjälper användare att spåra äggproduktion, hantera hönor, få AI-drivna insikter och prenumerera på premium-funktioner.
 
----
+## Tech Stack
+- **Frontend**: React Native (Expo SDK 54), Expo Router, Zustand
+- **Backend**: FastAPI, Python
+- **Databas**: MongoDB Atlas
+- **Betalningar**: 
+  - iOS: RevenueCat (App Store IAP)
+  - Android: Stripe (Webbbetalning)
+  - Webb: Stripe
+- **AI**: OpenAI via Emergent Integrations
+- **Email**: Resend
 
-## NYLIGEN GENOMFÖRT (27 Feb 2026 - Session 3)
+## Implementerade funktioner
 
-### 1. KRITISK FIX: Appen fastnade på laddningsskärmen ✅
-**Root Cause**: Metro bundler använde ESM-filer från `zustand` som innehöll `import.meta.env` referenser, vilket inte stöds i React Native/Web-miljöer.
+### Autentisering ✅
+- Email/lösenord registrering med 6-siffrig verifiering
+- Inloggning med felhantering
+- Glömt lösenord-flöde med email-kod
+- GDPR & nyhetsbrev-samtycke
+- Session-baserad auth med cookies
 
-**Lösning**:
-- Lade till `config.resolver.unstable_enablePackageExports = false;` i `metro.config.js`
-- Detta tvingar Metro att använda CommonJS-filer istället för ESM
-- Rensade Metro-cache och startade om Expo
+### Premium/Prenumerationer ✅ (2024-02-27)
+- **iOS**: RevenueCat In-App Purchase integration
+- **Android/Webb**: Stripe webbbetalning
+- Premium-skärm med planer (månatlig/årlig)
+- PremiumGateModal för gated features
+- Paywall-skärm med plattformsspecifik logik
+- Prenumerationshantering (iOS: App Store, Android: Google Play)
+- "Tack"-meddelande efter köp
 
-**Filer ändrade**:
-- `/app/frontend/metro.config.js`
+### RevenueCat Integration ✅ (2024-02-27)
+- A1: Paywall använder RevenueCatPaywall för iOS
+- A2: PremiumGateModal navigerar till /paywall
+- A3: Hantera prenumeration via getManagementURL()
+- A4: identifyUser() anropas efter login
+- A5: API-nycklar via miljövariabler (ej hårdkodade)
 
-### 2. KRITISK FIX: "Glömt lösenord"-flödet ✅
-- Bekräftade att flödet nu fungerar korrekt efter laddningsskärmsfixen
-- Användaren kan nu navigera: Logga in → Glömt lösenord? → Ange e-post → Skicka kod
+### Google Play/App Store Compliance ✅ (2024-02-27)
+- B1: Radera konto-funktion implementerad
+- B2: Onödiga Android-permissions borttagna
+- B3: NSPhotoLibraryAddUsageDescription tillagt
+- B4: Privacy/Terms-länkar i appen
 
-### 3. RevenueCat Web-kompatibilitet ✅
-- Refaktorerade `/app/frontend/src/services/revenuecat.ts` för att använda dynamisk import
-- Lade till null-checks för `Purchases` objekt på alla funktioner
-- Web-plattformen använder nu mock-läge korrekt
+### Säkerhet & CORS ✅ (2024-02-27)
+- CORS: Explicit origin-lista istället för "*"
+- Stripe: Ingen fallback testnyckel
+- API_URL: Varning om ej konfigurerad
+- cookies.txt borttagen från repo
 
-### 4. Layout-initialisering ✅
-- Förbättrade `/app/frontend/app/_layout.tsx` med bättre async/await hantering
-- Lade till `isInitialized` state för mer robust navigationslogik
-- Web-plattformen hoppar nu över onboarding automatiskt
+### Hemskärm
+- Äggregistrering för dagen
+- Dagens statistik
+- Väder-widget högst upp (klickbar för mer info)
+- Insikter och tips
 
----
+### Hönor
+- Lista alla hönor
+- Lägg till/redigera hönor
+- Hälsologg (Premium)
+- Produktivitetsvarningar
 
-## TIDIGARE (26 Feb 2026 - Session 2 - Slutförd)
+### Statistik
+- Daglig/veckovis/månadsvis äggproduktion
+- Grafer och trender
+- PDF-export (Premium)
 
-### 1. Förbättrad Felhantering vid Login ✅
-- Lagt till Alert.alert för att visa tydligt felmeddelande när login misslyckas
-- Användaren ser nu alltid en popup med "Fel vid inloggning" om lösenordet/e-post är fel
+## Konfiguration
 
-### 2. Förbättrad Onboarding-guide ✅
-- **Swipe-funktion**: Nu kan man svep mellan slides med fingret
-- **Inga externa bilder**: Ersatt med ikoner (ägg, hjärta, graf, stjärnor)
-- **Klickbara dots**: Man kan trycka på dots för att hoppa till en slide
-- **Swipe-hint**: Text som visar "Svep för att bläddra →"
-
-### 3. EAS Deployment Fix ✅
-- Tog bort tomma strängar i `eas.json` submit-konfiguration som blockerade deployment
-
----
-
-## GENOMFÖRT (26 Feb 2026 - Session 2 - Del 1)
-
-### 1. Trend-analys ✅ (NY)
-**Ny backend-endpoint: `/api/statistics/trend-analysis`**
-
-Jämför senaste 30 dagar med föregående 30 dagar:
-- **Äggproduktion** (förändring i %)
-- **Värpfrekvens** (förändring i %)
-- **Kostnader** (förändring i %)
-- **Försäljning** (förändring i %)
-- **Vinst** (förändring i %)
-- **Overall trend**: "improving" / "declining" / "stable"
-- **Trend-meddelande** på svenska
-- **Automatiska insikter** baserade på data
-
-### 2. Trend-analys Frontend ✅ (NY)
-- Trend-banner med färgkodad status (grön/röd/gul)
-- Period-jämförelse med nuvarande vs tidigare äggantal
-- Förändringsindikatorer för alla nyckeltal
-- Lista med automatiska insikter
-
-### 3. Stripe Token-fix ✅ (Issue #2)
-- `premium.html` uppdaterad för att skicka auth token med checkout
-- Hämtar token från `localStorage` och lägger i `Authorization` header
-- Skickar även `user_id` i request body för säker koppling
-
-### 4. Mobilappens registrerings-UI ✅ (Issue #1 - VERIFIERAT)
-- UI för 6-siffrig verifieringskod finns redan i `login.tsx`
-- `authMode === 'register-verify'` visar kod-input
-- Inkluderar "Skicka ny kod"-knapp med cooldown
-
-### 5. EAS/Expo Byggkonfiguration ✅ (Issue #3)
-- Tog bort `expo-apple-authentication` (ej längre använd)
-- Tog bort `usesAppleSignIn: true` från app.json
-- Uppdaterade eas.json med förbättrad konfiguration
-- Auto-increment för produktionsbyggen
-
-### 6. Glömt Lösenord ✅ (Issue #4 - VERIFIERAT)
-- Gamla webbappen har korrekt `/api/auth/forgot-password` endpoint
-- Fristående reset-password.html finns och fungerar
-
----
-
-## GENOMFÖRT (26 Feb 2026 - Session 2)
-
-### 1. Avancerade Statistiska Insikter ✅
-**Ny backend-endpoint: `/api/statistics/advanced-insights`**
-
-Returnerar detaljerad data om:
-- **Foderkonvertering** (kg foder per dussin ägg)
-- **Värpfrekvens** (% av höns som värper dagligen)
-- **Kostnad per ägg**
-- **Vinst per ägg**
-- **Foderkostnad per ägg**
-- **Ägg per höna (månad/år)**
-- **Bästa värpdag** (vilken veckodag ger mest ägg)
-- **Produktivitetspoäng** (0-100)
-
-### 2. Uppdaterad Statistik-sida (Frontend) ✅
-- Ny sektion "Avancerade insikter" tillagd
-- Produktivitetspoäng-visare med färgkodning
-- Rutnät med alla nyckeltal
-- Premium-lås för icke-premium användare
-
-### 3. Syntax-fix i login.tsx ✅
-- Åtgärdade `<View style={styles.divider}>` fel (saknades stängning)
-
----
-
-## TIDIGARE GENOMFÖRT (26 Feb 2026 - Session 1)
-
-### 1. Autentisering - Endast E-post/Lösenord ✅
-**Google Sign-In har tagits bort.** Enklare och säkrare.
-
-**Registrering med e-postverifiering:**
-- Steg 1: Fyll i namn, e-post, lösenord + godkänn villkor
-- Steg 2: Ange 6-siffrig kod från e-post
-- Steg 3: Konto skapat! (+ 7 dagars gratis Premium)
-
-**Backend endpoints:**
-- `POST /api/auth/register` - Startar registrering, skickar kod
-- `POST /api/auth/verify-registration` - Verifierar kod, skapar konto
-- `POST /api/auth/resend-verification` - Skickar ny kod
-
-### 2. Lösenordsåterställning ✅
-- `GET /api/reset-password` - Fristående webbsida
-- 3-stegs flöde: E-post → Kod → Nytt lösenord
-
-### 3. Registreringssida för webb ✅
-- `GET /api/register` - Fristående webbsida
-- Visar "7 dagars gratis Premium!" badge
-- Checkboxar för villkor och nyhetsbrev
-
----
-
-## Alla sidor & URLs
-
-| Sida | URL |
-|------|-----|
-| **Registrering** | `/api/register` |
-| **Återställ lösenord** | `/api/reset-password` |
-| Premium-sida | `/api/premium-page` |
-| Checkout Success | `/api/checkout-success` |
-| Integritetspolicy | `/api/privacy` |
-| Användarvillkor | `/api/terms` |
-| Webb-app | `/api/web` |
-
----
-
-## Autentiseringsflöden
-
-### Registrering (nytt)
+### Miljövariabler (Backend)
 ```
-Användare → /api/register
-    ↓
-Fyller i: namn, e-post, lösenord
-    ↓
-Backend skickar 6-siffrig kod via e-post
-    ↓
-Användare anger koden
-    ↓
-Konto skapas + 7 dagars Premium trial
-    ↓
-Automatisk inloggning → /api/web
+MONGO_URL=...
+STRIPE_API_KEY=...
+STRIPE_PUBLISHABLE_KEY=...
+STRIPE_PRICE_MONTHLY=...
+STRIPE_PRICE_YEARLY=...
+RESEND_API_KEY=...
 ```
 
-### Återställ lösenord
+### Miljövariabler (Frontend)
 ```
-Användare → /api/reset-password
-    ↓
-Anger e-post
-    ↓
-Backend skickar 6-siffrig kod
-    ↓
-Anger kod + nytt lösenord
-    ↓
-Lösenord ändrat → /api/web
+EXPO_PUBLIC_BACKEND_URL=...
+EXPO_PUBLIC_REVENUECAT_IOS_API_KEY=...
+EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=...
 ```
 
----
+## DNS-konfiguration för honsgarden.se
+```
+CNAME  @    → production-ready-71.emergentagent.com
+CNAME  www  → production-ready-71.emergentagent.com
+```
 
-## Teknisk Stack
-- **Backend**: FastAPI, MongoDB Atlas
-- **Mobil**: Expo (SDK 54), React Native
-- **E-post**: Resend (noreply@honsgarden.se)
-- **Betalningar**: Stripe
-- **AI**: OpenAI via emergentintegrations
+## Återstående uppgifter
 
----
+### P0 - Kritiskt
+- [ ] Verifiera Stripe-betalningsflöde end-to-end
+- [ ] Trigga ny EAS-build för mobilapp
 
-## Kommande uppgifter
+### P1 - Viktigt
+- [ ] Verifiera RevenueCat-integration på riktig iOS-enhet
+- [ ] Testa radera konto-funktionen
 
-### P1 - Att göra
-- [ ] Länka "Glömt lösenord?" i webb-appen till `/api/reset-password`
-- [ ] Länka "Skapa konto" i webb-appen till `/api/register`
-- [ ] Bygg mobilappen via EAS
+### P2 - Önskvärt
+- [ ] Affiliate-produktlänkar
+- [ ] Refaktorera backend till separata routers
 
-### P2 - Framtida
-- [ ] Uppdatera mobilappens registreringsflöde med verifiering
+## Changelog
 
----
-
-## Testanvändare
-- E-post: testuser@test.com
-- Lösenord: test123
+### 2024-02-27
+- Implementerade fullständig RevenueCat-integration för iOS
+- Fixade Premium-flödet: iOS använder IAP, Android använder Stripe
+- La till "Radera konto"-funktion (Google Play-krav)
+- Fixade CORS med explicit origin-lista
+- Tog bort hårdkodad RevenueCat testnyckel
+- La till väder-widget högst upp i hemskärmen
+- La till Privacy/Terms-länkar i appen
+- Fixade Android permissions
+- La till NSPhotoLibraryAddUsageDescription för iOS
