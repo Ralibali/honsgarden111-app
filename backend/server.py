@@ -6259,6 +6259,7 @@ async def get_community_posts(
             "likes": post.get("likes", 0),
             "liked_by_me": user_id in post.get("liked_by", []) if user_id else False,
             "is_mine": post.get("user_id") == user_id if user_id else False,
+            "coop_stats": post.get("coop_stats"),  # Include coop stats if present
         })
     
     total = await db.community_posts.count_documents(query)
