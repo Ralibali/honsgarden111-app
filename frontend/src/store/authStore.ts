@@ -123,7 +123,13 @@ export const useAuthStore = create<AuthState>()(
       
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
+        loginInProgress = true;
+        
         try {
+          if (__DEV__) {
+            console.log('[Auth] Login attempt to:', API_URL);
+          }
+          
           const res = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -134,13 +140,21 @@ export const useAuthStore = create<AuthState>()(
           const data = await res.json();
           
           if (!res.ok) {
+            loginInProgress = false;
             set({ isLoading: false, error: data.detail || 'Inloggning misslyckades' });
             return false;
           }
           
-          // Save session token for native app auth
+          // Save session token for native app auth BEFORE setting state
           if (data.session_token) {
             await setSessionToken(data.session_token);
+            if (__DEV__) {
+              console.log('[Auth] Login successful, token received and stored');
+            }
+          } else {
+            if (__DEV__) {
+              console.warn('[Auth] Login successful but NO session_token in response!');
+            }
           }
           
           set({
@@ -162,8 +176,13 @@ export const useAuthStore = create<AuthState>()(
             });
           }
           
+          loginInProgress = false;
           return true;
         } catch (error) {
+          loginInProgress = false;
+          if (__DEV__) {
+            console.error('[Auth] Login error:', error);
+          }
           set({ isLoading: false, error: 'Kunde inte ansluta till servern' });
           return false;
         }
