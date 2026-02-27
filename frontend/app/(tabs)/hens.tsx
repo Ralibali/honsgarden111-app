@@ -202,6 +202,7 @@ export default function HensScreen() {
     setSelectedColor('');
     setNotes('');
     setHenFlockId('');
+    setHenType('hen');
     setEditingHen(null);
   };
   
@@ -217,6 +218,7 @@ export default function HensScreen() {
     setSelectedColor(hen.color || '');
     setNotes(hen.notes || '');
     setHenFlockId(hen.flock_id || '');
+    setHenType(hen.hen_type || 'hen');
     setShowAddModal(true);
   };
   
@@ -234,6 +236,7 @@ export default function HensScreen() {
         color: selectedColor || undefined,
         notes: notes.trim() || undefined,
         flock_id: henFlockId || undefined,
+        hen_type: henType,
       };
       
       let response;
@@ -241,12 +244,14 @@ export default function HensScreen() {
         response = await fetch(`${API_URL}/api/hens/${editingHen.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(henData),
         });
       } else {
         response = await fetch(`${API_URL}/api/hens`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(henData),
         });
       }
