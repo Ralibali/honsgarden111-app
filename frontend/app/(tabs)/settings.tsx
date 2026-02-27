@@ -1653,6 +1653,10 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     padding: 14,
     gap: 8,
   },
+  deleteAccountButton: {
+    marginTop: 12,
+    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+  },
   logoutText: {
     color: colors.error,
     fontSize: 15,
