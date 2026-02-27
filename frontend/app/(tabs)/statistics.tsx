@@ -1382,6 +1382,35 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     marginTop: 4,
     textAlign: 'center',
   },
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  bestDayBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: isDark ? 'rgba(255, 193, 7, 0.15)' : 'rgba(255, 193, 7, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  bestDayText: {
+    fontSize: 11,
+    color: colors.warning,
+    fontWeight: '600',
+  },
+  trendIndicator: {
+    height: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trendArrow: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   barChart: {
     flexDirection: 'row',
     alignItems: 'flex-end',
