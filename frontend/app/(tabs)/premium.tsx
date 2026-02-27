@@ -8,6 +8,7 @@ import {
   Linking,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,7 +16,9 @@ import { useThemeStore } from '../../src/store/themeStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import { useAuthStore } from '../../src/store/authStore';
 import i18n from '../../src/i18n';
+import { getOfferings, purchasePackage, PurchasesPackage } from '../../src/services/revenuecat';
 
+// Stripe URL for Android/Web users
 const PREMIUM_WEB_URL = 'https://honsgarden.se/api/premium-page';
 
 const PREMIUM_FEATURES = [
@@ -97,12 +100,86 @@ export default function PremiumScreen() {
   const { user } = useAuthStore();
   const isSv = i18n.locale.startsWith('sv');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const [offerings, setOfferings] = useState<any>(null);
+  const [purchasing, setPurchasing] = useState(false);
+  
+  // Determine payment method based on platform
+  // iOS = RevenueCat (App Store IAP)
+  // Android & Web = Stripe (Web payment)
+  const isIOS = Platform.OS === 'ios';
+  const useInAppPurchase = isIOS;
   
   useEffect(() => {
     checkPremiumStatus();
+    loadOfferings();
   }, []);
   
-  const handleSubscribe = () => {
+  const loadOfferings = async () => {
+    if (useInAppPurchase) {
+      const currentOffering = await getOfferings();
+      if (currentOffering) {
+        setOfferings(currentOffering);
+      }
+    }
+  };
+  
+  // Handle subscription via RevenueCat (iOS only)
+  const handleInAppPurchase = async () => {
+    if (!offerings) {
+      Alert.alert(
+        isSv ? 'Fel' : 'Error',
+        isSv ? 'Kunde inte ladda prenumerationspaket. Försök igen.' : 'Could not load subscription packages. Please try again.'
+      );
+      return;
+    }
+    
+    setPurchasing(true);
+    
+    try {
+      // Find the selected package
+      const packageId = selectedPlan === 'yearly' ? 'yearly' : 'monthly';
+      const pkg = offerings.availablePackages?.find((p: PurchasesPackage) => 
+        p.identifier.toLowerCase().includes(packageId) || 
+        p.packageType?.toLowerCase().includes(packageId === 'yearly' ? 'annual' : 'monthly')
+      ) || offerings.availablePackages?.[selectedPlan === 'yearly' ? 0 : 1];
+      
+      if (!pkg) {
+        Alert.alert(
+          isSv ? 'Fel' : 'Error',
+          isSv ? 'Kunde inte hitta prenumerationspaketet.' : 'Could not find the subscription package.'
+        );
+        setPurchasing(false);
+        return;
+      }
+      
+      const result = await purchasePackage(pkg);
+      
+      if (result.success) {
+        Alert.alert(
+          isSv ? 'Tack!' : 'Thank you!',
+          isSv ? 'Din Premium-prenumeration är nu aktiv!' : 'Your Premium subscription is now active!'
+        );
+        await checkPremiumStatus();
+      } else if (result.userCancelled) {
+        // User cancelled - no need to show error
+      } else if (result.error) {
+        Alert.alert(
+          isSv ? 'Fel' : 'Error',
+          result.error
+        );
+      }
+    } catch (error: any) {
+      Alert.alert(
+        isSv ? 'Fel' : 'Error',
+        error.message || (isSv ? 'Ett fel uppstod vid köpet.' : 'An error occurred during purchase.')
+      );
+    } finally {
+      setPurchasing(false);
+    }
+  };
+  
+  // Handle subscription via Stripe (Android & Web)
+  const handleWebSubscribe = () => {
     Alert.alert(
       isSv ? 'Prenumerera via webben' : 'Subscribe via web',
       isSv 
@@ -128,6 +205,15 @@ export default function PremiumScreen() {
         },
       ]
     );
+  };
+  
+  // Choose the right handler based on platform
+  const handleSubscribe = () => {
+    if (useInAppPurchase) {
+      handleInAppPurchase();
+    } else {
+      handleWebSubscribe();
+    }
   };
   
   const formatDate = (dateStr: string | null) => {
@@ -207,7 +293,15 @@ export default function PremiumScreen() {
           
           <TouchableOpacity 
             style={styles.manageButton}
-            onPress={() => Linking.openURL(PREMIUM_WEB_URL)}
+            onPress={() => {
+              if (isIOS) {
+                // iOS: Open subscription management in App Store
+                Linking.openURL('https://apps.apple.com/account/subscriptions');
+              } else {
+                // Android/Web: Open web portal
+                Linking.openURL(PREMIUM_WEB_URL);
+              }
+            }}
           >
             <Ionicons name="settings-outline" size={20} color={colors.text} />
             <Text style={styles.manageButtonText}>
@@ -334,17 +428,39 @@ export default function PremiumScreen() {
         
         {/* CTA Button */}
         <View style={styles.ctaSection}>
-          <TouchableOpacity style={styles.ctaButton} onPress={handleSubscribe}>
-            <Ionicons name="globe-outline" size={22} color="#000" />
-            <Text style={styles.ctaButtonText}>
-              {isSv ? 'Prenumerera via honsgarden.se' : 'Subscribe via honsgarden.se'}
-            </Text>
+          <TouchableOpacity 
+            style={[styles.ctaButton, purchasing && styles.ctaButtonDisabled]} 
+            onPress={handleSubscribe}
+            disabled={purchasing}
+          >
+            {purchasing ? (
+              <ActivityIndicator size="small" color="#000" />
+            ) : (
+              <>
+                <Ionicons 
+                  name={useInAppPurchase ? "card-outline" : "globe-outline"} 
+                  size={22} 
+                  color="#000" 
+                />
+                <Text style={styles.ctaButtonText}>
+                  {useInAppPurchase 
+                    ? (isSv ? 'Prenumerera nu' : 'Subscribe now')
+                    : (isSv ? 'Prenumerera via honsgarden.se' : 'Subscribe via honsgarden.se')
+                  }
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
           
           <Text style={styles.ctaNote}>
-            {isSv 
-              ? 'Betalning hanteras säkert via Stripe på vår webbplats'
-              : 'Payment handled securely via Stripe on our website'}
+            {useInAppPurchase 
+              ? (isSv 
+                  ? 'Betalning hanteras säkert via App Store' 
+                  : 'Payment handled securely via App Store')
+              : (isSv 
+                  ? 'Betalning hanteras säkert via Stripe på vår webbplats'
+                  : 'Payment handled securely via Stripe on our website')
+            }
           </Text>
         </View>
         
@@ -354,25 +470,32 @@ export default function PremiumScreen() {
             {isSv ? 'Vanliga frågor' : 'FAQ'}
           </Text>
           
-          <View style={styles.faqItem}>
-            <Text style={styles.faqQuestion}>
-              {isSv ? 'Varför betalar jag via webben?' : 'Why do I pay via web?'}
-            </Text>
-            <Text style={styles.faqAnswer}>
-              {isSv 
-                ? 'Genom att hantera betalningar via vår webbplats kan vi erbjuda lägre priser och bättre support.'
-                : 'By handling payments via our website, we can offer lower prices and better support.'}
-            </Text>
-          </View>
+          {!useInAppPurchase && (
+            <View style={styles.faqItem}>
+              <Text style={styles.faqQuestion}>
+                {isSv ? 'Varför betalar jag via webben?' : 'Why do I pay via web?'}
+              </Text>
+              <Text style={styles.faqAnswer}>
+                {isSv 
+                  ? 'På Android hanteras betalningar via vår webbplats med Stripe för enklare prenumerationshantering.'
+                  : 'On Android, payments are handled via our website with Stripe for easier subscription management.'}
+              </Text>
+            </View>
+          )}
           
           <View style={styles.faqItem}>
             <Text style={styles.faqQuestion}>
               {isSv ? 'Kan jag avsluta när som helst?' : 'Can I cancel anytime?'}
             </Text>
             <Text style={styles.faqAnswer}>
-              {isSv 
-                ? 'Ja! Du kan avsluta din prenumeration när som helst via honsgarden.se.'
-                : 'Yes! You can cancel your subscription anytime via honsgarden.se.'}
+              {useInAppPurchase
+                ? (isSv 
+                    ? 'Ja! Du kan hantera din prenumeration i App Store-inställningarna.'
+                    : 'Yes! You can manage your subscription in App Store settings.')
+                : (isSv 
+                    ? 'Ja! Du kan avsluta din prenumeration när som helst via honsgarden.se.'
+                    : 'Yes! You can cancel your subscription anytime via honsgarden.se.')
+              }
             </Text>
           </View>
         </View>
@@ -633,6 +756,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 16,
     gap: 10,
+  },
+  ctaButtonDisabled: {
+    opacity: 0.7,
   },
   ctaButtonText: {
     fontSize: 18,
