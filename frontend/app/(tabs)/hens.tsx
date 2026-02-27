@@ -704,10 +704,10 @@ export default function HensScreen() {
                         {isSv ? 'Senast sedd:' : 'Last seen:'} {hen.last_seen || (isSv ? 'Aldrig' : 'Never')}
                       </Text>
                       <TouchableOpacity 
-                        style={styles.markSeenBtn}
+                        style={[styles.markSeenBtn, lastSeenWarning && styles.markSeenBtnHighlight]}
                         onPress={() => handleMarkSeen(hen.id)}
                       >
-                        <Text style={styles.markSeenText}>✓ {isSv ? 'Sedd' : 'Seen'}</Text>
+                        <Text style={styles.markSeenText}>✓ {isSv ? 'Markera som sedd idag' : 'Mark as seen today'}</Text>
                       </TouchableOpacity>
                     </View>
                   )}
