@@ -685,31 +685,37 @@ export default function SettingsScreen() {
             </View>
           </View>
           
-          {/* Feature Preferences Section (Premium Only) */}
-          {featurePrefs && (
+          {/* Feature Preferences Section - Only show for non-premium users */}
+          {featurePrefs && !featurePrefs.can_customize && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>
-                {isSv ? 'Anpassa funktioner' : 'Customize features'} 
-                {!featurePrefs.can_customize && ' 🔒'}
+                {isSv ? 'Anpassa funktioner' : 'Customize features'} 🔒
               </Text>
               
-              {!featurePrefs.can_customize && (
-                <View style={styles.premiumHint}>
-                  <Text style={styles.premiumHintText}>
-                    {isSv 
-                      ? 'Uppgradera till Premium för att dölja funktioner du inte använder'
-                      : 'Upgrade to Premium to hide features you don\'t use'
-                    }
+              <View style={styles.premiumHint}>
+                <Text style={styles.premiumHintText}>
+                  {isSv 
+                    ? 'Uppgradera till Premium för att dölja funktioner du inte använder'
+                    : 'Upgrade to Premium to hide features you don\'t use'
+                  }
+                </Text>
+                <TouchableOpacity onPress={() => router.push('/paywall')}>
+                  <Text style={styles.premiumHintLink}>
+                    🌟 {isSv ? 'Uppgradera' : 'Upgrade'}
                   </Text>
-                  <TouchableOpacity onPress={() => router.push('/paywall')}>
-                    <Text style={styles.premiumHintLink}>
-                      🌟 {isSv ? 'Uppgradera' : 'Upgrade'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+          
+          {/* Feature Preferences Section - Show toggles only for premium */}
+          {featurePrefs && featurePrefs.can_customize && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                {isSv ? 'Anpassa funktioner' : 'Customize features'}
+              </Text>
               
-              <View style={[styles.featureToggleCard, !featurePrefs.can_customize && styles.featureToggleDisabled]}>
+              <View style={styles.featureToggleCard}>
                 <View style={styles.featureToggleInfo}>
                   <Text style={styles.featureToggleEmoji}>🏠</Text>
                   <View>
