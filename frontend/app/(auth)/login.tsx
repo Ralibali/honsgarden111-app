@@ -416,7 +416,7 @@ export default function LoginScreen() {
                     onPress={() => setRememberMe(!rememberMe)}
                     activeOpacity={0.7}
                   >
-                    <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                    <View style={[styles.checkboxBox, rememberMe && styles.checkboxChecked]}>
                       {rememberMe && <Ionicons name="checkmark" size={14} color="#fff" />}
                     </View>
                     <Text style={styles.rememberMeText}>Kom ihåg mig</Text>
