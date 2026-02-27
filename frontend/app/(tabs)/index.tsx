@@ -544,11 +544,65 @@ export default function HomeScreen() {
       }),
     ]).start();
     
+    // Pop animation on egg card
+    Animated.sequence([
+      Animated.timing(eggPopAnim, {
+        toValue: 1.3,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.spring(eggPopAnim, {
+        toValue: 1,
+        friction: 3,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
     const today = format(new Date(), 'yyyy-MM-dd');
     await addEggRecord(today, count, undefined, selectedHenId || undefined);
+    
+    // Show undo option
+    setLastRegisteredCount(count);
+    setShowUndo(true);
+    setTimeout(() => setShowUndo(false), 5000);
+    
     setShowQuickAdd(false);
     setEggCount('');
     setSelectedHenId('');
+    
+    // Refresh data
+    await Promise.all([fetchTodayStats(), fetchSummaryStats()]);
+  };
+  
+  // One-tap quick add (directly from card)
+  const handleOneTapAdd = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    
+    // Pop animation
+    Animated.sequence([
+      Animated.timing(eggPopAnim, {
+        toValue: 1.4,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(eggPopAnim, {
+        toValue: 1,
+        friction: 3,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
+    const today = format(new Date(), 'yyyy-MM-dd');
+    await addEggRecord(today, 1, undefined, undefined);
+    
+    setLastRegisteredCount(1);
+    setShowUndo(true);
+    setTimeout(() => setShowUndo(false), 5000);
+    
+    // Refresh data
+    await Promise.all([fetchTodayStats(), fetchSummaryStats()]);
   };
   
   const handleCustomAdd = async () => {
