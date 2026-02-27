@@ -1,169 +1,197 @@
 <analysis>**original_problem_statement**:
-The user wants to finalize and deploy the Hönsgården application. The primary goals were to fix critical bugs preventing the app from loading and breaking the password reset flow. After fixing these, the user wants to remove all remnants of the previously deprecated Google Sign-In feature and prepare the application for a production deployment. The long-term goal is to achieve feature parity between the web and the Expo mobile app, with a monetization strategy based on Stripe subscriptions.
+The user wants to finalize and deploy the Hönsgården application. The initial goal was to fix critical bugs and remove a deprecated Google Sign-In feature. The scope has since expanded significantly based on several detailed audits (provided by the user via ChatGPT) to ensure the app is compliant with App Store policies, secure, and feature-complete before launch.
 
 **PRODUCT REQUIREMENTS (Consolidated & Updated):**
 
-1.  **Authentication & GDPR:**
-    *   Primary email/password system with mandatory 6-digit email verification. **(Completed & Tested)**
-    *   In-app Forgot Password flow using an email verification code. **(Fixed & Tested)**
-    *   Login/Register pages with premium feature highlights. Login page shows clear error messages.
-    *   GDPR & newsletter consent on registration.
-    *   Google/Apple Sign-In must be completely **removed**. **(Completed)**
+1.  **Monetization & App Store Compliance (P0):**
+    *   **Separate Payment Flows:** Native app (iOS/Android) MUST use RevenueCat for In-App Purchases. The web version should use Stripe. All payment flows that redirect native users to a web payment page have been removed. **(In Progress)**
+    *   **Robust IAP Verification:** Backend verification of IAP receipts must be secure and not rely on client-side data alone. **(Partially Implemented)**
+    *   **Stripe Web Flow:** The Stripe checkout flow for web users must reliably activate premium status upon successful payment, without depending on webhooks. A  endpoint and a Thank You page have been implemented. **(Done, needs verification)**
+    *   **Dynamic Pricing:** Hardcoded prices must be removed from the UI and fetched dynamically from RevenueCat/Stripe. **(Done)**
 
-2.  **Monetization & Web Pages:**
-    *   A standalone web page for premium subscriptions () with Stripe checkout. **(Stripe user-linking attempted fix, needs verification)**.
+2.  **Critical Bug Fixes & Stability (P0):**
+    *   **Remove :** A critical backend bug where unauthenticated requests were assigned to a  must be fixed. All user-specific endpoints must require authentication and return a 401 error if the user is not logged in. **(In Progress)**
+    *   **Fix  Crash:** A recurring crash () caused by the  library when translations are missing must be permanently resolved. **(Fix Attempted)**
+    *   **Forgot Password Flow:** The password reset flow must work correctly on the web platform. **(Fix Attempted)**
 
-3.  **Deployment:**
-    *   **Resolve all Expo/EAS build errors to allow for a successful App Store/Google Play submission (Pending Verification).**
-    *   **Resolve the app getting stuck on the loading screen (Fixed).**
+3.  **Feature Implementation (P1):**
+    *   **Weather Widget:** Display a compact weather widget at the top of the home screen. **(Done)**
+    *   **AI Features:** Implement UI for Dagens tips (Daily Tip) and Fråga Agda (Ask Agda), using existing backend endpoints. **(In Progress)**
+    *   **Add Roosters:** Allow users to add and track Tuppar (Roosters) in addition to hens. **(In Progress)**
+
+4.  **Policy & UX (P2):**
+    *   **Account Deletion:** Users must be able to delete their own accounts from within the app, as required by Google Play policy. **(Done)**
+    *   **Legal Links:** Links to the Privacy Policy and Terms of Service must be accessible from the settings and login screens. **(Done)**
+    *   **UI Cleanup:** Fix various UI layout issues reported by the user (responsive grids, modal button clipping, input field sizes). **(Done)**
 
 **User's preferred language**: Swedish (Svenska). The next agent MUST respond in Swedish.
 
 **what currently exists?**
-The application is now in a stable, working, and deployable state. The two critical bugs that made the app unusable (stuck on loading screen, broken password reset) have been resolved. The root cause of the loading issue was identified as a Metro bundler misconfiguration with ESM packages (), which has been fixed by creating a . The entire authentication flow, including registration, email verification, login, and password reset, has been successfully tested end-to-end using the testing agent.
+The application has undergone a massive overhaul based on detailed user feedback. Key App Store compliance issues have been addressed by creating separate payment flows for native (RevenueCat) and web (Stripe). Numerous security and stability fixes have been implemented, including tightening CORS, removing hardcoded keys, and adding a Delete Account feature. Several UI/UX bugs have been resolved, and a weather widget has been added.
 
-Following the user's request, all remnants of Google Sign-In have been removed from the codebase, including environment variables, package dependencies, and UI styles. Finally, the application passed all pre-deployment checks from the  after fixing issues in  and .
+However, the application is currently in a **partially broken state**. The agent was in the middle of a critical backend fix to remove a  fallback that causes data corruption. This work is incomplete. Implementation of new AI features and the Rooster option is also in progress.
 
 **Last working item**:
--   Last item agent was working: Preparing the application for deployment. The agent ran the  multiple times, identified, and fixed issues with the  file and the  start script to ensure deployment readiness.
--   Status: **COMPLETED**
--   Agent Testing Done: Y
--   Which testing method agent to use? NA
+-   Last item agent was working: Implementing the ability to add Tuppar (Roosters) in addition to hens. The agent had just updated the  interface and added state to the  modal, and was about to add the UI toggle for the user to select the type. This was part of a larger task to implement a batch of critical fixes and features.
+-   Status: **IN PROGRESS**
+-   Agent Testing Done: N
+-   Which testing method agent to use? both
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Fix broken Stripe subscription user linking.** (P1)
--   **Issue 2: Resolve recurring Expo/EAS mobile app build failures.** (P1)
--   **Issue 3: Error messages on login are not prominent enough.** (P2)
+-   Issue 1: Critical Auth Bug:  causes data corruption and incorrect premium/AI status. (P0)
+-   Issue 2: Recurring  crash on web. (P1)
+-   Issue 3: Forgot Password flow does not show the code input screen. (P2)
+-   Issue 4: Backend IAP verification is not fully robust. (P2)
 
 **Issues Detail**:
--   **Issue 1: Fix broken Stripe subscription user linking.**
-    -   **Attempted fixes**: A previous agent added the user's auth token to the  request header. This has not been verified.
+-   **Issue 1: Critical Auth Bug:  causes data corruption.**
+    -   **Attempted fixes**: The agent created a  dependency to replace the insecure  function. This has been applied to several backend endpoints in , but the work is not complete. All endpoints handling user data must be updated.
     -   **Next debug checklist**:
-        1.  Log in as a test user.
-        2.  Navigate to the premium page and initiate a Stripe checkout.
-        3.  Complete a test payment.
-        4.  Verify in the backend/database that the subscription is correctly associated with the logged-in user.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker for monetization.
-    -   **Status**: TESTING PENDING
+        1.  Globally search for  in  and replace all instances that protect user data with .
+        2.  Ensure endpoints that should be public (like ) are not affected.
+        3.  Test that accessing a protected endpoint without being logged in returns a 401 error.
+        4.  Verify that the frontend gracefully handles the 401 error by redirecting to the login screen.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is the highest priority bug. It causes all user data (eggs, hens, AI insights, premium status) to be mixed up or assigned incorrectly. Fixing it is essential for the app to function.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on other issue**: No
 
--   **Issue 2: Resolve recurring Expo/EAS mobile app build failures.**
-    -   **Attempted fixes**: Previous agent removed  and fixed  validation errors. These fixes are unverified.
+-   **Issue 2: Recurring  crash on web.**
+    -   **Attempted fixes**: The agent created a wrapper function for the  translation call in  to ensure it always returns a string. The user reported the crash again after this fix.
     -   **Next debug checklist**:
-        1.  Guide the user to Save to Github.
-        2.  Instruct the user to trigger a new build on their expo.dev account.
-        3.  If the build fails, carefully analyze the new build logs to identify the cause.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a hard blocker preventing the app from being published to app stores.
-    -   **Status**: TESTING PENDING
+        1.  Re-examine the crash stack trace provided by the user.
+        2.  Verify the wrapper function is being used everywhere  is called.
+        3.  Add extensive logging inside the  wrapper to see what key is being requested and what is being returned just before the crash.
+        4.  Check if any component is attempting to render a translation object directly before the wrapper has a chance to process it.
+    -   **Why fix this issue and what will be achieved with the fix?**: The app is unusable on the web due to this crash.
+    -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: N/A
+    -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: No
 
--   **Issue 3: Error messages on login are not prominent enough.**
-    -   **Attempted fixes**: An  was added. The testing agent confirmed error logic works, but not if the UI meets the user's subjective prominent enough requirement.
-    -   **Next debug checklist**:
-        1.  Ask the user for feedback on the current error message presentation after they have had a chance to test the deployed app.
-    -   **Why fix this issue and what will be achieved with the fix?**: Improves user experience for a core flow.
+-   **Issue 3: Forgot Password flow does not show the code input screen.**
+    -   **Attempted fixes**: The agent identified that  callbacks do not work on the web. A fix was implemented in  using  to bypass the alert and directly set the auth mode on web.
+    -   **Next debug checklist**: User needs to test this flow again to confirm the fix works.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a core authentication feature that is currently broken.
     -   **Status**: USER VERIFICATION PENDING
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: No
 
+-   **Issue 4: Backend IAP verification is not fully robust.**
+    -   **Attempted fixes**: The agent updated the  endpoint to call the RevenueCat API. However, it still relies on  from a potentially missing auth cookie.
+    -   **Next debug checklist**: Update the endpoint to use the  from the RevenueCat transaction data () as the primary way to identify the user, falling back to the auth cookie only if necessary. This makes the verification process stateless and more reliable.
+    -   **Why fix this issue and what will be achieved with the fix?**: Prevents a situation where a user pays for premium via IAP but the app fails to unlock it because of a transient auth issue.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: Backend
+    -   **Blocked on other issue**: No
+
 **In progress Task List**:
--   There are no in-progress tasks.
+-   **Task 1: Complete the ChatGPT Audit implementation batch.**
+    -   **Where to resume**: . Add the UI toggle/switch inside the Add/Edit Hen modal to allow users to select between Höna (Hen) and Tupp (Rooster). Ensure this  value is sent to the backend during creation and updates.
+    -   **What will be achieved with this?**: This will complete the implementation of several user-requested features and critical fixes, bringing the app closer to a releasable state.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: Both
+    -   **Blocked on something**: Blocked on finishing **Issue 1 ( fix)**. The new features will not work correctly until the auth model is secure.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   (P0) Guide the user to click the Deploy button in the Emergent UI.
-    -   (P1) Guide the user through triggering a new EAS build to test for mobile deployment success.
-    -   (P1) Test the Stripe payment and subscription flow end-to-end.
+    -   (P0) Verify that the 7-day forecast and AI-dagrapport are working correctly for logged-in users after the  fix is complete.
+    -   (P0) Verify the Admin UI () correctly displays user names and emails.
+    -   (P1) Guide the user to deploy the application and configure their custom domain ().
+    -   (P1) Guide the user to trigger a new EAS build for the mobile app.
 -   **Future Tasks:**
     -   (P2) Integrate affiliate product links.
-    -   (P3) Refactor and remove dormant RevenueCat code.
+    -   (P3) Refactor  into smaller, more manageable router files.
 
 **Completed work in this session**
--   **Critical Bug Fixes**:
-    -   **Resolved App Loading Bug**: Diagnosed and fixed the app getting stuck on the loading screen by creating  to handle ESM package issues from .
-    -   **Fixed Forgot Password Flow**: The fix for the loading screen stabilized the navigation router, which resolved this bug. The entire flow was verified.
--   **Deployment Readiness**:
-    -   **Removed Google Sign-In**: Completely removed the  package, Google OAuth keys from , and unused styles from .
-    -   **Fixed Deployment Blockers**: Repaired the  file to correctly ignore  files and fixed the  script in .
--   **Testing & Verification**:
-    -   **Full Auth System Test**: Successfully executed two full test suites using , verifying all backend authentication endpoints (13/13) and frontend UI flows (6/6).
-    -   **Confirmed App Stability**: Verified through screenshots that the application is responsive and navigates correctly after all fixes.
+-   **Critical Fixes & Compliance**:
+    -   **Payment Flows**: Refactored payment logic to use RevenueCat for native (iOS/Android) and Stripe for web, removing non-compliant web redirects from the native app.
+    -   **Stripe Confirmation**: Implemented a robust  endpoint and updated the success page to ensure web purchases activate premium status immediately.
+    -   **Account Deletion**: Added a full Delete Account flow (backend endpoint + frontend UI) to comply with Google Play policies.
+    -   **Security**: Tightened backend CORS policy, removed hardcoded Stripe/RevenueCat keys, and removed the insecure  file.
+    -   **i18n Crash**: Implemented a wrapper for the translation function to prevent crashes from missing keys.
+-   **Feature & UX Improvements**:
+    -   **Weather Widget**: Added a weather display at the top of the home screen.
+    -   **AI Features UI**: Added UI skeletons (modals, buttons) for Dagens tips and Fråga Agda in .
+    -   **UI Fixes**: Made the premium features grid responsive, fixed modal button clipping, and enlarged input fields for better usability.
+    -   **Legal Links**: Added links to Terms of Service and Privacy Policy on login and settings screens.
+    -   **Dynamic Pricing**: Removed hardcoded prices from the premium upsell modal.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: Deployment and build failures (EAS).
+-   **Issue recurrence in previous fork**: EAS Build Failures.
 -   **Recurrence count**: 5+
--   **Status**: **TESTING PENDING** (Tracked as Issue #2). The app is now stable, but a new build has not been triggered to confirm the fix.
+-   **Status**: **TESTING PENDING**. A new build has not been triggered since the last batch of fixes.
 
 **Code Architecture**
-
+t()
 
 **Key Technical Concepts**
--   **Frontend (Mobile)**: Expo (SDK 54), React Native, Expo Router, Zustand.
--   **Backend**: FastAPI, MongoDB.
--   **Deployment**: EAS Build, Emergent Deployment.
--   **Tooling**: Metro Bundler (Configuration was key to the fix).
+-   **Frontend**: Expo (SDK 54), React Native, Expo Router, Zustand, i18n-js
+-   **Backend**: FastAPI, MongoDB
+-   **Monetization**: RevenueCat (Native IAP), Stripe (Web)
+-   **Deployment**: EAS Build, Emergent Deployment
 
 **changes in tech stack**
--   Removed .
+-   No changes to the stack, but significant refactoring of payment and authentication logic.
 
 **All files of reference**
--   : **Newly created critical file.** Solved the app loading blocker.
--   : Root navigation file, heavily involved in debugging.
--   : Cleaned of Google Sign-In remnants.
--   : Fixed to allow deployment.
--   : Modified to remove dependencies and fix scripts.
--   : Refactored to be more web-safe, although this was not the root cause of the main bug.
+-   : Actively being modified for a critical auth fix ().
+-   : Contains the new AI feature UI and weather widget.
+-   : Where the Rooster feature is being implemented.
+-   : Contains fixes for password reset and RevenueCat integration.
+-   : Key file for the new native payment flow.
+-   : Contains the attempted fix for the recurring web crash.
 
 **Areas that need refactoring**:
--   : Still a very large component managing multiple UI states. It could be broken into smaller components.
--   : Remains a large monolithic file that could be split into separate routers.
+-    is a large monolithic file that should be broken into multiple routers for better maintainability.
+
+**key api endpoints**
+-   : New endpoint for user-initiated account deletion.
+-   : New endpoint to confirm Stripe payment and activate premium status for web users.
+-   , : Existing endpoints that are now being integrated into the frontend.
+-   **Multiple endpoints**: Being updated to use  for authentication.
 
 **Critical Info for New Agent**
--   The user's last request was Deploy tack (Deploy thanks). Your immediate first step should be to guide them on how to deploy the application using the Emergent UI.
--   The app is now STABLE. The critical, app-breaking bugs are GONE.
--   After deployment, the next priorities are to verify the two remaining features from the original request: the Stripe payment flow and the EAS mobile build.
+-   **PRIORITY #1: FIX THE  BUG.** The app's data integrity is compromised. The previous agent started replacing  with  in . This task must be completed first. All endpoints handling user data must require authentication.
+-   **RECURRING CRASH:** The  crash on web () is persistent. The wrapper function fix was not enough. The next attempt must involve more detailed logging to pinpoint the exact translation key or component causing the issue.
+-   **USER FEEDBACK IS GOLD:** The user provides extremely detailed, high-quality feedback from an external audit tool (ChatGPT). Treat these lists as the primary source of requirements and work through them systematically.
+-   The app is in a broken state due to the half-finished critical auth fix. Do not attempt to test features until the  work is complete and the backend is stable.
 
 **documents and test reports created in this job**
--   
--   
+-    was updated with all new requirements and completed tasks.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks the agent to proceed with testing (Testa gärna).
-2.  **Agent**: Acknowledges and runs a full end-to-end authentication test suite.
-3.  **Agent**: Reports all tests passed and asks for the next step.
-4.  **User**: Requests deployment (Deploy tack).
-5.  **Agent**: Starts the deployment process.
-6.  **User**: Interrupts to ask if Google Sign-In was removed as requested (Skulle vi inte ta bort Google inloggningen).
-7.  **Agent**: Apologizes and confirms it needs to be removed.
-8.  **Agent**: Systematically removes all traces of Google Sign-In from the codebase.
-9.  **Agent**: Confirms the app still works and runs the deployment agent again, fixing final issues.
-10. **Agent**: Confirms the app is now fully ready for deployment and provides a final summary.
+1.  **User**: Reports UI layout bugs and broken Stripe payment confirmation. (Resolved)
+2.  **Agent**: Implements fixes for UI and Stripe flow. (Done)
+3.  **User**: Provides a new, extensive list of critical issues including the  bug, IAP weaknesses, missing AI features, and the need to add Roosters.
+4.  **Agent**: Starts implementing the entire list, beginning with the  fix.
+5.  **Agent**: Implements UI for AI features (Dagens tips, Fråga Agda).
+6.  **Agent**: Begins implementing the Rooster feature in .
+7.  **(Pending from User)**: User has not yet tested the Forgot Password fix.
+8.  **(Pending from User)**: User has not yet verified if the i18n crash is resolved after the latest fix.
 
 **Project Health Check:**
--   **Healthy**: The core application is stable and functional. All critical bugs have been resolved. Remaining work involves verifying external services (Stripe) and deployment pipelines (EAS).
+-   **Broken**: The application is in a non-functional state due to the incomplete implementation of a critical backend authentication refactor ( removal). Many features will fail until this is completed.
 
 **3rd Party Integrations**
--   **OpenAI via **: For AI features (Uses Emergent LLM Key).
--   **Stripe**: For web subscriptions (Requires API key, flow fix is unverified).
--   **Resend**: For transactional emails (Verified and working).
+-   **OpenAI** (via ): Powers AI reports, daily tips, and Fråga Agda. (Uses Emergent LLM Key)
+-   **Stripe**: For web-based subscriptions. (Requires User API Key)
+-   **Resend**: For transactional emails. (Requires User API Key)
+-   **RevenueCat**: For native in-app purchases on iOS & Android. (Requires User API Keys: , )
 -   **MongoDB Atlas**: Production database.
--   **Expo Push Notifications**: Basic integration exists.
--   **expo-linear-gradient**: For UI styling.
--   **expo-auth-session**: **Removed**.
 
 **Testing status**
--   Testing agent used after significant changes: YES. Two extensive test runs were performed.
--   Test files created: , 
--   Known regressions: The loading screen and Forgot Password regressions from the previous session have been fixed.
+-   Testing agent used after significant changes: NO (not since the last batch of critical changes was started).
+-   Troubleshoot agent used after agent stuck in loop: NO
+-   Test files created: None in this session.
+-   Known regressions: Core functionality related to authenticated users is currently broken due to the in-progress  fix.
 
 **Credentials to test flow:**
--   Located in . A test user was created:  with password .
+-   Available in .
 
 **What agent forgot to execute**
--   The agent initially forgot the user's request to remove Google Sign-In but successfully corrected this mistake when prompted by the user.</analysis>
+-   The agent did not forget any tasks but is in the middle of a very large, multi-part task that has left the application in a temporarily broken state. The work on  was also not started.</analysis>

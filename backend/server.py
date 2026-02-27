@@ -5369,7 +5369,7 @@ ALLOWED_ORIGINS = [
     "http://localhost:8081",
     "http://localhost:19006",
     # Add preview domains for development
-    "https://production-ready-71.preview.emergentagent.com",
+    "https://rooster-build.preview.emergentagent.com",
 ]
 
 app.add_middleware(
