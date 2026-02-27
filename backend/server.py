@@ -3423,6 +3423,36 @@ async def get_hens(request: Request, active_only: bool = True):
     hens = await db.hens.find(query).sort("name", 1).to_list(100)
     return [Hen(**h) for h in hens]
 
+@api_router.get("/hens/health-scores")
+async def get_all_hen_health_scores(request: Request):
+    """Get health scores for all active hens (must be before /hens/{hen_id} route)"""
+    user_id = await require_user_id(request)
+    
+    hens = await db.hens.find({
+        "user_id": user_id, 
+        "is_active": True,
+        "status": "active"
+    }, {"_id": 0, "id": 1, "name": 1}).to_list(100)
+    
+    scores = []
+    for hen in hens:
+        try:
+            # Call the individual health score function
+            score_data = await get_hen_health_score(hen['id'], request)
+            scores.append(score_data)
+        except Exception as e:
+            logger.error(f"Error calculating health score for hen {hen['id']}: {e}")
+            continue
+    
+    # Sort by score ascending (worst first for attention)
+    scores.sort(key=lambda x: x['health_score'])
+    
+    return {
+        "scores": scores,
+        "average_score": round(sum(s['health_score'] for s in scores) / len(scores)) if scores else 0,
+        "hens_needing_attention": len([s for s in scores if s['health_score'] < 60])
+    }
+
 @api_router.get("/hens/{hen_id}", response_model=Hen)
 async def get_hen(hen_id: str, request: Request):
     """Get a specific hen"""
