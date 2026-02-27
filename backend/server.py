@@ -1813,6 +1813,60 @@ async def consume_magic_link(token: str, next: str = "/", request: Request = Non
     
     return redirect_response
 
+# ============ REFERRAL ENDPOINTS ============
+@api_router.get("/referral/info")
+async def get_referral_info(request: Request):
+    """Get user's referral code and stats"""
+    user_id = await require_user_id(request)
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Användare hittades inte")
+    
+    # Generate referral code if user doesn't have one
+    referral_code = user.get("referral_code")
+    if not referral_code:
+        referral_code = secrets.token_urlsafe(6).upper()[:8]
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"referral_code": referral_code}}
+        )
+    
+    # Count referrals
+    referrals = await db.referrals.count_documents({"referrer_id": user_id})
+    bonus_days = referrals * 7  # 7 days per referral
+    
+    # Build referral link
+    app_url = os.environ.get("APP_URL", "https://honsgarden.se")
+    referral_link = f"{app_url}/register?ref={referral_code}"
+    
+    return {
+        "referral_code": referral_code,
+        "referral_link": referral_link,
+        "referrals_count": referrals,
+        "bonus_days_earned": bonus_days
+    }
+
+@api_router.get("/referral/list")
+async def get_referral_list(request: Request):
+    """Get list of users referred by current user"""
+    user_id = await require_user_id(request)
+    
+    referrals = await db.referrals.find(
+        {"referrer_id": user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Get referred users' names
+    for ref in referrals:
+        referred_user = await db.users.find_one(
+            {"id": ref.get("referred_id")},
+            {"_id": 0, "name": 1}
+        )
+        ref["referred_name"] = referred_user.get("name", "Okänd") if referred_user else "Okänd"
+    
+    return {"referrals": referrals}
+
 @api_router.post("/auth/forgot-password")
 async def forgot_password(data: PasswordResetRequest):
     """Request password reset with 6-digit code (for mobile app)"""
