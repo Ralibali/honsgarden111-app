@@ -818,40 +818,81 @@ export default function HomeScreen() {
                   <Text style={styles.insightLabelFull}>{isSv ? 'Resultat denna mån' : 'This month'}</Text>
                 </View>
               )}
-              {/* Streak insight */}
-              {summaryStats?.total_eggs_all_time && summaryStats.total_eggs_all_time > 0 && (
-                <View style={styles.insightCard}>
-                  <Text style={styles.insightIcon}>🎯</Text>
-                  <Text style={styles.insightValueLarge}>{summaryStats.total_eggs_all_time}</Text>
-                  <Text style={styles.insightLabelFull}>{isSv ? 'Totalt ägg' : 'Total eggs'}</Text>
-                </View>
-              )}
-              {/* Best day */}
-              {insights.best_day && (
-                <View style={styles.insightCard}>
-                  <Text style={styles.insightIcon}>⭐</Text>
-                  <Text style={styles.insightValueLarge}>{insights.best_day.eggs}</Text>
-                  <Text style={styles.insightLabelFull}>{isSv ? 'Rekord ägg/dag' : 'Record eggs/day'}</Text>
-                </View>
-              )}
+              
+              {/* PREMIUM INSIGHTS - Blurred for free users */}
+              {/* Total eggs all time */}
+              <TouchableOpacity 
+                style={[styles.insightCard, !isPremium && styles.insightCardLocked]}
+                onPress={() => !isPremium && router.push('/paywall')}
+                disabled={isPremium}
+              >
+                {!isPremium && (
+                  <View style={styles.lockBadge}>
+                    <Ionicons name="lock-closed" size={10} color="#fff" />
+                  </View>
+                )}
+                <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>🎯</Text>
+                <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
+                  {isPremium ? (summaryStats?.total_eggs_all_time || 0) : '???'}
+                </Text>
+                <Text style={styles.insightLabelFull}>{isSv ? 'Totalt ägg' : 'Total eggs'}</Text>
+              </TouchableOpacity>
+              
+              {/* Best day record */}
+              <TouchableOpacity 
+                style={[styles.insightCard, !isPremium && styles.insightCardLocked]}
+                onPress={() => !isPremium && router.push('/paywall')}
+                disabled={isPremium}
+              >
+                {!isPremium && (
+                  <View style={styles.lockBadge}>
+                    <Ionicons name="lock-closed" size={10} color="#fff" />
+                  </View>
+                )}
+                <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>⭐</Text>
+                <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
+                  {isPremium ? (insights.best_day?.eggs || '-') : '???'}
+                </Text>
+                <Text style={styles.insightLabelFull}>{isSv ? 'Rekord ägg/dag' : 'Record eggs/day'}</Text>
+              </TouchableOpacity>
+              
               {/* Feed cost per egg */}
-              {insights.feed_cost_per_egg !== undefined && insights.feed_cost_per_egg > 0 && (
-                <View style={styles.insightCard}>
-                  <Text style={styles.insightIcon}>🌾</Text>
-                  <Text style={styles.insightValueLarge}>{insights.feed_cost_per_egg.toFixed(2)} kr</Text>
-                  <Text style={styles.insightLabelFull}>{isSv ? 'Foderkostnad/ägg' : 'Feed cost/egg'}</Text>
-                </View>
-              )}
+              <TouchableOpacity 
+                style={[styles.insightCard, !isPremium && styles.insightCardLocked]}
+                onPress={() => !isPremium && router.push('/paywall')}
+                disabled={isPremium}
+              >
+                {!isPremium && (
+                  <View style={styles.lockBadge}>
+                    <Ionicons name="lock-closed" size={10} color="#fff" />
+                  </View>
+                )}
+                <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>🌾</Text>
+                <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
+                  {isPremium ? `${(insights.feed_cost_per_egg || 0).toFixed(2)} kr` : '?.?? kr'}
+                </Text>
+                <Text style={styles.insightLabelFull}>{isSv ? 'Foderkostnad/ägg' : 'Feed cost/egg'}</Text>
+              </TouchableOpacity>
+              
               {/* Revenue per egg */}
-              {summaryStats?.this_month?.total_sales > 0 && summaryStats?.this_month?.total_eggs > 0 && (
-                <View style={styles.insightCard}>
-                  <Text style={styles.insightIcon}>💵</Text>
-                  <Text style={styles.insightValueLarge}>
-                    {(summaryStats.this_month.total_sales / summaryStats.this_month.total_eggs).toFixed(2)} kr
-                  </Text>
-                  <Text style={styles.insightLabelFull}>{isSv ? 'Intäkt per ägg' : 'Revenue/egg'}</Text>
-                </View>
-              )}
+              <TouchableOpacity 
+                style={[styles.insightCard, !isPremium && styles.insightCardLocked]}
+                onPress={() => !isPremium && router.push('/paywall')}
+                disabled={isPremium}
+              >
+                {!isPremium && (
+                  <View style={styles.lockBadge}>
+                    <Ionicons name="lock-closed" size={10} color="#fff" />
+                  </View>
+                )}
+                <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>💵</Text>
+                <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
+                  {isPremium && summaryStats?.this_month?.total_sales > 0 && summaryStats?.this_month?.total_eggs > 0
+                    ? `${(summaryStats.this_month.total_sales / summaryStats.this_month.total_eggs).toFixed(2)} kr`
+                    : isPremium ? '0.00 kr' : '?.?? kr'}
+                </Text>
+                <Text style={styles.insightLabelFull}>{isSv ? 'Intäkt per ägg' : 'Revenue/egg'}</Text>
+              </TouchableOpacity>
             </ScrollView>
           </View>
         )}
