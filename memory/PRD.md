@@ -4,7 +4,24 @@
 
 ---
 
-## NYLIGEN GENOMFÖRT (26 Feb 2026 - Session 2 Slutförd)
+## NYLIGEN GENOMFÖRT (26 Feb 2026 - Session 2 Slutförd - Del 2)
+
+### 1. Förbättrad Felhantering vid Login ✅
+- Lagt till Alert.alert för att visa tydligt felmeddelande när login misslyckas
+- Användaren ser nu alltid en popup med "Fel vid inloggning" om lösenordet/e-post är fel
+
+### 2. Förbättrad Onboarding-guide ✅
+- **Swipe-funktion**: Nu kan man svep mellan slides med fingret
+- **Inga externa bilder**: Ersatt med ikoner (ägg, hjärta, graf, stjärnor)
+- **Klickbara dots**: Man kan trycka på dots för att hoppa till en slide
+- **Swipe-hint**: Text som visar "Svep för att bläddra →"
+
+### 3. EAS Deployment Fix ✅
+- Tog bort tomma strängar i `eas.json` submit-konfiguration som blockerade deployment
+
+---
+
+## GENOMFÖRT (26 Feb 2026 - Session 2 - Del 1)
 
 ### 1. Trend-analys ✅ (NY)
 **Ny backend-endpoint: `/api/statistics/trend-analysis`**
