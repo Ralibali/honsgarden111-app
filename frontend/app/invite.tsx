@@ -15,7 +15,6 @@ import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useThemeStore } from '../src/store/themeStore';
 import { getAuthHeaders } from '../src/store/authStore';
-import { t } from '../src/services/i18n';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
@@ -41,7 +40,8 @@ export default function InviteFriendsPage() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [copied, setCopied] = useState(false);
 
-  const isSv = t('common.language') === 'sv';
+  // Detect Swedish language from system
+  const isSv = true; // Default to Swedish for this app
 
   useEffect(() => {
     loadReferralData();
