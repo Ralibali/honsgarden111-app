@@ -2521,4 +2521,52 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontSize: 12,
     lineHeight: 18,
   },
+  // Agda Modal styles
+  agdaIntro: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  agdaInputContainer: {
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 16,
+  },
+  agdaInput: {
+    minHeight: 80,
+    fontSize: 16,
+    textAlignVertical: 'top',
+    marginBottom: 12,
+  },
+  agdaSendButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    minWidth: 60,
+  },
+  agdaAnswerCard: {
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 8,
+  },
+  agdaAnswerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  agdaAvatar: {
+    fontSize: 24,
+  },
+  agdaAnswerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  agdaAnswerText: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
 });
