@@ -4638,12 +4638,12 @@ async def get_ai_daily_report(request: Request):
     coop = await db.coops.find_one({"user_id": user_id}, {"_id": 0})
     coop_name = coop.get("coop_name", "hönsgården") if coop else "hönsgården"
     
-    # Get today's data
-    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    # Get today's data using Stockholm timezone
+    today = today_str_stockholm()
     eggs_today = await db.egg_records.find({"user_id": user_id, "date": today}).to_list(100)
     total_eggs = sum(e.get('count', 0) for e in eggs_today)
     hens = await db.hens.find({"user_id": user_id, "is_active": True}).to_list(100)
-    hen_count = len(hens)
+    hen_count = len([h for h in hens if h.get('hen_type', 'hen') == 'hen'])
     
     # Get recent health logs
     health_logs = await db.health_logs.find(
@@ -4651,20 +4651,42 @@ async def get_ai_daily_report(request: Request):
         {"_id": 0}
     ).sort("date", -1).limit(5).to_list(5)
     
-    # Get productivity alerts
+    # Check if user tracks eggs per hen - look at recent egg records
+    week_ago = days_ago_stockholm(7)
+    recent_eggs = await db.egg_records.find(
+        {"user_id": user_id, "date": {"$gte": week_ago}}
+    ).to_list(500)
+    
+    eggs_with_hen_id = sum(1 for e in recent_eggs if e.get('hen_id'))
+    total_recent_eggs = len(recent_eggs)
+    tracks_per_hen = total_recent_eggs > 0 and (eggs_with_hen_id / total_recent_eggs) > 0.5
+    
+    # Get productivity alerts - only if user tracks per hen
     alerts = []
-    for hen in hens:
-        hen_eggs = await db.egg_records.find(
-            {"user_id": user_id, "hen_id": hen.get("id")}
-        ).sort("date", -1).limit(7).to_list(7)
-        if len(hen_eggs) < 2:
-            alerts.append(f"{hen.get('name', 'Okänd höna')} har inte värpt på länge")
+    if tracks_per_hen:
+        for hen in hens:
+            if hen.get('hen_type', 'hen') != 'hen':
+                continue  # Skip roosters
+            hen_eggs = await db.egg_records.find(
+                {"user_id": user_id, "hen_id": hen.get("id")}
+            ).sort("date", -1).limit(7).to_list(7)
+            if len(hen_eggs) < 2:
+                alerts.append(f"{hen.get('name', 'Okänd höna')} har inte värpt på länge")
+    else:
+        # Flock-level analysis instead
+        if total_recent_eggs > 0:
+            weekly_total = sum(e.get('count', 0) for e in recent_eggs)
+            daily_avg = weekly_total / 7
+            expected_min = hen_count * 0.5  # 50% production minimum
+            if daily_avg < expected_min and hen_count > 0:
+                alerts.append(f"Flockens produktion ({daily_avg:.1f} ägg/dag) är under förväntat ({expected_min:.0f}+ ägg/dag)")
     
     if not is_premium:
         # Return blurred/preview data for free users
         return {
             "is_premium": False,
             "preview": True,
+            "used_fallback": False,
             "report": {
                 "summary": "🔒 Din AI-genererade dagsrapport är klar! Uppgradera till Premium för att läsa den.",
                 "blurred_preview": f"Idag har du samlat {total_eggs} ägg från {hen_count} höns. [Uppgradera för full rapport med rekommendationer och analys...]",
@@ -4686,8 +4708,7 @@ async def get_ai_daily_report(request: Request):
     except:
         pass
     
-    # Get recent egg production stats for context
-    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).strftime('%Y-%m-%d')
+    # Get recent egg production stats for context using Stockholm time
     week_eggs = await db.egg_records.find({"user_id": user_id, "date": {"$gte": week_ago}}).to_list(500)
     weekly_total = sum(e.get('count', 0) for e in week_eggs)
     daily_average = weekly_total / 7 if week_eggs else 0
@@ -4696,7 +4717,7 @@ async def get_ai_daily_report(request: Request):
     productivity_pct = (total_eggs / hen_count * 100) if hen_count > 0 else 0
     
     # Get current month and season context
-    current_month = datetime.now().month
+    current_month = now_stockholm().month
     season_context = ""
     if current_month in [12, 1, 2]:
         season_context = "Vinter - kortare dagar, extra fokus på ljus och värme"
@@ -4708,7 +4729,13 @@ async def get_ai_daily_report(request: Request):
         season_context = "Höst - ruggningssäsong, minskad produktion naturligt"
     
     # Generate AI report for premium users
+    used_fallback = False
+    ai_provider_ok = True
+    
     try:
+        if not EMERGENT_LLM_KEY:
+            raise ValueError("EMERGENT_LLM_KEY not configured")
+            
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"daily-report-{user_id}-{today}",
