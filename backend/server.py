@@ -6020,6 +6020,68 @@ async def get_free_tip(request: Request):
     }
 
 
+@api_router.get("/recommendations")
+async def get_product_recommendations(request: Request):
+    """Get personalized product recommendations based on user's flock data"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else None
+    
+    # Determine current conditions
+    current_month = now_stockholm().month
+    conditions = []
+    
+    # Season-based conditions
+    if current_month in [11, 12, 1, 2]:
+        conditions.append("winter")
+        conditions.append("cold")
+    elif current_month in [6, 7, 8]:
+        conditions.append("summer")
+    
+    # User-specific conditions (if logged in)
+    if user_id:
+        try:
+            # Check recent egg production
+            week_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+            recent_eggs = await db.eggs.find({
+                "user_id": user_id,
+                "date": {"$gte": week_ago}
+            }).to_list(100)
+            
+            coop = await db.coops.find_one({"user_id": user_id}, {"_id": 0})
+            hen_count = coop.get("hen_count", 5) if coop else 5
+            
+            # Calculate productivity
+            total_eggs = sum(e.get("count", 0) for e in recent_eggs)
+            expected_eggs = hen_count * 7 * 0.7  # 70% expected
+            
+            if total_eggs < expected_eggs * 0.5:
+                conditions.append("low_eggs")
+        except:
+            pass
+    
+    # Filter and sort recommendations
+    recommendations = []
+    for product in PRODUCT_RECOMMENDATIONS:
+        # Check if product matches any condition
+        matches = any(cond in product.get("trigger_conditions", []) for cond in conditions)
+        
+        # Include product if it matches or has no specific conditions
+        if matches or not product.get("trigger_conditions"):
+            rec = product.copy()
+            rec["relevance_score"] = sum(1 for cond in conditions if cond in product.get("trigger_conditions", []))
+            recommendations.append(rec)
+    
+    # Sort by relevance and priority
+    recommendations.sort(key=lambda x: (-x.get("relevance_score", 0), -x.get("priority", 1)))
+    
+    return {
+        "recommendations": recommendations[:5],  # Top 5 recommendations
+        "conditions_detected": conditions,
+        "affiliate_partner": "bonden.se",
+        "note": "Produktrekommendationer baserade på din hönsgårds data och säsong"
+    }
+
+
 
 @api_router.put("/user-preferences/location")
 async def update_user_location(request: Request, lat: float, lon: float, location_name: str = ""):
