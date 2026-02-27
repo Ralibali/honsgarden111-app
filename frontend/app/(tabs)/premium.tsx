@@ -15,12 +15,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useThemeStore } from '../../src/store/themeStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
-import { useAuthStore } from '../../src/store/authStore';
 import i18n from '../../src/i18n';
 import { getManagementURL } from '../../src/services/revenuecat';
 
-// Stripe URL for Android/Web users
-const PREMIUM_WEB_URL = 'https://honsgarden.se/api/premium-page';
+// Stripe web URL for Android users
+const STRIPE_PORTAL_URL = 'https://honsgarden.se/premium';
 
 const PREMIUM_FEATURES = [
   { 
@@ -98,115 +97,37 @@ const PREMIUM_FEATURES = [
 export default function PremiumScreen() {
   const { colors } = useThemeStore();
   const { isPremium, plan, expiresAt, loading, checkPremiumStatus } = usePremiumStore();
-  const { user } = useAuthStore();
   const router = useRouter();
   const isSv = i18n.locale.startsWith('sv');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   
-  // Determine payment method based on platform
-  // iOS = RevenueCat (App Store IAP)
-  // Android & Web = Stripe (Web payment)
   const isIOS = Platform.OS === 'ios';
   
   useEffect(() => {
     checkPremiumStatus();
   }, []);
-      if (currentOffering) {
-        setOfferings(currentOffering);
-      }
-    }
-  };
   
-  // Handle subscription via RevenueCat (iOS only)
-  const handleInAppPurchase = async () => {
-    if (!offerings) {
-      Alert.alert(
-        isSv ? 'Fel' : 'Error',
-        isSv ? 'Kunde inte ladda prenumerationspaket. Försök igen.' : 'Could not load subscription packages. Please try again.'
-      );
-      return;
-    }
-    
-    setPurchasing(true);
-    
-    try {
-      // Find the selected package
-      const packageId = selectedPlan === 'yearly' ? 'yearly' : 'monthly';
-      const pkg = offerings.availablePackages?.find((p: PurchasesPackage) => 
-        p.identifier.toLowerCase().includes(packageId) || 
-        p.packageType?.toLowerCase().includes(packageId === 'yearly' ? 'annual' : 'monthly')
-      ) || offerings.availablePackages?.[selectedPlan === 'yearly' ? 0 : 1];
-      
-      if (!pkg) {
-        Alert.alert(
-          isSv ? 'Fel' : 'Error',
-          isSv ? 'Kunde inte hitta prenumerationspaketet.' : 'Could not find the subscription package.'
-        );
-        setPurchasing(false);
-        return;
-      }
-      
-      const result = await purchasePackage(pkg);
-      
-      if (result.success) {
-        Alert.alert(
-          isSv ? 'Tack!' : 'Thank you!',
-          isSv ? 'Din Premium-prenumeration är nu aktiv!' : 'Your Premium subscription is now active!'
-        );
-        await checkPremiumStatus();
-      } else if (result.userCancelled) {
-        // User cancelled - no need to show error
-      } else if (result.error) {
-        Alert.alert(
-          isSv ? 'Fel' : 'Error',
-          result.error
-        );
-      }
-    } catch (error: any) {
-      Alert.alert(
-        isSv ? 'Fel' : 'Error',
-        error.message || (isSv ? 'Ett fel uppstod vid köpet.' : 'An error occurred during purchase.')
-      );
-    } finally {
-      setPurchasing(false);
-    }
-  };
-  
-  // Handle subscription via Stripe (Android & Web)
-  const handleWebSubscribe = () => {
-    Alert.alert(
-      isSv ? 'Prenumerera via webben' : 'Subscribe via web',
-      isSv 
-        ? 'Du kommer att omdirigeras till honsgarden.se för att slutföra din prenumeration. Logga in med samma konto där.'
-        : 'You will be redirected to honsgarden.se to complete your subscription. Log in with the same account there.',
-      [
-        {
-          text: isSv ? 'Avbryt' : 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: isSv ? 'Öppna webbsidan' : 'Open website',
-          onPress: () => {
-            Linking.openURL(PREMIUM_WEB_URL).catch(() => {
-              Alert.alert(
-                isSv ? 'Fel' : 'Error',
-                isSv 
-                  ? 'Kunde inte öppna webbläsaren. Besök honsgarden.se/premium manuellt.'
-                  : 'Could not open browser. Visit honsgarden.se/premium manually.'
-              );
-            });
-          },
-        },
-      ]
-    );
-  };
-  
-  // Choose the right handler based on platform
+  // Navigate to paywall for upgrades
   const handleSubscribe = () => {
-    if (useInAppPurchase) {
-      handleInAppPurchase();
+    router.push('/paywall');
+  };
+  
+  // Handle managing subscription
+  const handleManageSubscription = async () => {
+    if (isIOS) {
+      // iOS: Try RevenueCat management URL, fallback to App Store
+      const managementURL = await getManagementURL();
+      if (managementURL) {
+        Linking.openURL(managementURL);
+      } else {
+        Linking.openURL('https://apps.apple.com/account/subscriptions');
+      }
+    } else if (Platform.OS === 'android') {
+      // Android: Google Play subscriptions
+      Linking.openURL('https://play.google.com/store/account/subscriptions');
     } else {
-      handleWebSubscribe();
+      // Web: Stripe portal
+      Linking.openURL(STRIPE_PORTAL_URL);
     }
   };
   
@@ -228,7 +149,7 @@ export default function PremiumScreen() {
     );
   }
   
-  // If user is already premium, show status
+  // Premium user view
   if (isPremium) {
     return (
       <SafeAreaView style={styles.container}>
@@ -287,15 +208,7 @@ export default function PremiumScreen() {
           
           <TouchableOpacity 
             style={styles.manageButton}
-            onPress={() => {
-              if (isIOS) {
-                // iOS: Open subscription management in App Store
-                Linking.openURL('https://apps.apple.com/account/subscriptions');
-              } else {
-                // Android/Web: Open web portal
-                Linking.openURL(PREMIUM_WEB_URL);
-              }
-            }}
+            onPress={handleManageSubscription}
           >
             <Ionicons name="settings-outline" size={20} color={colors.text} />
             <Text style={styles.manageButtonText}>
@@ -423,75 +336,25 @@ export default function PremiumScreen() {
         {/* CTA Button */}
         <View style={styles.ctaSection}>
           <TouchableOpacity 
-            style={[styles.ctaButton, purchasing && styles.ctaButtonDisabled]} 
+            style={styles.ctaButton}
             onPress={handleSubscribe}
-            disabled={purchasing}
           >
-            {purchasing ? (
-              <ActivityIndicator size="small" color="#000" />
-            ) : (
-              <>
-                <Ionicons 
-                  name={useInAppPurchase ? "card-outline" : "globe-outline"} 
-                  size={22} 
-                  color="#000" 
-                />
-                <Text style={styles.ctaButtonText}>
-                  {useInAppPurchase 
-                    ? (isSv ? 'Prenumerera nu' : 'Subscribe now')
-                    : (isSv ? 'Prenumerera via honsgarden.se' : 'Subscribe via honsgarden.se')
-                  }
-                </Text>
-              </>
-            )}
+            <Ionicons name="star" size={22} color="#000" />
+            <Text style={styles.ctaButtonText}>
+              {isSv ? 'Uppgradera nu' : 'Upgrade now'}
+            </Text>
           </TouchableOpacity>
-          
-          <Text style={styles.ctaNote}>
-            {useInAppPurchase 
-              ? (isSv 
-                  ? 'Betalning hanteras säkert via App Store' 
-                  : 'Payment handled securely via App Store')
-              : (isSv 
-                  ? 'Betalning hanteras säkert via Stripe på vår webbplats'
-                  : 'Payment handled securely via Stripe on our website')
-            }
-          </Text>
         </View>
         
-        {/* FAQ Section */}
-        <View style={styles.faqSection}>
-          <Text style={styles.faqTitle}>
-            {isSv ? 'Vanliga frågor' : 'FAQ'}
-          </Text>
-          
-          {!useInAppPurchase && (
-            <View style={styles.faqItem}>
-              <Text style={styles.faqQuestion}>
-                {isSv ? 'Varför betalar jag via webben?' : 'Why do I pay via web?'}
-              </Text>
-              <Text style={styles.faqAnswer}>
-                {isSv 
-                  ? 'På Android hanteras betalningar via vår webbplats med Stripe för enklare prenumerationshantering.'
-                  : 'On Android, payments are handled via our website with Stripe for easier subscription management.'}
-              </Text>
-            </View>
-          )}
-          
-          <View style={styles.faqItem}>
-            <Text style={styles.faqQuestion}>
-              {isSv ? 'Kan jag avsluta när som helst?' : 'Can I cancel anytime?'}
-            </Text>
-            <Text style={styles.faqAnswer}>
-              {useInAppPurchase
-                ? (isSv 
-                    ? 'Ja! Du kan hantera din prenumeration i App Store-inställningarna.'
-                    : 'Yes! You can manage your subscription in App Store settings.')
-                : (isSv 
-                    ? 'Ja! Du kan avsluta din prenumeration när som helst via honsgarden.se.'
-                    : 'Yes! You can cancel your subscription anytime via honsgarden.se.')
-              }
-            </Text>
-          </View>
+        {/* Legal Links */}
+        <View style={styles.legalSection}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy')}>
+            <Text style={styles.legalLink}>{isSv ? 'Integritetspolicy' : 'Privacy Policy'}</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalSeparator}>•</Text>
+          <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/terms')}>
+            <Text style={styles.legalLink}>{isSv ? 'Användarvillkor' : 'Terms of Service'}</Text>
+          </TouchableOpacity>
         </View>
         
         <View style={{ height: 40 }} />
@@ -740,7 +603,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   ctaSection: {
     paddingHorizontal: 20,
-    marginBottom: 32,
+    marginBottom: 16,
   },
   ctaButton: {
     flexDirection: 'row',
@@ -751,19 +614,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderRadius: 16,
     gap: 10,
   },
-  ctaButtonDisabled: {
-    opacity: 0.7,
-  },
   ctaButtonText: {
     fontSize: 18,
     fontWeight: '700',
     color: '#000',
-  },
-  ctaNote: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 12,
   },
   manageButton: {
     flexDirection: 'row',
@@ -780,30 +634,19 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 16,
     color: colors.text,
   },
-  faqSection: {
+  legalSection: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 20,
+    gap: 8,
   },
-  faqTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 16,
-  },
-  faqItem: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  faqQuestion: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 8,
-  },
-  faqAnswer: {
-    fontSize: 14,
+  legalLink: {
+    fontSize: 13,
     color: colors.textSecondary,
-    lineHeight: 20,
+  },
+  legalSeparator: {
+    fontSize: 13,
+    color: colors.textSecondary,
   },
 });
