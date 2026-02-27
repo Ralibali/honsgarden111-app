@@ -176,6 +176,7 @@ export default function CommunityScreen() {
         body: JSON.stringify({
           content: newPostContent.trim(),
           category: newPostCategory,
+          include_stats: includeMyStats,
         }),
       });
       
@@ -185,6 +186,7 @@ export default function CommunityScreen() {
         setShowNewPostModal(false);
         setNewPostContent('');
         setNewPostCategory('other');
+        setIncludeMyStats(false);
       } else {
         const data = await response.json();
         Alert.alert('Fel', data.detail || 'Kunde inte skapa inlägget');
