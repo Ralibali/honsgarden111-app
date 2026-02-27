@@ -338,14 +338,75 @@ export default function AdminPanel() {
 
       {/* Search (for users) */}
       {activeTab === 'users' && (
+        <View>
+          <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
+            <Ionicons name="search" size={20} color={colors.textSecondary} />
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              placeholder="Sök användare..."
+              placeholderTextColor={colors.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+          
+          {/* Multi-select actions */}
+          <View style={[styles.multiSelectBar, { backgroundColor: colors.surface }]}>
+            <TouchableOpacity
+              style={[styles.selectModeButton, isSelectMode && { backgroundColor: colors.primary + '20' }]}
+              onPress={() => {
+                setIsSelectMode(!isSelectMode);
+                setSelectedUsers(new Set());
+              }}
+            >
+              <Ionicons 
+                name={isSelectMode ? "checkbox" : "checkbox-outline"} 
+                size={18} 
+                color={isSelectMode ? colors.primary : colors.textSecondary} 
+              />
+              <Text style={{ color: isSelectMode ? colors.primary : colors.textSecondary, marginLeft: 6, fontSize: 13 }}>
+                {isSelectMode ? 'Avsluta markering' : 'Markera flera'}
+              </Text>
+            </TouchableOpacity>
+            
+            {isSelectMode && (
+              <>
+                <TouchableOpacity
+                  style={styles.selectAllButton}
+                  onPress={toggleSelectAll}
+                >
+                  <Text style={{ color: colors.primary, fontSize: 13 }}>
+                    {selectedUsers.size === filteredUsers.length ? 'Avmarkera alla' : 'Markera alla'}
+                  </Text>
+                </TouchableOpacity>
+                
+                {selectedUsers.size > 0 && (
+                  <TouchableOpacity
+                    style={[styles.deleteSelectedButton, { backgroundColor: '#ef444420' }]}
+                    onPress={handleDeleteSelectedUsers}
+                  >
+                    <Ionicons name="trash" size={16} color="#ef4444" />
+                    <Text style={{ color: '#ef4444', marginLeft: 4, fontSize: 13, fontWeight: '600' }}>
+                      Radera ({selectedUsers.size})
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* Search (for subscriptions) */}
+      {activeTab === 'subscriptions' && (
         <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
           <Ionicons name="search" size={20} color={colors.textSecondary} />
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Sök användare..."
+            placeholder="Sök prenumerationer..."
             placeholderTextColor={colors.textSecondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+            value={subscriptionSearchQuery}
+            onChangeText={setSubscriptionSearchQuery}
           />
         </View>
       )}
