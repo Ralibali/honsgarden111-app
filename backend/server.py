@@ -5398,22 +5398,47 @@ async def get_admin_subscriptions(request: Request, active_only: bool = False):
     """Get all subscriptions for admin"""
     await require_admin(request)
     
-    query = {"is_active": True} if active_only else {}
-    subs = await db.subscriptions.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    # Get all subscriptions - don't filter by is_active to show all trials
+    subs = await db.subscriptions.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
     
     # Enrich with user data
     enriched_subs = []
+    now = datetime.now(timezone.utc)
+    
     for s in subs:
         user = await db.users.find_one({"user_id": s.get("user_id")}, {"_id": 0, "email": 1, "name": 1})
+        if not user:
+            # Try with 'id' field (some users have 'id' instead of 'user_id')
+            user = await db.users.find_one({"id": s.get("user_id")}, {"_id": 0, "email": 1, "name": 1})
+        
+        # Parse expires_at to check if actually active
+        expires_at = s.get("expires_at")
+        is_actually_active = s.get("is_active", False)
+        
+        if expires_at:
+            if isinstance(expires_at, str):
+                try:
+                    expires_dt = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+                    is_actually_active = expires_dt > now
+                except:
+                    pass
+            elif isinstance(expires_at, datetime):
+                is_actually_active = expires_at > now
+        
+        # Skip inactive if active_only requested
+        if active_only and not is_actually_active:
+            continue
+            
         enriched_subs.append({
             "user_id": s.get("user_id"),
             "email": user.get("email") if user else "Unknown",
             "name": user.get("name") if user else "Unknown",
             "plan": s.get("plan"),
-            "is_active": s.get("is_active"),
+            "is_active": is_actually_active,
             "created_at": s.get("created_at"),
-            "expires_at": s.get("expires_at"),
-            "cancelled_at": s.get("cancelled_at")
+            "expires_at": expires_at,
+            "cancelled_at": s.get("cancelled_at"),
+            "purchase_source": s.get("purchase_source", "unknown")
         })
     
     return {"subscriptions": enriched_subs, "total": len(enriched_subs)}
