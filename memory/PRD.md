@@ -263,10 +263,12 @@ honsgarden.se      ALIAS  [deployment-url].emergent.host
 - [x] **Native Auth Fix** - Användare loggades ut direkt (FIXAT 2025-02-27)
 - [x] Användaren har konfigurerat production environment variables i Emergent
 - [x] **Väder-API bytt till Open-Meteo** (FIXAT 2025-02-27) - Gratis, ingen nyckel
-- [x] **Bottom Nav förenklad** (FIXAT 2025-02-28) - 5 tabs istället för 8
+- [x] **Bottom Nav förenklad** (FIXAT 2025-02-28) - 5 tabs: Hem, Ägg, Hönor, Ekonomi, Statistik
 - [x] **Avatar-ikon för inställningar** (FIXAT 2025-02-28) - Google-style i header
+- [x] **Premium → Statistik i nav** (FIXAT 2025-02-28) - Premium dold, Statistik synlig
+- [x] **Utökade Insikter** (FIXAT 2025-02-28) - best_day, feed_cost_per_egg, profit_per_egg
 - [ ] Verifiera deployment fungerar med rätt databas (väntar på användarbekräftelse)
-- [ ] **Testa vit/svart skärm efter premium-köp** - Fixen är implementerad, behöver verifieras i Expo Go
+- [ ] **Grafer i Statistik** - Behöver testas med faktisk äggdata
 
 ### P1 - Viktigt
 - [ ] DNS-setup för honsgarden.se
