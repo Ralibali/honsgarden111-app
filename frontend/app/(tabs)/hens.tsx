@@ -707,6 +707,26 @@ export default function HensScreen() {
                     </View>
                     
                     <View style={styles.henStatsColumn}>
+                      {/* Health Score Badge */}
+                      {healthScores[hen.id] && (
+                        <TouchableOpacity 
+                          onPress={() => {
+                            setSelectedHealthScore(healthScores[hen.id]);
+                            setShowHealthScoreModal(true);
+                          }}
+                          style={[
+                            styles.healthScoreBadge,
+                            { backgroundColor: healthScores[hen.id].status_color + '20' }
+                          ]}
+                        >
+                          <Text style={[styles.healthScoreValue, { color: healthScores[hen.id].status_color }]}>
+                            {healthScores[hen.id].health_score}
+                          </Text>
+                          <Text style={[styles.healthScoreLabel, { color: healthScores[hen.id].status_color }]}>
+                            hälsa
+                          </Text>
+                        </TouchableOpacity>
+                      )}
                       <Text style={styles.henEggCount}>{henStats[hen.id] || 0}</Text>
                       <Text style={styles.henEggLabel}>{isSv ? 'ägg' : 'eggs'}</Text>
                     </View>
