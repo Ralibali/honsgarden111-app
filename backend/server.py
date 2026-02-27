@@ -1032,6 +1032,67 @@ class Feedback(BaseModel):
     status: str = "new"  # "new", "read", "replied"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# ============ COMMUNITY MODELS ============
+class CommunityCategory(str, Enum):
+    EGGS = "eggs"           # 🥚 Äggproduktion
+    HEALTH = "health"       # 🐔 Hälsa & Sjukdom
+    HOUSING = "housing"     # 🏠 Hönshus & Utrustning
+    FEED = "feed"           # 🍽️ Foder
+    OTHER = "other"         # ❓ Övrigt
+
+CATEGORY_LABELS = {
+    "eggs": {"sv": "🥚 Äggproduktion", "en": "🥚 Egg Production"},
+    "health": {"sv": "🐔 Hälsa & Sjukdom", "en": "🐔 Health & Disease"},
+    "housing": {"sv": "🏠 Hönshus & Utrustning", "en": "🏠 Housing & Equipment"},
+    "feed": {"sv": "🍽️ Foder", "en": "🍽️ Feed"},
+    "other": {"sv": "❓ Övrigt", "en": "❓ Other"},
+}
+
+class CommunityPostCreate(BaseModel):
+    content: str
+    category: str = "other"
+
+class CommunityPost(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    user_name: str  # Display name
+    content: str
+    category: str = "other"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    likes: int = 0
+    liked_by: List[str] = []
+    is_hidden: bool = False  # Admin can hide posts
+    hidden_reason: Optional[str] = None
+
+# Forbidden patterns for content moderation (GDPR, phone numbers, etc.)
+FORBIDDEN_PATTERNS = [
+    r'\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b',  # Phone numbers (XXX-XXX-XXXX)
+    r'\b\d{10,}\b',  # Long number sequences (phone numbers)
+    r'\b07\d{8}\b',  # Swedish mobile numbers (07XXXXXXXX)
+    r'\b\+46\s?\d{9,}\b',  # Swedish international format
+    r'\b\d{6}[-]?\d{4}\b',  # Swedish personal numbers (YYYYMMDD-XXXX)
+    r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',  # Email addresses
+]
+
+def check_forbidden_content(text: str) -> tuple[bool, str]:
+    """Check if text contains forbidden content. Returns (is_ok, reason)"""
+    import re
+    
+    text_lower = text.lower()
+    
+    # Check for phone numbers and personal data
+    for pattern in FORBIDDEN_PATTERNS:
+        if re.search(pattern, text, re.IGNORECASE):
+            return False, "Innehållet verkar innehålla personlig information (telefonnummer, personnummer eller e-post). Av GDPR-skäl tillåts inte detta."
+    
+    # Check for offensive words (basic list, can be expanded)
+    offensive_words = ['hora', 'fitta', 'kuk', 'fuck', 'shit', 'nazi', 'neger']
+    for word in offensive_words:
+        if word in text_lower:
+            return False, "Innehållet bryter mot våra community-riktlinjer."
+    
+    return True, ""
+
 # ============ REMEMBER TOKEN HELPER ============
 async def _refresh_session_from_remember_token(request: Request, remember_token: str) -> Optional[User]:
     """Refresh session using remember token (web only)
