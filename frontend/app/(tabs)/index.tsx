@@ -833,7 +833,7 @@ export default function HomeScreen() {
                 )}
                 <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>🎯</Text>
                 <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
-                  {isPremium ? (summaryStats?.total_eggs_all_time || 0) : '???'}
+                  {isPremium ? (summaryStats?.total_eggs_all_time || 0) : '847'}
                 </Text>
                 <Text style={styles.insightLabelFull}>{isSv ? 'Totalt ägg' : 'Total eggs'}</Text>
               </TouchableOpacity>
@@ -851,7 +851,7 @@ export default function HomeScreen() {
                 )}
                 <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>⭐</Text>
                 <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
-                  {isPremium ? (insights.best_day?.eggs || '-') : '???'}
+                  {isPremium ? (insights.best_day?.eggs || '-') : '12'}
                 </Text>
                 <Text style={styles.insightLabelFull}>{isSv ? 'Rekord ägg/dag' : 'Record eggs/day'}</Text>
               </TouchableOpacity>
@@ -869,7 +869,7 @@ export default function HomeScreen() {
                 )}
                 <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>🌾</Text>
                 <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
-                  {isPremium ? `${(insights.feed_cost_per_egg || 0).toFixed(2)} kr` : '?.?? kr'}
+                  {isPremium ? `${(insights.feed_cost_per_egg || 0).toFixed(2)} kr` : '2.45 kr'}
                 </Text>
                 <Text style={styles.insightLabelFull}>{isSv ? 'Foderkostnad/ägg' : 'Feed cost/egg'}</Text>
               </TouchableOpacity>
@@ -889,7 +889,7 @@ export default function HomeScreen() {
                 <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
                   {isPremium && summaryStats?.this_month?.total_sales > 0 && summaryStats?.this_month?.total_eggs > 0
                     ? `${(summaryStats.this_month.total_sales / summaryStats.this_month.total_eggs).toFixed(2)} kr`
-                    : isPremium ? '0.00 kr' : '?.?? kr'}
+                    : isPremium ? '0.00 kr' : '5.80 kr'}
                 </Text>
                 <Text style={styles.insightLabelFull}>{isSv ? 'Intäkt per ägg' : 'Revenue/egg'}</Text>
               </TouchableOpacity>
