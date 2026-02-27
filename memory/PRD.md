@@ -122,14 +122,23 @@ honsgarden.se      ALIAS  [deployment-url].emergent.host
 ## Återstående uppgifter
 
 ### P0 - Kritiskt
-- [ ] Konfigurera production environment variables i Emergent
-- [ ] Verifiera deployment fungerar med rätt databas
+- [x] **Native Auth Fix** - Användare loggades ut direkt (FIXAT 2025-02-27)
+- [x] Användaren har konfigurerat production environment variables i Emergent
+- [ ] Verifiera deployment fungerar med rätt databas (väntar på användarbekräftelse)
 
 ### P1 - Viktigt
 - [ ] DNS-setup för honsgarden.se
 - [ ] Ny EAS Build med alla fixar
-- [ ] Testa referral-flödet end-to-end
+- [ ] Testa referral-flödet end-to-end i native app
 
 ### P2 - Backlog
 - [ ] Fixa i18n-kraschen på webb
 - [ ] Affiliate-produktlänkar
+- [ ] Refaktorera backend/server.py till mindre router-filer
+
+## Testanvändare
+```
+Email: nativetest@test.com
+Password: test123456
+User ID: test-native-user
+```
