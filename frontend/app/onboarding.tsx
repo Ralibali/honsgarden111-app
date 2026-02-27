@@ -258,30 +258,35 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.6)',
     fontSize: 14,
   },
-  content: {
+  slideContainer: {
+    width: width,
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 80,
+    paddingHorizontal: 24,
   },
-  imageContainer: {
+  iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: height * 0.35,
+    height: height * 0.28,
     position: 'relative',
+    marginBottom: 20,
   },
-  imageGlow: {
+  iconGlow: {
     position: 'absolute',
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    opacity: 0.15,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    opacity: 0.2,
   },
-  image: {
-    width: width * 0.65,
-    height: width * 0.65,
-    borderRadius: 24,
+  iconCircle: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   textContent: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 8,
     alignItems: 'center',
   },
   title: {
@@ -341,6 +346,7 @@ const styles = StyleSheet.create({
   exampleDetail: {
     fontSize: 14,
     color: 'rgba(255,255,255,0.7)',
+    lineHeight: 22,
   },
   bottomSection: {
     paddingHorizontal: 32,
@@ -350,12 +356,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 12,
     gap: 8,
   },
   dot: {
     height: 8,
     borderRadius: 4,
+  },
+  swipeHint: {
+    textAlign: 'center',
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 13,
+    marginBottom: 16,
   },
   nextButton: {
     flexDirection: 'row',
