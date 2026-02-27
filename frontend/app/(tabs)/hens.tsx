@@ -19,6 +19,7 @@ import { useThemeStore } from '../../src/store/themeStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import { useRouter } from 'expo-router';
 import i18n from '../../src/i18n';
+import { SmartNotifications } from '../../src/services/notifications';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 const { width } = Dimensions.get('window');
