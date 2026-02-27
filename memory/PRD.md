@@ -205,7 +205,9 @@ honsgarden.se      ALIAS  [deployment-url].emergent.host
 ### P0 - Kritiskt
 - [x] **Native Auth Fix** - Användare loggades ut direkt (FIXAT 2025-02-27)
 - [x] Användaren har konfigurerat production environment variables i Emergent
+- [x] **Väder-API bytt till Open-Meteo** (FIXAT 2025-02-27) - Gratis, ingen nyckel
 - [ ] Verifiera deployment fungerar med rätt databas (väntar på användarbekräftelse)
+- [ ] **Testa vit/svart skärm efter premium-köp** - Fixen är implementerad, behöver verifieras i Expo Go
 
 ### P1 - Viktigt
 - [ ] DNS-setup för honsgarden.se
@@ -214,8 +216,9 @@ honsgarden.se      ALIAS  [deployment-url].emergent.host
 
 ### P2 - Backlog
 - [ ] Fixa i18n-kraschen på webb
-- [ ] Affiliate-produktlänkar
+- [ ] Affiliate-produktlänkar (Adtraction integration när feed är klar)
 - [ ] Refaktorera backend/server.py till mindre router-filer
+- [ ] Sponsored posts i community-flödet (backend klar, frontend delvis klar)
 
 ## Testanvändare
 ```
