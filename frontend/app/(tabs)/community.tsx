@@ -545,14 +545,61 @@ export default function CommunityScreen() {
             </View>
           ) : (
             posts.map((post) => (
-              <View key={post.id} style={styles.postCard}>
+              <View 
+                key={post.id} 
+                style={[
+                  styles.postCard,
+                  post.is_sponsored && {
+                    borderWidth: 1,
+                    borderColor: colors.warning + '50',
+                    backgroundColor: colors.warning + '08',
+                  }
+                ]}
+              >
+                {/* Sponsored Badge */}
+                {post.is_sponsored && (
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}>
+                    <View style={{
+                      backgroundColor: colors.warning + '20',
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}>
+                      <Ionicons name="megaphone" size={12} color={colors.warning} />
+                      <Text style={{ fontSize: 11, color: colors.warning, marginLeft: 4, fontWeight: '600' }}>
+                        {isSv ? 'Rekommenderat' : 'Sponsored'}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+                
                 <View style={styles.postHeader}>
                   <View>
                     <Text style={styles.postAuthor}>{post.user_name}</Text>
                     <Text style={styles.postCategory}>{post.category_label}</Text>
                   </View>
-                  <Text style={styles.postTime}>{formatDate(post.created_at)}</Text>
+                  {!post.is_sponsored && (
+                    <Text style={styles.postTime}>{formatDate(post.created_at)}</Text>
+                  )}
                 </View>
+                
+                {/* Sponsored Title */}
+                {post.is_sponsored && post.title && (
+                  <Text style={{
+                    fontSize: 17,
+                    fontWeight: '700',
+                    color: colors.text,
+                    marginBottom: 8,
+                  }}>
+                    {post.title}
+                  </Text>
+                )}
                 
                 {/* Coop Stats Badge */}
                 {post.coop_stats && (
@@ -592,7 +639,75 @@ export default function CommunityScreen() {
                 
                 <Text style={styles.postContent}>{post.content}</Text>
                 
-                <View style={styles.postFooter}>
+                {/* Discount Code */}
+                {post.is_sponsored && post.discount_code && (
+                  <View style={{
+                    backgroundColor: '#22c55e15',
+                    borderRadius: 10,
+                    padding: 12,
+                    marginTop: 8,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <View>
+                      <Text style={{ fontSize: 12, color: '#22c55e', fontWeight: '600' }}>
+                        {isSv ? 'Rabattkod' : 'Discount code'}
+                      </Text>
+                      <Text style={{ fontSize: 16, fontWeight: '800', color: '#22c55e', letterSpacing: 1 }}>
+                        {post.discount_code}
+                      </Text>
+                    </View>
+                    {post.discount_percent && (
+                      <View style={{
+                        backgroundColor: '#22c55e',
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 8,
+                      }}>
+                        <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>
+                          -{post.discount_percent}%
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+                
+                {/* Affiliate Link Button */}
+                {post.is_sponsored && post.affiliate_url && (
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: colors.primary,
+                      borderRadius: 10,
+                      paddingVertical: 12,
+                      marginTop: 12,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    onPress={async () => {
+                      // Track click
+                      try {
+                        await fetch(`${API_URL}/api/community/sponsored/${post.id}/click`, {
+                          method: 'POST',
+                          credentials: 'include',
+                        });
+                      } catch (e) {}
+                      // Open link
+                      const { Linking } = require('react-native');
+                      Linking.openURL(post.affiliate_url);
+                    }}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '600', marginRight: 6 }}>
+                      {isSv ? 'Läs mer' : 'Learn more'}
+                    </Text>
+                    <Ionicons name="arrow-forward" size={16} color="#fff" />
+                  </TouchableOpacity>
+                )}
+                
+                {/* Regular post footer */}
+                {!post.is_sponsored && (
+                  <View style={styles.postFooter}>
                   <TouchableOpacity 
                     style={styles.likeButton}
                     onPress={() => handleLike(post.id)}
