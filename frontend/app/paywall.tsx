@@ -50,7 +50,7 @@ export default function PaywallScreen() {
     );
   }
   
-  // For Android & Web: Show web redirect flow
+  // For Web only: Show web redirect flow (Stripe)
   const handleUpgrade = async () => {
     Alert.alert(
       isSv ? 'Prenumerera via webben' : 'Subscribe via web',
