@@ -310,6 +310,34 @@
             if (message) errorMessage.textContent = message;
         }
         
+        async function confirmCheckout(sessionId) {
+            try {
+                // Call the confirm endpoint to activate premium
+                const response = await fetch(`/api/checkout/confirm?session_id=${sessionId}`, {
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (data.ok && data.is_premium) {
+                    showSuccess();
+                    return true;
+                } else if (data.error) {
+                    // If payment not completed yet, wait and retry
+                    if (data.status === 'unpaid' || data.error.includes('not completed')) {
+                        return false; // Will retry
+                    }
+                    showError(data.error);
+                    return true; // Don't retry on actual errors
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('Confirm error:', error);
+                return false;
+            }
+        }
+        
         async function verifyPayment(sessionId, attempts = 0) {
             const maxAttempts = 10;
             const pollInterval = 2000;
@@ -319,40 +347,11 @@
                 return;
             }
             
-            try {
-                const response = await fetch(`/api/checkout/status/${sessionId}`, {
-                    credentials: 'include'
-                });
-                
-                if (response.status === 401) {
-                    // Not logged in - redirect to login
-                    window.location.href = '/api/web/login?redirect=/api/checkout-success?session_id=' + sessionId;
-                    return;
-                }
-                
-                if (!response.ok) {
-                    throw new Error('Kunde inte kontrollera betalningsstatus');
-                }
-                
-                const data = await response.json();
-                
-                if (data.payment_status === 'paid' || data.status === 'complete') {
-                    showSuccess();
-                    return;
-                } else if (data.status === 'expired') {
-                    showError('Betalningssessionen har gått ut. Försök igen.');
-                    return;
-                }
-                
-                // Continue polling
+            const done = await confirmCheckout(sessionId);
+            
+            if (!done) {
+                // Continue polling if not done
                 setTimeout(() => verifyPayment(sessionId, attempts + 1), pollInterval);
-            } catch (error) {
-                console.error('Verification error:', error);
-                if (attempts >= 3) {
-                    showError(error.message);
-                } else {
-                    setTimeout(() => verifyPayment(sessionId, attempts + 1), pollInterval);
-                }
             }
         }
         
