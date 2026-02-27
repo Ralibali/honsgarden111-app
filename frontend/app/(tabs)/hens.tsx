@@ -1360,9 +1360,28 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   statusBadge: { position: 'absolute', top: 12, right: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   statusBadgeText: { color: '#FFF', fontSize: 11, fontWeight: '600' },
   
-  // Warning Badge
-  warningBadge: { backgroundColor: 'rgba(245,158,11,0.15)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, marginBottom: 12 },
-  warningBadgeText: { color: '#f59e0b', fontSize: 12, fontWeight: '500' },
+  // Warning Badge - Softer orange color
+  warningBadge: { 
+    backgroundColor: 'rgba(251,191,36,0.12)', 
+    paddingHorizontal: 12, 
+    paddingVertical: 6, 
+    borderRadius: 8, 
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(251,191,36,0.2)',
+  },
+  warningBadgeText: { color: '#d97706', fontSize: 12, fontWeight: '500' },
+  
+  // Productivity Status Indicator
+  productivityDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  productivityGreen: { backgroundColor: '#22c55e' },
+  productivityYellow: { backgroundColor: '#fbbf24' },
+  productivityRed: { backgroundColor: '#ef4444' },
   
   // Hen Avatar
   henAvatar: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
