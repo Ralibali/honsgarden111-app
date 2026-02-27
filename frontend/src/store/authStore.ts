@@ -8,16 +8,30 @@ const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 // Runtime guard - log warning if API_URL is not configured
 if (!API_URL) {
   console.error('CRITICAL: EXPO_PUBLIC_BACKEND_URL is not configured. API calls will fail.');
+} else if (__DEV__) {
+  console.log('[Auth] API_URL:', API_URL);
 }
 
 // Global session token for API calls (stored in memory + AsyncStorage)
 let sessionToken: string | null = null;
 
+// Grace period flag - prevents logout during bootstrap
+let loginInProgress = false;
+let lastLoginTime = 0;
+const LOGIN_GRACE_PERIOD_MS = 5000; // 5 seconds grace period after login
+
+// Check if we're in grace period
+const isInGracePeriod = (): boolean => {
+  return loginInProgress || (Date.now() - lastLoginTime < LOGIN_GRACE_PERIOD_MS);
+};
+
 // Initialize token from AsyncStorage on app start
 AsyncStorage.getItem('session_token').then(token => {
   if (token) {
     sessionToken = token;
-    console.log('Session token restored from storage');
+    if (__DEV__) {
+      console.log('[Auth] Session token restored from storage, last 6 chars:', token.slice(-6));
+    }
   }
 });
 
@@ -32,14 +46,44 @@ export const getAuthHeaders = (): Record<string, string> => {
   return headers;
 };
 
+// Export function to check if we have a token
+export const hasSessionToken = (): boolean => {
+  return sessionToken !== null && sessionToken.length > 0;
+};
+
+// Export function to get masked token for logging
+export const getMaskedToken = (): string => {
+  if (!sessionToken) return 'null';
+  return `...${sessionToken.slice(-6)}`;
+};
+
 // Export function to set session token
 export const setSessionToken = async (token: string | null) => {
   sessionToken = token;
   if (token) {
     await AsyncStorage.setItem('session_token', token);
+    lastLoginTime = Date.now();
+    if (__DEV__) {
+      console.log('[Auth] Session token set, last 6 chars:', token.slice(-6));
+    }
   } else {
     await AsyncStorage.removeItem('session_token');
+    if (__DEV__) {
+      console.log('[Auth] Session token cleared');
+    }
   }
+};
+
+// Export grace period check for apiFetch
+export const shouldIgnore401 = (endpoint: string): boolean => {
+  // During grace period, don't logout on 401 from auth/me
+  if (isInGracePeriod() && endpoint.includes('/api/auth/me')) {
+    if (__DEV__) {
+      console.log('[Auth] Ignoring 401 from /api/auth/me during grace period');
+    }
+    return true;
+  }
+  return false;
 };
 
 interface User {
