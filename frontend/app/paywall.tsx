@@ -28,17 +28,17 @@ export default function PaywallScreen() {
   const isSv = i18n.locale.startsWith('sv');
   
   // Determine if we should use native IAP
-  // iOS = RevenueCat (App Store)
-  // Android & Web = Stripe (Web redirect)
-  const isIOS = Platform.OS === 'ios';
-  const useNativeIAP = isIOS;
+  // iOS & Android = RevenueCat (In-App Purchase)
+  // Web = Stripe (Web redirect)
+  const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
+  const useNativeIAP = isNative;
   
   // Handle successful purchase - navigate back
   const handlePurchaseComplete = () => {
     router.back();
   };
   
-  // For iOS: Use RevenueCatPaywall component
+  // For iOS & Android: Use RevenueCatPaywall component
   if (useNativeIAP) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
