@@ -8,6 +8,7 @@ import {
   Image,
   Animated,
   Platform,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -22,7 +23,7 @@ const ONBOARDING_SLIDES = [
     title: 'Håll koll på äggen',
     subtitle: 'Enkel daglig registrering',
     description: 'Registrera dagens ägg med ett tryck. Se totaler per dag, vecka och månad. Spåra olika äggfärger och storlekar.',
-    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/753689ff2d0b82e1d55ba71f8229bfcd080b814e9e4c435f6f7124378321878a.png',
+    icon: 'egg',
     color: '#4ade80',
     example: {
       label: 'Funktioner:',
@@ -35,7 +36,7 @@ const ONBOARDING_SLIDES = [
     title: 'Känn din flock',
     subtitle: 'Profiler för varje höna',
     description: 'Skapa profiler med namn, ras, födelsedag och foto. Håll koll på vem som värper och hur mycket.',
-    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/4eb11f959062925926e157741ee6259e0b3d2cc3e62bb5f975c0ba4ec6ba5fc5.png',
+    icon: 'heart',
     color: '#f59e0b',
     example: {
       label: 'Funktioner:',
@@ -48,7 +49,7 @@ const ONBOARDING_SLIDES = [
     title: 'Följ utvecklingen',
     subtitle: 'Statistik & ekonomi',
     description: 'Se trender i äggproduktion. Spåra inköp, försäljning och lönsamhet för din hönsgård.',
-    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/091b27dd4bd859b0711cf6dedb10e25441902c55e6d89ef2f92e1ef50ebbdc89.png',
+    icon: 'stats-chart',
     color: '#3b82f6',
     example: {
       label: 'Funktioner:',
@@ -61,7 +62,7 @@ const ONBOARDING_SLIDES = [
     title: 'Få smartare tips',
     subtitle: 'AI-rådgivare & prognoser',
     description: 'Agda analyserar din data och ger personliga råd. Få äggprognoser och vädertips anpassade för din flock.',
-    image: 'https://static.prod-images.emergentagent.com/jobs/dd20d512-b4a5-49be-af9c-4477666a9275/images/1f8c3576c9eb772a937b52001a2d828fa6ecd042d4499bbdece12d5550d357af.png',
+    icon: 'sparkles',
     color: '#a855f7',
     example: {
       label: 'Premium-funktioner:',
