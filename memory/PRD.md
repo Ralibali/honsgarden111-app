@@ -3,9 +3,60 @@
 ## Projektöversikt
 Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb. Appen hjälper användare att spåra äggproduktion, hantera hönor och tuppar, få AI-drivna insikter och prenumerera på premium-funktioner.
 
-## Nyligen Slutförda Uppgifter (2025-02-27)
+## Nyligen Slutförda Uppgifter (2025-02-28)
 
-### Session 3: Bug Fixes & UI Improvements (2025-02-27 23:00)
+### Session 5: Omfattande UX-förbättringar (2025-02-28)
+
+#### 🥚 One-Tap Äggregistrering ✅
+- **Ägg idag-kortet** är nu interaktivt med Pressable
+- **Kort tryck** = registrerar +1 ägg direkt med pop-animation och haptic feedback
+- **Långt tryck** = öppnar modal för fler alternativ
+- **TAP +1 badge** visar användaren hur funktionen fungerar
+- **Undo-toast** visas i 5 sekunder efter registrering med möjlighet att ångra
+
+#### 🔥 Streak-räknare ✅
+- Beräknas i backend `/api/statistics/summary`
+- Visar antal dagar i rad med äggregistrering
+- Visas som badge på äggkortet: "🔥 X dagar"
+
+#### 📊 Förbättrade Statistik-grafer ✅
+- Bättre bar heights (synliga även för små värden)
+- **Trend-pilar** (↑ ↓) jämför med föregående dag
+- **"Bästa dagen"-badge** med trophy-ikon
+- Förbättrad styling med bakgrundsfärg på bars
+
+#### 📋 Förbättrad Ägglogg (eggs.tsx) ✅
+- **7/30-dagars filter** med toggle-knappar
+- **Trend-indikator** på varje dag (↑ ↓)
+- **Swipe-to-edit/delete** på varje post
+- Förkortade veckodagsformat (t.ex. "Fre 27 feb")
+- Svep-tips: "← Svep för att redigera"
+
+#### 🐔 Förbättrad Höns UX (hens.tsx) ✅
+- **Mjukare varningsfärg** för "Ej sedd på länge" (ljusare orange)
+- **Ny CTA-text**: "Markera som sedd idag" (istället för bara "Sedd")
+- **Produktivitets-indikator** (grön/gul/röd prick) baserad på status
+
+#### 🏥 Hen Health Score (0-100) ✅ (NY FUNKTION)
+- **Backend endpoints**:
+  - `GET /api/hens/{hen_id}/health-score` - individuell höna
+  - `GET /api/hens/health-scores` - alla aktiva hönor
+- **Beräkningsmodell**:
+  - Äggproduktion (30p max)
+  - Aktivitet/Senast sedd (25p max)
+  - Hälsohistorik (25p max)
+  - Konsistens (20p max)
+- **Status-nivåer**: Utmärkt (80+), Bra (60+), Medelbra (40+), Sämre (20+), Kritiskt (<20)
+- **Frontend**: Badge på varje hönkort + detaljerad modal vid klick
+
+#### 💰 Ekonomi-insikter (finance.tsx) ✅
+- **Intäkt per ägg** (genomsnittlig försäljning per ägg)
+- **Break-even pris per ägg** (kostnader / sålda ägg)
+- **Största kostnadskategori** denna månad
+- **Nettoresultat** med färgkodning (grön för vinst, röd för förlust)
+- Vinst/Förlust-badge med trend-ikon
+
+### Tidigare sessioner (2025-02-27)
 
 #### Väder-API Bytt till Open-Meteo ✅
 - **Problem:** OpenWeatherMap krävde API-nyckel och användaren ville ha gratis alternativ
