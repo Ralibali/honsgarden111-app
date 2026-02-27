@@ -34,6 +34,7 @@ export default function LoginScreen() {
   const [name, setName] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedMarketing, setAcceptedMarketing] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);  // Remember me for web
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
