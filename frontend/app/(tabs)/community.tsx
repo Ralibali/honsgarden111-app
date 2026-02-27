@@ -32,6 +32,13 @@ interface CommunityPost {
   likes: number;
   liked_by_me: boolean;
   is_mine: boolean;
+  coop_stats?: {
+    coop_name: string;
+    hen_count: number;
+    eggs_this_week: number;
+    avg_per_day: number;
+    productivity: number;
+  };
 }
 
 interface Category {
