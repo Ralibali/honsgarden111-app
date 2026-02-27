@@ -263,13 +263,17 @@ honsgarden.se      ALIAS  [deployment-url].emergent.host
 - [x] **Native Auth Fix** - Användare loggades ut direkt (FIXAT 2025-02-27)
 - [x] Användaren har konfigurerat production environment variables i Emergent
 - [x] **Väder-API bytt till Open-Meteo** (FIXAT 2025-02-27) - Gratis, ingen nyckel
-- [x] **Bottom Nav förenklad** (FIXAT 2025-02-28) - 5 tabs: Hem, Ägg, Hönor, Ekonomi, Statistik
+- [x] **Bottom Nav förenklad** (FIXAT 2025-02-28) - 6 tabs: Hem, Ägg, Hönor, Ekonomi, Statistik, Inställningar
 - [x] **Avatar-ikon för inställningar** (FIXAT 2025-02-28) - Google-style i header
 - [x] **Premium → Statistik i nav** (FIXAT 2025-02-28) - Premium dold, Statistik synlig
 - [x] **Utökade Insikter** (FIXAT 2025-02-28) - best_day, feed_cost_per_egg, profit_per_egg
-- [x] **Premium Insikter med Blur** (FIXAT 2025-02-28) - Låsta kort för gratisanvändare
+- [x] **Premium Insikter med Blur** (FIXAT 2025-02-28) - Låsta kort med "Exempel" label
+- [x] **Admin: Premium-hantering** (FIXAT 2025-02-28) - +7d, +30d, +1år, lifetime, ta bort
+- [x] **AI Advisor fix** (FIXAT 2025-02-28) - Hanterar body parameter korrekt
+- [x] **Scroll-indikator snabbåtgärder** (FIXAT 2025-02-28) - "Svep →" visas
+- [x] **Dölj "Anpassa funktioner"** (FIXAT 2025-02-28) - Endast för gratisanvändare
 - [ ] Verifiera deployment fungerar med rätt databas (väntar på användarbekräftelse)
-- [ ] **Grafer i Statistik** - Behöver testas med faktisk äggdata
+- [ ] **Tangentbord-fix vid lägg till höna** - KeyboardAvoidingView behöver justeras
 
 ### P1 - Viktigt
 - [ ] DNS-setup för honsgarden.se
