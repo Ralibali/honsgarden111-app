@@ -12,7 +12,8 @@
       "bundleIdentifier": "se.honsgarden.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Tillåt Hönsgården att använda kameran för att ta bilder av dina hönor.",
-        "NSPhotoLibraryUsageDescription": "Tillåt Hönsgården att komma åt ditt fotobibliotek för att spara bilder av dina hönor."
+        "NSPhotoLibraryUsageDescription": "Tillåt Hönsgården att komma åt ditt fotobibliotek för att spara bilder av dina hönor.",
+        "NSPhotoLibraryAddUsageDescription": "Tillåt Hönsgården att spara bilder av dina hönor till fotobiblioteket."
       }
     },
     "android": {
