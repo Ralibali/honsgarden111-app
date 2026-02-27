@@ -2613,6 +2613,105 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontSize: 20,
     fontWeight: 'bold',
   },
+  
+  // Week's Best Hen Card
+  bestHenCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: isDark ? 'rgba(245, 158, 11, 0.1)' : 'rgba(245, 158, 11, 0.08)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.15)',
+  },
+  bestHenIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: isDark ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  bestHenInfo: {
+    flex: 1,
+  },
+  bestHenTitle: {
+    fontSize: 12,
+    color: colors.warning,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  bestHenName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 2,
+  },
+  bestHenEggs: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  
+  // Community Comparison Card
+  communityCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.primary + '20',
+  },
+  communityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  communityTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  communityStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+  },
+  communityStat: {
+    alignItems: 'center',
+  },
+  communityStatValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  communityStatLabel: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  communityAvgRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  communityAvgLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  communityAvgValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
