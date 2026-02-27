@@ -2191,15 +2191,22 @@ async def get_all_feedback(request: Request, limit: int = 50):
 
 # ============ USER DATA HELPER ============
 async def get_user_id(request: Request) -> str:
-    """Get user_id from session or return default for mobile app"""
+    """Get user_id from session - returns None if not authenticated"""
     user = await get_current_user(request)
-    return user.user_id if user else "default_user"
+    return user.user_id if user else None
+
+async def require_user_id(request: Request) -> str:
+    """Get user_id from session - raises 401 if not authenticated"""
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Inloggning krävs")
+    return user.user_id
 
 # ============ COOP SETTINGS ENDPOINTS ============
 @api_router.get("/coop", response_model=CoopSettings)
 async def get_coop_settings(request: Request):
     """Get or create coop settings"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     settings = await db.coop_settings.find_one({"user_id": user_id})
     if not settings:
         new_settings = CoopSettings(user_id=user_id)
@@ -2210,7 +2217,7 @@ async def get_coop_settings(request: Request):
 @api_router.put("/coop", response_model=CoopSettings)
 async def update_coop_settings(update: CoopSettingsUpdate, request: Request):
     """Update coop settings"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     settings = await db.coop_settings.find_one({"user_id": user_id})
     if not settings:
         settings = CoopSettings(user_id=user_id).dict()
