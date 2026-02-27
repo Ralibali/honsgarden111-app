@@ -186,6 +186,74 @@ export default function AdminPanel() {
     );
   };
 
+  // Toggle user selection
+  const toggleUserSelection = (userId: string) => {
+    const newSelected = new Set(selectedUsers);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
+    }
+    setSelectedUsers(newSelected);
+  };
+
+  // Select/deselect all visible users
+  const toggleSelectAll = () => {
+    if (selectedUsers.size === filteredUsers.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(filteredUsers.map(u => u.user_id)));
+    }
+  };
+
+  // Delete multiple users
+  const handleDeleteSelectedUsers = async () => {
+    if (selectedUsers.size === 0) return;
+    
+    Alert.alert(
+      'Radera användare',
+      `Är du säker på att du vill radera ${selectedUsers.size} användare? All data kommer tas bort.`,
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Radera alla',
+          style: 'destructive',
+          onPress: async () => {
+            let deleted = 0;
+            let failed = 0;
+            
+            for (const userId of selectedUsers) {
+              try {
+                const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+                  method: 'DELETE',
+                  credentials: 'include',
+                  headers: getAuthHeaders(),
+                });
+                if (res.ok) {
+                  deleted++;
+                } else {
+                  failed++;
+                }
+              } catch (error) {
+                failed++;
+              }
+            }
+            
+            setSelectedUsers(new Set());
+            setIsSelectMode(false);
+            loadUsers();
+            
+            if (failed > 0) {
+              Alert.alert('Klart', `${deleted} användare raderades, ${failed} misslyckades`);
+            } else {
+              Alert.alert('Klart', `${deleted} användare har raderats`);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleUpdateFeedbackStatus = async (feedbackId: string, newStatus: string) => {
     try {
       const res = await fetch(`${API_URL}/api/admin/feedback/${feedbackId}?status=${newStatus}`, {
