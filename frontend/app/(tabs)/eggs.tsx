@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Animated,
+  PanResponder,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +21,7 @@ import { useThemeStore, ThemeColors } from '../../src/store/themeStore';
 import { format, parseISO, subDays } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
 import i18n from '../../src/i18n';
+import * as Haptics from 'expo-haptics';
 
 export default function EggsScreen() {
   const { eggRecords, fetchEggRecords, addEggRecord, deleteEggRecord, loading } = useAppStore();
