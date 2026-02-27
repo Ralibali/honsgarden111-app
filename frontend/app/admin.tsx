@@ -478,7 +478,7 @@ export default function AdminPanel() {
           {/* Subscriptions Tab */}
           {activeTab === 'subscriptions' && (
             <View style={styles.list}>
-              {subscriptions.map((sub, index) => (
+              {filteredSubscriptions.map((sub, index) => (
                 <View key={`${sub.user_id}-${index}`} style={[styles.card, { backgroundColor: colors.surface }]}>
                   <View style={styles.cardHeader}>
                     <View style={styles.userInfo}>
