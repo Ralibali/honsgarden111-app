@@ -1555,6 +1555,217 @@ export default function HomeScreen() {
         </View>
       </Modal>
       
+      {/* Trial Expiry Warning Modal */}
+      <Modal
+        visible={showTrialWarning}
+        animationType="fade"
+        transparent
+        onRequestClose={() => {
+          setShowTrialWarning(false);
+          setTrialWarningDismissed(true);
+        }}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20,
+        }}>
+          <View style={{
+            backgroundColor: colors.surface,
+            borderRadius: 24,
+            padding: 24,
+            width: '100%',
+            maxWidth: 340,
+          }}>
+            {/* Warning Icon */}
+            <View style={{ alignItems: 'center', marginBottom: 16 }}>
+              <View style={{
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                backgroundColor: trialExpiryWarning === 'last_day' ? '#ef444420' : '#f59e0b20',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Ionicons 
+                  name={trialExpiryWarning === 'last_day' ? 'alert-circle' : 'time'} 
+                  size={36} 
+                  color={trialExpiryWarning === 'last_day' ? '#ef4444' : '#f59e0b'} 
+                />
+              </View>
+            </View>
+            
+            {/* Title */}
+            <Text style={{ 
+              fontSize: 22, 
+              fontWeight: '700', 
+              color: colors.text, 
+              textAlign: 'center',
+              marginBottom: 8,
+            }}>
+              {trialExpiryWarning === 'last_day' 
+                ? (isSv ? 'Sista dagen!' : 'Last day!')
+                : trialExpiryWarning === 'one_day'
+                ? (isSv ? 'En dag kvar!' : 'One day left!')
+                : trialExpiryWarning === 'two_days'
+                ? (isSv ? 'Två dagar kvar!' : 'Two days left!')
+                : (isSv ? 'Tre dagar kvar!' : 'Three days left!')
+              }
+            </Text>
+            
+            {/* Description */}
+            <Text style={{ 
+              fontSize: 15, 
+              color: colors.textSecondary, 
+              textAlign: 'center',
+              marginBottom: 20,
+              lineHeight: 22,
+            }}>
+              {isSv 
+                ? `Din gratis provperiod för Premium ${trialExpiryWarning === 'last_day' ? 'går ut idag' : 'håller på att ta slut'}. Uppgradera nu för att fortsätta använda alla funktioner!`
+                : `Your free Premium trial ${trialExpiryWarning === 'last_day' ? 'ends today' : 'is about to end'}. Upgrade now to continue using all features!`
+              }
+            </Text>
+            
+            {/* Features reminder */}
+            <View style={{ 
+              backgroundColor: colors.background, 
+              borderRadius: 12, 
+              padding: 12,
+              marginBottom: 20,
+            }}>
+              {[
+                { icon: 'bulb', text: isSv ? 'AI-tips från Agda' : 'AI tips from Agda' },
+                { icon: 'analytics', text: isSv ? 'Äggprognos' : 'Egg forecast' },
+                { icon: 'infinite', text: isSv ? 'Obegränsade frågor' : 'Unlimited questions' },
+              ].map((item, idx) => (
+                <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: idx < 2 ? 8 : 0 }}>
+                  <Ionicons name={item.icon as any} size={16} color={colors.primary} />
+                  <Text style={{ marginLeft: 10, color: colors.text, fontSize: 14 }}>{item.text}</Text>
+                </View>
+              ))}
+            </View>
+            
+            {/* Upgrade Button */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 12,
+                paddingVertical: 14,
+                alignItems: 'center',
+                marginBottom: 12,
+              }}
+              onPress={() => {
+                setShowTrialWarning(false);
+                setTrialWarningDismissed(true);
+                router.push('/paywall');
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+                {isSv ? 'Uppgradera nu' : 'Upgrade now'}
+              </Text>
+            </TouchableOpacity>
+            
+            {/* Close */}
+            <TouchableOpacity
+              style={{ alignItems: 'center', paddingVertical: 8 }}
+              onPress={() => {
+                setShowTrialWarning(false);
+                setTrialWarningDismissed(true);
+              }}
+            >
+              <Text style={{ color: colors.textSecondary }}>
+                {isSv ? 'Påminn mig senare' : 'Remind me later'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
+      {/* Daily Chores Modal */}
+      <Modal
+        visible={showChoresModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowChoresModal(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          justifyContent: 'flex-end',
+        }}>
+          <View style={{
+            backgroundColor: colors.surface,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            padding: 20,
+            maxHeight: '80%',
+          }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>
+                {isSv ? 'Dagens sysslor' : "Today's Chores"}
+              </Text>
+              <TouchableOpacity onPress={() => setShowChoresModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={{ maxHeight: 400 }}>
+              {dailyChores.map((chore: any) => (
+                <TouchableOpacity
+                  key={chore.id}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: chore.completed ? colors.primary + '10' : colors.background,
+                    borderRadius: 12,
+                    padding: 14,
+                    marginBottom: 10,
+                    borderWidth: 1,
+                    borderColor: chore.completed ? colors.primary + '30' : colors.border,
+                  }}
+                  onPress={() => toggleChoreComplete(chore.id, chore.completed)}
+                >
+                  <View style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 12,
+                    borderWidth: 2,
+                    borderColor: chore.completed ? colors.primary : colors.textSecondary,
+                    backgroundColor: chore.completed ? colors.primary : 'transparent',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 12,
+                  }}>
+                    {chore.completed && <Ionicons name="checkmark" size={14} color="#fff" />}
+                  </View>
+                  <Text style={{ fontSize: 20, marginRight: 10 }}>{chore.icon}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ 
+                      fontWeight: '600', 
+                      color: chore.completed ? colors.textSecondary : colors.text,
+                      textDecorationLine: chore.completed ? 'line-through' : 'none',
+                    }}>
+                      {chore.title}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
+                      {chore.description}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+              {dailyChores.length === 0 && (
+                <Text style={{ color: colors.textSecondary, textAlign: 'center', padding: 20 }}>
+                  {isSv ? 'Inga sysslor för idag!' : 'No chores for today!'}
+                </Text>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+      
       {/* Premium Gate Modal */}
       <PremiumGateModal
         visible={showPremiumModal}
