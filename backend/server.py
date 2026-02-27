@@ -6264,7 +6264,113 @@ async def get_free_tip(request: Request):
     }
 
 
-@api_router.get("/recommendations")
+# ============ DAGENS SYSSLA (Daily Chores) ============
+DAILY_CHORES = [
+    # DAGLIGA RUTINER
+    {"id": "water_check", "title": "Kolla vattnet", "description": "Kontrollera att vattenbehållaren är ren och full. Byt om det behövs!", "icon": "💧", "frequency": "daily", "season": None, "priority": 1},
+    {"id": "egg_collection", "title": "Hämta ägg", "description": "Samla in ägg minst en gång, gärna två gånger per dag.", "icon": "🥚", "frequency": "daily", "season": None, "priority": 1},
+    {"id": "feed_check", "title": "Fyll på foder", "description": "Kontrollera foderautomaten. Se till att alla har tillgång.", "icon": "🌾", "frequency": "daily", "season": None, "priority": 1},
+    {"id": "health_check", "title": "Snabbkoll höns", "description": "Titta efter hönor som verkar trötta, har struppigt fjäderskrud eller rör sig konstigt.", "icon": "🔍", "frequency": "daily", "season": None, "priority": 2},
+    
+    # VECKORUTINER
+    {"id": "nest_cleaning", "title": "Rengör reden", "description": "Ta bort smutsigt strö från värpredena och fyll på nytt.", "icon": "🧹", "frequency": "weekly", "season": None, "priority": 2},
+    {"id": "bedding_refresh", "title": "Byt ströbädd", "description": "Fräscha upp strömaterialet i hönshuset.", "icon": "🛏️", "frequency": "weekly", "season": None, "priority": 2},
+    {"id": "perch_check", "title": "Kolla sittpinnar", "description": "Rengör sittpinnar och kolla efter kvalster.", "icon": "🪵", "frequency": "weekly", "season": None, "priority": 3},
+    
+    # MÅNADSRUTINER
+    {"id": "mite_check", "title": "Kvalsterkontroll", "description": "Gå igenom hönshuset noggrant för kvalster. Kolla springor och skrymslen.", "icon": "🔬", "frequency": "monthly", "season": None, "priority": 2},
+    {"id": "predator_check", "title": "Kontrollera rovdjursskydd", "description": "Gå runt och kontrollera stängslet och luckor för hål.", "icon": "🦊", "frequency": "monthly", "season": None, "priority": 3},
+    
+    # SÄSONGSSPECIFIKA
+    {"id": "winter_water", "title": "Frostvakt vatten", "description": "Kolla vattnet flera gånger om dagen - det fryser snabbt!", "icon": "❄️", "frequency": "daily", "season": [12, 1, 2], "priority": 1},
+    {"id": "winter_extra_feed", "title": "Kvällsmål", "description": "Ge lite extra spannmål på kvällen för att hålla värmen över natten.", "icon": "🌾", "frequency": "daily", "season": [12, 1, 2], "priority": 2},
+    {"id": "winter_light", "title": "Kolla belysning", "description": "14-16 timmar ljus behövs. Kontrollera att lampan fungerar.", "icon": "💡", "frequency": "weekly", "season": [12, 1, 2], "priority": 2},
+    {"id": "summer_shade", "title": "Skuggkontroll", "description": "Se till att alla höns har tillgång till skugga och extra vatten.", "icon": "☀️", "frequency": "daily", "season": [6, 7, 8], "priority": 1},
+    {"id": "autumn_prep", "title": "Vinterförberedelse", "description": "Täta eventuella springor och förbered för kylan.", "icon": "🍂", "frequency": "monthly", "season": [9, 10, 11], "priority": 2},
+    {"id": "spring_cleanup", "title": "Vårstädning", "description": "Dags för ordentlig storstädning av hönshuset efter vintern!", "icon": "🌸", "frequency": "monthly", "season": [3, 4, 5], "priority": 2},
+]
+
+@api_router.get("/daily-chores")
+async def get_daily_chores(request: Request):
+    """Get today's chores based on season and day of week"""
+    user_id = await require_user_id(request)
+    
+    current_month = now_stockholm().month
+    current_weekday = now_stockholm().weekday()  # 0 = Monday
+    today = today_str_stockholm()
+    
+    chores = []
+    
+    # Add all daily tasks
+    for chore in DAILY_CHORES:
+        # Check season
+        if chore["season"] is not None and current_month not in chore["season"]:
+            continue
+            
+        # Add daily tasks
+        if chore["frequency"] == "daily":
+            chores.append(chore)
+        # Add weekly tasks on Sundays
+        elif chore["frequency"] == "weekly" and current_weekday == 6:
+            chores.append(chore)
+        # Add monthly tasks on first day of month
+        elif chore["frequency"] == "monthly" and now_stockholm().day == 1:
+            chores.append(chore)
+    
+    # Sort by priority
+    chores.sort(key=lambda x: x["priority"])
+    
+    # Check which chores are already completed today
+    completed_today = await db.completed_chores.find(
+        {"user_id": user_id, "date": today},
+        {"_id": 0, "chore_id": 1}
+    ).to_list(100)
+    completed_ids = {c["chore_id"] for c in completed_today}
+    
+    # Add completion status
+    for chore in chores:
+        chore["completed"] = chore["id"] in completed_ids
+    
+    return {
+        "date": today,
+        "chores": chores,
+        "completed_count": len(completed_ids),
+        "total_count": len(chores)
+    }
+
+@api_router.post("/daily-chores/{chore_id}/complete")
+async def complete_chore(request: Request, chore_id: str):
+    """Mark a chore as completed"""
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    # Upsert completion record
+    await db.completed_chores.update_one(
+        {"user_id": user_id, "chore_id": chore_id, "date": today},
+        {"$set": {
+            "user_id": user_id,
+            "chore_id": chore_id,
+            "date": today,
+            "completed_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    return {"success": True, "chore_id": chore_id, "date": today}
+
+@api_router.delete("/daily-chores/{chore_id}/complete")
+async def uncomplete_chore(request: Request, chore_id: str):
+    """Unmark a chore as completed"""
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    await db.completed_chores.delete_one({
+        "user_id": user_id,
+        "chore_id": chore_id,
+        "date": today
+    })
+    
+    return {"success": True, "chore_id": chore_id, "date": today}
 async def get_product_recommendations(request: Request):
     """Get personalized product recommendations based on user's flock data"""
     user = await get_current_user(request)
