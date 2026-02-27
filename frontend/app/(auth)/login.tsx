@@ -73,6 +73,12 @@ export default function LoginScreen() {
     const success = await login(email, password);
     if (success) {
       router.replace('/(tabs)');
+    } else {
+      // Error is already set in the store, show alert to make it more visible
+      const currentError = useAuthStore.getState().error;
+      if (currentError) {
+        Alert.alert('Fel vid inloggning', currentError);
+      }
     }
   };
   
