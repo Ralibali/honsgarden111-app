@@ -136,15 +136,20 @@ export default function PremiumGateModal({
               ))}
             </View>
             
-            {/* Pricing - simplified for modal, actual prices shown in paywall */}
+            {/* Pricing - show actual prices from RevenueCat */}
             <View style={styles.pricingSection}>
               <View style={styles.priceCard}>
                 <Text style={styles.priceLabel}>
                   {isSv ? 'Månatlig' : 'Monthly'}
                 </Text>
                 <Text style={styles.priceAmount}>
-                  {isSv ? 'Flexibelt' : 'Flexible'}
+                  {loadingPrices ? '...' : (monthlyPrice || (isSv ? 'Se priser' : 'See prices'))}
                 </Text>
+                {monthlyPrice && (
+                  <Text style={styles.priceSubtext}>
+                    {isSv ? '/månad' : '/month'}
+                  </Text>
+                )}
               </View>
               
               <View style={[styles.priceCard, styles.priceCardPopular]}>
@@ -157,8 +162,13 @@ export default function PremiumGateModal({
                   {isSv ? 'Årlig' : 'Yearly'}
                 </Text>
                 <Text style={styles.priceAmount}>
-                  {isSv ? 'Bäst värde' : 'Best value'}
+                  {loadingPrices ? '...' : (yearlyPrice || (isSv ? 'Se priser' : 'See prices'))}
                 </Text>
+                {yearlyPrice && (
+                  <Text style={styles.priceSubtext}>
+                    {isSv ? '/år' : '/year'}
+                  </Text>
+                )}
               </View>
             </View>
             
@@ -167,7 +177,7 @@ export default function PremiumGateModal({
               <Ionicons name="gift" size={20} color="#f59e0b" />
               <Text style={styles.trialText}>
                 {isSv 
-                  ? '7 dagars gratis provperiod för nya användare!' 
+                  ? 'Sju dagars gratis provperiod för nya användare!' 
                   : '7 days free trial for new users!'}
               </Text>
             </View>
