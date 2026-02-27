@@ -1,6 +1,28 @@
 import { create } from 'zustand';
+import { useAuthStore } from './authStore';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+
+// API fetch helper with auth handling
+const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+  
+  // Handle 401 - user needs to login
+  if (response.status === 401) {
+    // Clear auth state - will trigger redirect to login
+    useAuthStore.getState().setUser(null);
+    throw new Error('AUTH_REQUIRED');
+  }
+  
+  return response;
+};
 
 // Types
 export interface CoopSettings {
