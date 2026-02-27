@@ -564,7 +564,7 @@ export default function HensScreen() {
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
           <Ionicons name="add-circle" size={24} color="#FFF" />
           <Text style={styles.addButtonText}>
-            {isSv ? 'Lägg till höna' : 'Add hen'}
+            {isSv ? 'Lägg till höna/tupp' : 'Add hen/rooster'}
           </Text>
         </TouchableOpacity>
         
