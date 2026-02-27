@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,12 @@ import {
   Linking,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import i18n from '../src/i18n';
+import { getOfferings, purchasePackage, PurchasesPackage } from '../src/services/revenuecat';
+import { usePremiumStore } from '../src/store/premiumStore';
 
 // TypeScript interface for props
 type PremiumGateModalProps = {
@@ -21,6 +24,7 @@ type PremiumGateModalProps = {
   featureIcon?: keyof typeof Ionicons.glyphMap;
 };
 
+// Stripe URL for Android/Web users
 const PREMIUM_WEB_URL = 'https://honsgarden.se/api/premium-page';
 
 const PREMIUM_FEATURES = [
@@ -41,8 +45,88 @@ export default function PremiumGateModal({
   featureIcon = 'star'
 }: PremiumGateModalProps) {
   const isSv = i18n.locale.startsWith('sv');
+  const { checkPremiumStatus } = usePremiumStore();
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const [offerings, setOfferings] = useState<any>(null);
+  const [purchasing, setPurchasing] = useState(false);
   
-  const handleUpgrade = () => {
+  // Determine payment method based on platform
+  // iOS = RevenueCat (App Store IAP)
+  // Android & Web = Stripe (Web payment)
+  const isIOS = Platform.OS === 'ios';
+  const useInAppPurchase = isIOS;
+  
+  useEffect(() => {
+    if (visible && useInAppPurchase) {
+      loadOfferings();
+    }
+  }, [visible]);
+  
+  const loadOfferings = async () => {
+    const currentOffering = await getOfferings();
+    if (currentOffering) {
+      setOfferings(currentOffering);
+    }
+  };
+  
+  // Handle subscription via RevenueCat (iOS only)
+  const handleInAppPurchase = async () => {
+    if (!offerings) {
+      Alert.alert(
+        isSv ? 'Fel' : 'Error',
+        isSv ? 'Kunde inte ladda prenumerationspaket. Försök igen.' : 'Could not load subscription packages. Please try again.'
+      );
+      return;
+    }
+    
+    setPurchasing(true);
+    
+    try {
+      // Find the selected package
+      const packageId = selectedPlan === 'yearly' ? 'yearly' : 'monthly';
+      const pkg = offerings.availablePackages?.find((p: PurchasesPackage) => 
+        p.identifier.toLowerCase().includes(packageId) || 
+        p.packageType?.toLowerCase().includes(packageId === 'yearly' ? 'annual' : 'monthly')
+      ) || offerings.availablePackages?.[selectedPlan === 'yearly' ? 0 : 1];
+      
+      if (!pkg) {
+        Alert.alert(
+          isSv ? 'Fel' : 'Error',
+          isSv ? 'Kunde inte hitta prenumerationspaketet.' : 'Could not find the subscription package.'
+        );
+        setPurchasing(false);
+        return;
+      }
+      
+      const result = await purchasePackage(pkg);
+      
+      if (result.success) {
+        Alert.alert(
+          isSv ? 'Tack!' : 'Thank you!',
+          isSv ? 'Din Premium-prenumeration är nu aktiv!' : 'Your Premium subscription is now active!',
+          [{ text: 'OK', onPress: () => onClose() }]
+        );
+        await checkPremiumStatus();
+      } else if (result.userCancelled) {
+        // User cancelled - no need to show error
+      } else if (result.error) {
+        Alert.alert(
+          isSv ? 'Fel' : 'Error',
+          result.error
+        );
+      }
+    } catch (error: any) {
+      Alert.alert(
+        isSv ? 'Fel' : 'Error',
+        error.message || (isSv ? 'Ett fel uppstod vid köpet.' : 'An error occurred during purchase.')
+      );
+    } finally {
+      setPurchasing(false);
+    }
+  };
+  
+  // Handle subscription via Stripe (Android & Web)
+  const handleWebSubscribe = () => {
     Alert.alert(
       isSv ? 'Prenumerera via webben' : 'Subscribe via web',
       isSv 
@@ -69,6 +153,15 @@ export default function PremiumGateModal({
         },
       ]
     );
+  };
+  
+  // Choose the right handler based on platform
+  const handleUpgrade = () => {
+    if (useInAppPurchase) {
+      handleInAppPurchase();
+    } else {
+      handleWebSubscribe();
+    }
   };
   
   return (
@@ -127,7 +220,10 @@ export default function PremiumGateModal({
             
             {/* Pricing */}
             <View style={styles.pricingSection}>
-              <View style={styles.priceCard}>
+              <TouchableOpacity 
+                style={[styles.priceCard, selectedPlan === 'monthly' && styles.priceCardSelected]}
+                onPress={() => setSelectedPlan('monthly')}
+              >
                 <Text style={styles.priceLabel}>
                   {isSv ? 'Månatlig' : 'Monthly'}
                 </Text>
@@ -135,9 +231,15 @@ export default function PremiumGateModal({
                   <Text style={styles.priceAmount}>19</Text>
                   <Text style={styles.priceCurrency}>kr/mån</Text>
                 </View>
-              </View>
+                {selectedPlan === 'monthly' && (
+                  <Ionicons name="checkmark-circle" size={20} color="#4ade80" style={styles.checkIcon} />
+                )}
+              </TouchableOpacity>
               
-              <View style={[styles.priceCard, styles.priceCardPopular]}>
+              <TouchableOpacity 
+                style={[styles.priceCard, styles.priceCardPopular, selectedPlan === 'yearly' && styles.priceCardSelected]}
+                onPress={() => setSelectedPlan('yearly')}
+              >
                 <View style={styles.popularBadge}>
                   <Text style={styles.popularBadgeText}>
                     {isSv ? 'Spara 35%' : 'Save 35%'}
@@ -153,7 +255,10 @@ export default function PremiumGateModal({
                 <Text style={styles.priceSubtext}>
                   {isSv ? '12,42 kr/månad' : '12.42 kr/month'}
                 </Text>
-              </View>
+                {selectedPlan === 'yearly' && (
+                  <Ionicons name="checkmark-circle" size={20} color="#4ade80" style={styles.checkIcon} />
+                )}
+              </TouchableOpacity>
             </View>
             
             {/* Trial info */}
@@ -169,12 +274,37 @@ export default function PremiumGateModal({
           
           {/* CTA Button */}
           <View style={styles.ctaContainer}>
-            <TouchableOpacity style={styles.ctaButton} onPress={handleUpgrade}>
-              <Ionicons name="globe-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />
-              <Text style={styles.ctaButtonText}>
-                {isSv ? 'Prenumerera via honsgarden.se' : 'Subscribe via honsgarden.se'}
-              </Text>
+            <TouchableOpacity 
+              style={[styles.ctaButton, purchasing && styles.ctaButtonDisabled]} 
+              onPress={handleUpgrade}
+              disabled={purchasing}
+            >
+              {purchasing ? (
+                <ActivityIndicator size="small" color="#000" />
+              ) : (
+                <>
+                  <Ionicons 
+                    name={useInAppPurchase ? "card-outline" : "globe-outline"} 
+                    size={20} 
+                    color="#000" 
+                    style={{ marginRight: 8 }} 
+                  />
+                  <Text style={styles.ctaButtonText}>
+                    {useInAppPurchase 
+                      ? (isSv ? 'Prenumerera nu' : 'Subscribe now')
+                      : (isSv ? 'Prenumerera via honsgarden.se' : 'Subscribe via honsgarden.se')
+                    }
+                  </Text>
+                </>
+              )}
             </TouchableOpacity>
+            
+            <Text style={styles.paymentNote}>
+              {useInAppPurchase 
+                ? (isSv ? 'Betalning via App Store' : 'Payment via App Store')
+                : (isSv ? 'Betalning via Stripe' : 'Payment via Stripe')
+              }
+            </Text>
             
             <TouchableOpacity style={styles.laterButton} onPress={onClose}>
               <Text style={styles.laterButtonText}>
@@ -304,11 +434,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    position: 'relative',
+  },
+  priceCardSelected: {
+    borderColor: '#4ade80',
   },
   priceCardPopular: {
     backgroundColor: 'rgba(74, 222, 128, 0.1)',
-    borderWidth: 2,
-    borderColor: '#4ade80',
   },
   popularBadge: {
     position: 'absolute',
@@ -347,6 +481,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
+  checkIcon: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+  },
   trialInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -374,10 +513,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  ctaButtonDisabled: {
+    opacity: 0.7,
+  },
   ctaButtonText: {
     color: '#000',
     fontSize: 16,
     fontWeight: '700',
+  },
+  paymentNote: {
+    color: '#9ca3af',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 8,
   },
   laterButton: {
     alignItems: 'center',
