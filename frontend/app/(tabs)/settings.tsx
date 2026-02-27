@@ -431,13 +431,29 @@ export default function SettingsScreen() {
             {/* Coop Name */}
             <View style={styles.settingItem}>
               <Text style={styles.settingLabel}>{t('settings.coopName')}</Text>
-              <TextInput
-                style={styles.textInput}
-                value={coopName}
-                onChangeText={setCoopName}
-                placeholder={t('settings.coopNamePlaceholder')}
-                placeholderTextColor={colors.textMuted}
-              />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <TextInput
+                  style={[styles.textInput, { flex: 1 }]}
+                  value={coopName}
+                  onChangeText={setCoopName}
+                  placeholder={t('settings.coopNamePlaceholder')}
+                  placeholderTextColor={colors.textMuted}
+                  onBlur={handleSave}
+                />
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: colors.primary,
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 8,
+                  }}
+                  onPress={handleSave}
+                >
+                  <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>
+                    {isSv ? 'Spara' : 'Save'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
             
             {/* Hen Count */}
