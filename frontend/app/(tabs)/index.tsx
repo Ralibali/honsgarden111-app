@@ -686,6 +686,16 @@ export default function HomeScreen() {
             
             <TouchableOpacity
               style={styles.quickActionCard}
+              onPress={() => router.push('/(tabs)/community')}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: '#10b981' }]}>
+                <Ionicons name="chatbubbles" size={20} color="#FFF" />
+              </View>
+              <Text style={styles.quickActionLabel}>{isSv ? 'Community' : 'Community'}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.quickActionCard}
               onPress={handleShareStatistics}
             >
               <View style={[styles.quickActionIcon, { backgroundColor: '#3b82f6' }]}>
