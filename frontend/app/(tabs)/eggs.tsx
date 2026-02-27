@@ -46,11 +46,11 @@ export default function EggsScreen() {
   useEffect(() => {
     loadData();
     loadHens();
-  }, []);
+  }, [filterDays]);
   
   const loadData = async () => {
     const end = new Date();
-    const start = subDays(end, 30);
+    const start = subDays(end, filterDays);
     await fetchEggRecords(
       format(start, 'yyyy-MM-dd'),
       format(end, 'yyyy-MM-dd')
