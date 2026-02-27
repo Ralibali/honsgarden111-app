@@ -15,6 +15,10 @@ i18n.locale = deviceLocale.startsWith('sv') ? 'sv' : 'en';
 i18n.enableFallback = true;
 i18n.defaultLocale = 'sv';
 
+// Configure missing translation behavior to return a string, not an object
+// This prevents React errors when a translation key is missing
+i18n.missingBehavior = 'guess';
+
 export default i18n;
 
 // Helper function to format currency based on locale
