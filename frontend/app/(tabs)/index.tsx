@@ -139,6 +139,15 @@ export default function HomeScreen() {
         setHasSeenChoresFirstTime(hasSeenBefore === 'true');
         setChoresAutoPopupEnabled(autoPopupDisabled !== 'true');
         
+        // Schedule daily push notification (7:30 AM) - always enabled
+        if (Platform.OS !== 'web') {
+          try {
+            await scheduleDailyChoresReminder(7, 30, true);
+          } catch (notifError) {
+            console.log('Could not schedule chores notification:', notifError);
+          }
+        }
+        
         // Show modal automatically if:
         // 1. First time ever (mandatory)
         // 2. Or auto-popup is still enabled
