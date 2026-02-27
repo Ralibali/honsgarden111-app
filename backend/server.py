@@ -1907,42 +1907,66 @@ class IAPRestoreRequest(BaseModel):
 @api_router.post("/iap/verify")
 async def verify_iap_purchase(request: Request, iap_data: IAPVerifyRequest):
     """
-    Verify in-app purchase receipt from iOS/Android
-    This endpoint validates purchases made through Apple/Google IAP
+    Verify in-app purchase via RevenueCat API.
+    This endpoint validates purchases by checking entitlements with RevenueCat server-side.
+    
+    The receipt_data should contain the RevenueCat app_user_id (which should match user_id).
     """
     user = await require_user(request)
     
     try:
+        # Get RevenueCat API key from environment
+        REVENUECAT_API_KEY = os.environ.get('REVENUECAT_API_KEY', '')
+        
+        if not REVENUECAT_API_KEY:
+            logger.warning("REVENUECAT_API_KEY not set - cannot verify IAP server-side")
+            # Fallback: Trust client-side verification but log warning
+            # In production, this should fail or use webhooks
+            return await _fallback_iap_verify(user, iap_data)
+        
+        # RevenueCat uses app_user_id to identify subscribers
+        # The client should have called identifyUser(user_id) which sets this
+        app_user_id = user.user_id
+        
+        # Call RevenueCat API to get subscriber info
+        revenuecat_url = f"https://api.revenuecat.com/v1/subscribers/{app_user_id}"
+        headers = {
+            "Authorization": f"Bearer {REVENUECAT_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        import httpx
+        async with httpx.AsyncClient() as client:
+            response = await client.get(revenuecat_url, headers=headers)
+        
+        if response.status_code != 200:
+            logger.error(f"RevenueCat API error: {response.status_code} - {response.text}")
+            return {"success": False, "error": "Could not verify subscription with RevenueCat"}
+        
+        subscriber_data = response.json()
+        subscriber = subscriber_data.get("subscriber", {})
+        entitlements = subscriber.get("entitlements", {})
+        
+        # Check if user has active premium entitlement
+        # The entitlement ID should match what's configured in RevenueCat dashboard
+        premium_entitlement = entitlements.get("Hönsgården app Pro") or entitlements.get("premium") or entitlements.get("pro")
+        
         is_valid = False
-        expires_at = None
         plan = "monthly"
+        expires_at = None
         
-        # Determine plan from product_id
-        if "yearly" in iap_data.product_id.lower() or "annual" in iap_data.product_id.lower():
-            plan = "yearly"
-            expires_at = datetime.now(timezone.utc) + timedelta(days=365)
-        else:
-            expires_at = datetime.now(timezone.utc) + timedelta(days=30)
-        
-        if iap_data.platform == "ios":
-            # iOS App Store receipt verification
-            # In production, you would verify with Apple's server
-            # For now, we trust the receipt if it's present
-            # TODO: Implement proper Apple receipt verification
-            # https://developer.apple.com/documentation/storekit/in-app_purchase/validating_receipts_with_the_app_store
-            if iap_data.receipt_data:
+        if premium_entitlement and premium_entitlement.get("expires_date"):
+            expires_date_str = premium_entitlement.get("expires_date")
+            expires_at = datetime.fromisoformat(expires_date_str.replace("Z", "+00:00"))
+            
+            # Check if subscription is still active
+            if expires_at > datetime.now(timezone.utc):
                 is_valid = True
-                logger.info(f"iOS IAP receipt received for user {user.email}, product: {iap_data.product_id}")
-        
-        elif iap_data.platform == "android":
-            # Android Google Play verification
-            # In production, you would verify with Google Play Developer API
-            # For now, we trust the receipt if it's present
-            # TODO: Implement proper Google Play verification
-            # https://developer.android.com/google/play/billing/integrate#verify
-            if iap_data.receipt_data:
-                is_valid = True
-                logger.info(f"Android IAP receipt received for user {user.email}, product: {iap_data.product_id}")
+                
+                # Determine plan from product identifier
+                product_id = premium_entitlement.get("product_identifier", "")
+                if "yearly" in product_id.lower() or "annual" in product_id.lower():
+                    plan = "yearly"
         
         if is_valid:
             # Update user's subscription status
@@ -1955,13 +1979,14 @@ async def verify_iap_purchase(request: Request, iap_data: IAPVerifyRequest):
                     "platform": iap_data.platform,
                     "product_id": iap_data.product_id,
                     "transaction_id": iap_data.transaction_id,
-                    "purchase_source": "iap",
+                    "purchase_source": "iap_revenuecat",
+                    "verified_via": "revenuecat_api",
                     "updated_at": datetime.now(timezone.utc)
                 }},
                 upsert=True
             )
             
-            # Log the purchase
+            # Log the verified purchase
             await db.iap_transactions.insert_one({
                 "id": str(uuid.uuid4()),
                 "user_id": user.user_id,
@@ -1971,13 +1996,72 @@ async def verify_iap_purchase(request: Request, iap_data: IAPVerifyRequest):
                 "transaction_id": iap_data.transaction_id,
                 "plan": plan,
                 "verified": True,
+                "verified_via": "revenuecat_api",
                 "created_at": datetime.now(timezone.utc)
             })
+            
+            logger.info(f"IAP verified via RevenueCat for user {user.email}, plan: {plan}")
             
             return {
                 "success": True,
                 "is_premium": True,
                 "plan": plan,
+                "expires_at": expires_at.isoformat() if expires_at else None
+            }
+        else:
+            logger.warning(f"IAP verification failed for user {user.email} - no active entitlement")
+            return {
+                "success": False,
+                "error": "No active subscription found",
+                "is_premium": False
+            }
+            
+    except Exception as e:
+        logger.error(f"IAP verification error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+async def _fallback_iap_verify(user, iap_data: IAPVerifyRequest):
+    """
+    Fallback IAP verification when RevenueCat API key is not available.
+    WARNING: This is NOT secure and should only be used in development.
+    In production, always use RevenueCat API or webhooks.
+    """
+    logger.warning(f"Using FALLBACK IAP verification for user {user.email} - NOT SECURE FOR PRODUCTION")
+    
+    plan = "monthly"
+    if "yearly" in iap_data.product_id.lower() or "annual" in iap_data.product_id.lower():
+        plan = "yearly"
+        expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+    else:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+    
+    # Only proceed if receipt_data exists
+    if not iap_data.receipt_data:
+        return {"success": False, "error": "No receipt data provided"}
+    
+    # Update subscription (INSECURE - trusting client)
+    await db.subscriptions.update_one(
+        {"user_id": user.user_id},
+        {"$set": {
+            "is_active": True,
+            "plan": plan,
+            "expires_at": expires_at,
+            "platform": iap_data.platform,
+            "product_id": iap_data.product_id,
+            "purchase_source": "iap_fallback_INSECURE",
+            "updated_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "is_premium": True,
+        "plan": plan,
+        "expires_at": expires_at.isoformat(),
+        "warning": "Verified via fallback - not secure for production"
+    }
                 "expires_at": expires_at.isoformat(),
                 "message": "Köpet verifierat och premium aktiverat"
             }
