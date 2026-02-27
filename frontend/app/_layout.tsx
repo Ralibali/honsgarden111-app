@@ -77,15 +77,14 @@ export default function RootLayout() {
   
   // Handle navigation based on auth state and onboarding
   useEffect(() => {
-    // Wait for onboarding check to complete
-    if (hasSeenOnboarding === null) return;
+    // Wait for initialization to complete
+    if (!isInitialized || hasSeenOnboarding === null) return;
     
-    // Don't wait for auth loading - just proceed
     const inAuthGroup = segments[0] === '(auth)';
     const inOnboarding = segments[0] === 'onboarding';
     const inTabs = segments[0] === '(tabs)';
     
-    console.log('Navigation check:', { hasSeenOnboarding, isAuthenticated, inAuthGroup, inOnboarding, inTabs });
+    console.log('Navigation check:', { hasSeenOnboarding, isAuthenticated, inAuthGroup, inOnboarding, inTabs, authLoading });
     
     // If hasn't seen onboarding and not already there, go to onboarding
     if (!hasSeenOnboarding && !inOnboarding) {
@@ -99,7 +98,7 @@ export default function RootLayout() {
     else if (hasSeenOnboarding && !isAuthenticated && !inAuthGroup && !inOnboarding) {
       router.replace('/(auth)/login');
     }
-  }, [hasSeenOnboarding, isAuthenticated]);
+  }, [isInitialized, hasSeenOnboarding, isAuthenticated]);
   
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
