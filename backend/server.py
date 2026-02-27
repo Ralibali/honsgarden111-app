@@ -5924,7 +5924,8 @@ Om frågan är oklar, ge generella tips om hönsskötsel."""
 @api_router.get("/weather")
 async def get_weather(request: Request, lat: float = 59.33, lon: float = 18.07):
     """Get weather data and hen-care tips based on weather
-    Default coordinates are for Stockholm"""
+    Default coordinates are for Stockholm
+    Uses Open-Meteo API (free, no API key required)"""
     user_id = await require_user_id(request)
     
     # Try to get user's saved location
@@ -5936,37 +5937,81 @@ async def get_weather(request: Request, lat: float = 59.33, lon: float = 18.07):
     weather_data = {
         "current": None,
         "tips": [],
-        "source": "default"
+        "source": "default",
+        "temperature": None,
+        "humidity": None,
+        "wind_speed": None,
+        "description": ""
     }
     
-    # Try to get real weather data
-    if WEATHER_API_KEY:
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"https://api.openweathermap.org/data/2.5/weather",
-                    params={
-                        "lat": lat,
-                        "lon": lon,
-                        "appid": WEATHER_API_KEY,
-                        "units": "metric",
-                        "lang": "sv"
-                    },
-                    timeout=5.0
-                )
-                if response.status_code == 200:
-                    data = response.json()
-                    weather_data["current"] = {
-                        "temp": data["main"]["temp"],
-                        "feels_like": data["main"]["feels_like"],
-                        "humidity": data["main"]["humidity"],
-                        "description": data["weather"][0]["description"],
-                        "icon": data["weather"][0]["icon"],
-                        "location": data.get("name", "Okänd plats")
-                    }
-                    weather_data["source"] = "openweathermap"
-        except Exception as e:
-            logging.warning(f"Weather API failed: {e}")
+    # Use Open-Meteo API (free, no API key required)
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": lat,
+                    "longitude": lon,
+                    "current": "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature",
+                    "timezone": "Europe/Stockholm"
+                },
+                timeout=5.0
+            )
+            if response.status_code == 200:
+                data = response.json()
+                current = data.get("current", {})
+                
+                # Map WMO weather codes to Swedish descriptions
+                weather_code = current.get("weather_code", 0)
+                weather_descriptions = {
+                    0: "Klart",
+                    1: "Mestadels klart",
+                    2: "Delvis molnigt",
+                    3: "Molnigt",
+                    45: "Dimma",
+                    48: "Dimma med rimfrost",
+                    51: "Lätt duggregn",
+                    53: "Måttligt duggregn",
+                    55: "Kraftigt duggregn",
+                    61: "Lätt regn",
+                    63: "Måttligt regn",
+                    65: "Kraftigt regn",
+                    71: "Lätt snöfall",
+                    73: "Måttligt snöfall",
+                    75: "Kraftigt snöfall",
+                    77: "Snökorn",
+                    80: "Lätta regnskurar",
+                    81: "Måttliga regnskurar",
+                    82: "Kraftiga regnskurar",
+                    85: "Lätta snöbyar",
+                    86: "Kraftiga snöbyar",
+                    95: "Åskväder",
+                    96: "Åskväder med hagel",
+                    99: "Kraftigt åskväder med hagel"
+                }
+                description = weather_descriptions.get(weather_code, "Okänt väder")
+                
+                temp = current.get("temperature_2m")
+                humidity = current.get("relative_humidity_2m")
+                wind_speed = current.get("wind_speed_10m")
+                feels_like = current.get("apparent_temperature")
+                
+                weather_data["current"] = {
+                    "temp": temp,
+                    "feels_like": feels_like,
+                    "humidity": humidity,
+                    "description": description,
+                    "weather_code": weather_code,
+                    "wind_speed": wind_speed
+                }
+                # Also set top-level for easier frontend access
+                weather_data["temperature"] = temp
+                weather_data["humidity"] = humidity
+                weather_data["wind_speed"] = wind_speed
+                weather_data["description"] = description
+                weather_data["source"] = "open-meteo"
+    except Exception as e:
+        logging.warning(f"Open-Meteo Weather API failed: {e}")
     
     # Generate tips based on weather
     tips = []
