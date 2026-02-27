@@ -73,6 +73,14 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           });
+          
+          // Identify user with RevenueCat for subscription sync
+          if (data.user_id) {
+            identifyRevenueCatUser(data.user_id).catch(err => {
+              console.warn('RevenueCat identify failed:', err);
+            });
+          }
+          
           return true;
         } catch (error) {
           set({ isLoading: false, error: 'Kunde inte ansluta till servern' });
