@@ -70,6 +70,11 @@ export default function HomeScreen() {
   // Community preview state
   const [communityPosts, setCommunityPosts] = useState<any[]>([]);
   
+  // Streak & gamification state
+  const [streak, setStreak] = useState(0);
+  const [eggPopAnim] = useState(new Animated.Value(1));
+  const [showEggPop, setShowEggPop] = useState(false);
+  
   // Data limits state
   const [dataLimits, setDataLimits] = useState<any>(null);
   const [productivityAlerts, setProductivityAlerts] = useState<any>(null);
