@@ -34,6 +34,8 @@ export default function EggsScreen() {
   const [notes, setNotes] = useState('');
   const [hens, setHens] = useState<any[]>([]);
   const [selectedHenId, setSelectedHenId] = useState('');
+  const [filterDays, setFilterDays] = useState(30); // 7 or 30 day filter
+  const [editingRecord, setEditingRecord] = useState<EggRecord | null>(null);
   
   const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
   
