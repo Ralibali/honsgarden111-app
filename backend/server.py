@@ -112,8 +112,186 @@ Höns ger mer än ägg:
 
 En liten flock på 10–15 hönor kan producera mellan 2000 och 3500 ägg per år beroende på ras och skötsel.
 
+=== HÄLSA & SJUKDOMAR ===
+
+FRISK VS SJUK HÖNA - Lär dig känna igen skillnaden!
+En FRISK höna är alert och nyfiken. Den springer mot dig när du kommer med mat, pickar aktivt, klöser i marken, stoftar sig, interagerar med flocken och har ett rakt, upprätt kroppsspråk. Ögonen är klara och runda, näbben är ren, fjäderdräkten är blank och tät (förutom under ruggning), och avföringen är fast med ett vitt uratutsöndring ovanpå.
+
+En SJUK höna visar ofta något eller flera av följande:
+- Sitter hopkurad, plufsig och med slutna ögon mitt på dagen
+- Drar sig undan från flocken och vill vara ensam
+- Slutar äta och dricka
+- Vingarna hänger ner
+- Onormal avföring (vattnig, grön, gul, blodig eller skummig)
+- Andningsljud – rosslar, nyser, väser
+- Svullen buk
+- Bleka eller blåaktiga kammar och lökar (tecken på dålig syresättning eller blodbrist)
+- Lös avföring runt fjädrarna vid kloaken
+- Tappat vikt drastiskt – du känner bröstbenet som en kniv
+
+VIKTIG REGEL: En höna som sitter för sig själv med slutna ögon under dagtid mår inte bra. Agera samma dag!
+
+=== VANLIGA SJUKDOMAR (DETALJERAT) ===
+
+MYKOPLASMA (CRD - Chronic Respiratory Disease):
+En av de allra vanligaste sjukdomarna i svenska hönsflockar. Orsakas av bakterien Mycoplasma gallisepticum.
+Symtom: nysningar, ögonflöde, svullna bihålor (ansiktet ser uppsvällt ut), rosslig andning.
+Smittar via direktkontakt och via ägg till kycklingar. Stress, kallt och fuktigt väder utlöser ofta utbrott.
+Kan behandlas med antibiotika (tetracyklin eller tylosin) men sjukdomen botas inte – hönsen förblir bärare livet ut.
+Håll flocken stressfri, varm och torr för att minimera utbrott.
+
+NEWCASTLESJUKA:
+Allvarlig virussjukdom som i sin farligaste form kan slå ut en hel flock på några dagar. I Sverige vaccineras ofta mot detta.
+Symtom: andningssvårigheter, neurologiska symptom (vrider på huvudet, går i cirklar), diarré, kraftigt nedsatt äggproduktion.
+Det finns ingen behandling – sjuka djur avlivas. Misstänker du newcastlesjuka ska du kontakta veterinär omedelbart, det är en anmälningspliktig sjukdom i Sverige.
+
+MAREKS SJUKDOM:
+Ett herpesvirus som drabbar framför allt unga höns under 5 månaders ålder.
+Orsakar förlamning i ben och vingar, tumörer i inre organ och ibland grå ögon (ögonformen förändras).
+Det finns inget botemedel. Vaccination vid kläckning är det enda skyddet.
+Viruset är extremt motståndskraftigt och kan leva år i damm och fjäder i hönshuset – byt flock med försiktighet och sanera ordentligt.
+
+KOCCIDIOS:
+Vanlig hos unga kycklingar 3–8 veckor. Orsakas av encelliga parasiter (Eimeria sp.) som angriper tarmväggen.
+Symtom: blodig eller chokladbrun diarré, slöhet, blek kam, viktminskning och hög dödlighet om obehandlad.
+Behandlas med koccidiostatika (t.ex. amprolium). Vuxna höns bygger upp immunitet, men kycklingar som aldrig exponerats är känsliga.
+Håll kycklinghuset torrt – fukt är koccidios bästa vän!
+
+SALMONELLA:
+I Sverige är salmonella hos höns anmälningspliktig och övervakas aktivt.
+Hönsen kan bära på salmonella utan att verka sjuka alls, men vid stress kan sjukdom bryta ut med diarré och nedsatt allmäntillstånd.
+Viktigast ur folkhälsosynpunkt – tvätta händerna noggrant efter kontakt med höns och hantera ägg hygieniskt!
+
+INFEKTIÖS BRONKIT (IB):
+Ett virus som framför allt drabbar andningsvägarna men också njurarna och reproduktionsorganen.
+Symtom: nysningar, rosslig andning, nedsatt värpning och missformade ägg (rynkiga, mjukskalade).
+Sprids extremt snabbt via luften. Ingen behandling finns, men stödbehandling (vitaminer, elektrolyter, varmt och torrt) hjälper.
+Vaccin finns men används framför allt i större besättningar.
+
+BUMBLEFOOT (Plantardermatit):
+En bakterieinfektion i trampdynan på foten, orsakad av Staphylococcus aureus och andra bakterier.
+Uppstår när hönsen skadar foten mot vassa ytor, eller när de hoppar ner från för höga sittpinnar på hårt underlag.
+Du ser en svart skorpa eller hård knöl under foten.
+I tidigt stadium kan det behandlas hemma med såromläggning och antibiotika. I avancerade fall krävs kirurgisk rensning av veterinär.
+Förebygg med mjuka landningsytor och lagom höga sittpinnar.
+
+ÄGGLEDARINFLAMMATION OCH PERITONIT:
+Vanligt hos äldre eller hög-producerande höns. Äggulan hamnar fel och hamnar i bukhålan istället för äggledaren, vilket leder till allvarlig infektion.
+Symtom: svullen, vätskefylld buk (hönsen ser "pansad" ut underifrån), nedsatt allmäntillstånd, slutar värpa.
+Kräver veterinär – antibiotika kan bromsa förloppet men prognosen är ofta dålig.
+Spara inte på äggproduktionen hos hönsen, det sliter hårt på kroppen.
+
+RÖDA HÖNSKVALSTER (Dermanyssus gallinae):
+En av de vanligaste orsakerna till blodbrist och nedsatt värpning i Sverige.
+Lever i springor i hönshuset dagtid och suger blod på hönsen nattetid.
+Hönsen blir bleka, anemiska, slutar värpa och kan i värsta fall dö av blodbrist.
+Du ser dem som rörliga röda/bruna prickar i springor och vid sittpinnefästen.
+Bekämpning: rengör hönshuset noggrant, använd kiseldioxid (kiselgur) i springor, eller kemiska medel.
+Behandla hönshuset, inte bara hönsen!
+
+FJÄDERLÖSS (Mallophaga):
+Lever i fjädrarna och äter fjäder och hudskrap.
+Syns som rörliga prickar nära huden, ofta runt kloaken och under vingarna.
+Orsakar klåda, rastlöshet och fjäderskador. Behandlas med insektspuder (permetrin).
+
+SPOLMASKAR OCH BANDMASKAR:
+Inälvsparasiter som hönsen får i sig via mark och mellanvärdar (sniglar, daggmaskar).
+Avföring och minskad kondition avslöjar dem. Äggräkning via feces-analys hos veterinär ger svar.
+Behandling med flubendazol (Flubenol) – receptfritt i Sverige.
+
+=== ZOONOSER - Sjukdomar som kan smitta till människa ===
+De viktigaste att känna till:
+- Salmonella – via ägg och avföring. Tvätta alltid händerna.
+- Campylobakter – vanlig tarmbakterie hos höns. Ger magsjuka hos människa. Tvätta händerna, koka/stek allt kött ordentligt.
+- Fågelinfluensa (H5N1 m.fl.) – sällsynt men allvarlig. Vid misstanke om fågelinfluensa (massdöd, neurologiska symptom) kontakta Jordbruksverket omedelbart.
+- Ringorm (Microsporum/Trichophyton) – svampinfektion som kan sitta i fjädrarna och smitta via hudkontakt.
+
+=== BEHANDLING - HEMMA VS VETERINÄR ===
+
+VAD KAN DU BEHANDLA HEMMA?
+1. Lindriga sår och skrapsår: Rengör med koksaltlösning, applicera blåspray (aluminiumspray) som skyddar och avskräcker hackande flockmedlemmar. Isolera den skadade hönsen tills såret läkt.
+2. Löss och yttre parasiter: Puderbehandling med permetrin eller växtbaserade alternativ (lavendel, dammaska). Behandla hela flocken och hönshuset samtidigt.
+3. Lindriga matsmältningsproblem: Apple cider vinegar (ACV) i vattnet (1 msk per 4 liter) stimulerar tarmfloran och kan hjälpa vid lätt diarré. Ge probiotika (yoghurt eller specifika hönsprobiotika).
+4. Dehydrering: Elektrolytlösning i vattnet (kan köpas eller blandas hemma med socker, salt och vatten).
+5. Äggstopp i tidigt stadium: Se akuta situationer nedan.
+
+NÄR MÅSTE DU SÖKA VETERINÄR?
+- Andningssvårigheter som inte förbättras på ett dygn
+- Misstänkt newcastlesjuka eller fågelinfluensa
+- Svullen buk (misstänkt peritonit)
+- Äggstopp som inte löser sig inom 24 timmar
+- Neurologiska symptom (huvudvrider, förlamning)
+- Massdöd i flocken utan uppenbar orsak
+- Öppen fraktur eller djupa sår
+
+VIKTIGT: Antibiotika till höns i Sverige kräver recept från veterinär. Det är olagligt att behandla med antibiotika utan recept.
+
+ISOLERING AV SJUKA DJUR:
+Ha alltid en "sjukbur" redo – en enkel kartong eller bur inomhus fungerar utmärkt. Placera den sjuka hönsen:
+- Varmt (18–22°C)
+- Tyst och lugnt
+- Med lättillgängligt vatten och mat
+- Synlig från flockens håll är bra om möjligt, så hon inte tappar sin plats i hackordningen helt
+Återintroduktion efter sjukdom görs gradvis – låt hönsen vara i en avdelad del av hönsgården innan full integration.
+
+=== VÄRPNING - VARFÖR VÄRPER DE DÅLIGT? ===
+
+LJUS - Den viktigaste faktorn:
+Höns behöver 14–16 timmars ljus per dygn för att värpa optimalt. Ljuset stimulerar hypofysen via ögat att frisätta ägglossningstriggerande hormoner. På vintern, när dagsljuset understiger 12 timmar, slutar många höns att värpa helt naturligt – det är inte ett fel, det är biologi.
+Lösning: Installera ett timer-styrt artificiellt ljus i hönshuset. Lägg till ljus på morgonen (låt naturligt dagsljus avsluta dagen) för bäst resultat. Öka gradvis – inte mer än 1 timme per vecka.
+
+RUGGNING:
+En gång om året, vanligtvis på hösten, ruggar höns – de tappar fjädrar och växer nya. Under denna period slutar de flesta höns att värpa helt, i 6–12 veckor. Det är helt normalt och nödvändigt. En höna som ruggar och värper samtidigt sliter ut sig snabbt. Ge extra protein under ruggningen (solrosfrön, insekter, fiskmjöl) så går den snabbare.
+
+ÅLDER:
+En höna värper bäst under sitt första och andra levnadsår. Från år tre minskar äggproduktionen gradvis. Vid 4–5 års ålder lägger många höns bara sporadiskt. Det är normalt. Rasen spelar också roll – en Leghorn eller ISA Brown är avelad för maximal produktion och värper 280–320 ägg per år i toppform, medan en Brahma eller Orpington kanske lägger 150–180.
+
+STRESS:
+Höns är stressade varelser. Saker som stör värpningen:
+- Predatorer (räv, mink, hök) även om de bara smiter förbi utan att döda
+- Ny höna introduceras i flocken
+- Flytt till nytt hönshus
+- Ägare som byter rutiner
+- Extrem värme eller kyla
+- Sjukdom i flocken
+En rädd höna lägger inga ägg. Det är evolutionärt klokt – man föder inte ungar i kris.
+
+NÄRINGSBRIST:
+Kalciumbrist är vanligast. En höna som lägger ägg förbrukar otroliga mängder kalcium – ett äggskals vikt är till 94% kalciumkarbonat. Om fodret inte räcker kompenserar kroppen med att ta kalcium från skelettet, vilket leder till osteoporos och mjukskalade ägg. Ge alltid fri tillgång till ostron-skal eller krossad kalksten.
+Proteinbrist ger liknande effekt – utan tillräckligt protein kan kroppen inte bygga äggvitan. Ge 16–18% råprotein i fodret för värphöns.
+
+DOLDA SJUKDOMAR:
+Infektiös bronkit, mykoplasma och äggledarproblem påverkar alla värpningen. En höna som plötsligt slutar värpa utan annan uppenbar orsak bör undersökas.
+
+OLAGDA ÄGG:
+Ibland värper hönsen fint – men inte där du tror. Kontrollera om de hittat ett alternativt bo ute i trädgården, bakom häcken eller under buskar.
+
+=== FODER & NÄRING (DETALJERAT) ===
+
+BASFODRET:
+Ge ett komplett värphönspellets eller värphönskross som basfoder. Det innehåller rätt balans av protein, energi, vitaminer och mineraler. Spannmål (vete, korn, havre) är ett bra komplement men ska inte ersätta pellets – spannmål är energirikt men näringsglesare.
+
+VAD FÅR DE GÄRNA ÄTA SOM TILLSKOTT?
+- Grönsaker och frukt: Kål, spenat, äpplen, gurka, tomater, majs – höns älskar det mesta. Hängt kål i hönshuset ger också sysselsättning.
+- Insekter och larver: Naturligt och proteinrikt. Soldatfluglarver (BSFL) är fantastiska – högt protein, bra fettsyror, och hönsen är galna i dem.
+- Krossade ägg och äggskalen: Ja, du kan ge det tillbaka. Krossade ägg (kokta) ger protein, krossade skal ger kalcium.
+- Grit (kvarts/granit): Höns har ingen tänder – de malar maten i muskelmagen med hjälp av stenar. Ge fri tillgång till grit, speciellt om de inte har tillgång till naturmark.
+- Fiskmjöl och torkad fisk: Utmärkt proteinkälla.
+
+VAD SKA DE ABSOLUT INTE ÄTA?
+- Avokado – giftig, kan vara dödlig (persin)
+- Lök och vitlök i stora mängder – bryter ner röda blodkroppar
+- Rå potatis och gröna potatisskal – innehåller solanin som är giftigt
+- Choklad och kaffe – teofyllin och koffein är giftiga
+- Salt i stora mängder – kan orsaka saltförgiftning
+- Rått kött och fisk – risk för salmonella och campylobakter
+- Mögligt foder – mykotoxiner från mögel är mycket farliga
+- Pärlhyacint, digitalis och andra giftiga trädgårdsväxter
+
+VATTEN:
+Ofta underskattat. En värphöna dricker 200–500 ml vatten per dag – mer i värme. Smutsigt eller för varmt/kallt vatten minskar intaget drastiskt. Rengör vattenhinkar dagligen. På vintern, se till att vattnet inte fryser – en höna utan vatten i ett par timmar på en het dag kan dö!
+
 === HÖNSGÅRDENS UTFORMNING ===
-En bra hönsgård är grunden till allt. Stressade höns värper sämre. Otrygga höns blir sjuka. Trångbodda höns börjar hacka på varandra.
 
 PLACERING:
 - Välj plats med bra dränering - höns hatar lera
@@ -122,8 +300,8 @@ PLACERING:
 - Skydd mot starka vindar är lika viktigt
 
 UTRYMME:
-- Minst 0,3–0,4 kvm per höna inne i huset
-- Minst 1–2 kvm per höna i rastgård
+- Minst 0,25 m² per höna inomhus (ju mer desto bättre)
+- 1–2 m² per höna i rastgård
 - Ju mer plats, desto lugnare flock = bättre äggproduktion
 
 ROVDJURSSKYDD:
@@ -133,33 +311,106 @@ ROVDJURSSKYDD:
 - Säkra alla dörrar med ordentliga lås
 
 === HÖNSHUSETS UTFORMNING ===
-Hönshuset ska vara varmt på vintern, svalt på sommaren och alltid välventilerat.
-
-VENTILATION:
-- Ska sitta högt upp, utan att skapa drag på sittpinnarna
-- Drag kyler ner hönsen och kan orsaka luftvägsproblem
-- Frisk luft utan blåst – det är målet
 
 SITTPINNAR:
-- Rundade och stabila
-- 20–25 cm sittplats per höna
-- Höns sover alltid högt
+Runda eller ovala pinnar, 3–5 cm i diameter. Höns sover på pinne och viker fötterna runt den – flat yta ger bumblefoot. Höjd 40–60 cm från golvet är lagom för de flesta raser.
 
 REDEN:
-- Mörka, lugna och något lägre än sittpinnarna
-- Annars sover hönsen där istället
+En per 4–5 höns räcker, höns delar gärna. Placera reden mörkt och lite avsides – det triggar instinkten att värpa i skyddad miljö. Storlek ca 30x30x30 cm.
 
-STRÖMATERIAL:
-- Kutterspån eller halm
-- Ska vara torrt, absorberande och lätt att byta
-- Regelbunden rengöring minskar risken för kvalster
+VENTILATION:
+Kritiskt och ofta underskattat. Dålig ventilation ger fukt, ammoniak och andningssjukdomar. Ventilationshål ska sitta högt upp (varm, fuktig luft stiger), men undvik drag direkt mot sittpinnarna.
 
-LUKTER:
-- Ett välskött hönshus luktar inte illa
-- Det doftar trä, halm och jord
-- Luktar det ammoniak? Då är ventilationen eller städningen otillräcklig
+TEMPERATUR:
+Höns klarar kyla bra (ner till -10°C och lägre) om de är friska och hönshuset är torrt och dragfritt. De klarar inte fukt och drag. På sommaren är värme ett större problem – sätt upp skugga, ge kallt vatten och öppna ventilation.
+
+=== HACKORDNING OCH BETEENDEPROBLEM ===
+
+Hackordningen är reell och brutal. Varje flock har en tydlig hierarki, och det är viktigt att respektera det. Introducera aldrig en ny höna direkt i flocken – den kommer att attackeras och kan skadas allvarligt.
+
+INTRODUKTION AV NY HÖNA:
+1. Karantän i 2–4 veckor (skydd mot sjukdom)
+2. Synlig men separerad i 1–2 veckor (de vänjer sig vid varandra genom nät)
+3. Nattintroduktion (lägg in den nya på pinnen när alla sover – på morgonen verkar det mer naturligt)
+4. Övervaka de första dagarna
+
+FJÄDERPLOCKNING OCH KANNIBALISM:
+Stressrelaterade beteenden. Orsakas av för trång miljö, för lite stimulans, proteinbrist eller att en höna fått sår och andra börjat picka.
+Åtgärda grundorsaken. Blåspray på sår, mer utrymme, mer stimulans (hängd kål, halmbalar, pickstenar).
+
+FÖREBYGGANDE STOFTBAD:
+Ge alltid tillgång till torr jord eller sand för stoftbad. Det är hönsets naturliga sätt att hålla parasiter i schack. Tillsätt lite kiseldioxid i stoftbadet för extra effekt.
+
+=== AKUTA SITUATIONER ===
+
+ÄGGSTOPP (Egg Binding):
+En av de vanligaste akutfallen. Hönsen har ett ägg fastnat i äggledaren och kan inte lägga det. Dödligt om obehandlat.
+
+Symtom: Hönsen sitter hopkurad, anstränger sig och "trycker", buk kan vara svullen, går med stjärten nere, kan inte sitta på pinnen, slutar äta.
+
+Hembehandling (om tidigt stadium):
+1. Placera hönsen i ett varmt bad (40°C) i 15–20 minuter – slappnar av musklerna
+2. Torka henne och håll henne varm (handdukar, värmelampa)
+3. Tillför kalcium (kalciumgluknat om du har, annars lite mjölk)
+4. Smörj kloaken försiktigt med lite vaselin eller olivolja
+5. Låt henne vara i lugn och ro i varmt utrymme
+6. Upprepa badet efter 2–4 timmar om inget hänt
+
+Sök veterinär omedelbart om: Hönsen fortfarande inte lagt ägget efter 24 timmar, om hon verkar förlamad i benen (ägget kan trycka på nerv), eller om hon kollapsar.
+Bryt ALDRIG ägget inuti hönsen om du inte är utbildad – äggskal kan skada äggledaren allvarligt.
+
+PREDATORANGREPP OCH SÅR:
+Räv, mink och hök kan orsaka fruktansvärda skador. Hönsen kan överleva förvånansvärt allvarliga skador om du agerar snabbt.
+1. Isolera omedelbart – chock och stress dödar lika gärna som såret
+2. Rengör sår med koksaltlösning, aldrig ren sprit
+3. Kontrollera om inre organ syns (det händer) – täck med fuktig gasbinda och kontakta veterinär AKUT
+4. Håll varmt, tyst, mörkt
+5. Ge elektrolytlösning om hönsen dricker
+
+BLODIG PICKNING:
+Kan eskalera till kannibalism och massdöd inom timmar. En höna med blod på sig triggar flockens instinkt att angripa. Ta ut den skadade direkt, rengör såret och applicera blåspray (färgar huden blå och döljer blod).
+
+VÄRMESLAG:
+Vid extrem värme kan höns snabbt få värmeslag. Symtom: gispar, utspärrade vingar, hänger med näbben, vacklar.
+Åtgärd: Flytta till svalt och skuggigt. Blöt ner kammen och benen med svalt (inte iskallt) vatten. Ge elektrolytlösning. Fläkt om möjligt.
+
+TECKEN PÅ ATT EN HÖNA HÅLLER PÅ ATT DÖ:
+Var ärlig med dig själv. En höna som:
+- Inte reagerar på din kontakt
+- Ligger ner och inte kan resa sig
+- Har blå/svart kam och lökar
+- Andas med öppen näbb och sluten ögon
+- Är iskall trots värme
+...är troligtvis i slutskedet. Avlivning är i dessa fall en nåd. Kontakta veterinär för råd eller avlivning om du inte kan göra det själv.
+
+=== OM TUPPAR ===
+
+BEHÖVER DU EN TUPP?
+Nej, för ägg behövs ingen tupp. Ja, om du vill ha kycklingar. En tupp skyddar också flocken – han spanar efter rovdjur, kallar hönsen till mat och håller hackordningen i schack.
+
+EN BRA TUPP:
+- Håller ordning i flocken
+- Varnar vid fara
+- Ser till att flocken rör sig samlat
+- Kan minska stress och bråk bland hönorna
+
+AGGRESSION HOS TUPPAR:
+Vanligt och kan vara farligt, speciellt mot barn. Uppfostran spelar roll – en tupp som behandlats som en leksak som unge kan bli aggressiv. Aldrig låt tuppar hoppa på dig utan att du reagerar – det tolkar de som att du accepterar underordning. Stå din grund, gå mot dem, inte ifrån.
+
+HÄLSOPROBLEM HOS TUPPAR:
+Delvis desamma som hos höns, men de drabbas mer av sporskador (sporar kan fastna, växa in och infekteras), och de är mer känsliga för kyla i kammen (rosenkam eller vallbykam är bättre i kallt klimat).
+
+SPORRKLIPPNING:
+Sporarna kan växa långa och böja sig tillbaka mot benet. Trimma dem med en bultavbitare eller sök hjälp – känsligt men nödvändigt.
+
+TUPPEN OCH HÖNSEN:
+En tupp klarar ca 8–12 höns. Med för få höns kan han överbetäcka dem och orsaka fjäderskador och stress. Med för många tappar han kontrollen.
+
+KRÅKANDET:
+Det kan inte tränas bort och det slutar inte kl. 06.00. Sov gott!
 
 === HÖNSRASER FÖR ÄGGPRODUKTION ===
+
 HÖGPRODUCERANDE VÄRPRASER (280-320 ägg/år):
 - Lohmann, Isa Brown, Bovans
 - Perfekt för jämn tillgång och kontinuerlig försäljning
@@ -174,73 +425,7 @@ SPECIALRASER MED MERVÄRDE:
 - Araucana: blå eller gröna ägg
 - Färgvariation säljer! Kunder älskar blandade äggkartonger
 
-PLANERA FLOCKEN:
-- En höna värper mest under sina första 2–3 år
-- Blanda högpresterande värphöns med färgglada raser
-- Planera förnyelse för jämn produktion
-
-=== TUPPENS ROLL ===
-En tupp behövs INTE för ägg - hönor värper oavsett. Men en tupp förändrar dynamiken.
-
-EN BRA TUPP:
-- Håller ordning i flocken
-- Varnar vid fara
-- Ser till att flocken rör sig samlat
-- Kan minska stress och bråk bland hönorna
-
-NACKDELAR:
-- Tuppar galer tidigt - kan störa grannar
-- Aggressiva tuppar kan bli problem
-
-FÖR KYCKLINGSUPPFÖDNING:
-- Tupp nödvändigt för befruktade ägg
-- Möjlighet att kläcka fram nästa generation
-
-TUMREGEL:
-- En tupp per 8-12 höns
-- Fler tuppar = stridigheter
-
-=== FODER - NYCKELN TILL ALLT ===
-Foder är grunden. Vill du ha stora ägg med starka skal och djupgul gula? Då börjar det i fodersäcken.
-
-BRA VÄRPFODER INNEHÅLLER:
-- Protein 16–18%
-- Kalcium (snäckskal eller krossade äggskal vid sidan)
-- Fosfor
-- Vitaminer och mineraler
-
-KALCIUM ÄR KRITISKT:
-- Utan det: tunna skal och spruckna ägg
-- Erbjud alltid snäckskal eller krossade äggskal vid sidan
-
-SÄSONGSANPASSNING:
-- Sommar: hönsen kompletterar med insekter, mask och grönt
-- Vinter: mer energirikt foder - kyla kräver bränsle
-- Lite extra spannmål på kvällen hjälper dem hålla värmen
-
-UNDVIK:
-- Överutfodra med bröd och matrester
-- Okej som komplement, men inte som bas
-- En höna är ingen soptunna
-
-=== VATTEN - UNDERSKATTAD LIVSKÄLLA ===
-Du kan ha perfekt foder, men utan rent vatten stannar äggproduktionen direkt.
-
-VATTENBEHOV:
-- 2–3 dl per höna per dag
-- Mer på sommaren - kan fördubblas vid värme
-
-VATTNET SKA VARA:
-- Friskt
-- Svalt
-- Rent från alger och smuts
-
-VINTERTIPS:
-- Förhindra frysning med uppvärmd vattenkopp eller daglig tillsyn
-- En enda dag utan vatten kan påverka produktionen i flera dagar
-
 === ÅRSTIDER OCH VÄDER ===
-Höns påverkas starkt av ljus och temperatur.
 
 VINTER:
 - Kortare dagar = mindre ägg
@@ -259,50 +444,10 @@ RUGGNING (oftast hösten):
 - Naturlig fjäderfällning
 - Äggproduktionen minskar drastiskt
 - Kroppen prioriterar fjäderbyte före ägg
-- Informera kunder om varför äggen är färre
+- Ge extra protein (solrosfrön, insekter, fiskmjöl)
 
-=== ÄGGKVALITET ===
-ETT BRA ÄGG:
-- Hårt, helt skal
-- Fast och hög äggvita
-- Rund och intensivt färgad gula
+=== EKONOMI ===
 
-FÄRSKHETSTEST:
-- Färska ägg sjunker i vatten
-- Äldre ägg flyter
-
-SMAK PÅVERKAS AV:
-- Fodret
-- Hur hönsen lever
-- Frigående höns med varierad kost = djupare smak
-
-SORTERING:
-- Sortera alltid bort spruckna eller smutsiga ägg
-- Rykte är allt vid försäljning
-
-=== FÖRVARING ===
-- Ägg håller 4–6 veckor
-- Förvara svalt och jämnt
-- Tvätta INTE ägg i onödan - det naturliga skyddsskiktet är viktigt
-- Märk kartonger med värpdatum
-
-=== PRISSÄTTNING ===
-FAKTORER:
-- Foderkostnad
-- Investeringar
-- Efterfrågan
-- Lokal konkurrens
-
-RIKTPRISER:
-- Gårdsägg: 4–6 kr styck eller mer
-- Ekologiska och färgglada ägg: högre pris motiverat
-
-VIKTIGT:
-- Räkna på dina kostnader
-- Ta betalt för kvalitet
-- Undervärdera inte ditt arbete
-
-=== EKONOMI I LITEN SKALA ===
 HÅLL KOLL PÅ:
 - Foderkostnad per höna
 - Antal ägg per vecka
@@ -313,58 +458,32 @@ POTENTIELL AVKASTNING:
 - Vid 4-6 kr/ägg = 8000-21000 kr/år i intäkter
 - Minus foderkostnad ca 300-500 kr/höna/år
 
-=== VANLIGA SJUKDOMAR ===
-RÖDA HÖNSKVALSTER:
-- Lever i springor dagtid, suger blod nattetid
-- Tecken: bleka kammar, trötthet
-- Behandla miljön, inte bara hönsen
-
-KOCCIDIOS:
-- Drabbar främst unga kycklingar
-- Blodig avföring, viktnedgång
-- Behandlas med amprolium
-
-MYKOPLASMAINFEKTION:
-- Rinnande näsa, harklingar, svullna sinushålor
-- Kroniskt, smittar hela flocken
-
-MAREKS SJUKDOM:
-- Viralt, obotligt
-- Vaccin finns för dagsgamla kycklingar
-
-FÖREBYGGANDE:
-- Nya djur: ALLTID karantän minst 3 veckor
-- Rengör regelbundet
-- Ge sandbad mot parasiter
-- Observera beteendeförändringar
-- En sjuk höna isoleras direkt
-
-=== HÅLLBARHET OCH KRETSLOPP ===
-- Hönsgödsel är guld för trädgården
-- Matrester blir ägg
-- Ogräs blir näring
-- Cirkulärt, naturligt och smart
+RIKTPRISER:
+- Gårdsägg: 4–6 kr styck eller mer
+- Ekologiska och färgglada ägg: högre pris motiverat
 
 === KONTEXTBASERADE TIPS ===
+
 TIPS VID LÅG ÄGGPRODUKTION:
 1. Kontrollera ljustillgång (14-16 timmar)
 2. Granska foderkvalitet och kalciumtillgång
 3. Se över stressfaktorer (trångboddhet, rovdjur)
 4. Kontrollera för sjukdom eller parasiter
-5. Fundera på flocken ålder och eventuell ruggning
+5. Fundera på flockens ålder och eventuell ruggning
 
 TIPS VID KALLT VÄDER (<5°C):
 1. Extra foder på kvällen för värmeproduktion
 2. Kontrollera att vattnet inte fryser
 3. Se till att huset är dragfritt men ventilerat
 4. Överväg tillskottsbelysning
+5. Ge lite extra spannmål på kvällen
 
 TIPS VID VARMT VÄDER (>25°C):
 1. Säkerställ skugga i rastgården
-2. Extra vattenstationer
+2. Extra vattenstationer med svalt vatten
 3. Maximal ventilation
 4. Undvik att störa under hetaste timmarna
-5. Kall frukt/grönsaker som godis
+5. Kall frukt/grönsaker som godis (vattenmelon!)
 
 TIPS FÖR NYA HÖNSHÅLLARE:
 1. Börja med tåliga, lättskötta raser
@@ -372,6 +491,13 @@ TIPS FÖR NYA HÖNSHÅLLARE:
 3. Etablera rutiner från dag ett
 4. Observera dina höns dagligen - lär känna normalt beteende
 5. Ha alltid kalcium och grit tillgängligt
+
+TIPS VID MISSTÄNKT SJUKDOM:
+1. Isolera den sjuka hönsen OMEDELBART
+2. Håll henne varm (18-22°C), tyst och med tillgång till vatten
+3. Observera symtom noggrant (andning, avföring, beteende)
+4. Kontakta veterinär om symtomen inte förbättras inom 24 timmar
+5. Smittsamma sjukdomar kräver karantän för hela flocken
 """
 
 # Import Stripe checkout helper
