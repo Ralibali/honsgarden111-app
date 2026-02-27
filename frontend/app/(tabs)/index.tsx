@@ -2668,6 +2668,16 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     opacity: 0.4,
     color: colors.textSecondary,
   },
+  exampleLabel: {
+    fontSize: 10,
+    color: colors.primary,
+    fontWeight: '600',
+    marginTop: 4,
+    backgroundColor: colors.primary + '15',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
   insightTopHenCard: {
     backgroundColor: 'rgba(251, 191, 36, 0.1)',
     borderWidth: 1,
