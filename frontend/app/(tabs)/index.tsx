@@ -133,7 +133,9 @@ export default function HomeScreen() {
   
   const loadCommunityPosts = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/community/posts?limit=3`);
+      const res = await fetch(`${API_URL}/api/community/posts?limit=3`, {
+        credentials: 'include',
+      });
       if (res.ok) {
         const data = await res.json();
         setCommunityPosts(data.posts?.slice(0, 3) || []);
@@ -145,7 +147,9 @@ export default function HomeScreen() {
   
   const loadDailyChores = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/daily-chores`);
+      const res = await fetch(`${API_URL}/api/daily-chores`, {
+        credentials: 'include',
+      });
       if (res.ok) {
         const data = await res.json();
         setDailyChores(data.chores || []);
