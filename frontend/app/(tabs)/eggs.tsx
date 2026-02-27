@@ -289,38 +289,54 @@ export default function EggsScreen() {
           <Text style={styles.addButtonText}>{t('eggs.addEggs')}</Text>
         </TouchableOpacity>
         
+        {/* Filter Buttons */}
+        <View style={styles.filterRow}>
+          <TouchableOpacity
+            style={[styles.filterButton, filterDays === 7 && styles.filterButtonActive]}
+            onPress={() => setFilterDays(7)}
+          >
+            <Text style={[styles.filterText, filterDays === 7 && styles.filterTextActive]}>
+              7 {isSv ? 'dagar' : 'days'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterButton, filterDays === 30 && styles.filterButtonActive]}
+            onPress={() => setFilterDays(30)}
+          >
+            <Text style={[styles.filterText, filterDays === 30 && styles.filterTextActive]}>
+              30 {isSv ? 'dagar' : 'days'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
         {/* Records List */}
         <View style={styles.listContainer}>
-          <Text style={styles.listTitle}>{t('eggs.history')}</Text>
+          <View style={styles.listHeader}>
+            <Text style={styles.listTitle}>{t('eggs.history')}</Text>
+            <Text style={styles.swipeHint}>← Svep för att redigera</Text>
+          </View>
           
-          {eggRecords.length === 0 ? (
+          {sortedRecords.length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons name="egg-outline" size={48} color={colors.textMuted} />
               <Text style={styles.emptyText}>{t('eggs.noEggs')}</Text>
               <Text style={styles.emptyHint}>{t('eggs.noEggsHint')}</Text>
             </View>
           ) : (
-            eggRecords.map((record) => (
-              <TouchableOpacity
+            sortedRecords.map((record) => (
+              <SwipeableRecord
                 key={record.id}
-                style={styles.recordItem}
-                onLongPress={() => handleDeleteRecord(record)}
-              >
-                <View style={styles.recordLeft}>
-                  <View style={styles.recordIcon}>
-                    <Ionicons name="egg" size={20} color={colors.warning} />
-                  </View>
-                  <View>
-                    <Text style={styles.recordDate}>
-                      {format(parseISO(record.date), 'EEEE d MMMM', { locale: getLocale() })}
-                    </Text>
-                    {record.notes && (
-                      <Text style={styles.recordNotes}>{record.notes}</Text>
-                    )}
-                  </View>
-                </View>
-                <Text style={styles.recordCount}>{record.count}</Text>
-              </TouchableOpacity>
+                record={record}
+                trend={record.trend}
+                onEdit={(r: EggRecord) => {
+                  setEditingRecord(r);
+                  setEggCount(r.count.toString());
+                  setNotes(r.notes || '');
+                  setSelectedDate(r.date);
+                  setShowAddModal(true);
+                }}
+                onDelete={handleDeleteRecord}
+              />
             ))
           )}
         </View>
