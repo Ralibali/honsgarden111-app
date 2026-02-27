@@ -1041,6 +1041,75 @@ export default function SettingsScreen() {
         </View>
       </Modal>
       
+      {/* Delete Account Modal */}
+      <Modal
+        visible={showDeleteAccountModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowDeleteAccountModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {isSv ? 'Radera konto permanent' : 'Permanently delete account'}
+            </Text>
+            <Text style={styles.modalDesc}>
+              {isSv 
+                ? 'All din data kommer att raderas permanent. Denna åtgärd kan INTE ångras.'
+                : 'All your data will be permanently deleted. This action CANNOT be undone.'}
+            </Text>
+            
+            <Text style={[styles.modalLabel, { marginTop: 16 }]}>
+              {isSv ? 'Ange ditt lösenord' : 'Enter your password'}
+            </Text>
+            <TextInput
+              style={styles.modalInput}
+              value={deletePassword}
+              onChangeText={setDeletePassword}
+              placeholder={isSv ? 'Lösenord' : 'Password'}
+              placeholderTextColor={colors.textMuted}
+              secureTextEntry
+            />
+            
+            <Text style={styles.modalLabel}>
+              {isSv ? 'Skriv DELETE för att bekräfta' : 'Type DELETE to confirm'}
+            </Text>
+            <TextInput
+              style={styles.modalInput}
+              value={deleteConfirmation}
+              onChangeText={setDeleteConfirmation}
+              placeholder="DELETE"
+              placeholderTextColor={colors.textMuted}
+              autoCapitalize="characters"
+            />
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => {
+                  setShowDeleteAccountModal(false);
+                  setDeletePassword('');
+                  setDeleteConfirmation('');
+                }}
+              >
+                <Text style={styles.modalCancelText}>{isSv ? 'Avbryt' : 'Cancel'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalDangerBtn, deletingAccount && { opacity: 0.5 }]}
+                onPress={handleDeleteAccount}
+                disabled={deletingAccount || deleteConfirmation !== 'DELETE'}
+              >
+                <Text style={styles.modalDangerText}>
+                  {deletingAccount 
+                    ? (isSv ? 'Raderar...' : 'Deleting...') 
+                    : (isSv ? 'Radera konto' : 'Delete account')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      
       {/* Premium Gate Modal */}
       <PremiumGateModal
         visible={showPremiumModal}
