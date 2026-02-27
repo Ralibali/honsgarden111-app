@@ -12,7 +12,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://poultry-app-staging.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://production-ready-71.preview.emergentagent.com')
 
 class TestRegistrationValidation:
     """Tests for registration field validation"""
