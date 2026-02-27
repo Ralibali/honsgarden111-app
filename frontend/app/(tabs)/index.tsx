@@ -109,7 +109,40 @@ export default function HomeScreen() {
     loadProductivityAlerts();
     loadHens();
     loadWeather();
+    loadDailyChores();
   }, []);
+  
+  // Show trial expiry warning when needed
+  useEffect(() => {
+    if (trialExpiryWarning && !trialWarningDismissed) {
+      setShowTrialWarning(true);
+    }
+  }, [trialExpiryWarning, trialWarningDismissed]);
+  
+  const loadDailyChores = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/daily-chores`);
+      if (res.ok) {
+        const data = await res.json();
+        setDailyChores(data.chores || []);
+      }
+    } catch (error) {
+      console.error('Failed to load daily chores:', error);
+    }
+  };
+  
+  const toggleChoreComplete = async (choreId: string, completed: boolean) => {
+    try {
+      if (completed) {
+        await fetch(`${API_URL}/api/daily-chores/${choreId}/complete`, { method: 'DELETE' });
+      } else {
+        await fetch(`${API_URL}/api/daily-chores/${choreId}/complete`, { method: 'POST' });
+      }
+      await loadDailyChores();
+    } catch (error) {
+      console.error('Failed to toggle chore:', error);
+    }
+  };
   
   const loadDataLimits = async () => {
     try {
