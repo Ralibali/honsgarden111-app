@@ -209,6 +209,12 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('Logout error:', error);
         }
+        
+        // Logout from RevenueCat
+        logoutRevenueCatUser().catch(err => {
+          console.warn('RevenueCat logout failed:', err);
+        });
+        
         set({ user: null, isAuthenticated: false, error: null });
       },
       
