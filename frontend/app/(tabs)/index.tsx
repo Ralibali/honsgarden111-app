@@ -1232,6 +1232,106 @@ export default function HomeScreen() {
         </SafeAreaView>
       </Modal>
       
+      {/* Daily Tip Modal */}
+      <Modal
+        visible={showDailyTipModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowDailyTipModal(false)}
+      >
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]} edges={['top']}>
+          <View style={[styles.aiModalHeader, { backgroundColor: colors.surface }]}>
+            <TouchableOpacity style={styles.closeModalButton} onPress={() => setShowDailyTipModal(false)}>
+              <Ionicons name="close" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[styles.aiModalTitle, { color: colors.text }]}>
+              💡 {isSv ? 'Dagens tips' : 'Daily Tip'}
+            </Text>
+            <View style={{ width: 40 }} />
+          </View>
+          
+          <View style={styles.aiModalContent}>
+            {dailyTipLoading ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingEmoji}>💡</Text>
+                <Text style={[styles.loadingText, { color: colors.text }]}>
+                  {isSv ? 'Hämtar dagens tips...' : 'Loading daily tip...'}
+                </Text>
+              </View>
+            ) : (
+              <View style={[styles.reportCard, { backgroundColor: colors.surface, margin: 16 }]}>
+                <Text style={[styles.reportText, { color: colors.text }]}>
+                  {dailyTip || (isSv ? 'Inget tips tillgängligt' : 'No tip available')}
+                </Text>
+              </View>
+            )}
+          </View>
+        </SafeAreaView>
+      </Modal>
+      
+      {/* Ask Agda Modal */}
+      <Modal
+        visible={showAgdaModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowAgdaModal(false)}
+      >
+        <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.background }]} edges={['top']}>
+          <View style={[styles.aiModalHeader, { backgroundColor: colors.surface }]}>
+            <TouchableOpacity style={styles.closeModalButton} onPress={() => setShowAgdaModal(false)}>
+              <Ionicons name="close" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[styles.aiModalTitle, { color: colors.text }]}>
+              🐔 {isSv ? 'Fråga Agda' : 'Ask Agda'}
+            </Text>
+            <View style={{ width: 40 }} />
+          </View>
+          
+          <ScrollView style={styles.aiModalContent} contentContainerStyle={{ padding: 16 }}>
+            <Text style={[styles.agdaIntro, { color: colors.textSecondary }]}>
+              {isSv 
+                ? 'Agda är din AI-drivna hönsgårdsrådgivare. Ställ frågor om hönsskötsel, hälsa, foder eller vad som helst!'
+                : 'Agda is your AI-powered coop advisor. Ask questions about chicken care, health, feed, or anything!'}
+            </Text>
+            
+            <View style={[styles.agdaInputContainer, { backgroundColor: colors.surface }]}>
+              <TextInput
+                style={[styles.agdaInput, { color: colors.text }]}
+                placeholder={isSv ? 'Skriv din fråga här...' : 'Type your question here...'}
+                placeholderTextColor={colors.textMuted}
+                value={agdaQuestion}
+                onChangeText={setAgdaQuestion}
+                multiline
+                numberOfLines={3}
+              />
+              <TouchableOpacity 
+                style={[styles.agdaSendButton, (!agdaQuestion.trim() || agdaLoading) && { opacity: 0.5 }]}
+                onPress={askAgda}
+                disabled={!agdaQuestion.trim() || agdaLoading}
+              >
+                {agdaLoading ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Ionicons name="send" size={20} color="#FFF" />
+                )}
+              </TouchableOpacity>
+            </View>
+            
+            {agdaAnswer && (
+              <View style={[styles.agdaAnswerCard, { backgroundColor: colors.surface }]}>
+                <View style={styles.agdaAnswerHeader}>
+                  <Text style={styles.agdaAvatar}>🐔</Text>
+                  <Text style={[styles.agdaAnswerTitle, { color: colors.text }]}>Agda</Text>
+                </View>
+                <Text style={[styles.agdaAnswerText, { color: colors.text }]}>
+                  {agdaAnswer}
+                </Text>
+              </View>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+      
       {/* Premium Gate Modal */}
       <PremiumGateModal
         visible={showPremiumModal}
