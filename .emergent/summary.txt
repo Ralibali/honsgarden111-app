@@ -5,132 +5,130 @@ A critical requirement is to achieve full feature parity between the web and the
 
 The main goals are to resolve all deployment and build failures, prepare the app for a production release, and ensure all features are fully functional. The user is not a developer and relies on UI-based actions.
 
-Most recently, the user requested the removal of Google Sign-In in favor of a mandatory email verification flow for new registrations, a fix for the broken password reset, and the addition of more advanced statistical insights.
+Most recently, the user requested the removal of Google Sign-In in favor of a mandatory email verification flow for new registrations, a fix for the broken password reset, and the addition of more advanced statistical insights. The user is also reporting that the app gets stuck on a loading screen and that the Forgot Password flow does not work correctly, sending them back to the start page.
 
 **PRODUCT REQUIREMENTS (Consolidated & Updated):**
 
 1.  **Authentication & GDPR:**
-    *   Primary email/password system with a mandatory 6-digit email verification code on registration **(Mobile UI Incomplete)**.
-    *   In-app Forgot Password flow using an email verification code **(Web & Mobile Complete)**.
-    *   Login/Register pages with premium feature highlights.
+    *   Primary email/password system with a mandatory 6-digit email verification code on registration.
+    *   In-app Forgot Password flow using an email verification code **(Broken)**.
+    *   Login/Register pages with premium feature highlights. Login page should show clear error messages **(In Progress)** and have a button to view the onboarding guide again **(Completed)**.
     *   GDPR & newsletter consent on registration.
     *   Admin user management view.
-    *   Google/Apple Sign-In have been **removed** per user request.
+    *   Google/Apple Sign-In have been **removed**.
 
 2.  **Monetization & Web Pages:**
-    *   A standalone web page for premium subscriptions () with Stripe checkout. **(Stripe user-linking is broken)**.
+    *   A standalone web page for premium subscriptions () with Stripe checkout. **(Stripe user-linking attempted fix, needs verification)**.
     *   Standalone web pages for Privacy Policy and Terms of Service.
     *   Feature parity between the Expo mobile app and web functionalities.
 
 3.  **New Features & UI/UX:**
     *   AI Hönsgårdsrådgivare Agda.
-    *   Advanced statistical insights (Feed Conversion, Laying Rate, etc.) **(In Progress)**.
-    *   A user onboarding guide for the mobile app **(Completed)**.
+    *   Advanced statistical insights (Feed Conversion, Laying Rate, etc.) **(Completed)**.
+    *   Trend analysis for statistics **(Completed)**.
+    *   A visually appealing, swipeable user onboarding guide for the mobile app that only shows on the first launch **(Completed)**.
 
 4.  **Deployment:**
-    *   **Resolve all Expo/EAS build errors to allow for a successful App Store/Google Play submission (Recurring Blocker).**
-    *   Perform a full production cleanup.
+    *   **Resolve all Expo/EAS build errors to allow for a successful App Store/Google Play submission (Recurring Blocker, attempted fix).**
+    *   **Resolve the app getting stuck on the loading screen (Critical Blocker).**
 
 **User's preferred language**: Swedish (Svenska). The next agent MUST respond in Swedish.
 
 **what currently exists?**
-The project is a full-stack application with a FastAPI backend and an Expo (React Native) mobile frontend. A significant amount of work has been done to create standalone HTML pages served directly by the backend for critical user flows like registration, password reset, and premium subscriptions, aiming to unify the experience for both web and mobile-redirected users.
+The application consists of a FastAPI backend and an Expo (React Native) mobile frontend.
 
-The authentication system has been completely overhauled to remove Google Sign-In and enforce a two-step email verification process for new registrations. While the backend and web-facing pages for this are complete, the mobile app's UI for completing registration is not yet finished.
+Several key features have been completed in this session:
+-   The backend now has endpoints for Advanced Statistical Insights () and Trend Analysis ().
+-   The frontend statistics page () has been updated to display both of these new data sets.
+-   The user onboarding guide () has been completely redesigned to be more visually appealing with gradients and animations, uses a swipeable , and the logic in  was updated to ensure it only appears on the first launch.
+-   Fixes have been applied to  and  to resolve build errors by removing references to Apple Sign-In and correcting empty configuration values.
 
-The agent was in the process of adding new, advanced statistical insights to the application, as requested by the user, and had just created the necessary backend endpoint.
+However, the application is currently in a broken state. The user reports that the app gets stuck on the loading screen, and the Forgot Password flow is not working as expected. The agent's last action was to modify  in an attempt to fix the loading issue.
 
 **Last working item**:
--   Last item agent was working: Implementing new advanced statistical insights. The agent created a new backend endpoint  in  to calculate metrics like feed conversion ratio, laying rate, and cost per egg. The frontend implementation has not started.
+-   Last item agent was working: Fixing the app getting stuck on the loading screen. The user reported being unable to get past the initial loading animation after the agent made changes to the onboarding and navigation logic.
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? Both. The backend endpoint needs testing via . The new frontend components will need verification via the screenshot tool or frontend testing agent.
--   User Testing Done: N
+-   Which testing method agent to use? Frontend testing agent. Start by checking frontend: ERROR (no such process) and . If the server is running, use the screenshot tool with an increased delay ( on a known element or a simple ) to see if the loading screen is passed. If it's still stuck, the issue is likely in .
+-   User Testing Done: N (User reported the app is stuck, which is a form of testing).
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Complete the mobile app registration UI.** (P0 - CRITICAL BLOCKER)
--   **Issue 2: Fix broken Stripe subscription user linking.** (P0 - CRITICAL BLOCKER)
--   **Issue 3: Resolve recurring Expo/EAS mobile app build failures.** (P0 - CRITICAL BLOCKER)
--   **Issue 4: Fix the Forgot Password link in the legacy web app.** (P1)
--   **Issue 5: Implement frontend for Advanced Statistical Insights.** (P2 - Part of Last Working Item)
+-   **Issue 1: App is stuck on the loading screen.** (P0 - CRITICAL BLOCKER)
+-   **Issue 2: Forgot Password flow is broken.** (P0 - CRITICAL BLOCKER)
+-   **Issue 3: Fix broken Stripe subscription user linking.** (P1)
+-   **Issue 4: Resolve recurring Expo/EAS mobile app build failures.** (P1)
+-   **Issue 5: Error messages on login are not prominent enough.** (P2)
 
 **Issues Detail**:
--   **Issue 1: Complete the mobile app registration UI.**
-    -   **Description**: The new registration flow requires users to enter a 6-digit code sent to their email. The mobile app's UI in  is missing the screen for the user to enter this code, which blocks all new user registrations on mobile.
-    -   **Attempted fixes**: The agent updated the  with the necessary functions but did not complete the UI changes in .
+-   **Issue 1: App is stuck on the loading screen.**
+    -   **Description**: After recent changes, the user reports the Expo app no longer loads past the initial splash/loading screen.
+    -   **Attempted fixes**: The agent simplified the logic in  to remove a dependency on  in the final step, suspecting it was causing an infinite loading state. This fix has not been verified.
     -   **Next debug checklist**:
-        1.  In , add a new view for .
-        2.  This view must include a 6-digit code input field, a Verify button, and a Resend code button.
-        3.  Update the  logic to switch to this new view upon success.
-        4.  Implement  to call the auth store and log the user in.
-        5.  Test the entire registration flow in the mobile app.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker. No new users can currently register through the mobile app.
+        1.  Verify the frontend service is running correctly (frontend: ERROR (no such process)).
+        2.  Check the Expo logs () for any runtime errors during app initialization.
+        3.  Examine  again. The logic determining whether to show the  screen or the main  layout is the most likely culprit. The use of  and multiple state checks (, ) could be causing a race condition or an unhandled state.
+        4.  Use  statements within the  component to trace the values of , , and  to see where the logic stalls.
+    -   **Why fix this issue and what will be achieved with the fix?**: The app is currently unusable for the user. This is a complete blocker.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Frontend
     -   **Blocked on other issue**: No
 
--   **Issue 2: Fix broken Stripe subscription user linking.**
-    -   **Description**: The standalone premium page () initiates a Stripe checkout, but the request to the backend does not include the user's authentication token. As a result, the backend cannot associate the created subscription with the logged-in user, and the user will not receive premium access after paying.
-    -   **Attempted fixes**: The agent added a JavaScript check for a login token but did not modify the  request to include it in the authorization header.
+-   **Issue 2: Forgot Password flow is broken.**
+    -   **Description**: When the user navigates to the Forgot Password screen and submits their email, they are incorrectly redirected back to the app's start page instead of being shown the view to enter the 6-digit verification code.
+    -   **Attempted fixes**: The agent investigated  and , confirming the code *appears* correct ( is called). The agent added an  to confirm the request is sent. The suspicion is that the navigation state is being reset, possibly by logic in .
     -   **Next debug checklist**:
-        1.  Modify the  JavaScript function in .
-        2.  Retrieve the auth token from  and add it as a  token in the  header of the  request to .
-        3.  Protect the  endpoint in  to require a valid token.
-        4.  Extract the  from the token and pass it to the Stripe session creation call, likely in .
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker for monetization. The payment flow is non-functional.
+        1.  Once Issue #1 is resolved, reproduce the flow: Login screen -> Glömt lösenord? -> Enter email -> Click Skicka kod.
+        2.  Use  in  to track the  state before and after the  call.
+        3.  Check if the  component unmounts and remounts, which would reset its internal state. This is likely linked to the navigation logic in .
+        4.  The fix for the loading screen (Issue #1) might resolve this as a side effect if it stabilizes the navigation logic.
+    -   **Why fix this issue and what will be achieved with the fix?**: A critical user authentication feature is non-functional.
     -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on other issue**: Issue 1: App is stuck on the loading screen.
+
+-   **Issue 3: Fix broken Stripe subscription user linking.**
+    -   **Description**: The premium page () initiates a Stripe checkout, but the backend may not be associating the created subscription with the logged-in user.
+    -   **Attempted fixes**: The previous agent added logic to  to include the user's auth token in the  header of the  request to . This *should* work but has not been verified end-to-end.
+    -   **Next debug checklist**:
+        1.  Review the  endpoint in .
+        2.  Ensure it correctly extracts the user's identity from the JWT token provided in the  header.
+        3.  Verify that this user identity is passed to the Stripe session creation call, ideally in the  or .
+        4.  This is required for the webhook to link the subscription back to the user.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a critical blocker for monetization.
+    -   **Status**: TESTING PENDING
     -   **Is recurring issue?**: N
     -   **Should Test frontend/backend/both after fix?**: Both
     -   **Blocked on other issue**: No
 
--   **Issue 3: Resolve recurring Expo/EAS mobile app build failures.**
-    -   **Description**: The user is unable to build the mobile app due to a continuous stream of errors from Expo's EAS build service. This has been a persistent problem throughout the project.
-    -   **Attempted fixes**: Numerous configuration changes have been made to , , and  in past sessions.
+-   **Issue 4: Resolve recurring Expo/EAS mobile app build failures.**
+    -   **Description**: The user is frequently unable to build the mobile app due to errors from Expo's EAS build service.
+    -   **Attempted fixes**: The agent removed  from  and . It also removed empty string values from  which were causing validation errors.
     -   **Next debug checklist**:
-        1.  Instruct the user to Save to Github to ensure all recent changes are pushed.
+        1.  Once the critical app-breaking bugs are fixed, instruct the user to Save to Github.
         2.  Instruct the user to trigger a new build on expo.dev.
-        3.  If the build fails, carefully analyze the new logs for dependency, configuration, or native module errors.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a hard blocker preventing the app from being published to app stores.
-    -   **Status**: NOT STARTED
+        3.  If the build fails, carefully analyze the new logs. The previous fixes should have resolved the known issues, but new ones may appear.
+    -   **Why fix this issue and what will be achieved with the fix?**: A hard blocker preventing the app from being published to app stores.
+    -   **Status**: TESTING PENDING
     -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: N/A (A successful build is the test).
+    -   **Should Test frontend/backend/both after fix?**: N/A
     -   **Blocked on other issue**: No
 
--   **Issue 4: Fix the Forgot Password link in the legacy web app.**
-    -   **Description**: The project contains a pre-compiled legacy web app in . Its login page has a Forgot Password? link pointing to an old, broken endpoint. A new, functional standalone page exists at , but the link has not been updated.
-    -   **Attempted fixes**: None. The agent created the new page but did not update the link in the legacy app.
+-   **Issue 5: Error messages on login are not prominent enough.**
+    -   **Description**: User reports that when login fails, there is no clear feedback.
+    -   **Attempted fixes**: Agent added an  call inside  in  to make errors more visible. The  style was also made more prominent.
     -   **Next debug checklist**:
-        1.  Use  on the compiled .
-        2.  Find the  for the Glömt lösenord? link.
-        3.  Replace its value with .
-    -   **Why fix this issue and what will be achieved with the fix?**: Improves user experience and fixes a broken core feature for users of the old web interface.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: No
-
--   **Issue 5: Implement frontend for Advanced Statistical Insights.**
-    -   **Description**: The backend is ready to provide advanced statistics. The UI in the mobile app needs to be created to display this data.
-    -   **Attempted fixes**: Backend endpoint  was created.
-    -   **Next debug checklist**:
-        1.  First, test the backend endpoint with  to ensure it works as expected.
-        2.  Modify .
-        3.  Add a new component/section to display the new insights (e.g., Feed Conversion, Laying Rate).
-        4.  Call the new API endpoint and populate the UI with the returned data.
-    -   **Why fix this issue and what will be achieved with the fix?**: Fulfills a direct user feature request and adds value to the app.
+        1.  Once the app is loading again (Issue #1), test the login with incorrect credentials.
+        2.  Verify that the native  dialog appears.
+    -   **Why fix this issue and what will be achieved with the fix?**: Improves user experience for a core flow.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: No
+    -   **Should Test frontend/backend/both after fix?**: Frontend
+    -   **Blocked on other issue**: Issue 1: App is stuck on the loading screen.
 
 **In progress Task List**:
--   **Task 1: Add advanced statistical insights.**
-    -   **Where to resume**: The backend endpoint in  is complete. Resume by building the frontend UI in  to display the new data.
-    -   **What will be achieved with this?**: A more feature-rich statistics page for users.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on something**: No.
+-   There are no in-progress tasks separate from the issues listed above.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
@@ -141,112 +139,115 @@ The agent was in the process of adding new, advanced statistical insights to the
     -   (P3) Refactor and remove dormant RevenueCat code.
 
 **Completed work in this session**
--   **Authentication Overhaul**:
-    -   Removed Google Sign-In from all parts of the application.
-    -   Implemented a new registration flow with a 6-digit email verification code.
-    -   Created a standalone web page for registration ().
-    -   Created a standalone web page for password reset () and fixed the underlying logic.
--   **Premium & Legal Pages**:
-    -   Created a standalone premium page () with pricing, FAQ, and a Stripe checkout button.
-    -   Created standalone pages for Privacy Policy (), Terms of Service (), and a checkout success page.
--   **Mobile App UI**:
-    -   Added a Premium tab to the main navigation.
-    -   Created a multi-step onboarding guide () with realistic images.
-    -   Added logic to show the guide on first launch and a button in settings to view it again.
--   **Backend**: Added multiple new endpoints to  to support all the new standalone pages and authentication flows.
+-   **Statistics Features**:
+    -   Backend endpoints for Advanced Insights and Trend Analysis created in .
+    -   Frontend UI implemented in  to fetch and display both new statistical sets.
+-   **Onboarding Guide Overhaul**:
+    -   Redesigned  with a swipeable ,  for aesthetics, and animations.
+    -   Fixed logic in  to use  to ensure the guide only appears once.
+    -   Added a button on the login screen () for users to re-watch the guide.
+-   **Deployment Fixes**:
+    -   Fixed  validation errors by removing empty strings for  profiles.
+    -   Removed  from  and  to resolve build conflicts.
+-   **Bug Fixes & UX**:
+    -   Fixed multiple JSX syntax errors in .
+    -   Added an  for clearer error feedback on failed login in .
+    -   Attempted to fix Stripe payment user-linking by adding the auth token to the request header in .
+    -   Attempted to fix the app getting stuck on the loading screen by refactoring .
+-   **Content Generation**:
+    -   Generated a package of marketing images and mockups for the user.
 
 **Earlier issues found/mentioned but not fixed**
-(All are captured in the pending issue list)
+-   All known issues are captured in the **All Pending/In progress Issue list**.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: Deployment and build failures.
+-   **Issue recurrence in previous fork**: Deployment and build failures (EAS).
 -   **Recurrence count**: 5+
--   **Status**: **IN PROGRESS** (Tracked as Issue #3).
+-   **Status**: **TESTING PENDING** (Tracked as Issue #4). Fixes have been applied but a new build has not been confirmed.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend (Mobile)**: Expo (SDK 54), React Native, Expo Router, Zustand ().
--   **Frontend (Web)**: A mix of a pre-compiled legacy React app and new standalone HTML pages served by FastAPI.
--   **Backend**: FastAPI, MongoDB (on Atlas), Pydantic, Resend (emails), Jinja2 for templates.
+-   **Frontend (Mobile)**: Expo (SDK 54), React Native, Expo Router, Zustand, .
+-   **Frontend (Web)**: Legacy pre-compiled React app + new standalone HTML pages served by FastAPI.
+-   **Backend**: FastAPI, MongoDB (on Atlas), Pydantic, Resend, Jinja2.
 -   **Deployment**: EAS Build for mobile, Emergent Deployment for backend.
 
 **key DB schema**
--   No major schema changes, but user documents now have fields like , , and .
+-   No schema changes in this session.
 
 **changes in tech stack**
--   The authentication model has shifted away from social logins to a pure email/password system with mandatory verification.
+-   Added  to the frontend.
 
 **All files of reference**
--   : The single source of truth for all backend logic.
--   : The most critical mobile app file that needs to be fixed.
--   : The monetization page where the Stripe flow is broken.
--   : The target for implementing the new user-requested feature.
--   : Contains all mobile authentication state and logic.
+-   : **Most critical file.** Contains the logic for the loading screen and initial navigation, which is likely the source of current bugs.
+-   : The second most critical file, handling all authentication UI states (login, register, forgot password, verify code).
+-   : The completely redesigned onboarding guide.
+-   : The recently completed statistics feature page.
+-   : The monolithic backend file containing all API endpoints.
+-   : Modified to fix deployment issues.
 
 **Areas that need refactoring**:
--   The  file has grown very large and is responsible for API logic, serving static files, and HTML templating. It could be broken down into smaller, more manageable modules (e.g., routers for auth, stripe, pages).
--   The co-existence of the legacy web app () and the new standalone pages is confusing and creates duplicate functionality. A clear strategy to either fully embrace the standalone pages or properly update the React app is needed.
+-   : The navigation and loading logic is complex and fragile. It needs to be simplified to prevent future bugs.
+-   : This file is over 800 lines long and manages at least four different UI states. It should be broken down into smaller components for each auth mode (, , , etc.).
+-   : Remains a very large monolithic file. It should be broken into separate routers (e.g., , ).
 
 **key api endpoints**
--   : (New) Starts the registration process.
--   : (New) Verifies the registration code and creates the user.
--   : (Updated) Sends a password reset code.
--   : (Updated) Resets the password using a code.
--   : (Needs fix) Creates a Stripe payment session.
--   : (New) Provides new calculated metrics.
--   , , : Serve the new standalone HTML pages.
+-   : Used by the broken password reset flow.
+-   : (New) Provides advanced calculated metrics.
+-   : (New) Provides trend analysis data.
+-   : (Needs verification) Creates a Stripe payment session.
 
 **Critical Info for New Agent**
--   **Multiple Frontends**: Be extremely mindful of the three frontend contexts: the **Expo mobile app** (), the **legacy web app** (), and the new **standalone HTML pages** (). The user often does not distinguish between them, so you must clarify which one a reported issue applies to.
--   **Critical Blockers**: The top priorities are fixing the **mobile registration flow (Issue #1)** and the **Stripe payment flow (Issue #2)**. The application is fundamentally broken for new mobile users and for monetization.
--   **User is non-technical**: All instructions for the user must be via UIs (Emergent, GitHub, etc.). Do not ask them to run CLI commands.
+-   **IMMEDIATE BLOCKER**: The app is stuck on the loading screen. Your first priority is to fix this by debugging . No other progress can be made until the app is usable again.
+-   **SECOND BLOCKER**: The Forgot Password flow is also broken, likely due to the same unstable navigation logic in . Fixing the loading screen may also fix this, but you must verify it separately.
+-   **Expo Tunnel Instability**: The Expo Go tunnel is unreliable. If the user reports the app is unreachable, guide them to restart the Expo Go app on their phone first. If it persists, use frontend: ERROR (no such process)
+frontend: ERROR (no such process). Inform the user that a final test will require a proper deployment.
+-   **User is non-technical**: All instructions must be simple and UI-based. Do not ask them to use the command line.
 
 **documents and test reports created in this job**
--    (updated throughout the session)
--    (from testing the password reset flow)
--    (from testing the premium page creation)
--    (from testing the onboarding guide)
+-    (updated multiple times)
+-   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Requested an onboarding guide with nice pictures. (Completed)
-2.  **User**: Requested more realistic pictures for the onboarding guide showing app functionality. (Completed)
-3.  **User**: Reported the password reset is not working and sends them back to the start page. (This led to creating a separate web reset page).
-4.  **User**: Clarified that the code input box for reset doesn't appear. (Root cause was identified and fixed for the web).
-5.  **User**: Asked if the confirmation step after a successful password reset was necessary. (Agent removed it for a smoother flow).
-6.  **User**: Asked for an honest assessment of the app's status and what's missing. (Agent provided a breakdown, which led to the next tasks).
-7.  **User**: Approved the plan to remove Google Sign-In and add a mandatory email verification step for registration. (Implementation started).
-8.  **User**: Update now so that everything in the app works. Every single function!!!!! (High-level directive to fix all broken parts).
-9.  **User**: Asked for ideas to further develop the app, specifically improving the statistics page. (This initiated the current task).
-10. **User**: Asked for the logo download link and approved implementing all suggested statistical insights. (Agent provided the link and began implementation).
+1.  **User**: Asks for marketing images. (Completed)
+2.  **User**: Reports Forgot Password sends them back to the start page with no code input box. Also suggests adding a button to see the guide again.
+3.  **Agent**: Acknowledges and starts debugging.
+4.  **Agent**: Adds the see guide button and attempts to fix the password flow with alerts.
+5.  **User**: Reports the app is now unreachable. (Image shows Expo Go error)
+6.  **Agent**: Identifies the Expo tunnel crash and restarts it.
+7.  **User**: Reports the app now gets stuck on the loading screen. (Image shows loading animation)
+8.  **Agent**: Acknowledges the new bug and identifies  as the cause.
+9.  **Agent**: Applies a fix to  to simplify loading logic.
+10. **(End of session)** The agent was about to verify the latest fix.
 
 **Project Health Check:**
 -   **Broken**:
-    -   New user registration on the mobile app.
-    -   Monetization via Stripe (subscriptions are not linked to users).
-    -   Mobile app build process (recurring failure).
-    -   Password reset link on the legacy web app.
+    -   **App Loading**: The entire application is stuck on the loading screen.
+    -   **Forgot Password Flow**: Critical auth feature is non-functional.
+    -   **Stripe Payments**: Monetization flow fix is unverified.
+    -   **Mobile App Build**: EAS build fix is unverified.
 
 **3rd Party Integrations**
 -   **OpenAI via **: For AI features (Uses Emergent LLM Key).
--   **Stripe**: For web subscriptions (Requires API key, flow is broken).
--   **Resend**: For transactional emails (Configured with verified domain).
+-   **Stripe**: For web subscriptions (Requires API key, flow fix is unverified).
+-   **Resend**: For transactional emails.
 -   **MongoDB Atlas**: Production database.
 -   **Expo Push Notifications**: Basic integration exists.
--   **RevenueCat**: Dormant code exists, can be removed.
+-   **expo-linear-gradient**: (New) For UI styling.
 
 **Testing status**
--   Testing agent used after significant changes: YES (3 times)
+-   Testing agent used after significant changes: YES, for backend endpoints. All passed.
 -   Troubleshoot agent used after agent stuck in loop: NO
 -   Test files created: 
--   Known regressions: The EAS build process is a known point of recurring failure.
+-   Known regressions: The app loading is a new regression. The Forgot Password flow is a regression.
 
 **Credentials to test flow:**
--   Credentials for MongoDB Atlas and Resend are located in .
--   Stripe keys are also in .
+-   Located in .
 
 **What agent forgot to execute**
--   The agent created the standalone  page but forgot to update the link in the legacy web app (), leaving a broken user flow.
--   The agent implemented a check for a user token on the  page but forgot to actually *send* the token to the backend, leaving the monetization flow broken.
--   The agent did not complete the UI for the mobile registration verification flow in  before moving to another task.</analysis>
+-   The agent did not fully test the fixes for the loading screen and the Forgot Password flow before the session ended, leaving the app in a broken state.
+-   The agent implemented a potential fix for the Stripe payment flow but never performed an end-to-end test to confirm it works.
+-   The agent implemented fixes for the EAS build but did not guide the user to trigger a new build to confirm the resolution.</analysis>
