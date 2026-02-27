@@ -899,6 +899,69 @@ export default function HomeScreen() {
           </View>
         </View>
         
+        {/* Week's Best Hen */}
+        {summaryStats?.best_hen_week && (
+          <TouchableOpacity 
+            style={styles.bestHenCard}
+            onPress={() => router.push('/(tabs)/hens')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.bestHenIcon}>
+              <Text style={{ fontSize: 32 }}>🏆</Text>
+            </View>
+            <View style={styles.bestHenInfo}>
+              <Text style={styles.bestHenTitle}>{isSv ? 'Veckans bästa höna' : "Week's Best Hen"}</Text>
+              <Text style={styles.bestHenName}>{summaryStats.best_hen_week.name}</Text>
+              <Text style={styles.bestHenEggs}>
+                {summaryStats.best_hen_week.eggs_this_week} {isSv ? 'ägg denna vecka' : 'eggs this week'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
+        
+        {/* Community Comparison */}
+        {summaryStats?.community_comparison && summaryStats.community_comparison.total_users > 1 && (
+          <View style={styles.communityCard}>
+            <View style={styles.communityHeader}>
+              <Ionicons name="people" size={20} color={colors.primary} />
+              <Text style={styles.communityTitle}>{isSv ? 'Jämfört med andra' : 'Compared to Others'}</Text>
+            </View>
+            <View style={styles.communityStats}>
+              <View style={styles.communityStat}>
+                <Text style={styles.communityStatValue}>
+                  {summaryStats.community_comparison.your_rank}/{summaryStats.community_comparison.total_users}
+                </Text>
+                <Text style={styles.communityStatLabel}>{isSv ? 'Din placering' : 'Your Rank'}</Text>
+              </View>
+              <View style={styles.communityStat}>
+                <Text style={[
+                  styles.communityStatValue, 
+                  { color: summaryStats.community_comparison.vs_avg_percent >= 0 ? colors.success : colors.error }
+                ]}>
+                  {summaryStats.community_comparison.vs_avg_percent >= 0 ? '+' : ''}
+                  {summaryStats.community_comparison.vs_avg_percent}%
+                </Text>
+                <Text style={styles.communityStatLabel}>{isSv ? 'vs genomsnitt' : 'vs average'}</Text>
+              </View>
+              <View style={styles.communityStat}>
+                <Text style={styles.communityStatValue}>
+                  Top {100 - summaryStats.community_comparison.percentile}%
+                </Text>
+                <Text style={styles.communityStatLabel}>{isSv ? 'Percentil' : 'Percentile'}</Text>
+              </View>
+            </View>
+            <View style={styles.communityAvgRow}>
+              <Text style={styles.communityAvgLabel}>
+                {isSv ? 'Communitysnitt denna månad:' : 'Community avg this month:'}
+              </Text>
+              <Text style={styles.communityAvgValue}>
+                {summaryStats.community_comparison.community_avg} {isSv ? 'ägg' : 'eggs'}
+              </Text>
+            </View>
+          </View>
+        )}
+        
         {/* All-time Summary */}
         <View style={styles.sectionCard}>
           <Text style={styles.sectionTitle}>{t('home.total')}</Text>
