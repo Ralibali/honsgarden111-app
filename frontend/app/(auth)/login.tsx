@@ -76,9 +76,7 @@ export default function LoginScreen() {
     } else {
       // Error is already set in the store, show alert to make it more visible
       const currentError = useAuthStore.getState().error;
-      if (currentError) {
-        Alert.alert('Fel vid inloggning', currentError);
-      }
+      Alert.alert('Fel vid inloggning', currentError || 'Felaktigt lösenord eller e-postadress. Försök igen.');
     }
   };
   
