@@ -38,12 +38,18 @@ export type CustomerInfo = MockCustomerInfo;
 export type PurchasesOffering = any;
 export type PurchasesPackage = any;
 
-// RevenueCat API Key - Use your test key
-const REVENUECAT_API_KEY = 'test_hyDYIzhCbqNxMdjcHEIfFjEFJpO';
+// RevenueCat API Keys from environment
+// No hardcoded keys - must be set in production!
+const REVENUECAT_IOS_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || '';
+const REVENUECAT_ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || '';
 
-// Can also be configured per-platform via env
-const REVENUECAT_IOS_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || REVENUECAT_API_KEY;
-const REVENUECAT_ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || REVENUECAT_API_KEY;
+// Get platform-specific API key
+const getRevenueCatApiKey = (): string => {
+  if (Platform.OS === 'ios') {
+    return REVENUECAT_IOS_API_KEY;
+  }
+  return REVENUECAT_ANDROID_API_KEY;
+};
 
 // Environment check - use typeof to avoid web bundling issues
 const IS_DEV = typeof __DEV__ !== 'undefined' ? __DEV__ : true;
