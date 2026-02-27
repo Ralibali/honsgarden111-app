@@ -242,10 +242,14 @@ export const useAuthStore = create<AuthState>()(
           await fetch(`${API_URL}/api/auth/logout`, {
             method: 'POST',
             credentials: 'include',
+            headers: getAuthHeaders(),
           });
         } catch (error) {
           console.error('Logout error:', error);
         }
+        
+        // Clear session token
+        await setSessionToken(null);
         
         // Logout from RevenueCat
         logoutRevenueCatUser().catch(err => {
@@ -260,6 +264,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const res = await fetch(`${API_URL}/api/auth/me`, {
             credentials: 'include',
+            headers: getAuthHeaders(),
           });
           
           if (res.ok) {
