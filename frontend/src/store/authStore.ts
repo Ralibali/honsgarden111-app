@@ -36,6 +36,15 @@ const isInGracePeriod = (): boolean => {
 // Initialize token from AsyncStorage on app start
 const initializeToken = async (): Promise<void> => {
   try {
+    // Check if we're in a browser environment without window (SSR)
+    if (typeof window === 'undefined') {
+      if (__DEV__) {
+        console.log('[Auth] Skipping token initialization (SSR environment)');
+      }
+      tokenInitialized = true;
+      return;
+    }
+    
     const token = await AsyncStorage.getItem('session_token');
     if (token) {
       sessionToken = token;
