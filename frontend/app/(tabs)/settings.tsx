@@ -1470,6 +1470,24 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     color: colors.textSecondary,
     marginTop: 2,
   },
+  // Legal links
+  legalLinksContainer: {
+    marginTop: 16,
+    gap: 8,
+  },
+  legalLinkCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    padding: 14,
+    borderRadius: 12,
+    gap: 12,
+  },
+  legalLinkText: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.text,
+  },
   // Modal styles
   modalOverlay: {
     flex: 1,
