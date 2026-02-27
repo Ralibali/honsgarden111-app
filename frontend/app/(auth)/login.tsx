@@ -409,6 +409,20 @@ export default function LoginScreen() {
                   <Text style={styles.forgotText}>Glömt lösenord?</Text>
                 </TouchableOpacity>
                 
+                {/* Remember Me checkbox - Web only */}
+                {Platform.OS === 'web' && (
+                  <TouchableOpacity 
+                    style={styles.rememberMeRow}
+                    onPress={() => setRememberMe(!rememberMe)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                      {rememberMe && <Ionicons name="checkmark" size={14} color="#fff" />}
+                    </View>
+                    <Text style={styles.rememberMeText}>Kom ihåg mig</Text>
+                  </TouchableOpacity>
+                )}
+                
                 <TouchableOpacity 
                   style={[styles.primaryButton, isLoading && styles.disabledButton]}
                   onPress={handleLogin}
