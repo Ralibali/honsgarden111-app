@@ -154,6 +154,7 @@ export default function PaywallScreen() {
             <View style={styles.priceOption}>
               <Text style={styles.priceLabel}>{isSv ? 'Månatlig' : 'Monthly'}</Text>
               <Text style={styles.priceAmount}>19 kr</Text>
+              <Text style={styles.priceSubtext}>{isSv ? '/månad' : '/month'}</Text>
             </View>
             <View style={[styles.priceOption, styles.priceOptionHighlight]}>
               <View style={styles.savingsBadge}>
@@ -161,9 +162,14 @@ export default function PaywallScreen() {
               </View>
               <Text style={styles.priceLabel}>{isSv ? 'Årlig' : 'Yearly'}</Text>
               <Text style={styles.priceAmount}>149 kr</Text>
-              <Text style={styles.priceSubtext}>~12 kr/{isSv ? 'mån' : 'mo'}</Text>
+              <Text style={styles.priceSubtext}>{isSv ? '/år (~12 kr/mån)' : '/year (~12 kr/mo)'}</Text>
             </View>
           </View>
+          <Text style={styles.webPriceNote}>
+            {isSv 
+              ? 'Priser i SEK via Stripe webbkassa' 
+              : 'Prices in SEK via Stripe checkout'}
+          </Text>
         </View>
         
         {/* CTA Button */}
@@ -340,6 +346,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#4ade80',
     marginTop: 4,
+  },
+  webPriceNote: {
+    fontSize: 11,
+    color: '#8E8E93',
+    textAlign: 'center',
+    marginTop: 12,
   },
   savingsBadge: {
     position: 'absolute',
