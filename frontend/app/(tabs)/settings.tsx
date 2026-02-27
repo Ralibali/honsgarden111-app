@@ -834,6 +834,32 @@ export default function SettingsScreen() {
               <Ionicons name="log-out" size={20} color={colors.error} />
               <Text style={styles.logoutText}>{isSv ? 'Logga ut' : 'Log out'}</Text>
             </TouchableOpacity>
+            
+            {/* Delete Account Button - Google Play requirement */}
+            <TouchableOpacity 
+              style={[styles.logoutButton, styles.deleteAccountButton]}
+              onPress={() => {
+                Alert.alert(
+                  isSv ? 'Radera konto' : 'Delete account',
+                  isSv 
+                    ? 'Detta kommer permanent radera ditt konto och ALL data. Denna åtgärd kan inte ångras.'
+                    : 'This will permanently delete your account and ALL data. This action cannot be undone.',
+                  [
+                    { text: isSv ? 'Avbryt' : 'Cancel', style: 'cancel' },
+                    { 
+                      text: isSv ? 'Fortsätt' : 'Continue', 
+                      style: 'destructive',
+                      onPress: () => setShowDeleteAccountModal(true)
+                    }
+                  ]
+                );
+              }}
+            >
+              <Ionicons name="trash" size={20} color="#dc2626" />
+              <Text style={[styles.logoutText, { color: '#dc2626' }]}>
+                {isSv ? 'Radera konto' : 'Delete account'}
+              </Text>
+            </TouchableOpacity>
           </View>
           
           {/* Contact & Support Section */}
