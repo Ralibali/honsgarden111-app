@@ -1409,6 +1409,55 @@ async def verify_registration(data: dict, request: Request, response: Response):
     }
     await db.subscriptions.insert_one(subscription)
     
+    # Handle referral bonus - give 7 extra days to BOTH users
+    if referred_by:
+        # Find the referrer
+        referrer = await db.users.find_one({"referral_code": referred_by})
+        if referrer:
+            referrer_id = referrer["id"]
+            
+            # Record the referral
+            await db.referrals.insert_one({
+                "referrer_id": referrer_id,
+                "referred_id": user_id,
+                "referred_email": email,
+                "bonus_days": 7,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            
+            # Extend referrer's premium by 7 days
+            referrer_sub = await db.subscriptions.find_one({"user_id": referrer_id})
+            if referrer_sub:
+                current_expires = referrer_sub.get("expires_at")
+                if current_expires:
+                    if isinstance(current_expires, str):
+                        current_expires = datetime.fromisoformat(current_expires.replace('Z', '+00:00'))
+                    new_expires = max(current_expires, datetime.now(timezone.utc)) + timedelta(days=7)
+                else:
+                    new_expires = datetime.now(timezone.utc) + timedelta(days=7)
+                
+                await db.subscriptions.update_one(
+                    {"user_id": referrer_id},
+                    {"$set": {
+                        "expires_at": new_expires.isoformat(),
+                        "is_active": True,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+            else:
+                # Create subscription for referrer if they don't have one
+                await db.subscriptions.insert_one({
+                    "user_id": referrer_id,
+                    "plan": "referral_bonus",
+                    "is_active": True,
+                    "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+                    "purchase_source": "referral",
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                })
+            
+            logger.info(f"Referral bonus applied: {referrer['email']} referred {email}")
+    
     # Create default coop
     coop = CoopSettings(user_id=user_id, coop_name="Min Hönsgård")
     await db.coops.insert_one(coop.dict())
