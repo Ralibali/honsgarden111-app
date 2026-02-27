@@ -1345,6 +1345,108 @@ export default function HensScreen() {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
+      
+      {/* Health Score Modal */}
+      <Modal
+        visible={showHealthScoreModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowHealthScoreModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                🏥 Hälsopoäng
+              </Text>
+              <TouchableOpacity onPress={() => setShowHealthScoreModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+            
+            {selectedHealthScore && (
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Score Circle */}
+                <View style={styles.healthScoreCircleContainer}>
+                  <View style={[
+                    styles.healthScoreCircle,
+                    { borderColor: selectedHealthScore.status_color }
+                  ]}>
+                    <Text style={[styles.healthScoreCircleValue, { color: selectedHealthScore.status_color }]}>
+                      {selectedHealthScore.health_score}
+                    </Text>
+                    <Text style={styles.healthScoreCircleLabel}>av 100</Text>
+                  </View>
+                  <Text style={[styles.healthScoreStatus, { color: selectedHealthScore.status_color }]}>
+                    {selectedHealthScore.status_text}
+                  </Text>
+                  <Text style={styles.healthScoreHenName}>
+                    {selectedHealthScore.hen_name}
+                  </Text>
+                </View>
+                
+                {/* Breakdown */}
+                <View style={styles.healthBreakdown}>
+                  <Text style={styles.healthBreakdownTitle}>Detaljerad uppdelning</Text>
+                  
+                  {Object.entries(selectedHealthScore.breakdown || {}).map(([key, data]: [string, any]) => (
+                    <View key={key} style={styles.healthBreakdownRow}>
+                      <View style={styles.healthBreakdownLeft}>
+                        <Text style={styles.healthBreakdownLabel}>{data.label}</Text>
+                        <View style={styles.healthBreakdownBar}>
+                          <View 
+                            style={[
+                              styles.healthBreakdownBarFill,
+                              { 
+                                width: `${(data.score / data.max) * 100}%`,
+                                backgroundColor: selectedHealthScore.status_color 
+                              }
+                            ]} 
+                          />
+                        </View>
+                      </View>
+                      <Text style={styles.healthBreakdownValue}>
+                        {data.score}/{data.max}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+                
+                {/* Metrics */}
+                <View style={styles.healthMetrics}>
+                  <Text style={styles.healthMetricsTitle}>Mätdata</Text>
+                  <View style={styles.healthMetricsGrid}>
+                    <View style={styles.healthMetricItem}>
+                      <Text style={styles.healthMetricValue}>
+                        {selectedHealthScore.metrics?.avg_eggs_7d || 0}
+                      </Text>
+                      <Text style={styles.healthMetricLabel}>Ägg/dag (7d)</Text>
+                    </View>
+                    <View style={styles.healthMetricItem}>
+                      <Text style={styles.healthMetricValue}>
+                        {selectedHealthScore.metrics?.avg_eggs_30d || 0}
+                      </Text>
+                      <Text style={styles.healthMetricLabel}>Ägg/dag (30d)</Text>
+                    </View>
+                    <View style={styles.healthMetricItem}>
+                      <Text style={styles.healthMetricValue}>
+                        {selectedHealthScore.metrics?.days_since_seen ?? '–'}
+                      </Text>
+                      <Text style={styles.healthMetricLabel}>Dagar sedan sedd</Text>
+                    </View>
+                    <View style={styles.healthMetricItem}>
+                      <Text style={styles.healthMetricValue}>
+                        {selectedHealthScore.metrics?.recent_health_issues || 0}
+                      </Text>
+                      <Text style={styles.healthMetricLabel}>Hälsohändelser (30d)</Text>
+                    </View>
+                  </View>
+                </View>
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
