@@ -498,6 +498,90 @@ TIPS VID MISSTÄNKT SJUKDOM:
 3. Observera symtom noggrant (andning, avföring, beteende)
 4. Kontakta veterinär om symtomen inte förbättras inom 24 timmar
 5. Smittsamma sjukdomar kräver karantän för hela flocken
+
+=== ÄGGKVALITET ===
+
+ETT BRA ÄGG:
+- Hårt, helt skal
+- Fast och hög äggvita
+- Rund och intensivt färgad gula
+
+FÄRSKHETSTEST:
+- Färska ägg sjunker i vatten och lägger sig platt på botten
+- Äldre ägg ställer sig på ända
+- Gamla ägg flyter - ät inte!
+
+SMAK PÅVERKAS AV:
+- Fodret - mer grönt och insekter = djupare smak
+- Hur hönsen lever - frigående höns med varierad kost ger godare ägg
+- Årstid - sommarägg smakar ofta annorlunda än vinterägg
+
+SKAL-PROBLEM:
+- Mjuka skal = kalciumbrist, ge ostronskalskal
+- Rynkiga skal = infektiös bronkit eller stress
+- Blodprickar inuti = normalt, ofarligt
+- Dubbla gulor = unga höns med oregelbunden ägglossning
+
+=== FÖRVARING AV ÄGG ===
+- Ägg håller 4–6 veckor i kylskåp
+- Förvara svalt och jämnt (5-10°C)
+- Tvätta INTE ägg i onödan - det naturliga skyddsskiktet (kutikula) är viktigt
+- Märk kartonger med värpdatum
+- Förvara med spetsen neråt för längre hållbarhet
+
+=== FÖRSÄLJNING AV ÄGG ===
+
+REGLER I SVERIGE:
+- Stalldörrförsäljning (max 15 höns): Inga krav på märkning
+- Större försäljning: Kräver registrering hos Jordbruksverket
+- Saluhållning på torg/marknad: Krav på kylförvaring och märkning
+
+PRISSÄTTNING:
+- Foderkostnad + investering + din tid = minimipris
+- Gårdsägg: 4–6 kr styck eller mer
+- Ekologiska och färgglada ägg: högre pris motiverat
+- Undervärdera INTE ditt arbete!
+
+=== HÅLLBARHET OCH KRETSLOPP ===
+- Hönsgödsel är guld för trädgården - kompostera eller sprid direkt
+- Matrester blir ägg - perfekt kretslopp
+- Ogräs och trädgårdsavfall blir näring
+- Gamla fjädrar kan komposteras
+- Äggskal krossas och ges tillbaka som kalciumtillskott
+- Cirkulärt, naturligt och smart
+
+=== SÄSONGSKALENDER ===
+
+JANUARI-FEBRUARI:
+- Lägsta äggproduktion
+- Extra belysning viktigt
+- Kontrollera att vatten inte fryser
+- Extra energirikt foder
+
+MARS-APRIL:
+- Produktionen ökar med ljuset
+- Vårruggning kan förekomma
+- Dags att förbereda för kycklingar?
+
+MAJ-JUNI:
+- Högsäsong för ägg!
+- Överskott? Sälj, konservera eller ge bort
+- Se upp för kvalster - de trivs i värme
+
+JULI-AUGUSTI:
+- Värmevarning! Se till att höns har skugga
+- Extra vatten, kanske frysta godisar (frukt i isblock)
+- Produktionen kan minska vid extrem värme
+
+SEPTEMBER-OKTOBER:
+- Höstruggning - produktionen minskar
+- Extra protein för fjädertillväxt
+- Förbered hönshuset för vintern
+
+NOVEMBER-DECEMBER:
+- Kort ljus = få ägg (helt normalt)
+- Belysning om du vill ha ägg
+- Underhåll och reparationer i hönshuset
 """
 
 # Import Stripe checkout helper
