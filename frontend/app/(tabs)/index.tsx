@@ -1369,6 +1369,117 @@ export default function HomeScreen() {
         </SafeAreaView>
       </Modal>
       
+      {/* Free Agda Teaser Modal - for non-premium users */}
+      <Modal
+        visible={showFreeAgdaTeaser}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowFreeAgdaTeaser(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          justifyContent: 'flex-end',
+        }}>
+          <View style={{
+            backgroundColor: colors.surface,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            padding: 24,
+            paddingBottom: 40,
+          }}>
+            {/* Header */}
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <View style={{
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                backgroundColor: colors.primary + '20',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 12,
+              }}>
+                <Text style={{ fontSize: 36 }}>🐔</Text>
+              </View>
+              <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text, marginBottom: 4 }}>
+                {isSv ? 'Hej! Jag är Agda' : "Hi! I'm Agda"}
+              </Text>
+              <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
+                {isSv ? 'Din personliga hönsgårdsrådgivare' : 'Your personal chicken coop advisor'}
+              </Text>
+            </View>
+            
+            {/* Free Tip */}
+            <View style={{
+              backgroundColor: colors.background,
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 20,
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                <Ionicons name="bulb" size={20} color="#f59e0b" />
+                <Text style={{ marginLeft: 8, fontWeight: '600', color: colors.text }}>
+                  {isSv ? 'Gratis tips!' : 'Free tip!'}
+                </Text>
+              </View>
+              {freeTeaserLoading ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Text style={{ color: colors.text, fontSize: 15, lineHeight: 22 }}>
+                  {freeTeaserTip}
+                </Text>
+              )}
+            </View>
+            
+            {/* Premium Features Teaser */}
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontWeight: '600', color: colors.textSecondary, marginBottom: 10 }}>
+                {isSv ? 'Med Premium får du:' : 'With Premium you get:'}
+              </Text>
+              {[
+                { icon: 'infinite', text: isSv ? 'Obegränsade frågor till Agda' : 'Unlimited questions to Agda' },
+                { icon: 'bulb', text: isSv ? 'Dagliga AI-tips' : 'Daily AI tips' },
+                { icon: 'analytics', text: isSv ? 'Personlig äggprognos' : 'Personal egg forecast' },
+              ].map((item, idx) => (
+                <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                  <Ionicons name={item.icon as any} size={18} color={colors.primary} />
+                  <Text style={{ marginLeft: 10, color: colors.text }}>{item.text}</Text>
+                </View>
+              ))}
+            </View>
+            
+            {/* Upgrade Button */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 12,
+                paddingVertical: 14,
+                alignItems: 'center',
+                marginBottom: 12,
+              }}
+              onPress={() => {
+                setShowFreeAgdaTeaser(false);
+                router.push('/paywall');
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+                {isSv ? 'Uppgradera till Premium' : 'Upgrade to Premium'}
+              </Text>
+            </TouchableOpacity>
+            
+            {/* Close */}
+            <TouchableOpacity
+              style={{ alignItems: 'center', paddingVertical: 8 }}
+              onPress={() => setShowFreeAgdaTeaser(false)}
+            >
+              <Text style={{ color: colors.textSecondary }}>
+                {isSv ? 'Kanske senare' : 'Maybe later'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
       {/* Premium Gate Modal */}
       <PremiumGateModal
         visible={showPremiumModal}
