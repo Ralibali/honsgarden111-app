@@ -1460,10 +1460,11 @@ async def login_email(data: EmailLogin, request: Request, response: Response):
     
     # Create session and set cookie
     session_token = str(uuid.uuid4())
+    session_ttl_days = 7  # Short-lived session
     session = UserSession(
         user_id=user_id,
         session_token=session_token,
-        expires_at=datetime.now(timezone.utc) + timedelta(days=7)
+        expires_at=datetime.now(timezone.utc) + timedelta(days=session_ttl_days)
     )
     await db.user_sessions.insert_one(session.dict())
     
@@ -1478,9 +1479,43 @@ async def login_email(data: EmailLogin, request: Request, response: Response):
         secure=True,
         samesite="none",
         path="/",
-        max_age=7 * 24 * 60 * 60,
+        max_age=session_ttl_days * 24 * 60 * 60,
         domain=cookie_domain
     )
+    
+    # Handle "remember me" for web
+    remember_token = None
+    if data.remember_me:
+        # Generate secure remember token
+        remember_token_raw = secrets.token_urlsafe(32)
+        remember_token_hash = hashlib.sha256(remember_token_raw.encode()).hexdigest()
+        
+        remember_ttl_days = 90  # Long-lived remember token
+        
+        # Store hashed token in DB
+        await db.remember_tokens.insert_one({
+            "user_id": user_id,
+            "remember_hash": remember_token_hash,
+            "created_at": datetime.now(timezone.utc),
+            "expires_at": datetime.now(timezone.utc) + timedelta(days=remember_ttl_days),
+            "rotated_at": None,
+            "revoked_at": None,
+            "device_label": request.headers.get("User-Agent", "")[:100]
+        })
+        
+        # Set remember cookie
+        response.set_cookie(
+            key="remember_token",
+            value=remember_token_raw,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            path="/",
+            max_age=remember_ttl_days * 24 * 60 * 60,
+            domain=cookie_domain
+        )
+        
+        logger.debug(f"[Auth] Remember token created for user {user_id}")
     
     return {
         "user_id": user_id,
