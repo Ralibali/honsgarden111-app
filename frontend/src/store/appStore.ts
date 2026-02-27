@@ -181,11 +181,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   fetchCoopSettings: async () => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(`${API_URL}/api/coop`);
+      const response = await apiFetch(`${API_URL}/api/coop`);
       if (!response.ok) throw new Error('Failed to fetch coop settings');
       const data = await response.json();
       set({ coopSettings: data, loading: false });
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') {
+        set({ loading: false, error: null });
+        return;
+      }
       set({ error: error.message, loading: false });
     }
   },
@@ -193,9 +197,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   updateCoopSettings: async (data) => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(`${API_URL}/api/coop`, {
+      const response = await apiFetch(`${API_URL}/api/coop`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error('Failed to update coop settings');
@@ -205,6 +208,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       get().fetchTodayStats();
       get().fetchSummaryStats();
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') {
+        set({ loading: false, error: null });
+        return;
+      }
       set({ error: error.message, loading: false });
     }
   },
@@ -218,11 +225,15 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (endDate) params.append('end_date', endDate);
       if (params.toString()) url += `?${params.toString()}`;
       
-      const response = await fetch(url);
+      const response = await apiFetch(url);
       if (!response.ok) throw new Error('Failed to fetch egg records');
       const data = await response.json();
       set({ eggRecords: data, loading: false });
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') {
+        set({ loading: false, error: null });
+        return;
+      }
       set({ error: error.message, loading: false });
     }
   },
@@ -230,9 +241,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   addEggRecord: async (date: string, count: number, notes?: string, henId?: string) => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(`${API_URL}/api/eggs`, {
+      const response = await apiFetch(`${API_URL}/api/eggs`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ date, count, notes, hen_id: henId }),
       });
       if (!response.ok) throw new Error('Failed to add egg record');
@@ -255,6 +265,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ loading: false });
       return newRecord;
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') {
+        set({ loading: false, error: null });
+        return null;
+      }
       set({ error: error.message, loading: false });
       return null;
     }
@@ -263,7 +277,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   deleteEggRecord: async (id: string) => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(`${API_URL}/api/eggs/${id}`, {
+      const response = await apiFetch(`${API_URL}/api/eggs/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete egg record');
@@ -272,6 +286,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().fetchSummaryStats();
       set({ loading: false });
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') {
+        set({ loading: false, error: null });
+        return;
+      }
       set({ error: error.message, loading: false });
     }
   },
@@ -308,11 +326,15 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (type) params.append('type', type);
       if (params.toString()) url += `?${params.toString()}`;
       
-      const response = await fetch(url);
+      const response = await apiFetch(url);
       if (!response.ok) throw new Error('Failed to fetch transactions');
       const data = await response.json();
       set({ transactions: data, loading: false });
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') {
+        set({ loading: false, error: null });
+        return;
+      }
       set({ error: error.message, loading: false });
     }
   },
@@ -320,9 +342,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   addTransaction: async (data) => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(`${API_URL}/api/transactions`, {
+      const response = await apiFetch(`${API_URL}/api/transactions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error('Failed to add transaction');
@@ -331,6 +352,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().fetchSummaryStats();
       set({ loading: false });
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') {
+        set({ loading: false, error: null });
+        return;
+      }
       set({ error: error.message, loading: false });
     }
   },
@@ -338,7 +363,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   deleteTransaction: async (id: string) => {
     try {
       set({ loading: true, error: null });
-      const response = await fetch(`${API_URL}/api/transactions/${id}`, {
+      const response = await apiFetch(`${API_URL}/api/transactions/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete transaction');
@@ -347,39 +372,46 @@ export const useAppStore = create<AppState>((set, get) => ({
       await get().fetchSummaryStats();
       set({ loading: false });
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') {
+        set({ loading: false, error: null });
+        return;
+      }
       set({ error: error.message, loading: false });
     }
   },
   
   fetchTodayStats: async () => {
     try {
-      const response = await fetch(`${API_URL}/api/statistics/today`);
+      const response = await apiFetch(`${API_URL}/api/statistics/today`);
       if (!response.ok) throw new Error('Failed to fetch today stats');
       const data = await response.json();
       set({ todayStats: data });
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') return;
       set({ error: error.message });
     }
   },
   
   fetchSummaryStats: async () => {
     try {
-      const response = await fetch(`${API_URL}/api/statistics/summary`);
+      const response = await apiFetch(`${API_URL}/api/statistics/summary`);
       if (!response.ok) throw new Error('Failed to fetch summary stats');
       const data = await response.json();
       set({ summaryStats: data });
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') return;
       set({ error: error.message });
     }
   },
   
   fetchInsights: async () => {
     try {
-      const response = await fetch(`${API_URL}/api/insights`);
+      const response = await apiFetch(`${API_URL}/api/insights`);
       if (!response.ok) throw new Error('Failed to fetch insights');
       const data = await response.json();
       set({ insights: data });
     } catch (error: any) {
+      if (error.message === 'AUTH_REQUIRED') return;
       set({ error: error.message });
     }
   },
