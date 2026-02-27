@@ -871,6 +871,66 @@ export default function HomeScreen() {
             )}
           </TouchableOpacity>
           
+          {/* Daily Tip Card */}
+          <TouchableOpacity 
+            style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
+            onPress={loadDailyTip}
+            activeOpacity={0.7}
+          >
+            <View style={styles.aiCardIcon}>
+              <Ionicons name="bulb" size={24} color={isPremium ? '#f59e0b' : '#9ca3af'} />
+            </View>
+            <View style={styles.aiCardContent}>
+              <Text style={styles.aiCardTitle}>{isSv ? 'Dagens tips' : 'Daily Tip'}</Text>
+              {isPremium ? (
+                <Text style={styles.aiCardDescription}>
+                  {isSv ? 'Få ett dagligt AI-tips för din hönsgård' : 'Get a daily AI tip for your coop'}
+                </Text>
+              ) : (
+                <Text style={styles.aiCardDescriptionBlurred}>
+                  {isSv ? 'Uppgradera för dagliga tips...' : 'Upgrade for daily tips...'}
+                </Text>
+              )}
+            </View>
+            {isPremium ? (
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            ) : (
+              <View style={styles.unlockButton}>
+                <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          
+          {/* Ask Agda Card */}
+          <TouchableOpacity 
+            style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
+            onPress={openAgdaModal}
+            activeOpacity={0.7}
+          >
+            <View style={styles.aiCardIcon}>
+              <Ionicons name="chatbubbles" size={24} color={isPremium ? '#8b5cf6' : '#9ca3af'} />
+            </View>
+            <View style={styles.aiCardContent}>
+              <Text style={styles.aiCardTitle}>{isSv ? 'Fråga Agda' : 'Ask Agda'}</Text>
+              {isPremium ? (
+                <Text style={styles.aiCardDescription}>
+                  {isSv ? 'Ställ frågor till din AI-rådgivare' : 'Ask questions to your AI advisor'}
+                </Text>
+              ) : (
+                <Text style={styles.aiCardDescriptionBlurred}>
+                  {isSv ? 'Uppgradera för AI-rådgivning...' : 'Upgrade for AI advice...'}
+                </Text>
+              )}
+            </View>
+            {isPremium ? (
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            ) : (
+              <View style={styles.unlockButton}>
+                <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          
           {/* Blurred overlay hint for free users */}
           {!isPremium && (
             <TouchableOpacity 
