@@ -4984,6 +4984,7 @@ async def get_ai_advisor(request: Request, question: str = ""):
         return {
             "is_premium": False,
             "preview": True,
+            "used_fallback": False,
             "response": "🔒 AI-rådgivaren Agda är en Premium-funktion. Uppgradera för personliga råd om dina höns!"
         }
     
@@ -4992,8 +4993,8 @@ async def get_ai_advisor(request: Request, question: str = ""):
     hen_count = len([h for h in hens if h.get('hen_type', 'hen') == 'hen'])
     rooster_count = len([h for h in hens if h.get('hen_type') == 'rooster'])
     
-    # Get recent eggs
-    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).strftime('%Y-%m-%d')
+    # Get recent eggs using Stockholm time
+    week_ago = days_ago_stockholm(7)
     recent_eggs = await db.egg_records.find({"user_id": user_id, "date": {"$gte": week_ago}}).to_list(1000)
     weekly_total = sum(e.get('count', 0) for e in recent_eggs)
     
@@ -5008,6 +5009,9 @@ async def get_ai_advisor(request: Request, question: str = ""):
     user_name = user.get("name", "").split()[0] if user and user.get("name") else ""
     
     try:
+        if not EMERGENT_LLM_KEY:
+            raise ValueError("EMERGENT_LLM_KEY not configured")
+            
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"advisor-{user_id}",
@@ -5028,9 +5032,13 @@ Om frågan är oklar, ge generella tips om hönsskötsel."""
         message = UserMessage(text=prompt)
         ai_response = await chat.send_message(message)
         
+        logger.info(f"AI advisor responded successfully for user {user_id}")
+        
         return {
             "is_premium": True,
             "preview": False,
+            "used_fallback": False,
+            "ai_provider_ok": True,
             "response": ai_response,
             "context": {
                 "hen_count": hen_count,
@@ -5039,10 +5047,12 @@ Om frågan är oklar, ge generella tips om hönsskötsel."""
             }
         }
     except Exception as e:
-        logging.error(f"AI advisor failed: {e}")
+        logger.error(f"AI advisor failed for user {user_id}: {e}")
         return {
             "is_premium": True,
             "preview": False,
+            "used_fallback": True,
+            "ai_provider_ok": False,
             "response": "Agda kunde inte svara just nu. Försök igen om en stund!",
             "error": True
         }
