@@ -2076,12 +2076,14 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   },
   customEggInput: {
     flex: 1,
-    height: 50,
+    height: 56,
+    minWidth: 140,
     backgroundColor: colors.surfaceSecondary,
     borderRadius: 12,
     paddingHorizontal: 16,
-    fontSize: 18,
+    fontSize: 20,
     color: colors.text,
+    textAlign: 'center',
   },
   customAddButton: {
     height: 50,
