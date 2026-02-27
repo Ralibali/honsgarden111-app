@@ -5544,16 +5544,36 @@ async def delete_user(request: Request, user_id: str):
     return {"message": "Användare raderad", "user_id": user_id}
 
 @api_router.put("/admin/subscriptions/{user_id}")
-async def update_user_subscription(request: Request, user_id: str, is_active: bool, plan: str = None):
-    """Update a user's subscription (admin only)"""
+async def update_user_subscription(request: Request, user_id: str):
+    """Update a user's subscription (admin only)
+    Body: { is_active: bool, plan: string, days: number (optional, -1 for forever) }"""
     await require_admin(request)
+    
+    body = await request.json()
+    is_active = body.get("is_active", False)
+    plan = body.get("plan")
+    days = body.get("days", 365)  # Default 365 days, -1 for forever
     
     update_data = {"is_active": is_active, "updated_at": datetime.now(timezone.utc)}
     if plan:
         update_data["plan"] = plan
+    
     if is_active:
-        # Set expiry to 1 year from now for manual activation
-        update_data["expires_at"] = datetime.now(timezone.utc) + timedelta(days=365)
+        if days == -1:
+            # Forever - set to 100 years
+            update_data["expires_at"] = datetime.now(timezone.utc) + timedelta(days=36500)
+            update_data["plan"] = "lifetime"
+        else:
+            update_data["expires_at"] = datetime.now(timezone.utc) + timedelta(days=days)
+    else:
+        # Deactivate - set expiry to now
+        update_data["expires_at"] = datetime.now(timezone.utc)
+    
+    # Also update user's is_premium flag
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"is_premium": is_active}}
+    )
     
     result = await db.subscriptions.update_one(
         {"user_id": user_id},
@@ -5561,9 +5581,14 @@ async def update_user_subscription(request: Request, user_id: str, is_active: bo
         upsert=True
     )
     
-    logger.info(f"Admin updated subscription for user {user_id}: active={is_active}")
+    logger.info(f"Admin updated subscription for user {user_id}: active={is_active}, days={days}")
     
-    return {"message": "Prenumeration uppdaterad", "user_id": user_id, "is_active": is_active}
+    return {
+        "message": "Prenumeration uppdaterad", 
+        "user_id": user_id, 
+        "is_active": is_active,
+        "days": days if days != -1 else "forever"
+    }
 
 # ============ AI PREMIUM FEATURES ============
 @api_router.get("/ai/daily-report")
