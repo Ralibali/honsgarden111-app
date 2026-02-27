@@ -125,6 +125,128 @@ export default function EggsScreen() {
   const totalEggs = eggRecords.reduce((sum, r) => sum + r.count, 0);
   const avgEggs = eggRecords.length > 0 ? (totalEggs / eggRecords.length).toFixed(1) : '0';
   
+  // Sort records by date descending and add trend info
+  const sortedRecords = useMemo(() => {
+    const sorted = [...eggRecords].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    
+    return sorted.map((record, index) => {
+      const prevRecord = sorted[index + 1];
+      let trend: 'up' | 'down' | 'same' = 'same';
+      if (prevRecord) {
+        if (record.count > prevRecord.count) trend = 'up';
+        else if (record.count < prevRecord.count) trend = 'down';
+      }
+      return { ...record, trend };
+    });
+  }, [eggRecords]);
+  
+  // Swipe actions component
+  const SwipeableRecord = ({ record, trend, onEdit, onDelete }: any) => {
+    const translateX = new Animated.Value(0);
+    const [swiped, setSwiped] = useState(false);
+    
+    const panResponder = PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dx) > 10,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dx < 0) {
+          translateX.setValue(Math.max(gestureState.dx, -120));
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -60) {
+          Animated.spring(translateX, {
+            toValue: -120,
+            useNativeDriver: true,
+          }).start();
+          setSwiped(true);
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+          setSwiped(false);
+        }
+      },
+    });
+    
+    const resetSwipe = () => {
+      Animated.spring(translateX, {
+        toValue: 0,
+        useNativeDriver: true,
+      }).start();
+      setSwiped(false);
+    };
+    
+    // Format date as "Fre 27 feb"
+    const formattedDate = format(parseISO(record.date), 'EEE d MMM', { locale: getLocale() });
+    
+    return (
+      <View style={styles.swipeContainer}>
+        {/* Background actions */}
+        <View style={styles.swipeActions}>
+          <TouchableOpacity 
+            style={[styles.swipeAction, styles.editAction]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onEdit(record);
+              resetSwipe();
+            }}
+          >
+            <Ionicons name="pencil" size={20} color="#fff" />
+            <Text style={styles.swipeActionText}>Redigera</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.swipeAction, styles.deleteAction]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+              onDelete(record);
+              resetSwipe();
+            }}
+          >
+            <Ionicons name="trash" size={20} color="#fff" />
+            <Text style={styles.swipeActionText}>Ta bort</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Main content */}
+        <Animated.View 
+          style={[styles.recordItem, { transform: [{ translateX }] }]}
+          {...panResponder.panHandlers}
+        >
+          <View style={styles.recordLeft}>
+            <View style={styles.recordIcon}>
+              <Ionicons name="egg" size={20} color={colors.warning} />
+            </View>
+            <View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.recordDate}>{formattedDate}</Text>
+                {trend === 'up' && (
+                  <View style={[styles.trendBadge, { backgroundColor: colors.success + '20' }]}>
+                    <Text style={[styles.trendText, { color: colors.success }]}>↑</Text>
+                  </View>
+                )}
+                {trend === 'down' && (
+                  <View style={[styles.trendBadge, { backgroundColor: colors.error + '20' }]}>
+                    <Text style={[styles.trendText, { color: colors.error }]}>↓</Text>
+                  </View>
+                )}
+              </View>
+              {record.notes && (
+                <Text style={styles.recordNotes}>{record.notes}</Text>
+              )}
+            </View>
+          </View>
+          <View style={styles.recordRight}>
+            <Text style={styles.recordCount}>{record.count}</Text>
+            <Ionicons name="chevron-back" size={16} color={colors.textMuted} style={{ marginLeft: 8, opacity: swiped ? 0 : 0.5 }} />
+          </View>
+        </Animated.View>
+      </View>
+    );
+  };
+
   const styles = createStyles(colors, isDark);
   
   return (
