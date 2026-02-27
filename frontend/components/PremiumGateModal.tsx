@@ -184,6 +184,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     maxHeight: '90%',
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    overflow: 'hidden',
+    position: 'relative',
   },
   header: {
     alignItems: 'center',
