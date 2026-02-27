@@ -60,8 +60,10 @@ export default function RootLayout() {
     const checkOnboarding = async () => {
       try {
         const value = await AsyncStorage.getItem(ONBOARDING_KEY);
+        console.log('Onboarding check result:', value);
         setHasSeenOnboarding(value === 'true');
       } catch (e) {
+        console.log('Onboarding check error:', e);
         setHasSeenOnboarding(true); // Default to skipping onboarding on error
       }
     };
@@ -76,25 +78,29 @@ export default function RootLayout() {
   
   // Handle navigation based on auth state and onboarding
   useEffect(() => {
-    if (hasSeenOnboarding === null || authLoading) return;
+    // Wait for onboarding check to complete
+    if (hasSeenOnboarding === null) return;
     
+    // Don't wait for auth loading - just proceed
     const inAuthGroup = segments[0] === '(auth)';
     const inOnboarding = segments[0] === 'onboarding';
     const inTabs = segments[0] === '(tabs)';
+    
+    console.log('Navigation check:', { hasSeenOnboarding, isAuthenticated, inAuthGroup, inOnboarding, inTabs });
     
     // If hasn't seen onboarding and not already there, go to onboarding
     if (!hasSeenOnboarding && !inOnboarding) {
       router.replace('/onboarding');
     }
     // If authenticated and not in tabs, go to tabs
-    else if (isAuthenticated && !inTabs) {
+    else if (isAuthenticated && !inTabs && !inOnboarding) {
       router.replace('/(tabs)');
     }
-    // Only redirect to login if at root or in wrong place (not already in auth)
+    // Only redirect to login if not already in auth group and not in onboarding
     else if (hasSeenOnboarding && !isAuthenticated && !inAuthGroup && !inOnboarding) {
       router.replace('/(auth)/login');
     }
-  }, [hasSeenOnboarding, isAuthenticated, authLoading]);
+  }, [hasSeenOnboarding, isAuthenticated]);
   
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
