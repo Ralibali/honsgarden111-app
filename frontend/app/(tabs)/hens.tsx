@@ -1367,6 +1367,14 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   colorLabel: { fontSize: 14, color: colors.textSecondary },
   colorLabelSelected: { color: colors.text, fontWeight: '500' },
   
+  // Hen Type Toggle
+  henTypeToggle: { flexDirection: 'row', gap: 12, marginBottom: 8 },
+  henTypeOption: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surfaceSecondary, borderRadius: 12, paddingVertical: 14, borderWidth: 2, borderColor: 'transparent', gap: 8 },
+  henTypeOptionSelected: { borderColor: colors.primary, backgroundColor: colors.primary + '15' },
+  henTypeEmoji: { fontSize: 24 },
+  henTypeLabel: { fontSize: 16, color: colors.textSecondary, fontWeight: '500' },
+  henTypeLabelSelected: { color: colors.primary, fontWeight: '600' },
+  
   // Health Type Scroll
   healthTypeScroll: { marginBottom: 12 },
   healthTypeBtn: { alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10, backgroundColor: colors.surfaceSecondary, borderRadius: 12, marginRight: 8, borderWidth: 2, borderColor: 'transparent', minWidth: 80 },
