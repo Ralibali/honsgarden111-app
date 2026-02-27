@@ -9,7 +9,7 @@ import {
   purchasePackage,
   ENTITLEMENT_ID,
 } from '../services/revenuecat';
-import { useAuthStore } from './authStore';
+import { useAuthStore, getAuthHeaders, setSessionToken } from './authStore';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
@@ -19,13 +19,14 @@ const apiFetch = async (url: string, options: RequestInit = {}): Promise<Respons
     ...options,
     credentials: 'include',
     headers: {
-      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
       ...options.headers,
     },
   });
   
   // Handle 401 - user needs to login
   if (response.status === 401) {
+    await setSessionToken(null);
     useAuthStore.getState().setUser(null);
     throw new Error('AUTH_REQUIRED');
   }
