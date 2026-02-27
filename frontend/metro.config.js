@@ -11,6 +11,8 @@ config.cacheStores = [
   new FileStore({ root: path.join(root, 'cache') }),
 ];
 
+// FIX: Disable package exports to avoid ESM/import.meta issues with zustand
+config.resolver.unstable_enablePackageExports = false;
 
 // // Exclude unnecessary directories from file watching
 // config.watchFolders = [__dirname];
