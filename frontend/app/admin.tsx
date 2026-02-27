@@ -57,12 +57,13 @@ export default function AdminPanel() {
   const { colors, isDark } = useThemeStore();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'feedback'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'subscriptions' | 'feedback' | 'community'>('users');
   
   const [users, setUsers] = useState<User[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [communityPosts, setCommunityPosts] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [subscriptionSearchQuery, setSubscriptionSearchQuery] = useState('');
   
