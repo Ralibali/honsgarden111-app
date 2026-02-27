@@ -18,22 +18,50 @@ let sessionToken: string | null = null;
 // Grace period flag - prevents logout during bootstrap
 let loginInProgress = false;
 let lastLoginTime = 0;
-const LOGIN_GRACE_PERIOD_MS = 5000; // 5 seconds grace period after login
+const LOGIN_GRACE_PERIOD_MS = 10000; // 10 seconds grace period after login (increased from 5s)
+
+// Track if token has been initialized from storage
+let tokenInitialized = false;
+let tokenInitPromise: Promise<void> | null = null;
 
 // Check if we're in grace period
 const isInGracePeriod = (): boolean => {
-  return loginInProgress || (Date.now() - lastLoginTime < LOGIN_GRACE_PERIOD_MS);
+  const inGrace = loginInProgress || (Date.now() - lastLoginTime < LOGIN_GRACE_PERIOD_MS);
+  if (__DEV__ && inGrace) {
+    console.log(`[Auth] Grace period active: loginInProgress=${loginInProgress}, timeSinceLogin=${Date.now() - lastLoginTime}ms`);
+  }
+  return inGrace;
 };
 
 // Initialize token from AsyncStorage on app start
-AsyncStorage.getItem('session_token').then(token => {
-  if (token) {
-    sessionToken = token;
-    if (__DEV__) {
-      console.log('[Auth] Session token restored from storage, last 6 chars:', token.slice(-6));
+const initializeToken = async (): Promise<void> => {
+  try {
+    const token = await AsyncStorage.getItem('session_token');
+    if (token) {
+      sessionToken = token;
+      if (__DEV__) {
+        console.log('[Auth] Session token restored from storage, last 6 chars:', token.slice(-6));
+      }
+    } else {
+      if (__DEV__) {
+        console.log('[Auth] No session token in storage');
+      }
     }
+  } catch (e) {
+    console.error('[Auth] Failed to restore token from storage:', e);
   }
-});
+  tokenInitialized = true;
+};
+
+// Start initialization immediately
+tokenInitPromise = initializeToken();
+
+// Export function to wait for token initialization
+export const waitForTokenInit = async (): Promise<void> => {
+  if (tokenInitPromise) {
+    await tokenInitPromise;
+  }
+};
 
 // Export function to get auth headers for API calls
 export const getAuthHeaders = (): Record<string, string> => {
@@ -42,6 +70,13 @@ export const getAuthHeaders = (): Record<string, string> => {
   };
   if (sessionToken) {
     headers['Authorization'] = `Bearer ${sessionToken}`;
+    if (__DEV__) {
+      console.log(`[Auth] getAuthHeaders: Adding Authorization header, token: ...${sessionToken.slice(-6)}`);
+    }
+  } else {
+    if (__DEV__) {
+      console.log('[Auth] getAuthHeaders: NO token available');
+    }
   }
   return headers;
 };
@@ -57,29 +92,67 @@ export const getMaskedToken = (): string => {
   return `...${sessionToken.slice(-6)}`;
 };
 
-// Export function to set session token
-export const setSessionToken = async (token: string | null) => {
+// Export function to get the raw token (for special cases)
+export const getSessionToken = (): string | null => {
+  return sessionToken;
+};
+
+// Export function to set session token - SYNCHRONOUSLY sets in memory, async for storage
+export const setSessionToken = async (token: string | null): Promise<void> => {
+  // IMPORTANT: Set in memory FIRST (synchronous) before any async operations
+  const previousToken = sessionToken;
   sessionToken = token;
+  
   if (token) {
-    await AsyncStorage.setItem('session_token', token);
     lastLoginTime = Date.now();
+    loginInProgress = true; // Start grace period
+    
     if (__DEV__) {
-      console.log('[Auth] Session token set, last 6 chars:', token.slice(-6));
+      console.log(`[Auth] Session token set IMMEDIATELY in memory, last 6 chars: ${token.slice(-6)}`);
+      console.log(`[Auth] Grace period started at ${lastLoginTime}`);
     }
+    
+    // Then persist to storage (async)
+    try {
+      await AsyncStorage.setItem('session_token', token);
+      if (__DEV__) {
+        console.log('[Auth] Token persisted to AsyncStorage');
+      }
+    } catch (e) {
+      console.error('[Auth] Failed to persist token to AsyncStorage:', e);
+    }
+    
+    // End the loginInProgress flag after a short delay
+    setTimeout(() => {
+      loginInProgress = false;
+      if (__DEV__) {
+        console.log('[Auth] loginInProgress flag cleared');
+      }
+    }, 2000);
   } else {
-    await AsyncStorage.removeItem('session_token');
     if (__DEV__) {
-      console.log('[Auth] Session token cleared');
+      console.log('[Auth] Session token cleared from memory');
+    }
+    try {
+      await AsyncStorage.removeItem('session_token');
+      if (__DEV__) {
+        console.log('[Auth] Token removed from AsyncStorage');
+      }
+    } catch (e) {
+      console.error('[Auth] Failed to remove token from AsyncStorage:', e);
     }
   }
 };
 
 // Export grace period check for apiFetch
 export const shouldIgnore401 = (endpoint: string): boolean => {
-  // During grace period, don't logout on 401 from auth/me
-  if (isInGracePeriod() && endpoint.includes('/api/auth/me')) {
+  const inGrace = isInGracePeriod();
+  
+  // During grace period, don't logout on 401 from ANY endpoint
+  // This prevents race conditions where token is set but async operations haven't completed
+  if (inGrace) {
     if (__DEV__) {
-      console.log('[Auth] Ignoring 401 from /api/auth/me during grace period');
+      console.log(`[Auth] IGNORING 401 from ${endpoint} - in grace period`);
     }
     return true;
   }
