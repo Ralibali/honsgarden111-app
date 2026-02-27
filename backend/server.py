@@ -3722,36 +3722,6 @@ async def get_hen_health_score(hen_id: str, request: Request):
         }
     }
 
-@api_router.get("/hens/health-scores")
-async def get_all_hen_health_scores(request: Request):
-    """Get health scores for all active hens"""
-    user_id = await require_user_id(request)
-    
-    hens = await db.hens.find({
-        "user_id": user_id, 
-        "is_active": True,
-        "status": "active"
-    }, {"_id": 0, "id": 1, "name": 1}).to_list(100)
-    
-    scores = []
-    for hen in hens:
-        try:
-            # Create a mock request object for the inner function
-            score_data = await get_hen_health_score(hen['id'], request)
-            scores.append(score_data)
-        except Exception as e:
-            logger.error(f"Error calculating health score for hen {hen['id']}: {e}")
-            continue
-    
-    # Sort by score ascending (worst first for attention)
-    scores.sort(key=lambda x: x['health_score'])
-    
-    return {
-        "scores": scores,
-        "average_score": round(sum(s['health_score'] for s in scores) / len(scores)) if scores else 0,
-        "hens_needing_attention": len([s for s in scores if s['health_score'] < 60])
-    }
-
 # ============ HEALTH LOG ENDPOINTS ============
 @api_router.post("/health-logs", response_model=HealthLog)
 async def create_health_log(log: HealthLogCreate, request: Request):
