@@ -73,6 +73,22 @@ export const RevenueCatPaywall: React.FC<PaywallProps> = ({
       
       if (currentOffering) {
         setOffering(currentOffering);
+        
+        // DEV: Log package pricing details for debugging
+        if (__DEV__) {
+          console.log('=== RevenueCat Pricing Debug ===');
+          currentOffering.availablePackages.forEach((pkg) => {
+            const product = pkg.product;
+            console.log(`Package: ${pkg.identifier}`);
+            console.log(`  ProductId: ${product.identifier}`);
+            console.log(`  Price: ${product.priceString}`);
+            console.log(`  Currency: ${product.currencyCode}`);
+            console.log(`  Price (raw): ${product.price}`);
+            console.log('---');
+          });
+          console.log('================================');
+        }
+        
         // Select yearly by default (best value)
         const yearlyPkg = currentOffering.annual || currentOffering.availablePackages.find(p => p.packageType === 'ANNUAL');
         const monthlyPkg = currentOffering.monthly || currentOffering.availablePackages.find(p => p.packageType === 'MONTHLY');
