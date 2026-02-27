@@ -775,6 +775,87 @@ export default function AdminPanel() {
           <View style={{ height: 40 }} />
         </ScrollView>
       )}
+      
+      {/* Premium Management Modal */}
+      <Modal
+        visible={showPremiumModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowPremiumModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 16 }}>
+              Hantera Premium
+            </Text>
+            
+            {selectedUserForPremium && (
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ color: colors.textSecondary }}>Användare:</Text>
+                <Text style={{ color: colors.text, fontWeight: '600' }}>
+                  {selectedUserForPremium.name || selectedUserForPremium.email}
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                  Status: {selectedUserForPremium.is_premium ? 'Premium aktiv' : 'Gratis'}
+                </Text>
+              </View>
+            )}
+            
+            <Text style={{ color: colors.text, marginBottom: 8, fontWeight: '600' }}>Välj åtgärd:</Text>
+            
+            <View style={{ gap: 8 }}>
+              <TouchableOpacity
+                style={{ backgroundColor: '#22c55e20', padding: 12, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
+                onPress={() => handleUpdatePremium(7)}
+              >
+                <Ionicons name="time" size={20} color="#22c55e" />
+                <Text style={{ color: '#22c55e', marginLeft: 8, fontWeight: '600' }}>+7 dagar</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={{ backgroundColor: '#22c55e20', padding: 12, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
+                onPress={() => handleUpdatePremium(30)}
+              >
+                <Ionicons name="calendar" size={20} color="#22c55e" />
+                <Text style={{ color: '#22c55e', marginLeft: 8, fontWeight: '600' }}>+30 dagar</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={{ backgroundColor: '#22c55e20', padding: 12, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
+                onPress={() => handleUpdatePremium(365)}
+              >
+                <Ionicons name="calendar-outline" size={20} color="#22c55e" />
+                <Text style={{ color: '#22c55e', marginLeft: 8, fontWeight: '600' }}>+1 år</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={{ backgroundColor: '#f59e0b20', padding: 12, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
+                onPress={() => handleUpdatePremium(-1)}
+              >
+                <Ionicons name="infinite" size={20} color="#f59e0b" />
+                <Text style={{ color: '#f59e0b', marginLeft: 8, fontWeight: '600' }}>För alltid (Lifetime)</Text>
+              </TouchableOpacity>
+              
+              {selectedUserForPremium?.is_premium && (
+                <TouchableOpacity
+                  style={{ backgroundColor: '#ef444420', padding: 12, borderRadius: 8, flexDirection: 'row', alignItems: 'center' }}
+                  onPress={() => handleUpdatePremium(0)}
+                >
+                  <Ionicons name="close-circle" size={20} color="#ef4444" />
+                  <Text style={{ color: '#ef4444', marginLeft: 8, fontWeight: '600' }}>Ta bort Premium</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            
+            <TouchableOpacity
+              style={{ marginTop: 16, padding: 12, alignItems: 'center' }}
+              onPress={() => setShowPremiumModal(false)}
+            >
+              <Text style={{ color: colors.textSecondary }}>Avbryt</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
