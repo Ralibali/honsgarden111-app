@@ -191,6 +191,15 @@ export default function HensScreen() {
         });
         setHealthLogs(logsMap);
       }
+      
+      if (scoresRes.ok) {
+        const scoresData = await scoresRes.json();
+        const scoresMap: Record<string, any> = {};
+        scoresData.scores?.forEach((score: any) => {
+          scoresMap[score.hen_id] = score;
+        });
+        setHealthScores(scoresMap);
+      }
     } catch (error) {
       console.error('Failed to load data:', error);
     }
