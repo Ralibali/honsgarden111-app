@@ -888,6 +888,108 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
         
+        {/* Community Preview Section */}
+        <View style={styles.card}>
+          <TouchableOpacity 
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}
+            onPress={() => router.push('/(tabs)/community')}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.cardTitle}>💬 Community</Text>
+              <View style={{
+                backgroundColor: colors.primary + '20',
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+                borderRadius: 10,
+                marginLeft: 8,
+              }}>
+                <Text style={{ fontSize: 11, color: colors.primary, fontWeight: '600' }}>
+                  {isSv ? 'Nytt!' : 'New!'}
+                </Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 13, color: colors.primary, marginRight: 4 }}>
+                {isSv ? 'Visa alla' : 'View all'}
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+            </View>
+          </TouchableOpacity>
+          
+          {communityPosts.length > 0 ? (
+            <View>
+              {communityPosts.slice(0, 2).map((post: any, idx: number) => (
+                <TouchableOpacity 
+                  key={post.id || idx}
+                  style={{
+                    backgroundColor: colors.background,
+                    borderRadius: 12,
+                    padding: 12,
+                    marginBottom: idx < 1 ? 8 : 0,
+                  }}
+                  onPress={() => router.push('/(tabs)/community')}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                    <View style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      backgroundColor: colors.primary + '30',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 8,
+                    }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary }}>
+                        {(post.user_name || 'A').charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>
+                      {post.user_name || (isSv ? 'Anonym' : 'Anonymous')}
+                    </Text>
+                  </View>
+                  <Text 
+                    style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}
+                    numberOfLines={2}
+                  >
+                    {post.content}
+                  </Text>
+                  {post.replies_count > 0 && (
+                    <Text style={{ fontSize: 11, color: colors.textSecondary, marginTop: 6 }}>
+                      💬 {post.replies_count} {isSv ? 'svar' : 'replies'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : (
+            <TouchableOpacity 
+              style={{
+                backgroundColor: colors.background,
+                borderRadius: 12,
+                padding: 20,
+                alignItems: 'center',
+              }}
+              onPress={() => router.push('/(tabs)/community')}
+            >
+              <Ionicons name="chatbubbles-outline" size={32} color={colors.textSecondary} />
+              <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 8, textAlign: 'center' }}>
+                {isSv ? 'Var först med att starta en diskussion!' : 'Be the first to start a discussion!'}
+              </Text>
+              <View style={{
+                backgroundColor: colors.primary,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 20,
+                marginTop: 12,
+              }}>
+                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>
+                  {isSv ? 'Skriv ett inlägg' : 'Write a post'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        </View>
+        
         {/* Weather Card */}
         {weather && (
           <TouchableOpacity 
