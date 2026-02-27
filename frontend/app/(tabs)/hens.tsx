@@ -43,7 +43,14 @@ interface Hen {
   last_seen?: string;
   last_seen_warning_days: number;
   created_at: string;
+  hen_type?: 'hen' | 'rooster';
 }
+
+// Hen type options
+const HEN_TYPE_OPTIONS = [
+  { value: 'hen', label: 'Höna', emoji: '🐔' },
+  { value: 'rooster', label: 'Tupp', emoji: '🐓' },
+];
 
 interface HealthLog {
   id: string;
