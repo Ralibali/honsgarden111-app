@@ -1051,6 +1051,7 @@ CATEGORY_LABELS = {
 class CommunityPostCreate(BaseModel):
     content: str
     category: str = "other"
+    include_stats: bool = False  # Include user's coop stats
 
 class CommunityPost(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -1063,6 +1064,8 @@ class CommunityPost(BaseModel):
     liked_by: List[str] = []
     is_hidden: bool = False  # Admin can hide posts
     hidden_reason: Optional[str] = None
+    # Optional coop stats
+    coop_stats: Optional[dict] = None  # {"coop_name": "", "hen_count": 5, "eggs_this_week": 20, "avg_per_day": 2.8}
 
 # Forbidden patterns for content moderation (GDPR, phone numbers, etc.)
 FORBIDDEN_PATTERNS = [
