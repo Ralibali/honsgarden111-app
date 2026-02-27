@@ -817,7 +817,7 @@ export default function SettingsScreen() {
             >
               <Ionicons name="gift-outline" size={20} color="#22c55e" />
               <Text style={[styles.logoutText, { color: '#22c55e' }]}>
-                {isSv ? 'Bjud in vänner – få 7 dagars Premium!' : 'Invite friends – get 7 days Premium!'}
+                {isSv ? 'Bjud in vänner – få sju dagars Premium!' : 'Invite friends – get 7 days Premium!'}
               </Text>
             </TouchableOpacity>
             
