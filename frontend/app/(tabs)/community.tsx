@@ -39,6 +39,13 @@ interface CommunityPost {
     avg_per_day: number;
     productivity: number;
   };
+  // Sponsored post fields
+  is_sponsored?: boolean;
+  title?: string;
+  affiliate_url?: string;
+  discount_code?: string;
+  discount_percent?: number;
+  image_url?: string;
 }
 
 interface Category {
