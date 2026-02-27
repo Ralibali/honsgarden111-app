@@ -5225,9 +5225,9 @@ async def get_daily_tip(request: Request):
     """Get today's tip from Agda based on season, weather and flock data"""
     user_id = await require_user_id(request)
     
-    # Get current context
-    current_month = datetime.now().month
-    today = datetime.now().strftime('%Y-%m-%d')
+    # Get current context using Stockholm time
+    current_month = now_stockholm().month
+    today = today_str_stockholm()
     
     # Filter tips by season
     relevant_tips = []
@@ -5263,7 +5263,8 @@ async def get_daily_tip(request: Request):
         "tip": selected_tip["tip"],
         "category": selected_tip["category"],
         "weather_tip": weather_tip,
-        "signature": "💛 Kacklande hälsningar, Agda 🐔"
+        "signature": "💛 Kacklande hälsningar, Agda 🐔",
+        "used_fallback": False  # Daily tips are pre-defined, not AI-generated
     }
 
 
