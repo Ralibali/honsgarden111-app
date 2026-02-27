@@ -1742,18 +1742,77 @@ export default function HomeScreen() {
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             padding: 20,
-            maxHeight: '80%',
+            maxHeight: '85%',
           }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>
-                {isSv ? 'Dagens sysslor' : "Today's Chores"}
-              </Text>
+            {/* Header */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ fontSize: 24, marginRight: 8 }}>🐔</Text>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>
+                  {isSv ? 'Dagens sysslor' : "Today's Chores"}
+                </Text>
+              </View>
               <TouchableOpacity onPress={() => setShowChoresModal(false)}>
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
-            <ScrollView style={{ maxHeight: 400 }}>
+            {/* Motivational subtitle */}
+            <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 16 }}>
+              {isSv 
+                ? 'Bocka av dina sysslor för att hålla dina hönor glada och friska!' 
+                : 'Check off tasks to keep your hens happy and healthy!'}
+            </Text>
+            
+            {/* Progress indicator */}
+            {dailyChores.length > 0 && (
+              <View style={{ 
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                backgroundColor: colors.primary + '15',
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 16,
+              }}>
+                <View style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: colors.primary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 12,
+                }}>
+                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+                    {dailyChores.filter((c: any) => c.completed).length}/{dailyChores.length}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontWeight: '600', color: colors.text }}>
+                    {dailyChores.filter((c: any) => c.completed).length === dailyChores.length
+                      ? (isSv ? '🎉 Alla klara!' : '🎉 All done!')
+                      : (isSv ? 'Fortsätt så!' : 'Keep going!')}
+                  </Text>
+                  <View style={{ 
+                    height: 6, 
+                    backgroundColor: colors.border, 
+                    borderRadius: 3, 
+                    marginTop: 6,
+                    overflow: 'hidden',
+                  }}>
+                    <View style={{
+                      height: '100%',
+                      width: `${(dailyChores.filter((c: any) => c.completed).length / dailyChores.length) * 100}%`,
+                      backgroundColor: colors.primary,
+                      borderRadius: 3,
+                    }} />
+                  </View>
+                </View>
+              </View>
+            )}
+            
+            {/* Chores list */}
+            <ScrollView style={{ maxHeight: 320 }}>
               {dailyChores.map((chore: any) => (
                 <TouchableOpacity
                   key={chore.id}
@@ -1803,6 +1862,56 @@ export default function HomeScreen() {
                 </Text>
               )}
             </ScrollView>
+            
+            {/* Auto-popup toggle - only show after first time */}
+            {hasSeenChoresFirstTime && (
+              <View style={{ 
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                backgroundColor: colors.background,
+                borderRadius: 12,
+                padding: 14,
+                marginTop: 12,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}>
+                <View style={{ flex: 1, marginRight: 12 }}>
+                  <Text style={{ fontWeight: '600', color: colors.text, fontSize: 14 }}>
+                    {isSv ? 'Visa automatiskt vid start' : 'Show automatically on startup'}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
+                    {isSv 
+                      ? 'Du får fortfarande push-notiser!' 
+                      : 'You will still get push notifications!'}
+                  </Text>
+                </View>
+                <Switch
+                  value={choresAutoPopupEnabled}
+                  onValueChange={handleChoresAutoPopupToggle}
+                  trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                  thumbColor={choresAutoPopupEnabled ? colors.primary : '#f4f3f4'}
+                />
+              </View>
+            )}
+            
+            {/* Close button */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 12,
+                paddingVertical: 14,
+                alignItems: 'center',
+                marginTop: 16,
+              }}
+              onPress={() => setShowChoresModal(false)}
+            >
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+                {dailyChores.filter((c: any) => c.completed).length === dailyChores.length
+                  ? (isSv ? 'Bra jobbat!' : 'Great job!')
+                  : (isSv ? 'Stäng' : 'Close')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
