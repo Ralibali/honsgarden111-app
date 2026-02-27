@@ -564,7 +564,17 @@ export default function StatisticsScreen() {
         
         {/* Daily Chart */}
         <View style={styles.chartCard}>
-          <Text style={styles.cardTitle}>{t('statistics.dailyProduction')}</Text>
+          <View style={styles.chartHeader}>
+            <Text style={styles.cardTitle}>{t('statistics.dailyProduction')}</Text>
+            {bestDay && (
+              <View style={styles.bestDayBadge}>
+                <Ionicons name="trophy" size={14} color={colors.warning} />
+                <Text style={styles.bestDayText}>
+                  Bäst: {bestDay.date.split('-')[2]}/{bestDay.date.split('-')[1]} ({bestDay.eggs} ägg)
+                </Text>
+              </View>
+            )}
+          </View>
           {monthStats.daily_breakdown.length === 0 ? (
             <View style={styles.emptyChart}>
               <Ionicons name="egg-outline" size={48} color={colors.textMuted} />
@@ -574,22 +584,36 @@ export default function StatisticsScreen() {
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.barChart}>
-                {monthStats.daily_breakdown.slice().reverse().map((day) => (
-                  <View key={day.date} style={styles.barContainer}>
-                    <Text style={styles.barValue}>{day.eggs}</Text>
-                    <View style={styles.barWrapper}>
-                      <View
-                        style={[
-                          styles.bar,
-                          { height: Math.max((day.eggs / maxEggs) * 100, 4), backgroundColor: colors.primary }
-                        ]}
-                      />
+                {monthStats.daily_breakdown.slice().reverse().map((day, index, arr) => {
+                  const prevDay = arr[index + 1];
+                  const trend = prevDay ? (day.eggs > prevDay.eggs ? 'up' : day.eggs < prevDay.eggs ? 'down' : 'same') : 'same';
+                  const barHeight = maxEggs > 0 ? Math.max((day.eggs / maxEggs) * 110, 10) : 10;
+                  const isBest = bestDay && day.date === bestDay.date;
+                  
+                  return (
+                    <View key={day.date} style={styles.barContainer}>
+                      <View style={styles.trendIndicator}>
+                        {trend === 'up' && <Text style={[styles.trendArrow, {color: colors.success}]}>↑</Text>}
+                        {trend === 'down' && <Text style={[styles.trendArrow, {color: colors.error}]}>↓</Text>}
+                      </View>
+                      <Text style={[styles.barValue, isBest && {color: colors.warning, fontWeight: '700'}]}>{day.eggs}</Text>
+                      <View style={styles.barWrapper}>
+                        <View
+                          style={[
+                            styles.bar,
+                            { 
+                              height: barHeight, 
+                              backgroundColor: isBest ? colors.warning : colors.primary 
+                            }
+                          ]}
+                        />
+                      </View>
+                      <Text style={styles.barLabel}>
+                        {day.date.split('-')[2]}
+                      </Text>
                     </View>
-                    <Text style={styles.barLabel}>
-                      {day.date.split('-')[2]}
-                    </Text>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             </ScrollView>
           )}
