@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { identifyUser as identifyRevenueCatUser, logoutUser as logoutRevenueCatUser } from '../services/revenuecat';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
