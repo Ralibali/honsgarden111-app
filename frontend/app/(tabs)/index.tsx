@@ -733,8 +733,10 @@ export default function HomeScreen() {
             {isPremium && weather.tips && weather.tips.length > 0 && (
               <View style={styles.weatherTips}>
                 <Text style={styles.weatherTipsTitle}>{isSv ? 'Tips för idag:' : 'Tips for today:'}</Text>
-                {weather.tips.slice(0, 2).map((tip: string, idx: number) => (
-                  <Text key={idx} style={styles.weatherTip}>💡 {tip}</Text>
+                {weather.tips.slice(0, 2).map((tip: any, idx: number) => (
+                  <Text key={idx} style={styles.weatherTip}>
+                    {typeof tip === 'string' ? `💡 ${tip}` : tip.message || '💡 Tips'}
+                  </Text>
                 ))}
               </View>
             )}
