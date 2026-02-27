@@ -9,6 +9,7 @@ export interface ThemeColors {
   background: string;
   surface: string;
   surfaceSecondary: string;
+  card: string;
   
   // Text
   text: string;
