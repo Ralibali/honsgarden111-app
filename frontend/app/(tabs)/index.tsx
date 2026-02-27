@@ -42,7 +42,7 @@ export default function HomeScreen() {
     loading,
   } = useAppStore();
   
-  const { isPremium } = usePremiumStore();
+  const { isPremium, isTrial, daysRemaining, trialExpiryWarning } = usePremiumStore();
   const { colors, isDark } = useThemeStore();
   
   const [refreshing, setRefreshing] = useState(false);
@@ -50,6 +50,14 @@ export default function HomeScreen() {
   const [eggCount, setEggCount] = useState('');
   const [showUndo, setShowUndo] = useState(false);
   const [lastRegisteredCount, setLastRegisteredCount] = useState(0);
+  
+  // Trial expiry warning modal
+  const [showTrialWarning, setShowTrialWarning] = useState(false);
+  const [trialWarningDismissed, setTrialWarningDismissed] = useState(false);
+  
+  // Daily chores state
+  const [dailyChores, setDailyChores] = useState<any[]>([]);
+  const [showChoresModal, setShowChoresModal] = useState(false);
   
   // Data limits state
   const [dataLimits, setDataLimits] = useState<any>(null);
