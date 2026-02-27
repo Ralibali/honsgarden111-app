@@ -4887,6 +4887,66 @@ async def get_summary_statistics(request: Request):
     # Calculate month-over-month change
     egg_change_percent = round(((month_eggs - prev_month_eggs) / prev_month_eggs) * 100, 1) if prev_month_eggs > 0 else 0
     
+    # Calculate Week's Best Hen
+    week_ago = (today - timedelta(days=7)).isoformat()
+    week_eggs = await db.egg_records.find({
+        "user_id": user_id, 
+        "date": {"$gte": week_ago},
+        "hen_id": {"$exists": True, "$ne": None}
+    }, {"_id": 0, "hen_id": 1, "count": 1}).to_list(1000)
+    
+    hen_egg_counts = {}
+    for egg in week_eggs:
+        hen_id = egg.get('hen_id')
+        if hen_id:
+            hen_egg_counts[hen_id] = hen_egg_counts.get(hen_id, 0) + egg.get('count', 0)
+    
+    best_hen_week = None
+    if hen_egg_counts:
+        best_hen_id = max(hen_egg_counts, key=hen_egg_counts.get)
+        best_hen_doc = await db.hens.find_one({"id": best_hen_id}, {"_id": 0, "id": 1, "name": 1})
+        if best_hen_doc:
+            best_hen_week = {
+                "id": best_hen_id,
+                "name": best_hen_doc.get("name", "Okänd höna"),
+                "eggs_this_week": hen_egg_counts[best_hen_id]
+            }
+    
+    # Calculate Community Average Comparison
+    # Get aggregate stats from all users
+    all_users_eggs = await db.egg_records.find(
+        {"date": {"$gte": month_start}},
+        {"_id": 0, "user_id": 1, "count": 1}
+    ).to_list(100000)
+    
+    # Group by user and calculate their monthly totals
+    user_monthly_totals = {}
+    for egg in all_users_eggs:
+        uid = egg.get('user_id')
+        user_monthly_totals[uid] = user_monthly_totals.get(uid, 0) + egg.get('count', 0)
+    
+    community_avg = 0
+    user_rank = 0
+    total_users = len(user_monthly_totals)
+    
+    if total_users > 1:
+        community_avg = round(sum(user_monthly_totals.values()) / total_users, 1)
+        # Rank users
+        sorted_users = sorted(user_monthly_totals.items(), key=lambda x: x[1], reverse=True)
+        for rank, (uid, eggs) in enumerate(sorted_users, 1):
+            if uid == user_id:
+                user_rank = rank
+                break
+    
+    community_comparison = {
+        "your_eggs_this_month": month_eggs,
+        "community_avg": community_avg,
+        "total_users": total_users,
+        "your_rank": user_rank,
+        "percentile": round((1 - (user_rank / total_users)) * 100) if total_users > 0 and user_rank > 0 else 0,
+        "vs_avg_percent": round(((month_eggs - community_avg) / community_avg) * 100, 1) if community_avg > 0 else 0
+    }
+    
     return {
         "hen_count": hen_count,
         "total_eggs_all_time": total_eggs,
@@ -4895,6 +4955,8 @@ async def get_summary_statistics(request: Request):
         "net_all_time": total_sales - total_costs,
         "streak": streak,
         "average_eggs_per_day": avg_eggs_per_day,
+        "best_hen_week": best_hen_week,
+        "community_comparison": community_comparison,
         "this_month": {
             "eggs": month_eggs,
             "costs": month_costs,
