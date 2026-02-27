@@ -71,6 +71,11 @@ export default function AdminPanel() {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [isSelectMode, setIsSelectMode] = useState(false);
   
+  // Premium management state
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [selectedUserForPremium, setSelectedUserForPremium] = useState<User | null>(null);
+  const [premiumDays, setPremiumDays] = useState('30');
+  
   const [isAdmin, setIsAdmin] = useState(false);
 
   const checkAdmin = async () => {
