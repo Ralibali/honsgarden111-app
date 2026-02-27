@@ -1,6 +1,6 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { View, ActivityIndicator, Platform } from 'react-native';
 import { useFonts } from 'expo-font';
 import { 
@@ -16,9 +16,12 @@ import {
   Inter_700Bold 
 } from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePremiumStore } from '../src/store/premiumStore';
 import { useThemeStore } from '../src/store/themeStore';
 import { useAuthStore } from '../src/store/authStore';
+
+const ONBOARDING_KEY = '@honsgarden_onboarding_complete';
 
 // Keep splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -27,6 +30,9 @@ export default function RootLayout() {
   const { initializePremium } = usePremiumStore();
   const { initializeTheme, isDark, colors } = useThemeStore();
   const { checkAuth, isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const router = useRouter();
+  const segments = useSegments();
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
   
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_400Regular,
@@ -50,11 +56,44 @@ export default function RootLayout() {
       }
     }
     
+    // Check if user has seen onboarding
+    const checkOnboarding = async () => {
+      try {
+        const value = await AsyncStorage.getItem(ONBOARDING_KEY);
+        setHasSeenOnboarding(value === 'true');
+      } catch (e) {
+        setHasSeenOnboarding(true); // Default to skipping onboarding on error
+      }
+    };
+    
+    checkOnboarding();
+    
     // Initialize theme and premium status on app launch
     initializeTheme();
     initializePremium();
     checkAuth();
   }, []);
+  
+  // Handle navigation based on auth state and onboarding
+  useEffect(() => {
+    if (hasSeenOnboarding === null || authLoading) return;
+    
+    const inAuthGroup = segments[0] === '(auth)';
+    const inOnboarding = segments[0] === 'onboarding';
+    
+    // If hasn't seen onboarding and not already there, go to onboarding
+    if (!hasSeenOnboarding && !inOnboarding) {
+      router.replace('/onboarding');
+    }
+    // If seen onboarding but not authenticated and not in auth, go to login
+    else if (hasSeenOnboarding && !isAuthenticated && !inAuthGroup && !inOnboarding) {
+      router.replace('/(auth)/login');
+    }
+    // If authenticated and in auth group, go to tabs
+    else if (isAuthenticated && inAuthGroup) {
+      router.replace('/(tabs)');
+    }
+  }, [hasSeenOnboarding, isAuthenticated, authLoading, segments]);
   
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
