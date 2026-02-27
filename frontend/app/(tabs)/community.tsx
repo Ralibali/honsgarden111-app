@@ -672,6 +672,36 @@ export default function CommunityScreen() {
             />
             <Text style={styles.charCount}>{newPostContent.length}/1000</Text>
             
+            {/* Include my stats toggle */}
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: includeMyStats ? colors.primary + '20' : colors.background,
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 16,
+                borderWidth: 1,
+                borderColor: includeMyStats ? colors.primary : colors.border,
+              }}
+              onPress={() => setIncludeMyStats(!includeMyStats)}
+            >
+              <Ionicons 
+                name={includeMyStats ? "checkbox" : "square-outline"} 
+                size={22} 
+                color={includeMyStats ? colors.primary : colors.textSecondary} 
+              />
+              <View style={{ marginLeft: 12, flex: 1 }}>
+                <Text style={{ color: colors.text, fontWeight: '600', fontSize: 14 }}>
+                  {isSv ? 'Dela min hönsgårds statistik' : 'Share my coop stats'}
+                </Text>
+                <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>
+                  {isSv ? 'Visar antal höns, ägg/vecka och produktivitet' : 'Shows hen count, eggs/week and productivity'}
+                </Text>
+              </View>
+              <Ionicons name="stats-chart" size={20} color={includeMyStats ? colors.primary : colors.textMuted} />
+            </TouchableOpacity>
+            
             {/* Buttons */}
             <View style={styles.modalButtons}>
               <TouchableOpacity
