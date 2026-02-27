@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -15,33 +15,48 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { usePremiumStore } from '../src/store/premiumStore';
 import i18n from '../src/i18n';
+import { RevenueCatPaywall } from '../src/components/RevenueCatPaywall';
 
-// RevenueCat imports - kept as backup but not used for primary flow
-// Users are redirected to web for subscription management
-
-const MONTHLY_PRICE = '19 kr';
-const YEARLY_PRICE = '149 kr';
-const YEARLY_SAVINGS = 35;
-
-// Web premium URL - users are redirected here for subscription management
+// Web premium URL - only used for Android and Web
 const PREMIUM_WEB_URL = 'https://honsgarden.se/premium';
 
 export default function PaywallScreen() {
   const router = useRouter();
-  const { restorePurchases, checkPremiumStatus, loading: storeLoading } = usePremiumStore();
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const { checkPremiumStatus, loading: storeLoading } = usePremiumStore();
   
   const t = i18n.t.bind(i18n);
   const isSv = i18n.locale.startsWith('sv');
   
-  // Open web browser for premium subscription
+  // Determine if we should use native IAP
+  // iOS = RevenueCat (App Store)
+  // Android & Web = Stripe (Web redirect)
+  const isIOS = Platform.OS === 'ios';
+  const useNativeIAP = isIOS;
+  
+  // Handle successful purchase - navigate back
+  const handlePurchaseComplete = () => {
+    router.back();
+  };
+  
+  // For iOS: Use RevenueCatPaywall component
+  if (useNativeIAP) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <RevenueCatPaywall 
+          onClose={() => router.back()}
+          onPurchaseComplete={handlePurchaseComplete}
+        />
+      </SafeAreaView>
+    );
+  }
+  
+  // For Android & Web: Show web redirect flow
   const handleUpgrade = async () => {
-    // Show confirmation dialog
     Alert.alert(
       isSv ? 'Prenumerera via webben' : 'Subscribe via web',
       isSv 
-        ? 'Du kommer att omdirigeras till honsgarden.se för att hantera din prenumeration. Logga in med samma konto där.'
-        : 'You will be redirected to honsgarden.se to manage your subscription. Log in with the same account there.',
+        ? 'Du kommer att omdirigeras till honsgarden.se för att slutföra din prenumeration.'
+        : 'You will be redirected to honsgarden.se to complete your subscription.',
       [
         {
           text: isSv ? 'Avbryt' : 'Cancel',
@@ -50,7 +65,6 @@ export default function PaywallScreen() {
         {
           text: isSv ? 'Öppna webbsidan' : 'Open website',
           onPress: () => {
-            // Open the premium page in external browser
             Linking.openURL(PREMIUM_WEB_URL).catch((err) => {
               console.error('Failed to open URL:', err);
               Alert.alert(
@@ -67,7 +81,6 @@ export default function PaywallScreen() {
   };
   
   const handleRestore = async () => {
-    // Check premium status from backend (synced via database)
     await checkPremiumStatus();
     const { isPremium } = usePremiumStore.getState();
     
@@ -88,96 +101,14 @@ export default function PaywallScreen() {
   };
   
   const features = [
-    {
-      key: 'ai-advisor',
-      icon: 'sparkles',
-      title: '🤖 AI-rådgivare "Agda"',
-      description: 'Personlig hönsgårdsrådgivning baserat på din data',
-      premium: true,
-    },
-    {
-      key: 'daily-report',
-      icon: 'document-text',
-      title: '📋 AI Dagsrapport',
-      description: 'AI-genererad daglig analys av din hönsgård',
-      premium: true,
-    },
-    {
-      key: 'forecast',
-      icon: 'analytics',
-      title: '📈 7-dagars äggprognos',
-      description: 'Förutsäg hur många ägg du kan förvänta dig',
-      premium: true,
-    },
-    {
-      key: 'weather',
-      icon: 'cloudy',
-      title: '🌤️ Vädertips',
-      description: 'Anpassade hönsskötsel-tips baserat på väder',
-      premium: true,
-    },
-    {
-      key: 'health',
-      icon: 'medkit',
-      title: '🩺 Hälsologg per höna',
-      description: 'Logga och följ hälsan för varje höna',
-      premium: true,
-    },
-    {
-      key: 'hatching',
-      icon: 'egg',
-      title: '🐣 Kläckningsmodul',
-      description: 'Hantera ruvning och kläckning',
-      premium: true,
-    },
-    {
-      key: 'feed',
-      icon: 'leaf',
-      title: '🌾 Foderhantering',
-      description: 'Spåra foderlager och förbrukning',
-      premium: true,
-    },
-    {
-      key: 'alerts',
-      icon: 'alert-circle',
-      title: '⚠️ Avvikelsedetektion',
-      description: 'Varning när hönor slutar värpa',
-      premium: true,
-    },
-    {
-      key: 'economy',
-      icon: 'cash',
-      title: '💰 Ekonomijämförelse',
-      description: 'Jämför vinst månad för månad',
-      premium: true,
-    },
-    {
-      key: 'history',
-      icon: 'time',
-      title: '📈 Obegränsad historik',
-      description: 'Spara all statistik för alltid',
-      premium: true,
-    },
-    {
-      key: 'reminders',
-      icon: 'notifications',
-      title: '📧 E-postpåminnelser',
-      description: 'Daglig påminnelse att registrera ägg',
-      premium: true,
-    },
-    {
-      key: 'priority',
-      icon: 'star',
-      title: '⭐ Prioriterad support',
-      description: 'Snabbare hjälp när du behöver det',
-      premium: true,
-    },
+    { icon: 'sparkles', title: 'AI-rådgivare "Agda"', description: 'Personlig hönsgårdsrådgivning' },
+    { icon: 'document-text', title: 'AI Dagsrapport', description: 'Daglig analys av din hönsgård' },
+    { icon: 'analytics', title: '7-dagars äggprognos', description: 'Förutsäg äggproduktionen' },
+    { icon: 'cloudy', title: 'Vädertips', description: 'Anpassade hönsskötsel-tips' },
+    { icon: 'medkit', title: 'Hälsologg', description: 'Följ hälsan för varje höna' },
+    { icon: 'egg', title: 'Kläckningsmodul', description: 'Hantera ruvning och kläckning' },
+    { icon: 'time', title: 'Obegränsad historik', description: 'Spara all statistik för alltid' },
   ];
-  
-  // Get prices - always use SEK
-  const getPrice = (plan: 'monthly' | 'yearly'): string => {
-    return plan === 'yearly' ? YEARLY_PRICE : MONTHLY_PRICE;
-  };
   
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -193,15 +124,19 @@ export default function PaywallScreen() {
             <Ionicons name="star" size={48} color="#FFD93D" />
           </View>
           <Text style={styles.title}>{t('premium.title')}</Text>
-          <Text style={styles.subtitle}>{t('premium.subtitle')}</Text>
+          <Text style={styles.subtitle}>
+            {isSv ? 'Lås upp alla funktioner' : 'Unlock all features'}
+          </Text>
         </View>
         
         {/* Features List */}
         <View style={styles.featuresCard}>
-          <Text style={styles.featuresTitle}>Premium innehåller:</Text>
+          <Text style={styles.featuresTitle}>
+            {isSv ? 'Premium innehåller:' : 'Premium includes:'}
+          </Text>
           
-          {features.map((feature) => (
-            <View key={feature.key} style={styles.featureRow}>
+          {features.map((feature, index) => (
+            <View key={index} style={styles.featureRow}>
               <View style={styles.featureIconContainer}>
                 <Ionicons name={feature.icon as any} size={22} color="#fbbf24" />
               </View>
@@ -213,55 +148,22 @@ export default function PaywallScreen() {
           ))}
         </View>
         
-        {/* Plan Selection */}
-        <View style={styles.plansContainer}>
-          <TouchableOpacity
-            style={[
-              styles.planCard,
-              selectedPlan === 'yearly' && styles.planCardSelected,
-            ]}
-            onPress={() => setSelectedPlan('yearly')}
-          >
-            <View style={styles.savingsBadge}>
-              <Text style={styles.savingsText}>
-                Spara {YEARLY_SAVINGS}%
-              </Text>
+        {/* Pricing */}
+        <View style={styles.pricingCard}>
+          <View style={styles.priceRow}>
+            <View style={styles.priceOption}>
+              <Text style={styles.priceLabel}>{isSv ? 'Månatlig' : 'Monthly'}</Text>
+              <Text style={styles.priceAmount}>19 kr</Text>
             </View>
-            <View style={styles.planRadio}>
-              <View style={[
-                styles.radioOuter,
-                selectedPlan === 'yearly' && styles.radioOuterSelected,
-              ]}>
-                {selectedPlan === 'yearly' && <View style={styles.radioInner} />}
+            <View style={[styles.priceOption, styles.priceOptionHighlight]}>
+              <View style={styles.savingsBadge}>
+                <Text style={styles.savingsText}>{isSv ? 'Spara 35%' : 'Save 35%'}</Text>
               </View>
+              <Text style={styles.priceLabel}>{isSv ? 'Årlig' : 'Yearly'}</Text>
+              <Text style={styles.priceAmount}>149 kr</Text>
+              <Text style={styles.priceSubtext}>~12 kr/{isSv ? 'mån' : 'mo'}</Text>
             </View>
-            <View style={styles.planInfo}>
-              <Text style={styles.planName}>Årsprenumeration</Text>
-              <Text style={styles.planPrice}>{getPrice('yearly')}{t('common.perYear')}</Text>
-              <Text style={styles.planMonthly}>(~12 kr{t('common.perMonth')})</Text>
-            </View>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[
-              styles.planCard,
-              selectedPlan === 'monthly' && styles.planCardSelected,
-            ]}
-            onPress={() => setSelectedPlan('monthly')}
-          >
-            <View style={styles.planRadio}>
-              <View style={[
-                styles.radioOuter,
-                selectedPlan === 'monthly' && styles.radioOuterSelected,
-              ]}>
-                {selectedPlan === 'monthly' && <View style={styles.radioInner} />}
-              </View>
-            </View>
-            <View style={styles.planInfo}>
-              <Text style={styles.planName}>Månadsprenumeration</Text>
-              <Text style={styles.planPrice}>{getPrice('monthly')}{t('common.perMonth')}</Text>
-            </View>
-          </TouchableOpacity>
+          </View>
         </View>
         
         {/* CTA Button */}
@@ -271,10 +173,10 @@ export default function PaywallScreen() {
           disabled={storeLoading}
         >
           {storeLoading ? (
-            <ActivityIndicator color="#FFF" />
+            <ActivityIndicator color="#000" />
           ) : (
             <>
-              <Ionicons name="globe-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />
+              <Ionicons name="globe-outline" size={20} color="#000" style={{ marginRight: 8 }} />
               <Text style={styles.ctaButtonText}>
                 {isSv ? 'Prenumerera via honsgarden.se' : 'Subscribe via honsgarden.se'}
               </Text>
@@ -282,17 +184,17 @@ export default function PaywallScreen() {
           )}
         </TouchableOpacity>
         
-        {/* Info notice about web subscription */}
+        {/* Info notice */}
         <View style={styles.webNotice}>
           <Ionicons name="information-circle" size={18} color="#8E8E93" />
           <Text style={styles.webNoticeText}>
             {isSv 
-              ? 'Prenumerationen hanteras via vår hemsida för enklare betalning och hantering.'
-              : 'Subscription is managed via our website for easier payment and management.'}
+              ? 'På Android hanteras betalning via vår webbplats med Stripe för enklare hantering.'
+              : 'On Android, payment is handled via our website with Stripe for easier management.'}
           </Text>
         </View>
         
-        {/* Restore purchases / Check status */}
+        {/* Restore */}
         <TouchableOpacity 
           style={styles.restoreButton} 
           onPress={handleRestore} 
@@ -303,7 +205,7 @@ export default function PaywallScreen() {
           </Text>
         </TouchableOpacity>
         
-        {/* Privacy & Terms links */}
+        {/* Legal Links */}
         <View style={styles.legalLinks}>
           <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy')}>
             <Text style={styles.legalLinkText}>{isSv ? 'Integritetspolicy' : 'Privacy Policy'}</Text>
@@ -365,19 +267,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
   },
-  featuresHeader: {
-    flexDirection: 'row',
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#2C2C2E',
-    marginBottom: 8,
-  },
-  featureColumn: {
-    flex: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   featuresTitle: {
     fontSize: 16,
     fontWeight: '600',
@@ -414,81 +303,62 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     lineHeight: 18,
   },
-  plansContainer: {
-    gap: 12,
-    marginBottom: 24,
-  },
-  planCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  pricingCard: {
     backgroundColor: '#1C1C1E',
     borderRadius: 16,
     padding: 16,
+    marginBottom: 24,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  priceOption: {
+    flex: 1,
+    backgroundColor: '#2C2C2E',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+  },
+  priceOptionHighlight: {
+    backgroundColor: 'rgba(74, 222, 128, 0.1)',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: '#4ade80',
     position: 'relative',
   },
-  planCardSelected: {
-    borderColor: '#4CAF50',
+  priceLabel: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 4,
+  },
+  priceAmount: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFF',
+  },
+  priceSubtext: {
+    fontSize: 12,
+    color: '#4ade80',
+    marginTop: 4,
   },
   savingsBadge: {
     position: 'absolute',
     top: -10,
-    right: 12,
-    backgroundColor: '#4CAF50',
-    borderRadius: 12,
+    backgroundColor: '#4ade80',
     paddingHorizontal: 10,
     paddingVertical: 4,
+    borderRadius: 10,
   },
   savingsText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  planRadio: {
-    marginRight: 16,
-  },
-  radioOuter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#666',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioOuterSelected: {
-    borderColor: '#4CAF50',
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#4CAF50',
-  },
-  planInfo: {
-    flex: 1,
-  },
-  planName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFF',
-  },
-  planPrice: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    marginTop: 4,
-  },
-  planMonthly: {
-    fontSize: 13,
-    color: '#8E8E93',
-    marginTop: 2,
+    color: '#000',
+    fontSize: 11,
+    fontWeight: '700',
   },
   ctaButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#4ade80',
     borderRadius: 16,
     padding: 18,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 56,
@@ -497,25 +367,9 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   ctaButtonText: {
-    color: '#FFF',
+    color: '#000',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  cancelNotice: {
-    textAlign: 'center',
-    color: '#8E8E93',
-    fontSize: 14,
-    marginTop: 12,
-  },
-  restoreButton: {
-    alignItems: 'center',
-    padding: 16,
-    marginTop: 8,
-  },
-  restoreButtonText: {
-    color: '#4CAF50',
-    fontSize: 14,
-    fontWeight: '500',
   },
   webNotice: {
     flexDirection: 'row',
@@ -531,6 +385,16 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontSize: 13,
     lineHeight: 18,
+  },
+  restoreButton: {
+    alignItems: 'center',
+    padding: 16,
+    marginTop: 8,
+  },
+  restoreButtonText: {
+    color: '#4ade80',
+    fontSize: 14,
+    fontWeight: '500',
   },
   legalLinks: {
     flexDirection: 'row',
