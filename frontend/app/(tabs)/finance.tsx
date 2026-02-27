@@ -128,6 +128,26 @@ export default function FinanceScreen() {
   const totalSales = transactions.filter(t => t.type === 'sale').reduce((sum, t) => sum + t.amount, 0);
   const net = totalSales - totalCosts;
   
+  // Calculate advanced insights
+  const eggSales = transactions.filter(t => t.category === 'egg_sale');
+  const totalEggsSold = eggSales.reduce((sum, t) => sum + (t.quantity || 0), 0);
+  const totalEggRevenue = eggSales.reduce((sum, t) => sum + t.amount, 0);
+  const avgRevenuePerEgg = totalEggsSold > 0 ? totalEggRevenue / totalEggsSold : 0;
+  
+  // Most costly category this month
+  const costsByCategory = transactions
+    .filter(t => t.type === 'cost')
+    .reduce((acc, t) => {
+      acc[t.category] = (acc[t.category] || 0) + t.amount;
+      return acc;
+    }, {} as Record<string, number>);
+  
+  const mostCostlyCategory = Object.entries(costsByCategory)
+    .sort((a, b) => b[1] - a[1])[0];
+  
+  // Break-even price per egg (if you sell all eggs you produced)
+  const breakEvenPricePerEgg = totalEggsSold > 0 ? totalCosts / totalEggsSold : 0;
+  
   // Generate last 7 days for quick date selection
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const date = subDays(new Date(), i);
