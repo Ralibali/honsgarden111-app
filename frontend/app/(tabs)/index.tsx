@@ -702,19 +702,62 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
         
-        {/* Quick Stats Cards */}
+        {/* Quick Stats Cards - Clickable with animations */}
         <View style={styles.statsRow}>
-          <View style={[styles.statCard, styles.henCard]}>
+          <TouchableOpacity 
+            style={[styles.statCard, styles.henCard]}
+            onPress={() => router.push('/(tabs)/hens')}
+            activeOpacity={0.7}
+          >
             <Ionicons name="heart" size={28} color={colors.error} />
             <Text style={styles.statValue}>{todayStats?.hen_count || 0}</Text>
             <Text style={styles.statLabel}>{t('home.hens')}</Text>
-          </View>
+          </TouchableOpacity>
           
-          <View style={[styles.statCard, styles.eggCard]}>
-            <Ionicons name="egg" size={28} color={colors.warning} />
+          <TouchableOpacity 
+            style={[styles.statCard, styles.eggCard]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowQuickAdd(true);
+            }}
+            activeOpacity={0.7}
+          >
+            {/* Plus icon in corner */}
+            <View style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              backgroundColor: colors.warning + '30',
+              borderRadius: 12,
+              padding: 4,
+            }}>
+              <Ionicons name="add" size={16} color={colors.warning} />
+            </View>
+            <Animated.View style={{ transform: [{ scale: eggPopAnim }] }}>
+              <Ionicons name="egg" size={28} color={colors.warning} />
+            </Animated.View>
             <Text style={styles.statValue}>{todayStats?.egg_count || 0}</Text>
             <Text style={styles.statLabel}>{t('home.eggsToday')}</Text>
-          </View>
+            {/* Streak badge */}
+            {summaryStats?.streak > 0 && (
+              <View style={{
+                position: 'absolute',
+                bottom: 8,
+                left: 8,
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#f59e0b20',
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                borderRadius: 8,
+              }}>
+                <Text style={{ fontSize: 10 }}>🔥</Text>
+                <Text style={{ fontSize: 10, color: '#f59e0b', fontWeight: '600', marginLeft: 2 }}>
+                  {summaryStats.streak}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
         
         {/* Quick Add Eggs Button */}
