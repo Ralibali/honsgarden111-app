@@ -10,6 +10,38 @@ if (!API_URL) {
   console.error('CRITICAL: EXPO_PUBLIC_BACKEND_URL is not configured. API calls will fail.');
 }
 
+// Global session token for API calls (stored in memory + AsyncStorage)
+let sessionToken: string | null = null;
+
+// Initialize token from AsyncStorage on app start
+AsyncStorage.getItem('session_token').then(token => {
+  if (token) {
+    sessionToken = token;
+    console.log('Session token restored from storage');
+  }
+});
+
+// Export function to get auth headers for API calls
+export const getAuthHeaders = (): Record<string, string> => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (sessionToken) {
+    headers['Authorization'] = `Bearer ${sessionToken}`;
+  }
+  return headers;
+};
+
+// Export function to set session token
+export const setSessionToken = async (token: string | null) => {
+  sessionToken = token;
+  if (token) {
+    await AsyncStorage.setItem('session_token', token);
+  } else {
+    await AsyncStorage.removeItem('session_token');
+  }
+};
+
 interface User {
   user_id: string;
   email: string;
