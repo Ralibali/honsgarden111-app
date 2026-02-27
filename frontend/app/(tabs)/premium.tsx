@@ -584,6 +584,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 16,
     marginHorizontal: 4,
   },
+  featureCardNarrow: {
+    width: '100%',
+    marginHorizontal: 0,
+  },
   featureIconContainer: {
     width: 48,
     height: 48,
