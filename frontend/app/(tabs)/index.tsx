@@ -2641,6 +2641,28 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
+    position: 'relative',
+  },
+  insightCardLocked: {
+    backgroundColor: colors.surfaceSecondary + '80',
+    borderWidth: 1,
+    borderColor: colors.primary + '30',
+    borderStyle: 'dashed',
+  },
+  lockBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  blurredText: {
+    opacity: 0.4,
+    color: colors.textSecondary,
   },
   insightTopHenCard: {
     backgroundColor: 'rgba(251, 191, 36, 0.1)',
