@@ -621,12 +621,19 @@ export default function HensScreen() {
                       { backgroundColor: getColorStyle(hen.color || 'brown') + '33' }
                     ]}>
                       <Text style={styles.henAvatarText}>
-                        {hen.name.charAt(0).toUpperCase()}
+                        {hen.hen_type === 'rooster' ? '🐓' : '🐔'}
                       </Text>
                     </View>
                     
                     <View style={styles.henInfo}>
-                      <Text style={styles.henName}>{hen.name}</Text>
+                      <View style={styles.henNameRow}>
+                        <Text style={styles.henName}>{hen.name}</Text>
+                        {hen.hen_type === 'rooster' && (
+                          <View style={styles.roosterBadge}>
+                            <Text style={styles.roosterBadgeText}>Tupp</Text>
+                          </View>
+                        )}
+                      </View>
                       {hen.breed && <Text style={styles.henBreed}>{hen.breed}</Text>}
                       {getFlockName(hen.flock_id) && (
                         <View style={styles.flockBadge}>
