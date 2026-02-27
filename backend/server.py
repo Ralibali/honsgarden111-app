@@ -702,6 +702,79 @@ class FeaturePreferencesUpdate(BaseModel):
     show_productivity_alerts: Optional[bool] = None
     show_economy_insights: Optional[bool] = None
 
+# ============ AFFILIATE/PRODUCT RECOMMENDATION MODELS ============
+class ProductCategory(str, Enum):
+    FEED = "feed"
+    SUPPLEMENTS = "supplements"
+    EQUIPMENT = "equipment"
+    LIGHTING = "lighting"
+    HEALTH = "health"
+    HOUSING = "housing"
+    WATER = "water"
+    OTHER = "other"
+
+class ProductRecommendation(BaseModel):
+    """A product recommendation with affiliate link"""
+    id: str
+    name: str
+    description: str
+    category: str
+    price: Optional[str] = None
+    affiliate_url: str
+    image_url: Optional[str] = None
+    trigger_conditions: List[str] = []  # e.g., ["low_eggs", "winter", "new_user"]
+    priority: int = 1  # Higher = more important
+
+# Pre-defined product recommendations (will be populated from Adtraction feed later)
+# For now, these are placeholder examples with bonden.se structure
+PRODUCT_RECOMMENDATIONS = [
+    {
+        "id": "feed-1",
+        "name": "Värphönsfoder Premium",
+        "description": "Komplett foder för optimal äggproduktion med 18% protein och extra kalcium.",
+        "category": "feed",
+        "trigger_conditions": ["low_eggs", "winter"],
+        "affiliate_url": "https://www.bonden.se/1853-foderutrustning",  # Placeholder
+        "priority": 1
+    },
+    {
+        "id": "supplements-1",
+        "name": "Ostronskalskal",
+        "description": "Naturlig kalciumkälla för starka äggskal. Fri tillgång rekommenderas.",
+        "category": "supplements",
+        "trigger_conditions": ["soft_shells", "low_eggs"],
+        "affiliate_url": "https://www.bonden.se/1853-foderutrustning",
+        "priority": 2
+    },
+    {
+        "id": "lighting-1",
+        "name": "LED-belysning med timer",
+        "description": "Energisnål belysning för hönshuset. Förlänger dagsljuset för bättre värpning.",
+        "category": "lighting",
+        "trigger_conditions": ["winter", "low_eggs"],
+        "affiliate_url": "https://www.bonden.se/1853-foderutrustning",
+        "priority": 1
+    },
+    {
+        "id": "health-1",
+        "name": "Kiselgur kvalstermedel",
+        "description": "Naturlig bekämpning av röda hönskvalster. Ströas i springor och på sittpinnar.",
+        "category": "health",
+        "trigger_conditions": ["summer", "parasites"],
+        "affiliate_url": "https://www.bonden.se/1853-foderutrustning",
+        "priority": 1
+    },
+    {
+        "id": "water-1",
+        "name": "Värmeplatta för vattenautomat",
+        "description": "Håller vattnet frostfritt under vintern. Energisnål och säker.",
+        "category": "water",
+        "trigger_conditions": ["winter", "cold"],
+        "affiliate_url": "https://www.bonden.se/1853-foderutrustning",
+        "priority": 1
+    },
+]
+
 # ============ HATCHING/INCUBATION MODELS (ETAPP 3) ============
 class HatchingStatus(str, Enum):
     INCUBATING = "incubating"
