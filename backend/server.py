@@ -4787,29 +4787,38 @@ Anpassa tipset efter:
         message = UserMessage(text=prompt)
         ai_response = await chat.send_message(message)
         
+        logger.info(f"AI daily-report generated successfully for user {user_id}")
+        
         return {
             "is_premium": True,
             "preview": False,
+            "used_fallback": False,
+            "ai_provider_ok": True,
             "report": {
                 "summary": ai_response,
                 "eggs_today": total_eggs,
                 "hen_count": hen_count,
                 "alerts": alerts,
-                "generated_at": datetime.now(timezone.utc).isoformat()
+                "generated_at": now_stockholm().isoformat()
             }
         }
     except Exception as e:
-        logging.error(f"AI report generation failed: {e}")
+        logger.error(f"AI report generation failed for user {user_id}: {e}")
+        used_fallback = True
+        ai_provider_ok = False
+        
         return {
             "is_premium": True,
             "preview": False,
+            "used_fallback": True,
+            "ai_provider_ok": False,
             "report": {
                 "summary": f"🐔 Daglig sammanfattning: {total_eggs} ägg från {hen_count} höns. " + 
                           (f"⚠️ {len(alerts)} varningar kräver uppmärksamhet." if alerts else "Allt ser bra ut!"),
                 "eggs_today": total_eggs,
                 "hen_count": hen_count,
                 "alerts": alerts,
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": now_stockholm().isoformat(),
                 "fallback": True
             }
         }
