@@ -1525,6 +1525,177 @@ async def login_email(data: EmailLogin, request: Request, response: Response):
         "session_token": session_token  # Include token for native apps
     }
 
+# ============ MAGIC LINK ENDPOINTS ============
+# Rate limiting for magic links (in-memory, resets on restart)
+magic_link_rate_limit: Dict[str, list] = defaultdict(list)
+MAGIC_LINK_RATE_LIMIT_PER_MIN = 3
+MAGIC_LINK_RATE_LIMIT_PER_HOUR = 10
+
+def check_magic_link_rate_limit(user_id: str) -> bool:
+    """Check if user has exceeded magic link rate limit"""
+    now = time.time()
+    requests = magic_link_rate_limit[user_id]
+    
+    # Clean old entries
+    requests = [t for t in requests if now - t < 3600]  # Keep last hour
+    magic_link_rate_limit[user_id] = requests
+    
+    # Check limits
+    last_minute = sum(1 for t in requests if now - t < 60)
+    last_hour = len(requests)
+    
+    if last_minute >= MAGIC_LINK_RATE_LIMIT_PER_MIN or last_hour >= MAGIC_LINK_RATE_LIMIT_PER_HOUR:
+        return False
+    return True
+
+@api_router.post("/auth/magic-link")
+async def create_magic_link(request: Request, data: MagicLinkRequest):
+    """Create magic link for web login (from app)
+    Requires authentication - user must be logged in to app"""
+    user_id = await require_user_id(request)
+    
+    # Rate limiting
+    if not check_magic_link_rate_limit(user_id):
+        raise HTTPException(status_code=429, detail="För många förfrågningar. Vänta en stund.")
+    
+    # Record this request
+    magic_link_rate_limit[user_id].append(time.time())
+    
+    # Get user email
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Användare hittades inte")
+    
+    # Generate secure token
+    token_raw = secrets.token_urlsafe(32)  # 256 bits
+    token_hash = hashlib.sha256(token_raw.encode()).hexdigest()
+    
+    # Validate next_url (only allow relative paths)
+    next_url = data.next_url or "/"
+    if not next_url.startswith("/") or "//" in next_url:
+        next_url = "/"
+    
+    # Store in DB (only hash)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+    await db.magic_links.insert_one({
+        "user_id": user_id,
+        "token_hash": token_hash,
+        "created_at": datetime.now(timezone.utc),
+        "expires_at": expires_at,
+        "used_at": None,
+        "next_url": next_url,
+        "request_ip": request.client.host if request.client else None,
+        "user_agent": request.headers.get("User-Agent", "")[:200]
+    })
+    
+    # Create TTL index if not exists (runs once)
+    try:
+        await db.magic_links.create_index("expires_at", expireAfterSeconds=0)
+    except:
+        pass  # Index might already exist
+    
+    # Build magic link URL
+    app_url = os.environ.get("APP_URL", "https://honsgarden.se")
+    magic_link_url = f"{app_url}/magic?token={token_raw}&next={next_url}"
+    
+    # Send email
+    try:
+        if RESEND_API_KEY:
+            resend.api_key = RESEND_API_KEY
+            resend.Emails.send({
+                "from": f"Hönsgården <{SENDER_EMAIL}>",
+                "to": user["email"],
+                "subject": "Logga in på webben - Hönsgården",
+                "html": f"""
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #92400e;">🐔 Hönsgården</h2>
+                    <p>Hej {user.get('name', '').split()[0] or 'där'}!</p>
+                    <p>Du har begärt att logga in på webben från appen. Klicka på länken nedan för att logga in:</p>
+                    <p style="margin: 24px 0;">
+                        <a href="{magic_link_url}" 
+                           style="background: #92400e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+                            Logga in på webben
+                        </a>
+                    </p>
+                    <p style="color: #666; font-size: 14px;">
+                        Länken är giltig i 10 minuter och kan bara användas en gång.
+                    </p>
+                    <p style="color: #666; font-size: 12px; margin-top: 32px;">
+                        Om du inte begärde detta kan du ignorera mailet.
+                    </p>
+                </div>
+                """
+            })
+            logger.debug(f"[Magic Link] Email sent to {user['email']}, token ...{token_raw[-6:]}")
+        else:
+            logger.warning("[Magic Link] RESEND_API_KEY not configured, email not sent")
+    except Exception as e:
+        logger.error(f"[Magic Link] Failed to send email: {e}")
+        # Don't fail the request, user can still use the link if they have access
+    
+    return {"ok": True, "message": "E-post skickad! Kolla din inkorg."}
+
+@api_router.get("/auth/magic/consume")
+async def consume_magic_link(token: str, next: str = "/", request: Request = None, response: Response = None):
+    """Consume magic link and create web session
+    Redirects to next URL on success, /login?magic=expired on failure"""
+    
+    # Validate next URL (only allow relative paths)
+    if not next.startswith("/") or "//" in next:
+        next = "/"
+    
+    # Hash the provided token
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    
+    # Find and validate magic link
+    magic_link = await db.magic_links.find_one({
+        "token_hash": token_hash,
+        "used_at": None,
+        "expires_at": {"$gt": datetime.now(timezone.utc)}
+    })
+    
+    if not magic_link:
+        logger.debug(f"[Magic Link] Invalid or expired token ...{token[-6:]}")
+        return RedirectResponse(url="/login?magic=expired", status_code=302)
+    
+    # Mark as used
+    await db.magic_links.update_one(
+        {"token_hash": token_hash},
+        {"$set": {"used_at": datetime.now(timezone.utc)}}
+    )
+    
+    user_id = magic_link["user_id"]
+    
+    # Create web session
+    session_token = str(uuid.uuid4())
+    session_ttl_days = 7
+    await db.user_sessions.insert_one({
+        "user_id": user_id,
+        "session_token": session_token,
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=session_ttl_days),
+        "created_via": "magic_link"
+    })
+    
+    # Set cookie
+    host = request.headers.get("host", "") if request else ""
+    cookie_domain = host.split(":")[0] if "emergent.host" in host else None
+    
+    redirect_response = RedirectResponse(url=next, status_code=302)
+    redirect_response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        path="/",
+        max_age=session_ttl_days * 24 * 60 * 60,
+        domain=cookie_domain
+    )
+    
+    logger.debug(f"[Magic Link] Consumed successfully for user {user_id}, redirecting to {next}")
+    
+    return redirect_response
+
 @api_router.post("/auth/forgot-password")
 async def forgot_password(data: PasswordResetRequest):
     """Request password reset with 6-digit code (for mobile app)"""
