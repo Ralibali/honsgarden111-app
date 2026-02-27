@@ -267,6 +267,7 @@ honsgarden.se      ALIAS  [deployment-url].emergent.host
 - [x] **Avatar-ikon för inställningar** (FIXAT 2025-02-28) - Google-style i header
 - [x] **Premium → Statistik i nav** (FIXAT 2025-02-28) - Premium dold, Statistik synlig
 - [x] **Utökade Insikter** (FIXAT 2025-02-28) - best_day, feed_cost_per_egg, profit_per_egg
+- [x] **Premium Insikter med Blur** (FIXAT 2025-02-28) - Låsta kort för gratisanvändare
 - [ ] Verifiera deployment fungerar med rätt databas (väntar på användarbekräftelse)
 - [ ] **Grafer i Statistik** - Behöver testas med faktisk äggdata
 
