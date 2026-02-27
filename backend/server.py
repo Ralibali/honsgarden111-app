@@ -2238,7 +2238,7 @@ async def update_coop_settings(update: CoopSettingsUpdate, request: Request):
 @api_router.get("/feature-preferences")
 async def get_feature_preferences(request: Request):
     """Get user's feature preferences (Premium feature)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -2272,7 +2272,7 @@ async def get_feature_preferences(request: Request):
 @api_router.put("/feature-preferences")
 async def update_feature_preferences(update: FeaturePreferencesUpdate, request: Request):
     """Update user's feature preferences (Premium only)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -2318,7 +2318,7 @@ async def update_feature_preferences(update: FeaturePreferencesUpdate, request: 
 @api_router.post("/flocks", response_model=Flock)
 async def create_flock(flock: FlockCreate, request: Request):
     """Create a new flock (Premium: unlimited, Free: max 1)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status for flock limits
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -2335,14 +2335,14 @@ async def create_flock(flock: FlockCreate, request: Request):
 @api_router.get("/flocks")
 async def get_flocks(request: Request):
     """Get all flocks for the user"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     flocks = await db.flocks.find({"user_id": user_id}, {"_id": 0}).sort("name", 1).to_list(50)
     return flocks
 
 @api_router.get("/flocks/{flock_id}")
 async def get_flock(flock_id: str, request: Request):
     """Get a specific flock with its hens"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     flock = await db.flocks.find_one({"id": flock_id, "user_id": user_id}, {"_id": 0})
     if not flock:
         raise HTTPException(status_code=404, detail="Flock not found")
@@ -2357,7 +2357,7 @@ async def get_flock(flock_id: str, request: Request):
 @api_router.put("/flocks/{flock_id}")
 async def update_flock(flock_id: str, flock: FlockCreate, request: Request):
     """Update a flock"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     result = await db.flocks.update_one(
         {"id": flock_id, "user_id": user_id},
         {"$set": {"name": flock.name, "description": flock.description}}
@@ -2369,7 +2369,7 @@ async def update_flock(flock_id: str, flock: FlockCreate, request: Request):
 @api_router.delete("/flocks/{flock_id}")
 async def delete_flock(flock_id: str, request: Request):
     """Delete a flock (moves hens to no flock)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Remove flock_id from all hens in this flock
     await db.hens.update_many(
@@ -2388,7 +2388,7 @@ async def get_productivity_alerts(request: Request):
     """Get hens with productivity issues (14+ days without eggs).
     Only shows alerts if user actively uses per-hen egg tracking.
     """
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     today = date.today()
     
     # First check: Does the user use per-hen egg tracking at all?
@@ -2483,7 +2483,7 @@ async def get_productivity_alerts(request: Request):
 @api_router.post("/hens", response_model=Hen)
 async def create_hen(hen: HenCreate, request: Request):
     """Create a new hen profile"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     new_hen = Hen(user_id=user_id, **hen.dict())
     await db.hens.insert_one(new_hen.dict())
     
@@ -2495,7 +2495,7 @@ async def create_hen(hen: HenCreate, request: Request):
 @api_router.get("/hens", response_model=List[Hen])
 async def get_hens(request: Request, active_only: bool = True):
     """Get all hens"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     query = {"user_id": user_id}
     if active_only:
         query["is_active"] = True
@@ -2505,7 +2505,7 @@ async def get_hens(request: Request, active_only: bool = True):
 @api_router.get("/hens/{hen_id}", response_model=Hen)
 async def get_hen(hen_id: str, request: Request):
     """Get a specific hen"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     hen = await db.hens.find_one({"id": hen_id, "user_id": user_id})
     if not hen:
         raise HTTPException(status_code=404, detail="Hen not found")
@@ -2514,7 +2514,7 @@ async def get_hen(hen_id: str, request: Request):
 @api_router.put("/hens/{hen_id}", response_model=Hen)
 async def update_hen(hen_id: str, update: HenUpdate, request: Request):
     """Update a hen's profile"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     update_data = {k: v for k, v in update.dict().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No data to update")
@@ -2538,7 +2538,7 @@ async def update_hen(hen_id: str, update: HenUpdate, request: Request):
 @api_router.delete("/hens/{hen_id}")
 async def delete_hen(hen_id: str, request: Request):
     """Delete a hen (soft delete)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     result = await db.hens.update_one(
         {"id": hen_id, "user_id": user_id},
         {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
@@ -2554,7 +2554,7 @@ async def delete_hen(hen_id: str, request: Request):
 @api_router.post("/hens/{hen_id}/seen")
 async def mark_hen_seen(hen_id: str, request: Request):
     """Mark a hen as seen today"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     today = date.today().isoformat()
     
     result = await db.hens.update_one(
@@ -2569,7 +2569,7 @@ async def mark_hen_seen(hen_id: str, request: Request):
 @api_router.get("/hens/{hen_id}/profile")
 async def get_hen_profile(hen_id: str, request: Request):
     """Get full hen profile with health logs and egg statistics"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     hen = await db.hens.find_one({"id": hen_id, "user_id": user_id}, {"_id": 0})
     if not hen:
@@ -2643,7 +2643,7 @@ async def get_hen_profile(hen_id: str, request: Request):
 @api_router.post("/health-logs", response_model=HealthLog)
 async def create_health_log(log: HealthLogCreate, request: Request):
     """Create a health log entry for a hen (Premium only)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status - Health log is premium only
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -2664,7 +2664,7 @@ async def create_health_log(log: HealthLogCreate, request: Request):
 @api_router.get("/health-logs")
 async def get_health_logs(request: Request, hen_id: Optional[str] = None, limit: int = 50):
     """Get health logs, optionally filtered by hen (Premium only)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status - Health log is premium only
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -2684,7 +2684,7 @@ async def get_health_logs(request: Request, hen_id: Optional[str] = None, limit:
 @api_router.get("/health-logs/{hen_id}")
 async def get_hen_health_logs(hen_id: str, request: Request, limit: int = 20):
     """Get health logs for a specific hen"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     logs = await db.health_logs.find(
         {"user_id": user_id, "hen_id": hen_id}, 
         {"_id": 0}
@@ -2694,7 +2694,7 @@ async def get_hen_health_logs(hen_id: str, request: Request, limit: int = 20):
 @api_router.delete("/health-logs/{log_id}")
 async def delete_health_log(log_id: str, request: Request):
     """Delete a health log entry"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     result = await db.health_logs.delete_one({"id": log_id, "user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Log not found")
@@ -2704,7 +2704,7 @@ async def delete_health_log(log_id: str, request: Request):
 @api_router.post("/hatching")
 async def create_hatching(hatching: HatchingCreate, request: Request):
     """Create a new hatching/incubation record (Premium only)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -2739,7 +2739,7 @@ async def create_hatching(hatching: HatchingCreate, request: Request):
 @api_router.get("/hatching")
 async def get_hatchings(request: Request, include_completed: bool = False):
     """Get all hatching records"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     today = date.today()
     
     query = {"user_id": user_id}
@@ -2773,7 +2773,7 @@ async def get_hatchings(request: Request, include_completed: bool = False):
 @api_router.get("/hatching/{hatching_id}")
 async def get_hatching_detail(hatching_id: str, request: Request):
     """Get detailed hatching record"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     hatching = await db.hatchings.find_one({"id": hatching_id, "user_id": user_id}, {"_id": 0})
     if not hatching:
@@ -2804,7 +2804,7 @@ async def get_hatching_detail(hatching_id: str, request: Request):
 @api_router.put("/hatching/{hatching_id}")
 async def update_hatching(hatching_id: str, update: HatchingUpdate, request: Request):
     """Update a hatching record"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     hatching = await db.hatchings.find_one({"id": hatching_id, "user_id": user_id})
     if not hatching:
@@ -2837,7 +2837,7 @@ async def update_hatching(hatching_id: str, update: HatchingUpdate, request: Req
 @api_router.delete("/hatching/{hatching_id}")
 async def delete_hatching(hatching_id: str, request: Request):
     """Delete a hatching record"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     result = await db.hatchings.delete_one({"id": hatching_id, "user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Kläckning hittades inte")
@@ -2846,7 +2846,7 @@ async def delete_hatching(hatching_id: str, request: Request):
 @api_router.get("/hatching-alerts")
 async def get_hatching_alerts(request: Request):
     """Get upcoming hatching alerts (for notifications)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     today = date.today()
     
     # Get active hatchings
@@ -2910,7 +2910,7 @@ async def get_hatching_alerts(request: Request):
 @api_router.post("/eggs", response_model=EggRecord)
 async def create_egg_record(record: EggRecordCreate, request: Request):
     """Log eggs collected for a date"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     if record.hen_id:
         egg_record = EggRecord(user_id=user_id, **record.dict())
@@ -2939,7 +2939,7 @@ async def get_egg_records(
     limit: int = 100
 ):
     """Get egg records with optional date filtering"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     query = {"user_id": user_id}
     if start_date:
         query["date"] = {"$gte": start_date}
@@ -2957,7 +2957,7 @@ async def get_egg_records(
 @api_router.delete("/eggs/{record_id}")
 async def delete_egg_record(record_id: str, request: Request):
     """Delete an egg record"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     result = await db.egg_records.delete_one({"id": record_id, "user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Record not found")
@@ -2967,7 +2967,7 @@ async def delete_egg_record(record_id: str, request: Request):
 @api_router.post("/transactions", response_model=Transaction)
 async def create_transaction(transaction: TransactionCreate, request: Request):
     """Create a new transaction"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     trans = Transaction(user_id=user_id, **transaction.dict())
     await db.transactions.insert_one(trans.dict())
     return trans
@@ -2981,7 +2981,7 @@ async def get_transactions(
     limit: int = 100
 ):
     """Get transactions with optional filtering"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     query = {"user_id": user_id}
     if start_date:
         query["date"] = {"$gte": start_date}
@@ -2999,7 +2999,7 @@ async def get_transactions(
 @api_router.delete("/transactions/{transaction_id}")
 async def delete_transaction(transaction_id: str, request: Request):
     """Delete a transaction"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     result = await db.transactions.delete_one({"id": transaction_id, "user_id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Transaction not found")
@@ -3009,7 +3009,7 @@ async def delete_transaction(transaction_id: str, request: Request):
 @api_router.post("/feed", response_model=dict)
 async def create_feed_record(record: FeedRecordCreate, request: Request):
     """Create a new feed record (Premium only)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status - Feed management is premium only
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -3075,7 +3075,7 @@ async def get_feed_records(
     limit: int = 100
 ):
     """Get feed records with optional filters (Premium only)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status - Feed management is premium only
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -3104,7 +3104,7 @@ async def get_feed_records(
 @api_router.delete("/feed/{record_id}")
 async def delete_feed_record(record_id: str, request: Request):
     """Delete a feed record"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Get record first to update inventory
     record = await db.feed_records.find_one({"id": record_id, "user_id": user_id})
@@ -3129,7 +3129,7 @@ async def delete_feed_record(record_id: str, request: Request):
 @api_router.get("/feed/inventory")
 async def get_feed_inventory(request: Request):
     """Get current feed inventory and alerts (Premium only)"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status - Feed management is premium only
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -3161,7 +3161,7 @@ async def get_feed_inventory(request: Request):
 @api_router.put("/feed/inventory/{feed_type}")
 async def update_inventory_settings(feed_type: str, request: Request):
     """Update inventory settings like low stock threshold"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     body = await request.json()
     
     update_fields = {"updated_at": datetime.now(timezone.utc)}
@@ -3183,7 +3183,7 @@ async def update_inventory_settings(feed_type: str, request: Request):
 @api_router.get("/feed/statistics")
 async def get_feed_statistics(request: Request, days: int = 30):
     """Get feed consumption and cost statistics"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     today = date.today()
     start_date = (today - timedelta(days=days)).isoformat()
     
@@ -3247,7 +3247,7 @@ async def get_feed_statistics(request: Request, days: int = 30):
 @api_router.get("/insights")
 async def get_insights(request: Request, include_premium: bool = False):
     """Get productivity insights: cost per egg, top hen, productivity index + Premium features"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     today = date.today()
     
     # Check premium status
@@ -3500,7 +3500,7 @@ FREE_DATA_HISTORY_DAYS = 30
 @api_router.get("/account/data-limits")
 async def get_data_limits(request: Request):
     """Get information about data limits and hidden data for free users"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     today = date.today()
     
     # Check premium status
@@ -3591,7 +3591,7 @@ async def get_data_limits(request: Request):
 @api_router.get("/statistics/today")
 async def get_today_statistics(request: Request):
     """Get today's statistics"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     today = date.today().isoformat()
     
     egg_records = await db.egg_records.find({"date": today, "user_id": user_id}).to_list(100)
@@ -3616,7 +3616,7 @@ async def get_today_statistics(request: Request):
 @api_router.get("/statistics/month/{year}/{month}")
 async def get_month_statistics(year: int, month: int, request: Request):
     """Get statistics for a specific month"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     start_date = f"{year:04d}-{month:02d}-01"
     if month == 12:
         end_date = f"{year+1:04d}-01-01"
@@ -3675,7 +3675,7 @@ async def get_month_statistics(year: int, month: int, request: Request):
 @api_router.get("/statistics/year/{year}")
 async def get_year_statistics(year: int, request: Request):
     """Get statistics for a specific year"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     start_date = f"{year:04d}-01-01"
     end_date = f"{year+1:04d}-01-01"
     
@@ -3727,7 +3727,7 @@ async def get_year_statistics(year: int, request: Request):
 @api_router.get("/statistics/summary")
 async def get_summary_statistics(request: Request):
     """Get overall summary statistics"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     all_eggs = await db.egg_records.find({"user_id": user_id}, {"_id": 0, "count": 1, "date": 1}).to_list(10000)
     all_transactions = await db.transactions.find({"user_id": user_id}, {"_id": 0, "amount": 1, "type": 1, "date": 1}).to_list(10000)
@@ -3762,7 +3762,7 @@ async def get_summary_statistics(request: Request):
 @api_router.get("/statistics/insights")
 async def get_statistics_insights(request: Request):
     """Get advanced statistics insights including trends, best/worst days, and hen rankings"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     today = date.today()
     
@@ -3898,7 +3898,7 @@ async def get_statistics_insights(request: Request):
 @api_router.get("/statistics/advanced-insights")
 async def get_advanced_insights(request: Request):
     """Get advanced statistics insights - Feed Conversion, Laying Rate, Cost Per Egg etc."""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     today = date.today()
     thirty_days_ago = (today - timedelta(days=30)).isoformat()
@@ -4116,7 +4116,7 @@ async def get_advanced_insights(request: Request):
 @api_router.get("/statistics/trend-analysis")
 async def get_trend_analysis(request: Request):
     """Get trend analysis - compare current period with previous period."""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     today = date.today()
     
@@ -4595,7 +4595,7 @@ async def update_user_subscription(request: Request, user_id: str, is_active: bo
 async def get_ai_daily_report(request: Request):
     """Generate AI daily report - Premium only
     Returns a blurred preview for free users"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Get user info
     user = await db.users.find_one({"id": user_id}, {"_id": 0})
@@ -4763,7 +4763,7 @@ Anpassa tipset efter:
 async def get_egg_forecast(request: Request):
     """7-day egg production forecast - Premium only
     Returns a blurred preview for free users"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -4839,7 +4839,7 @@ async def get_egg_forecast(request: Request):
 async def get_ai_advisor(request: Request, question: str = ""):
     """AI Hönsgårdsrådgivare 'Agda' - Premium only
     Gives personalized advice based on user's flock and question"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
@@ -4917,7 +4917,7 @@ Om frågan är oklar, ge generella tips om hönsskötsel."""
 async def get_weather(request: Request, lat: float = 59.33, lon: float = 18.07):
     """Get weather data and hen-care tips based on weather
     Default coordinates are for Stockholm"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Try to get user's saved location
     user_prefs = await db.user_preferences.find_one({"user_id": user_id}, {"_id": 0})
@@ -5078,7 +5078,7 @@ DAILY_TIPS_POOL = [
 @api_router.get("/ai/daily-tip")
 async def get_daily_tip(request: Request):
     """Get today's tip from Agda based on season, weather and flock data"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     # Get current context
     current_month = datetime.now().month
@@ -5126,7 +5126,7 @@ async def get_daily_tip(request: Request):
 @api_router.put("/user-preferences/location")
 async def update_user_location(request: Request, lat: float, lon: float, location_name: str = ""):
     """Update user's location for weather data"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     await db.user_preferences.update_one(
         {"user_id": user_id},
@@ -5145,7 +5145,7 @@ async def update_user_location(request: Request, lat: float, lon: float, locatio
 @api_router.get("/flock/statistics")
 async def get_flock_statistics(request: Request):
     """Get statistics about the flock including hen/rooster ratio"""
-    user_id = await get_user_id(request)
+    user_id = await require_user_id(request)
     
     all_poultry = await db.hens.find({"user_id": user_id, "is_active": True}, {"_id": 0}).to_list(200)
     
