@@ -738,16 +738,27 @@ class Feedback(BaseModel):
 async def get_current_user(request: Request) -> Optional[User]:
     """Get current user from session token in cookie or header"""
     session_token = request.cookies.get("session_token")
+    token_source = "cookie" if session_token else None
+    
     if not session_token:
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             session_token = auth_header.split(" ")[1]
+            token_source = "header"
     
+    # DEV: Log auth debug info for 401 debugging
     if not session_token:
+        auth_header = request.headers.get("Authorization")
+        logger.debug(f"[Auth Debug] No session_token found")
+        logger.debug(f"[Auth Debug] Authorization header: {'present (masked)' if auth_header else 'MISSING'}")
+        logger.debug(f"[Auth Debug] Cookie session_token: {'present' if request.cookies.get('session_token') else 'MISSING'}")
+        logger.debug(f"[Auth Debug] Host: {request.headers.get('host', 'unknown')}")
+        logger.debug(f"[Auth Debug] Origin: {request.headers.get('origin', 'unknown')}")
         return None
     
     session = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
     if not session:
+        logger.debug(f"[Auth Debug] Session not found in DB for token ...{session_token[-6:]} (source: {token_source})")
         return None
     
     # Check expiry
