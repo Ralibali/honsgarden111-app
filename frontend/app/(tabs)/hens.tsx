@@ -1548,6 +1548,138 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   henEggCount: { fontSize: 22, fontWeight: '700', color: '#f59e0b' },
   henEggLabel: { fontSize: 11, color: colors.textMuted },
   
+  // Health Score Badge
+  healthScoreBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginBottom: 4,
+    alignItems: 'center',
+  },
+  healthScoreValue: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  healthScoreLabel: {
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  
+  // Health Score Modal
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  healthScoreCircleContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  healthScoreCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  healthScoreCircleValue: {
+    fontSize: 42,
+    fontWeight: '700',
+  },
+  healthScoreCircleLabel: {
+    fontSize: 12,
+    color: colors.textMuted,
+  },
+  healthScoreStatus: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  healthScoreHenName: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  healthBreakdown: {
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  healthBreakdownTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  healthBreakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  healthBreakdownLeft: {
+    flex: 1,
+    marginRight: 12,
+  },
+  healthBreakdownLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  healthBreakdownBar: {
+    height: 8,
+    backgroundColor: colors.border,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  healthBreakdownBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  healthBreakdownValue: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.text,
+    minWidth: 40,
+    textAlign: 'right',
+  },
+  healthMetrics: {
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 12,
+    padding: 16,
+  },
+  healthMetricsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 12,
+  },
+  healthMetricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  healthMetricItem: {
+    width: '48%',
+    backgroundColor: colors.surface,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  healthMetricValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  healthMetricLabel: {
+    fontSize: 10,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: 2,
+  },
+
   // Last Seen Row
   lastSeenRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border },
   lastSeenText: { fontSize: 12, color: colors.textMuted },
