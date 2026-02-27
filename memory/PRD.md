@@ -77,6 +77,14 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
   - Ny "Sysslor"-knapp i Quick Actions (cyan färg)
   - Modal med alla dagens sysslor
   - Checka av sysslor genom att trycka
+  
+#### Dagens Sysslor - Frivillig Auto-popup ✅
+- **Första gången:** Modal visas alltid (tvingande)
+- **Därefter:** Toggle för "Visa automatiskt vid start"
+- **Push-notiser:** Schemaläggs kl 07:30 varje dag (oavsett popup-inställning)
+- Meddelande: "🐔 God morgon från Hönsgården! Dags att kolla in dagens sysslor."
+- Progress-indikator visar hur många sysslor som är klara
+- Sparat i AsyncStorage: `chores_seen_first_time`, `chores_auto_popup_disabled`
 
 ### Batch 2: UI & Feature Improvements (2025-02-27)
 
