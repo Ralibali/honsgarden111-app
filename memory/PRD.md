@@ -42,6 +42,42 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 - Tips kan vara både string eller objekt med `message`
 - Nu hanteras båda formaten korrekt i UI
 
+### Session 4: Subscription & Chores Features (2025-02-27 23:30)
+
+#### Admin Subscription List Fix ✅
+- **Problem:** Prenumeranter visades inte i admin-panelen
+- **Lösning:** Uppdaterad `/api/admin/subscriptions` endpoint:
+  - Hämtar alla subscriptions (inte bara is_active)
+  - Kontrollerar `expires_at` för att avgöra faktiskt aktiv status
+  - Stöder både `user_id` och `id` fält för användare
+  - Visar `purchase_source` i listan
+
+#### Trial Expiry Warning System ✅
+- **Backend:** `/api/premium/status` returnerar nu:
+  - `is_trial`: Boolean om det är trial
+  - `days_remaining`: Antal dagar kvar
+  - `trial_expiry_warning`: `three_days`, `two_days`, `one_day`, `last_day`
+- **Frontend:** Popup-modal som visar varning:
+  - Visas automatiskt vid 3, 2, 1 dag eller sista dagen
+  - Tydlig design med röd varning sista dagen
+  - "Uppgradera nu" och "Påminn mig senare" knappar
+  - Kan dismissas för session
+
+#### "Dagens Sysslor" Feature ✅ (NYT)
+- **Backend:** Nya endpoints:
+  - `GET /api/daily-chores`: Hämtar dagens sysslor
+  - `POST /api/daily-chores/{id}/complete`: Markera som klar
+  - `DELETE /api/daily-chores/{id}/complete`: Ta bort markering
+- **Sysslor inkluderar:**
+  - Dagliga: Vattenkontroll, Ägginsamling, Foderkontroll, Hälsokoll
+  - Veckovis (söndag): Rengör reden, Byt ströbädd, Kolla sittpinnar
+  - Månadsvis (1:a): Kvalsterkontroll, Rovdjursskydd
+  - Säsongsspecifika: Vintervatten, Kvällsmål, Belysning, Skuggkontroll
+- **Frontend:** 
+  - Ny "Sysslor"-knapp i Quick Actions (cyan färg)
+  - Modal med alla dagens sysslor
+  - Checka av sysslor genom att trycka
+
 ### Batch 2: UI & Feature Improvements (2025-02-27)
 
 #### Admin Panel Förbättringar ✅
