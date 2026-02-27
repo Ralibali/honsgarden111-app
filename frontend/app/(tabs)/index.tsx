@@ -67,6 +67,9 @@ export default function HomeScreen() {
   const [choresAutoPopupEnabled, setChoresAutoPopupEnabled] = useState(true);
   const [hasSeenChoresFirstTime, setHasSeenChoresFirstTime] = useState(false);
   
+  // Community preview state
+  const [communityPosts, setCommunityPosts] = useState<any[]>([]);
+  
   // Data limits state
   const [dataLimits, setDataLimits] = useState<any>(null);
   const [productivityAlerts, setProductivityAlerts] = useState<any>(null);
