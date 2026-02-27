@@ -384,35 +384,46 @@ export default function AdminPanel() {
       </View>
 
       {/* Tabs */}
-      <View style={[styles.tabs, { backgroundColor: colors.surface }]}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'users' && { backgroundColor: colors.primary }]}
-          onPress={() => setActiveTab('users')}
-        >
-          <Ionicons name="people" size={18} color={activeTab === 'users' ? '#FFF' : colors.textSecondary} />
-          <Text style={[styles.tabText, { color: activeTab === 'users' ? '#FFF' : colors.textSecondary }]}>
-            Användare ({totalUsers})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'subscriptions' && { backgroundColor: colors.primary }]}
-          onPress={() => setActiveTab('subscriptions')}
-        >
-          <Ionicons name="card" size={18} color={activeTab === 'subscriptions' ? '#FFF' : colors.textSecondary} />
-          <Text style={[styles.tabText, { color: activeTab === 'subscriptions' ? '#FFF' : colors.textSecondary }]}>
-            Premium ({subscriptions.filter(s => s.is_active).length})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'feedback' && { backgroundColor: colors.primary }]}
-          onPress={() => setActiveTab('feedback')}
-        >
-          <Ionicons name="chatbubbles" size={18} color={activeTab === 'feedback' ? '#FFF' : colors.textSecondary} />
-          <Text style={[styles.tabText, { color: activeTab === 'feedback' ? '#FFF' : colors.textSecondary }]}>
-            Feedback ({feedback.length})
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ maxHeight: 50 }}>
+        <View style={[styles.tabs, { backgroundColor: colors.surface }]}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'users' && { backgroundColor: colors.primary }]}
+            onPress={() => setActiveTab('users')}
+          >
+            <Ionicons name="people" size={18} color={activeTab === 'users' ? '#FFF' : colors.textSecondary} />
+            <Text style={[styles.tabText, { color: activeTab === 'users' ? '#FFF' : colors.textSecondary }]}>
+              Användare ({totalUsers})
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'subscriptions' && { backgroundColor: colors.primary }]}
+            onPress={() => setActiveTab('subscriptions')}
+          >
+            <Ionicons name="card" size={18} color={activeTab === 'subscriptions' ? '#FFF' : colors.textSecondary} />
+            <Text style={[styles.tabText, { color: activeTab === 'subscriptions' ? '#FFF' : colors.textSecondary }]}>
+              Premium ({subscriptions.filter(s => s.is_active).length})
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'feedback' && { backgroundColor: colors.primary }]}
+            onPress={() => setActiveTab('feedback')}
+          >
+            <Ionicons name="mail" size={18} color={activeTab === 'feedback' ? '#FFF' : colors.textSecondary} />
+            <Text style={[styles.tabText, { color: activeTab === 'feedback' ? '#FFF' : colors.textSecondary }]}>
+              Feedback ({feedback.length})
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'community' && { backgroundColor: colors.primary }]}
+            onPress={() => setActiveTab('community')}
+          >
+            <Ionicons name="chatbubbles" size={18} color={activeTab === 'community' ? '#FFF' : colors.textSecondary} />
+            <Text style={[styles.tabText, { color: activeTab === 'community' ? '#FFF' : colors.textSecondary }]}>
+              Community ({communityPosts.length})
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       {/* Search (for users) */}
       {activeTab === 'users' && (
