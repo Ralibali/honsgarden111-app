@@ -71,7 +71,7 @@ export default function LoginScreen() {
   
   const handleLogin = async () => {
     clearError();
-    const success = await login(email, password);
+    const success = await login(email, password, Platform.OS === 'web' ? rememberMe : false);
     if (success) {
       router.replace('/(tabs)');
     } else {
