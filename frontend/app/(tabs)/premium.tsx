@@ -101,6 +101,8 @@ export default function PremiumScreen() {
   const router = useRouter();
   const isSv = i18n.locale.startsWith('sv');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const { width } = useWindowDimensions();
+  const isNarrow = width < 420;
   
   const isIOS = Platform.OS === 'ios';
   
