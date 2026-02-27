@@ -810,53 +810,6 @@ export default function SettingsScreen() {
               </TouchableOpacity>
             )}
             
-            {/* Magic Link - Login to Web (native only) */}
-            {Platform.OS !== 'web' && (
-              <TouchableOpacity 
-                style={[styles.logoutButton, { backgroundColor: colors.primary + '15', marginBottom: 12 }]}
-                onPress={async () => {
-                  try {
-                    const response = await fetch(`${API_URL}/api/auth/magic-link`, {
-                      method: 'POST',
-                      headers: { 
-                        'Content-Type': 'application/json',
-                        ...(await import('../../src/store/authStore').then(m => m.getAuthHeaders()))
-                      },
-                      credentials: 'include',
-                      body: JSON.stringify({ next_url: '/' })
-                    });
-                    
-                    if (response.ok) {
-                      Alert.alert(
-                        isSv ? 'E-post skickad!' : 'Email sent!',
-                        isSv 
-                          ? 'Öppna din e-post och klicka på länken för att logga in på webben.'
-                          : 'Open your email and click the link to log in on the web.',
-                        [{ text: 'OK' }]
-                      );
-                    } else if (response.status === 429) {
-                      Alert.alert(
-                        isSv ? 'Vänta lite' : 'Please wait',
-                        isSv 
-                          ? 'Du har skickat för många förfrågningar. Vänta en stund och försök igen.'
-                          : 'Too many requests. Please wait a moment and try again.'
-                      );
-                    } else {
-                      const data = await response.json();
-                      Alert.alert('Fel', data.detail || 'Kunde inte skicka länk');
-                    }
-                  } catch (error) {
-                    Alert.alert('Fel', isSv ? 'Kunde inte ansluta till servern' : 'Could not connect to server');
-                  }
-                }}
-              >
-                <Ionicons name="desktop-outline" size={20} color={colors.primary} />
-                <Text style={[styles.logoutText, { color: colors.primary }]}>
-                  {isSv ? 'Logga in på webben' : 'Log in on web'}
-                </Text>
-              </TouchableOpacity>
-            )}
-            
             {/* Invite Friends */}
             <TouchableOpacity 
               style={[styles.logoutButton, { backgroundColor: '#22c55e20', marginBottom: 12 }]}
