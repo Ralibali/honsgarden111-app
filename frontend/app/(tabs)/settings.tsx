@@ -907,6 +907,27 @@ export default function SettingsScreen() {
               </View>
               <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
+            
+            {/* Legal Links */}
+            <View style={styles.legalLinksContainer}>
+              <TouchableOpacity 
+                style={styles.legalLinkCard}
+                onPress={() => Linking.openURL('https://honsgarden.se/privacy')}
+              >
+                <Ionicons name="shield-checkmark" size={20} color={colors.textSecondary} />
+                <Text style={styles.legalLinkText}>{isSv ? 'Integritetspolicy' : 'Privacy Policy'}</Text>
+                <Ionicons name="open-outline" size={16} color={colors.textMuted} />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.legalLinkCard}
+                onPress={() => Linking.openURL('https://honsgarden.se/terms')}
+              >
+                <Ionicons name="document-text" size={20} color={colors.textSecondary} />
+                <Text style={styles.legalLinkText}>{isSv ? 'Användarvillkor' : 'Terms of Service'}</Text>
+                <Ionicons name="open-outline" size={16} color={colors.textMuted} />
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
