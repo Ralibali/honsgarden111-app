@@ -424,9 +424,26 @@ export default function AdminPanel() {
           {activeTab === 'users' && (
             <View style={styles.list}>
               {filteredUsers.map((user) => (
-                <View key={user.user_id} style={[styles.card, { backgroundColor: colors.surface }]}>
+                <TouchableOpacity 
+                  key={user.user_id} 
+                  style={[styles.card, { backgroundColor: colors.surface }]}
+                  onPress={() => isSelectMode && toggleUserSelection(user.user_id)}
+                  activeOpacity={isSelectMode ? 0.7 : 1}
+                >
                   <View style={styles.cardHeader}>
-                    <View style={styles.userInfo}>
+                    {isSelectMode && (
+                      <TouchableOpacity
+                        style={styles.checkbox}
+                        onPress={() => toggleUserSelection(user.user_id)}
+                      >
+                        <Ionicons 
+                          name={selectedUsers.has(user.user_id) ? "checkbox" : "square-outline"} 
+                          size={24} 
+                          color={selectedUsers.has(user.user_id) ? colors.primary : colors.textSecondary} 
+                        />
+                      </TouchableOpacity>
+                    )}
+                    <View style={[styles.userInfo, isSelectMode && { marginLeft: 12 }]}>
                       <Text style={[styles.userName, { color: colors.text }]}>{user.name || 'Okänd'}</Text>
                       <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user.email}</Text>
                     </View>
@@ -444,14 +461,16 @@ export default function AdminPanel() {
                       Auth: {user.auth_provider} • Terms: {user.accepted_terms ? '✓' : '✗'}
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    style={[styles.deleteButton, { backgroundColor: '#ef444420' }]}
-                    onPress={() => handleDeleteUser(user.user_id, user.email)}
-                  >
-                    <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                    <Text style={{ color: '#ef4444', marginLeft: 4 }}>Radera</Text>
-                  </TouchableOpacity>
-                </View>
+                  {!isSelectMode && (
+                    <TouchableOpacity
+                      style={[styles.deleteButton, { backgroundColor: '#ef444420' }]}
+                      onPress={() => handleDeleteUser(user.user_id, user.email)}
+                    >
+                      <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                      <Text style={{ color: '#ef4444', marginLeft: 4 }}>Radera</Text>
+                    </TouchableOpacity>
+                  )}
+                </TouchableOpacity>
               ))}
             </View>
           )}
