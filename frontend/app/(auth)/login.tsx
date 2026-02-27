@@ -1103,6 +1103,18 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.5)',
     fontSize: 14,
   },
+  guideButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 24,
+    paddingVertical: 12,
+  },
+  guideText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 13,
+  },
   errorText: {
     backgroundColor: 'rgba(248, 113, 113, 0.15)',
     borderWidth: 1,
