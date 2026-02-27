@@ -77,15 +77,18 @@ export interface PremiumState {
   isPremium: boolean;
   subscriptionId: string | null;
   expiresAt: string | null;
-  plan: 'monthly' | 'yearly' | null;
+  plan: 'monthly' | 'yearly' | 'trial' | null;
   platform: 'ios' | 'android' | 'web' | null;
   loading: boolean;
   initialized: boolean;
+  isTrial: boolean;
+  daysRemaining: number | null;
+  trialExpiryWarning: 'three_days' | 'two_days' | 'one_day' | 'last_day' | null;
   
   // Actions
   initializePremium: () => Promise<void>;
   checkPremiumStatus: () => Promise<void>;
-  setPremiumStatus: (status: boolean, subscriptionId?: string, expiresAt?: string, plan?: 'monthly' | 'yearly') => void;
+  setPremiumStatus: (status: boolean, subscriptionId?: string, expiresAt?: string, plan?: 'monthly' | 'yearly' | 'trial') => void;
   clearPremiumStatus: () => void;
   restorePurchases: () => Promise<boolean>;
   verifyPurchaseWithBackend: (platform: string, receiptData: string, productId: string, transactionId?: string) => Promise<boolean>;
