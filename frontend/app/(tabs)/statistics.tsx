@@ -492,6 +492,19 @@ export default function StatisticsScreen() {
     const maxEggs = Math.max(...(monthStats.daily_breakdown.map(d => d.eggs) || [0]), 1);
     const forecast = calculateForecast();
     
+    // Find best day
+    const bestDay = monthStats.daily_breakdown.reduce((best, day) => {
+      if (!best || day.eggs > best.eggs) return day;
+      return best;
+    }, null as { date: string; eggs: number } | null);
+    
+    // Calculate monthly trend
+    const firstHalf = monthStats.daily_breakdown.slice(0, Math.floor(monthStats.daily_breakdown.length / 2));
+    const secondHalf = monthStats.daily_breakdown.slice(Math.floor(monthStats.daily_breakdown.length / 2));
+    const firstHalfAvg = firstHalf.length > 0 ? firstHalf.reduce((sum, d) => sum + d.eggs, 0) / firstHalf.length : 0;
+    const secondHalfAvg = secondHalf.length > 0 ? secondHalf.reduce((sum, d) => sum + d.eggs, 0) / secondHalf.length : 0;
+    const monthTrend = secondHalfAvg > firstHalfAvg ? 'up' : secondHalfAvg < firstHalfAvg ? 'down' : 'stable';
+    
     return (
       <>
         {/* Summary Cards with Trends */}
