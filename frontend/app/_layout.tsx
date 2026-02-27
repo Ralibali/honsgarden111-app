@@ -80,20 +80,21 @@ export default function RootLayout() {
     
     const inAuthGroup = segments[0] === '(auth)';
     const inOnboarding = segments[0] === 'onboarding';
+    const inTabs = segments[0] === '(tabs)';
     
     // If hasn't seen onboarding and not already there, go to onboarding
     if (!hasSeenOnboarding && !inOnboarding) {
       router.replace('/onboarding');
     }
-    // If seen onboarding but not authenticated and not in auth, go to login
+    // If authenticated and not in tabs, go to tabs
+    else if (isAuthenticated && !inTabs) {
+      router.replace('/(tabs)');
+    }
+    // Only redirect to login if at root or in wrong place (not already in auth)
     else if (hasSeenOnboarding && !isAuthenticated && !inAuthGroup && !inOnboarding) {
       router.replace('/(auth)/login');
     }
-    // If authenticated and in auth group, go to tabs
-    else if (isAuthenticated && inAuthGroup) {
-      router.replace('/(tabs)');
-    }
-  }, [hasSeenOnboarding, isAuthenticated, authLoading, segments]);
+  }, [hasSeenOnboarding, isAuthenticated, authLoading]);
   
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
