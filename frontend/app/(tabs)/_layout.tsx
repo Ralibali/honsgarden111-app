@@ -30,6 +30,16 @@ export default function TabLayout() {
         },
       }}
     >
+      {/* Premium tab FIRST (user request) */}
+      <Tabs.Screen
+        name="premium"
+        options={{
+          title: 'Premium',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="star" size={size} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="index"
         options={{
@@ -75,18 +85,11 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="premium"
-        options={{
-          title: 'Premium',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="star" size={size} color={color} />
-          ),
-        }}
-      />
+      {/* Community tab hidden from navbar - accessible from home screen */}
       <Tabs.Screen
         name="community"
         options={{
+          href: null, // Hide from tab bar
           title: isSv ? 'Community' : 'Community',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubbles" size={size} color={color} />
