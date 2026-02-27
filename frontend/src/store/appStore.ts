@@ -1,30 +1,53 @@
 import { create } from 'zustand';
-import { useAuthStore, getAuthHeaders, setSessionToken, hasSessionToken, getMaskedToken, shouldIgnore401 } from './authStore';
+import { useAuthStore, getAuthHeaders, setSessionToken, hasSessionToken, getMaskedToken, shouldIgnore401, getSessionToken } from './authStore';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
+// Counter to track 401 errors for debouncing logout
+let consecutive401Count = 0;
+const MAX_401_BEFORE_LOGOUT = 3;
+
 // Robust API fetch helper with auth handling and logging
 const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-  // Build headers robustly - handle both object and Headers
-  const baseHeaders = getAuthHeaders();
-  const headers = new Headers(baseHeaders);
+  // Build headers using a fresh Headers object for robustness
+  const headers = new Headers();
   
-  // Merge in any additional headers from options
+  // Always set Content-Type first
+  headers.set('Content-Type', 'application/json');
+  
+  // Get the current token DIRECTLY (not through getAuthHeaders to ensure freshness)
+  const currentToken = getSessionToken();
+  if (currentToken) {
+    headers.set('Authorization', `Bearer ${currentToken}`);
+  }
+  
+  // Merge in any additional headers from options (but don't override Authorization if we set it)
   if (options.headers) {
     const optHeaders = options.headers instanceof Headers 
       ? options.headers 
       : new Headers(options.headers as Record<string, string>);
     optHeaders.forEach((value, key) => {
-      headers.set(key, value);
+      // Don't override our Authorization header
+      if (key.toLowerCase() !== 'authorization' || !currentToken) {
+        headers.set(key, value);
+      }
     });
   }
   
-  // DEV logging
+  const endpoint = url.replace(API_URL, '');
+  
+  // DEV logging - detailed for debugging native auth issues
   if (__DEV__) {
-    const endpoint = url.replace(API_URL, '');
+    console.log(`[apiFetch] ========== REQUEST ==========`);
     console.log(`[apiFetch] ${options.method || 'GET'} ${endpoint}`);
-    console.log(`[apiFetch] hasToken: ${hasSessionToken()}, token: ${getMaskedToken()}`);
-    console.log(`[apiFetch] Authorization header: ${headers.has('Authorization') ? 'present' : 'MISSING'}`);
+    console.log(`[apiFetch] Token in memory: ${currentToken ? `present (...${currentToken.slice(-6)})` : 'NULL'}`);
+    console.log(`[apiFetch] hasSessionToken(): ${hasSessionToken()}`);
+    console.log(`[apiFetch] Authorization header set: ${headers.has('Authorization')}`);
+    if (headers.has('Authorization')) {
+      const authValue = headers.get('Authorization') || '';
+      console.log(`[apiFetch] Auth header value: Bearer ...${authValue.slice(-6)}`);
+    }
+    console.log(`[apiFetch] ================================`);
   }
   
   const response = await fetch(url, {
@@ -33,23 +56,50 @@ const apiFetch = async (url: string, options: RequestInit = {}): Promise<Respons
     headers: headers,
   });
   
+  // Log response status in DEV
+  if (__DEV__) {
+    console.log(`[apiFetch] Response: ${response.status} from ${endpoint}`);
+  }
+  
   // Handle 401 - user needs to login
   if (response.status === 401) {
-    const endpoint = url.replace(API_URL, '');
-    
     if (__DEV__) {
-      console.warn(`[apiFetch] 401 from ${endpoint}`);
+      console.warn(`[apiFetch] ⚠️ 401 UNAUTHORIZED from ${endpoint}`);
+      console.warn(`[apiFetch] Token was: ${currentToken ? `present (...${currentToken.slice(-6)})` : 'NULL'}`);
     }
     
     // Check if we should ignore this 401 (grace period)
     if (shouldIgnore401(endpoint)) {
+      if (__DEV__) {
+        console.log(`[apiFetch] 401 ignored due to grace period`);
+      }
       throw new Error('AUTH_REQUIRED_GRACE');
     }
     
-    // Clear auth state - will trigger redirect to login
-    await setSessionToken(null);
-    useAuthStore.getState().setUser(null);
+    // Increment 401 counter
+    consecutive401Count++;
+    
+    if (__DEV__) {
+      console.log(`[apiFetch] Consecutive 401 count: ${consecutive401Count}/${MAX_401_BEFORE_LOGOUT}`);
+    }
+    
+    // Only logout after multiple consecutive 401s to prevent race conditions
+    if (consecutive401Count >= MAX_401_BEFORE_LOGOUT) {
+      if (__DEV__) {
+        console.warn(`[apiFetch] 🚪 LOGGING OUT after ${consecutive401Count} consecutive 401 errors`);
+      }
+      consecutive401Count = 0;
+      // Clear auth state - will trigger redirect to login
+      await setSessionToken(null);
+      useAuthStore.getState().setUser(null);
+    }
+    
     throw new Error('AUTH_REQUIRED');
+  }
+  
+  // Reset 401 counter on successful response
+  if (response.ok) {
+    consecutive401Count = 0;
   }
   
   return response;
