@@ -903,6 +903,7 @@ export default function HensScreen() {
               </TouchableOpacity>
             </View>
           </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
       
