@@ -37,6 +37,7 @@ export const lightTheme: ThemeColors = {
   background: '#F5F5F5',
   surface: '#FFFFFF',
   surfaceSecondary: '#E8E8E8',
+  card: '#FFFFFF',
   text: '#1A1A1A',
   textSecondary: '#666666',
   textMuted: '#999999',
