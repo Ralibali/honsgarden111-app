@@ -272,8 +272,11 @@ honsgarden.se      ALIAS  [deployment-url].emergent.host
 - [x] **AI Advisor fix** (FIXAT 2025-02-28) - Hanterar body parameter korrekt
 - [x] **Scroll-indikator snabbåtgärder** (FIXAT 2025-02-28) - "Svep →" visas
 - [x] **Dölj "Anpassa funktioner"** (FIXAT 2025-02-28) - Endast för gratisanvändare
+- [x] **Onboarding uppdaterad** (FIXAT 2025-02-28) - 6 slides med Community, Sysslor, AI
+- [x] **Tangentbord-fix hönor** (FIXAT 2025-02-28) - ScrollView + KeyboardAvoidingView
+- [x] **AI-rapporter credentials** (FIXAT 2025-02-28) - credentials: include
+- [x] **Community refresh** (FIXAT 2025-02-28) - useFocusEffect laddar om poster
 - [ ] Verifiera deployment fungerar med rätt databas (väntar på användarbekräftelse)
-- [ ] **Tangentbord-fix vid lägg till höna** - KeyboardAvoidingView behöver justeras
 
 ### P1 - Viktigt
 - [ ] DNS-setup för honsgarden.se
