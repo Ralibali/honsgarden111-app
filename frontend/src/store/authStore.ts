@@ -4,6 +4,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
+// Runtime guard - log warning if API_URL is not configured
+if (!API_URL) {
+  console.error('CRITICAL: EXPO_PUBLIC_BACKEND_URL is not configured. API calls will fail.');
+}
+
 interface User {
   user_id: string;
   email: string;
