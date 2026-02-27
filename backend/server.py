@@ -1439,7 +1439,8 @@ async def login_email(data: EmailLogin, request: Request, response: Response):
         "user_id": user_id,
         "email": user["email"],
         "name": user.get("name", ""),
-        "picture": user.get("picture")
+        "picture": user.get("picture"),
+        "session_token": session_token  # Include token for native apps
     }
 
 @api_router.post("/auth/forgot-password")
