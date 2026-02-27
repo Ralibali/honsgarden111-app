@@ -3,122 +3,111 @@
 ## Projektöversikt
 Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb. Appen hjälper användare att spåra äggproduktion, hantera hönor och tuppar, få AI-drivna insikter och prenumerera på premium-funktioner.
 
-## Tech Stack
-- **Frontend**: React Native (Expo SDK 54), Expo Router, Zustand
-- **Backend**: FastAPI, Python
-- **Databas**: MongoDB Atlas
-- **Betalningar**: 
-  - iOS: RevenueCat (App Store IAP)
-  - Android: RevenueCat (Google Play IAP)
-  - Webb: Stripe
-- **AI**: OpenAI via Emergent Integrations
-- **Email**: Resend
+## Nyligen Slutförda Uppgifter (2025-02-27)
 
-## Nyligen Slutförda Uppgifter
+### 7-dagars Gratis Trial Premium ✅
+- Nya användare får automatiskt 7 dagars gratis Premium vid registrering
+- `expires_at` sätts korrekt i subscription
+- Plan märks som "trial"
 
-### P0 Auth Fix - KOMPLETT ✅ (2025-02-27)
-- Borttagen `default_user` fallback från alla Pydantic-modeller
-- Alla user-protected endpoints returnerar nu 401 om ej autentiserad
-- Frontend stores (appStore.ts, premiumStore.ts) har `apiFetch` helper med 401-hantering
-- Testat: 18/18 backend-tester passerade
+### Referral-system ("Bjud in vänner") ✅
+- **Varje användare får en unik 8-teckens referral-kod**
+- **Vid registrering med referral-kod:**
+  - Ny användare får 7 dagars trial (standard)
+  - Den som refererade får +7 dagars Premium (utökas på befintlig tid)
+- **Nya endpoints:**
+  - `GET /api/referral/info` - Hämta din kod och statistik
+  - `GET /api/referral/list` - Se lista över värvade vänner
+- **Ny UI-sida:** `/invite` - Bjud in vänner med delning och statistik
+- **Knapp i Settings:** "Bjud in vänner – få 7 dagars Premium!"
 
-### P1 Features - KOMPLETT ✅ (2025-02-27)
-**Tuppar-funktionen:**
-- Typ-toggle (Höna 🐔 / Tupp 🐓) i Add/Edit-modalen
-- `hen_type` sparas till backend och visas i listan
-- Tuppar visar 🐓 emoji och "Tupp"-badge
-- Rubriken visar separata räknare: "X hönor • Y tuppar"
-- Knappen ändrad till "Lägg till höna/tupp"
+### Native Admin-panel ✅
+- Flyttad från webb till native app
+- Tre flikar: Användare, Premium, Feedback
+- Sök, radera användare, hantera feedback-status
+- Knapp i Settings: "Admin Panel" (endast för admins)
 
-**AI-funktioner:**
-- "Dagens tips" (GET /api/ai/daily-tip) - fungerar för inloggade användare
-- "Fråga Agda" (POST /api/ai/advisor) - fungerar för inloggade användare
-- Preview-läge för icke-premium användare
+### AI-förbättringar ✅
+- `used_fallback` och `ai_provider_ok` flaggor i alla AI-responses
+- Stockholm-tid för alla datumhanteringar
+- Förbättrad 7-dagars prognos med insikter (trend, bästa dag, datakvalitet)
+- Smartare "höna värper inte"-varningar (skippar om användaren inte trackar per höna)
 
-**Prissättning:**
-- Webb: 19 kr/mån och 149 kr/år (hårdkodat i paywall.tsx)
-- Native: Dynamiska priser från RevenueCat/Store
+### Magic Link ✅
+- `POST /api/auth/magic-link` - Skapa länk (skickas via email)
+- `GET /api/auth/magic/consume` - Konsumera länk, skapa session
+- Rate limiting: 3/min, 10/h
+- TTL: 10 minuter
+- Knapp i Settings: "Logga in på webben"
+
+### "Kom ihåg mig" ✅
+- Checkbox på webbens login-sida
+- `remember_token` cookie (90 dagar, hashad i DB)
+- Rotation vid användning för säkerhet
+
+### Premium-synk ✅
+- `GET /api/premium/status` returnerar nu:
+  - `source`: "stripe" | "revenuecat" | null
+  - `last_verified_at`: ISO timestamp
+  - `expires_at`: Används för att verifiera aktiv status
 
 ## Konfiguration
 
 ### Miljövariabler (Backend)
 ```
 MONGO_URL=...
+DB_NAME=honsgarden
 STRIPE_API_KEY=...
-STRIPE_PUBLISHABLE_KEY=...
-STRIPE_PRICE_MONTHLY=...
-STRIPE_PRICE_YEARLY=...
 RESEND_API_KEY=...
 REVENUECAT_API_KEY=...
-ENVIRONMENT=production
+EMERGENT_LLM_KEY=...
+APP_URL=https://honsgarden.se
 ```
 
-### Miljövariabler (Frontend)
+### Miljövariabler för Production Deployment
+**VIKTIGT:** Lägg till dessa i Emergent Env Variables för production:
 ```
-EXPO_PUBLIC_BACKEND_URL=...
-EXPO_PUBLIC_REVENUECAT_IOS_API_KEY=...
-EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=...
+MONGO_URL = mongodb+srv://honsgarden_main:...@honsgarden.yatzdav.mongodb.net/...
+DB_NAME = honsgarden
 ```
 
-## Endpoints som kräver auth (401)
+## DNS-inställningar för honsgarden.se
 
-| Endpoint | Metod | Beskrivning |
-|----------|-------|-------------|
-| /api/coop | GET/PUT | Hönsgårdsinställningar |
-| /api/eggs | GET/POST | Äggregistrering |
-| /api/hens | GET/POST | Höns/tupp-hantering |
-| /api/transactions | GET/POST | Ekonomi |
-| /api/statistics/* | GET | All statistik |
-| /api/ai/* | GET/POST | Alla AI-funktioner |
-| /api/health-logs | GET/POST | Hälsologg |
+```
+www.honsgarden.se  CNAME  [deployment-url].emergent.host
+honsgarden.se      ALIAS  [deployment-url].emergent.host
+```
 
-## Publika endpoints
+## API-endpoints
 
-| Endpoint | Metod | Beskrivning |
-|----------|-------|-------------|
-| /api/health | GET | Hälsokontroll |
-| /api/premium/status | GET | Premium-status (is_premium: false om ej inloggad) |
-| /api/auth/* | POST | Auth-endpoints |
+### Referral
+- `GET /api/referral/info` - Hämta kod och statistik
+- `GET /api/referral/list` - Lista värvade vänner
+
+### Magic Link
+- `POST /api/auth/magic-link` - Skapa länk (kräver auth)
+- `GET /api/auth/magic/consume` - Konsumera länk (publik)
+
+### Premium
+- `GET /api/premium/status` - Status med source och last_verified_at
+
+## Frontend-sidor
+
+- `/admin` - Native admin-panel
+- `/invite` - Bjud in vänner
+- `/magic` - Magic link redirect (webb)
 
 ## Återstående uppgifter
 
-### P1 - Verifiering (Väntar på användaren)
-- [ ] Verifiera "Glömt lösenord"-flödet (fix implementerad)
-- [ ] Testa IAP end-to-end på iOS/Android med svenskt testkonto
+### P0 - Kritiskt
+- [ ] Konfigurera production environment variables i Emergent
+- [ ] Verifiera deployment fungerar med rätt databas
 
-### P2 - Deploy & Distribution
-- [ ] Deploya appen
-- [ ] Konfigurera DNS för honsgarden.se
-- [ ] Skapa ny EAS Build med alla fixar
-- [ ] Lägg till RevenueCat API-nycklar i EAS secrets
+### P1 - Viktigt
+- [ ] DNS-setup för honsgarden.se
+- [ ] Ny EAS Build med alla fixar
+- [ ] Testa referral-flödet end-to-end
 
-### P3 - Backlog
-- [ ] Fixa i18n-kraschen på webb (rekurrent)
-- [ ] Göra IAP-verifieringen mer robust
+### P2 - Backlog
+- [ ] Fixa i18n-kraschen på webb
 - [ ] Affiliate-produktlänkar
-- [ ] Refaktorera backend till separata routers
-
-## Changelog
-
-### 2025-02-27 (Session 2)
-**P1 Features KOMPLETT:**
-- Implementerat Tuppar-funktionen i hens.tsx
-  - Ny hen_type toggle (Höna/Tupp) med emojis
-  - Sparar hen_type till backend
-  - Visar rätt ikon och badge i listan
-  - Uppdaterad rubrik och räknare
-- Verifierat AI-funktioner fungerar för inloggade användare
-- Verifierat prissättning: 19 kr/mån, 149 kr/år
-
-### 2025-02-27 (Session 1)
-**P0 Auth Fix KOMPLETT:**
-- Borttagen `default_user` defaults från Pydantic-modeller
-- Alla user-protected endpoints använder `require_user_id()`
-- Frontend `apiFetch` helper med 401-hantering
-- 100% av 18 tester passerade
-
-### Tidigare ändringar
-- RevenueCat för iOS OCH Android
-- Radera konto-funktion
-- Väder-widget
-- Legal links i Settings och Login
