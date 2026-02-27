@@ -1,21 +1,51 @@
 import { create } from 'zustand';
-import { useAuthStore, getAuthHeaders, setSessionToken } from './authStore';
+import { useAuthStore, getAuthHeaders, setSessionToken, hasSessionToken, getMaskedToken, shouldIgnore401 } from './authStore';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
-// API fetch helper with auth handling
+// Robust API fetch helper with auth handling and logging
 const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  // Build headers robustly - handle both object and Headers
+  const baseHeaders = getAuthHeaders();
+  const headers = new Headers(baseHeaders);
+  
+  // Merge in any additional headers from options
+  if (options.headers) {
+    const optHeaders = options.headers instanceof Headers 
+      ? options.headers 
+      : new Headers(options.headers as Record<string, string>);
+    optHeaders.forEach((value, key) => {
+      headers.set(key, value);
+    });
+  }
+  
+  // DEV logging
+  if (__DEV__) {
+    const endpoint = url.replace(API_URL, '');
+    console.log(`[apiFetch] ${options.method || 'GET'} ${endpoint}`);
+    console.log(`[apiFetch] hasToken: ${hasSessionToken()}, token: ${getMaskedToken()}`);
+    console.log(`[apiFetch] Authorization header: ${headers.has('Authorization') ? 'present' : 'MISSING'}`);
+  }
+  
   const response = await fetch(url, {
     ...options,
     credentials: 'include',
-    headers: {
-      ...getAuthHeaders(),
-      ...options.headers,
-    },
+    headers: headers,
   });
   
   // Handle 401 - user needs to login
   if (response.status === 401) {
+    const endpoint = url.replace(API_URL, '');
+    
+    if (__DEV__) {
+      console.warn(`[apiFetch] 401 from ${endpoint}`);
+    }
+    
+    // Check if we should ignore this 401 (grace period)
+    if (shouldIgnore401(endpoint)) {
+      throw new Error('AUTH_REQUIRED_GRACE');
+    }
+    
     // Clear auth state - will trigger redirect to login
     await setSessionToken(null);
     useAuthStore.getState().setUser(null);
