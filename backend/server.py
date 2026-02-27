@@ -6218,6 +6218,217 @@ async def get_flock_statistics(request: Request):
         "by_breed": {},  # Could be expanded
         "by_flock": {}   # Could be expanded
     }
+
+# ============ COMMUNITY ENDPOINTS ============
+
+@api_router.get("/community/posts")
+async def get_community_posts(
+    request: Request, 
+    category: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0
+):
+    """Get community posts feed - available for all users"""
+    user = await get_current_user(request)
+    user_id = user.user_id if user else None
+    
+    # Build query
+    query = {"is_hidden": False}
+    if category and category != "all":
+        query["category"] = category
+    
+    # Get posts sorted by newest first
+    posts = await db.community_posts.find(
+        query, 
+        {"_id": 0}
+    ).sort("created_at", -1).skip(offset).limit(limit).to_list(limit)
+    
+    # Format posts for response
+    formatted_posts = []
+    for post in posts:
+        formatted_posts.append({
+            "id": post["id"],
+            "user_name": post.get("user_name", "Anonym"),
+            "content": post["content"],
+            "category": post.get("category", "other"),
+            "category_label": CATEGORY_LABELS.get(post.get("category", "other"), {}).get("sv", "Övrigt"),
+            "created_at": post["created_at"].isoformat() if isinstance(post["created_at"], datetime) else post["created_at"],
+            "likes": post.get("likes", 0),
+            "liked_by_me": user_id in post.get("liked_by", []) if user_id else False,
+            "is_mine": post.get("user_id") == user_id if user_id else False,
+        })
+    
+    total = await db.community_posts.count_documents(query)
+    
+    return {
+        "posts": formatted_posts,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "categories": [
+            {"value": "all", "label": "📋 Alla"},
+            {"value": "eggs", "label": "🥚 Äggproduktion"},
+            {"value": "health", "label": "🐔 Hälsa & Sjukdom"},
+            {"value": "housing", "label": "🏠 Hönshus & Utrustning"},
+            {"value": "feed", "label": "🍽️ Foder"},
+            {"value": "other", "label": "❓ Övrigt"},
+        ]
+    }
+
+
+@api_router.post("/community/posts")
+async def create_community_post(request: Request, post_data: CommunityPostCreate):
+    """Create a new community post - requires login"""
+    user_id = await require_user_id(request)
+    
+    # Get user info
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Användare hittades inte")
+    
+    # Check rate limiting for free users
+    subscription = await db.subscriptions.find_one(
+        {"user_id": user_id, "status": "active", "expires_at": {"$gt": datetime.now(timezone.utc)}},
+        {"_id": 0}
+    )
+    is_premium = subscription is not None
+    
+    if not is_premium:
+        # Free users: max 3 posts per day
+        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        posts_today = await db.community_posts.count_documents({
+            "user_id": user_id,
+            "created_at": {"$gte": today_start}
+        })
+        if posts_today >= 3:
+            raise HTTPException(
+                status_code=429, 
+                detail="Som gratismedlem kan du skriva max 3 inlägg per dag. Uppgradera till Premium för obegränsade inlägg!"
+            )
+    
+    # Content moderation
+    is_ok, reason = check_forbidden_content(post_data.content)
+    if not is_ok:
+        raise HTTPException(status_code=400, detail=reason)
+    
+    # Content length check
+    if len(post_data.content) < 10:
+        raise HTTPException(status_code=400, detail="Inlägget måste vara minst 10 tecken")
+    if len(post_data.content) > 1000:
+        raise HTTPException(status_code=400, detail="Inlägget får vara max 1000 tecken")
+    
+    # Create post
+    post = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "user_name": user.get("name", "Hönsentusiast"),
+        "content": post_data.content.strip(),
+        "category": post_data.category if post_data.category in ["eggs", "health", "housing", "feed", "other"] else "other",
+        "created_at": datetime.now(timezone.utc),
+        "likes": 0,
+        "liked_by": [],
+        "is_hidden": False,
+        "hidden_reason": None
+    }
+    
+    await db.community_posts.insert_one(post)
+    
+    # Return without _id
+    post.pop("_id", None)
+    post["created_at"] = post["created_at"].isoformat()
+    post["category_label"] = CATEGORY_LABELS.get(post["category"], {}).get("sv", "Övrigt")
+    post["liked_by_me"] = False
+    post["is_mine"] = True
+    
+    return post
+
+
+@api_router.post("/community/posts/{post_id}/like")
+async def like_community_post(request: Request, post_id: str):
+    """Like/unlike a community post"""
+    user_id = await require_user_id(request)
+    
+    post = await db.community_posts.find_one({"id": post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Inlägget hittades inte")
+    
+    liked_by = post.get("liked_by", [])
+    
+    if user_id in liked_by:
+        # Unlike
+        liked_by.remove(user_id)
+        action = "unliked"
+    else:
+        # Like
+        liked_by.append(user_id)
+        action = "liked"
+    
+    await db.community_posts.update_one(
+        {"id": post_id},
+        {"$set": {"liked_by": liked_by, "likes": len(liked_by)}}
+    )
+    
+    return {"action": action, "likes": len(liked_by)}
+
+
+@api_router.delete("/community/posts/{post_id}")
+async def delete_community_post(request: Request, post_id: str):
+    """Delete a community post - only owner or admin"""
+    user_id = await require_user_id(request)
+    
+    post = await db.community_posts.find_one({"id": post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Inlägget hittades inte")
+    
+    # Check if user is owner or admin
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    is_admin = user.get("is_admin", False) if user else False
+    
+    if post["user_id"] != user_id and not is_admin:
+        raise HTTPException(status_code=403, detail="Du kan bara radera dina egna inlägg")
+    
+    await db.community_posts.delete_one({"id": post_id})
+    
+    return {"message": "Inlägget har raderats"}
+
+
+@api_router.post("/community/posts/{post_id}/hide")
+async def hide_community_post(request: Request, post_id: str, reason: str = "Bryter mot riktlinjerna"):
+    """Hide a community post - admin only"""
+    user_id = await require_user_id(request)
+    
+    # Check if admin
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Endast administratörer kan dölja inlägg")
+    
+    result = await db.community_posts.update_one(
+        {"id": post_id},
+        {"$set": {"is_hidden": True, "hidden_reason": reason, "hidden_by": user_id, "hidden_at": datetime.now(timezone.utc)}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Inlägget hittades inte")
+    
+    return {"message": "Inlägget har dolts", "reason": reason}
+
+
+@api_router.get("/admin/community/posts")
+async def admin_get_community_posts(request: Request, include_hidden: bool = True):
+    """Get all community posts for admin moderation"""
+    user_id = await require_user_id(request)
+    
+    # Check if admin
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Endast administratörer")
+    
+    query = {} if include_hidden else {"is_hidden": False}
+    posts = await db.community_posts.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+    
+    return {"posts": posts, "total": len(posts)}
+
+
 @api_router.get("/")
 async def root():
     return {"message": "Hönsgården API", "version": "2.0"}
