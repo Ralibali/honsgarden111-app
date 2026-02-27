@@ -240,6 +240,74 @@ export default function HomeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
   
+  // Load Daily Tip
+  const loadDailyTip = async () => {
+    if (!isPremium) {
+      showPremiumGate(isSv ? 'Dagens tips' : 'Daily Tip', 'bulb');
+      return;
+    }
+    
+    setDailyTipLoading(true);
+    setShowDailyTipModal(true);
+    
+    try {
+      const response = await fetch(`${API_URL}/api/ai/daily-tip`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setDailyTip(data.tip || data.message || '');
+      } else {
+        setDailyTip(isSv ? 'Kunde inte ladda dagens tips' : 'Could not load daily tip');
+      }
+    } catch (error) {
+      console.error('Daily tip error:', error);
+      setDailyTip(isSv ? 'Ett fel uppstod' : 'An error occurred');
+    } finally {
+      setDailyTipLoading(false);
+    }
+  };
+  
+  // Ask Agda (AI Advisor)
+  const askAgda = async () => {
+    if (!agdaQuestion.trim()) return;
+    
+    setAgdaLoading(true);
+    
+    try {
+      const response = await fetch(`${API_URL}/api/ai/advisor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ question: agdaQuestion })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAgdaAnswer(data.answer || data.response || data.message || '');
+      } else {
+        setAgdaAnswer(isSv ? 'Kunde inte få svar från Agda' : 'Could not get response from Agda');
+      }
+    } catch (error) {
+      console.error('Agda error:', error);
+      setAgdaAnswer(isSv ? 'Ett fel uppstod' : 'An error occurred');
+    } finally {
+      setAgdaLoading(false);
+    }
+  };
+  
+  const openAgdaModal = () => {
+    if (!isPremium) {
+      showPremiumGate(isSv ? 'Fråga Agda' : 'Ask Agda', 'chatbubbles');
+      return;
+    }
+    setAgdaQuestion('');
+    setAgdaAnswer('');
+    setShowAgdaModal(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+  
   const showUndoSnackbar = (count: number) => {
     setLastRegisteredCount(count);
     setShowUndo(true);
