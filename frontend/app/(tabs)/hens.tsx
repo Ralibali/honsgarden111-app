@@ -767,23 +767,30 @@ export default function HensScreen() {
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
         >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {editingHen 
-                ? (isSv ? 'Redigera höna' : 'Edit hen')
-                : (isSv ? 'Lägg till höna' : 'Add hen')
-              }
-            </Text>
-            
-            <Text style={styles.inputLabel}>{isSv ? 'Namn' : 'Name'} *</Text>
-            <TextInput
-              style={styles.textInput}
-              value={name}
-              onChangeText={setName}
-              placeholder={isSv ? 'T.ex. Gull-Britt' : 'E.g. Henrietta'}
-              placeholderTextColor={colors.textMuted}
-            />
+          <ScrollView 
+            style={{ maxHeight: '90%' }}
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                {editingHen 
+                  ? (isSv ? 'Redigera höna' : 'Edit hen')
+                  : (isSv ? 'Lägg till höna' : 'Add hen')
+                }
+              </Text>
+              
+              <Text style={styles.inputLabel}>{isSv ? 'Namn' : 'Name'} *</Text>
+              <TextInput
+                style={styles.textInput}
+                value={name}
+                onChangeText={setName}
+                placeholder={isSv ? 'T.ex. Gull-Britt' : 'E.g. Henrietta'}
+                placeholderTextColor={colors.textMuted}
+              />
             
             {/* Hen Type Toggle - Höna/Tupp */}
             <Text style={styles.inputLabel}>{isSv ? 'Typ' : 'Type'}</Text>
