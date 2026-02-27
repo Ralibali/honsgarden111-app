@@ -6645,6 +6645,133 @@ async def admin_get_community_posts(request: Request, include_hidden: bool = Tru
     return {"posts": posts, "total": len(posts)}
 
 
+# ============ SPONSORED POSTS ADMIN ENDPOINTS ============
+
+@api_router.get("/admin/sponsored")
+async def admin_get_sponsored_posts(request: Request):
+    """Get all sponsored posts for admin"""
+    user_id = await require_user_id(request)
+    
+    # Check if admin
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Endast administratörer")
+    
+    # Get from DB
+    db_posts = await db.sponsored_posts.find({}, {"_id": 0}).sort("priority", -1).to_list(100)
+    
+    # If DB is empty, return defaults
+    if not db_posts:
+        return {"posts": DEFAULT_SPONSORED_POSTS, "source": "default"}
+    
+    return {"posts": db_posts, "source": "database"}
+
+
+@api_router.post("/admin/sponsored")
+async def admin_create_sponsored_post(request: Request, post_data: SponsoredPostCreate):
+    """Create a new sponsored post"""
+    user_id = await require_user_id(request)
+    
+    # Check if admin
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Endast administratörer")
+    
+    post = {
+        "id": str(uuid.uuid4()),
+        "title": post_data.title,
+        "content": post_data.content,
+        "category": post_data.category,
+        "affiliate_url": post_data.affiliate_url,
+        "discount_code": post_data.discount_code,
+        "discount_percent": post_data.discount_percent,
+        "image_url": post_data.image_url,
+        "trigger_conditions": post_data.trigger_conditions or ["always"],
+        "start_date": post_data.start_date,
+        "end_date": post_data.end_date,
+        "is_active": post_data.is_active,
+        "priority": post_data.priority,
+        "created_at": datetime.now(timezone.utc),
+        "clicks": 0,
+        "impressions": 0,
+        "created_by": user_id
+    }
+    
+    await db.sponsored_posts.insert_one(post)
+    post.pop("_id", None)
+    
+    return post
+
+
+@api_router.put("/admin/sponsored/{post_id}")
+async def admin_update_sponsored_post(request: Request, post_id: str, post_data: SponsoredPostCreate):
+    """Update a sponsored post"""
+    user_id = await require_user_id(request)
+    
+    # Check if admin
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Endast administratörer")
+    
+    update_data = {
+        "title": post_data.title,
+        "content": post_data.content,
+        "category": post_data.category,
+        "affiliate_url": post_data.affiliate_url,
+        "discount_code": post_data.discount_code,
+        "discount_percent": post_data.discount_percent,
+        "image_url": post_data.image_url,
+        "trigger_conditions": post_data.trigger_conditions or ["always"],
+        "start_date": post_data.start_date,
+        "end_date": post_data.end_date,
+        "is_active": post_data.is_active,
+        "priority": post_data.priority,
+        "updated_at": datetime.now(timezone.utc)
+    }
+    
+    result = await db.sponsored_posts.update_one(
+        {"id": post_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Sponsrat inlägg hittades inte")
+    
+    return {"message": "Uppdaterat", "post_id": post_id}
+
+
+@api_router.delete("/admin/sponsored/{post_id}")
+async def admin_delete_sponsored_post(request: Request, post_id: str):
+    """Delete a sponsored post"""
+    user_id = await require_user_id(request)
+    
+    # Check if admin
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Endast administratörer")
+    
+    result = await db.sponsored_posts.delete_one({"id": post_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Sponsrat inlägg hittades inte")
+    
+    return {"message": "Raderat", "post_id": post_id}
+
+
+@api_router.post("/community/sponsored/{post_id}/click")
+async def track_sponsored_click(request: Request, post_id: str):
+    """Track when a user clicks a sponsored post affiliate link"""
+    # Remove 'sponsored-' prefix if present
+    actual_id = post_id.replace("sponsored-", "")
+    
+    await db.sponsored_posts.update_one(
+        {"id": actual_id},
+        {"$inc": {"clicks": 1}}
+    )
+    
+    return {"tracked": True}
+
+
 @api_router.get("/")
 async def root():
     return {"message": "Hönsgården API", "version": "2.0"}
