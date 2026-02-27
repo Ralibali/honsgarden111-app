@@ -1858,19 +1858,36 @@ async def stripe_webhook(request: Request):
         return {"status": "error", "message": str(e)}
 
 # ============ PREMIUM STATUS ENDPOINT ============
-@api_router.get("/premium/status", response_model=PremiumStatusResponse)
+@api_router.get("/premium/status")
 async def get_premium_status(request: Request):
-    """Get premium subscription status for current user"""
+    """Get premium subscription status for current user
+    Works across both Stripe (web) and RevenueCat (app) purchases"""
     user = await get_current_user(request)
     
     if not user:
         # Not logged in - return not premium (no default_user fallback)
-        return PremiumStatusResponse(is_premium=False)
+        return {
+            "is_premium": False,
+            "subscription_id": None,
+            "plan": None,
+            "expires_at": None,
+            "stripe_customer_id": None,
+            "source": None,
+            "last_verified_at": None
+        }
     
-    subscription = await db.subscriptions.find_one({"user_id": user.user_id})
+    subscription = await db.subscriptions.find_one({"user_id": user.user_id}, {"_id": 0})
     
     if not subscription:
-        return PremiumStatusResponse(is_premium=False)
+        return {
+            "is_premium": False,
+            "subscription_id": None,
+            "plan": None,
+            "expires_at": None,
+            "stripe_customer_id": None,
+            "source": None,
+            "last_verified_at": None
+        }
     
     is_active = subscription.get('is_active', False)
     expires_at = subscription.get('expires_at')
@@ -1887,13 +1904,24 @@ async def get_premium_status(request: Request):
                 {"$set": {"is_active": False}}
             )
     
-    return PremiumStatusResponse(
-        is_premium=is_active,
-        subscription_id=subscription.get('stripe_session_id'),
-        plan=subscription.get('plan'),
-        expires_at=expires_at.isoformat() if expires_at else None,
-        stripe_customer_id=subscription.get('stripe_customer_id')
-    )
+    # Determine source from purchase_source field
+    purchase_source = subscription.get('purchase_source', '')
+    if 'stripe' in purchase_source:
+        source = 'stripe'
+    elif 'revenuecat' in purchase_source or 'iap' in purchase_source:
+        source = 'revenuecat'
+    else:
+        source = purchase_source or None
+    
+    return {
+        "is_premium": is_active,
+        "subscription_id": subscription.get('stripe_session_id') or subscription.get('stripe_subscription_id'),
+        "plan": subscription.get('plan'),
+        "expires_at": expires_at.isoformat() if expires_at else None,
+        "stripe_customer_id": subscription.get('stripe_customer_id'),
+        "source": source,
+        "last_verified_at": subscription.get('updated_at').isoformat() if subscription.get('updated_at') else None
+    }
 
 # ============ CANCEL SUBSCRIPTION ENDPOINT ============
 @api_router.post("/subscription/cancel")
