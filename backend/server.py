@@ -5993,7 +5993,9 @@ async def get_weather(request: Request, lat: float = 59.33, lon: float = 18.07):
                 
                 temp = current.get("temperature_2m")
                 humidity = current.get("relative_humidity_2m")
-                wind_speed = current.get("wind_speed_10m")
+                wind_speed_kmh = current.get("wind_speed_10m")
+                # Convert km/h to m/s (divide by 3.6)
+                wind_speed = round(wind_speed_kmh / 3.6, 1) if wind_speed_kmh else None
                 feels_like = current.get("apparent_temperature")
                 
                 weather_data["current"] = {
