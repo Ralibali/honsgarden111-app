@@ -596,13 +596,27 @@ export default function AdminPanel() {
                     </Text>
                   </View>
                   {!isSelectMode && (
-                    <TouchableOpacity
-                      style={[styles.deleteButton, { backgroundColor: '#ef444420' }]}
-                      onPress={() => handleDeleteUser(user.user_id, user.email)}
-                    >
-                      <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                      <Text style={{ color: '#ef4444', marginLeft: 4 }}>Radera</Text>
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: user.is_premium ? '#f59e0b20' : '#22c55e20' }]}
+                        onPress={() => openPremiumModal(user)}
+                      >
+                        <Ionicons 
+                          name={user.is_premium ? "star" : "star-outline"} 
+                          size={16} 
+                          color={user.is_premium ? '#f59e0b' : '#22c55e'} 
+                        />
+                        <Text style={{ color: user.is_premium ? '#f59e0b' : '#22c55e', marginLeft: 4, fontSize: 12 }}>
+                          {user.is_premium ? 'Ändra' : 'Premium'}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.deleteButton, { backgroundColor: '#ef444420' }]}
+                        onPress={() => handleDeleteUser(user.user_id, user.email)}
+                      >
+                        <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                      </TouchableOpacity>
+                    </View>
                   )}
                 </TouchableOpacity>
               ))}
