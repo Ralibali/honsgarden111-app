@@ -35,13 +35,18 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Stripe config - No fallback, will fail if not set
+# Stripe config - No fallback, must be set in production
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
-if not STRIPE_API_KEY:
-    print("WARNING: STRIPE_API_KEY not set - Stripe payments will not work")
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
 STRIPE_PRICE_MONTHLY = os.environ.get('STRIPE_PRICE_MONTHLY', '')
 STRIPE_PRICE_YEARLY = os.environ.get('STRIPE_PRICE_YEARLY', '')
+
+# In production, Stripe key is required - fail hard if missing
+IS_PRODUCTION = os.environ.get('ENVIRONMENT', '').lower() == 'production'
+if IS_PRODUCTION and not STRIPE_API_KEY:
+    raise RuntimeError("CRITICAL: STRIPE_API_KEY must be set in production environment!")
+elif not STRIPE_API_KEY:
+    print("WARNING: STRIPE_API_KEY not set - Stripe payments will not work")
 
 # Resend (Email) config
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
