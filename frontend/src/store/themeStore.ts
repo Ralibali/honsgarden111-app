@@ -55,6 +55,7 @@ export const darkTheme: ThemeColors = {
   background: '#0D0D0D',
   surface: '#1C1C1E',
   surfaceSecondary: '#2C2C2E',
+  card: '#1C1C1E',
   text: '#FFFFFF',
   textSecondary: '#8E8E93',
   textMuted: '#666666',
