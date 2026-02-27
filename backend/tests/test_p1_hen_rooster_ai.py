@@ -15,7 +15,7 @@ import time
 import uuid
 
 # Use the public API URL
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://hens-preview.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://coop-hub-1.preview.emergentagent.com').rstrip('/')
 
 # Test credentials from iteration 18
 TEST_USER_EMAIL = "test-user-1772199665@test.honsgarden.se"

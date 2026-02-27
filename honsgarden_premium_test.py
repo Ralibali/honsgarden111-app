@@ -16,7 +16,7 @@ import uuid
 import time
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://hens-preview.preview.emergentagent.com/api"
+BACKEND_URL = "https://coop-hub-1.preview.emergentagent.com/api"
 
 class HonsgardenPremiumTester:
     def __init__(self):

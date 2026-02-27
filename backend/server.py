@@ -6944,7 +6944,7 @@ ALLOWED_ORIGINS = [
     "http://localhost:8081",
     "http://localhost:19006",
     # Add preview domains for development
-    "https://hens-preview.preview.emergentagent.com",
+    "https://coop-hub-1.preview.emergentagent.com",
 ]
 
 app.add_middleware(
