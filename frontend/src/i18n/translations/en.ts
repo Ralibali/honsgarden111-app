@@ -44,6 +44,9 @@ export default {
     expenses: 'expenses',
     eggsRegistered: '{{count}} eggs registered for today',
     undoRegistration: 'Undo registration',
+    insights: 'Insights',
+    costPerEgg: 'Cost per egg',
+    productivity: 'Productivity',
   },
 
   // Eggs Screen
