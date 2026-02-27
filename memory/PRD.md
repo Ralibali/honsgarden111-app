@@ -5,6 +5,50 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2025-02-27)
 
+### Batch 2: UI & Feature Improvements (2025-02-27)
+
+#### Admin Panel Förbättringar ✅
+- **Multi-select användare**: Kan nu markera flera användare och radera på en gång
+- **Sök på prenumerationer**: Nytt sökfält för att filtrera prenumerationer
+- **"Logga in på webben"**: Borttagen från settings (som begärt)
+
+#### Premium-priser i Modal ✅
+- `PremiumGateModal` hämtar nu faktiska priser från RevenueCat
+- Visar `{pris}/månad` och `{pris}/år` istället för "Flexibelt"/"Bäst värde"
+- "sju dagars" istället för "7 dagars" (svensk grammatik)
+
+#### Spara-knapp för hönsgårdsnamn ✅
+- Explicit "Spara"-knapp bredvid textfältet för hönsgårdsnamnet
+- Sparar även vid onBlur (fokus lämnar fältet)
+
+#### Feedback-modal fix ✅
+- KeyboardAvoidingView tillagd för iOS/Android
+- ScrollView för att kunna se textfältet när tangentbordet är uppe
+
+#### Gratis Agda-teaser för Free Users ✅
+- Ny modal `showFreeAgdaTeaser` istället för direkt premium gate
+- Visar ett gratis tips från `/api/ai/free-tip`
+- Lockar användaren med "Med Premium får du: Obegränsade frågor, dagliga tips, prognos"
+- "Uppgradera till Premium" eller "Kanske senare" knappar
+
+#### Affiliate/Produktrekommendations-struktur ✅
+- **Ny endpoint**: `GET /api/recommendations`
+- Analyserar användarens äggproduktion och säsong
+- Returnerar relevanta produkter (foder, belysning, tillskott, etc.)
+- Förberedd för Adtraction/bonden.se-integration
+- Trigger conditions: `low_eggs`, `winter`, `summer`, `cold`, `parasites`, etc.
+
+### Agdas Kunskapsbas - Massiv Utökning ✅
+Komplett ny kunskapsbas med:
+- **Hälsa & Sjukdomar**: Frisk vs sjuk höna, mykoplasma, newcastle, mareks, koccidios, salmonella, IB, bumblefoot, peritonit, kvalster, löss, maskar
+- **Zoonoser**: Sjukdomar som kan smitta människa
+- **Behandling**: Vad man kan göra hemma vs veterinär, isolering
+- **Värpning**: Varför höns värper dåligt (ljus, ruggning, ålder, stress, näring)
+- **Foder & Näring**: Basfoder, tillskott, GIFTIGA saker
+- **Akuta situationer**: Äggstopp, predatorangrepp, blodig pickning, värmeslag
+- **Tuppar**: Aggression, hälsa, sporrar, kråkande
+- **Säsongskalender**: Januari-December tips
+
 ### Native Auth Fix ✅ (KRITISKT - 2025-02-27)
 **Problem:** Användare loggades ut direkt efter inloggning i Expo Go (native app).
 
