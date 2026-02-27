@@ -6371,7 +6371,145 @@ async def uncomplete_chore(request: Request, chore_id: str):
     })
     
     return {"success": True, "chore_id": chore_id, "date": today}
-async def get_product_recommendations(request: Request):
+
+
+# ============ SMART NOTIFICATIONS DATA ============
+@api_router.get("/notifications/smart-check")
+async def check_smart_notifications(request: Request):
+    """Check user's data and return notification triggers
+    Frontend will use this to send local push notifications"""
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    result = {
+        "should_notify": False,
+        "notification_type": None,
+        "notification_data": {},
+        "stats": {}
+    }
+    
+    try:
+        # Get today's eggs
+        today_eggs = await db.eggs.find({"user_id": user_id, "date": today}).to_list(100)
+        today_count = sum(e.get("count", 1) for e in today_eggs)
+        
+        # Get yesterday's eggs
+        yesterday = (now_stockholm() - timedelta(days=1)).strftime('%Y-%m-%d')
+        yesterday_eggs = await db.eggs.find({"user_id": user_id, "date": yesterday}).to_list(100)
+        yesterday_count = sum(e.get("count", 1) for e in yesterday_eggs)
+        
+        # Get this week's average
+        week_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+        this_week_eggs = await db.eggs.find({
+            "user_id": user_id,
+            "date": {"$gte": week_ago}
+        }).to_list(500)
+        week_total = sum(e.get("count", 1) for e in this_week_eggs)
+        week_average = week_total / 7 if this_week_eggs else 0
+        
+        # Get last week's average
+        two_weeks_ago = (now_stockholm() - timedelta(days=14)).strftime('%Y-%m-%d')
+        last_week_eggs = await db.eggs.find({
+            "user_id": user_id,
+            "date": {"$gte": two_weeks_ago, "$lt": week_ago}
+        }).to_list(500)
+        last_week_total = sum(e.get("count", 1) for e in last_week_eggs)
+        last_week_average = last_week_total / 7 if last_week_eggs else 0
+        
+        # Get total eggs ever
+        all_eggs = await db.eggs.find({"user_id": user_id}).to_list(10000)
+        total_eggs = sum(e.get("count", 1) for e in all_eggs)
+        
+        # Get hen count
+        coop = await db.coops.find_one({"user_id": user_id}, {"_id": 0})
+        hen_count = coop.get("hen_count", 0) if coop else 0
+        
+        # Get user's record
+        user_stats = await db.user_stats.find_one({"user_id": user_id}, {"_id": 0})
+        egg_record = user_stats.get("egg_record", 0) if user_stats else 0
+        
+        # Check for new record
+        new_record = today_count > egg_record and today_count > 0
+        if new_record:
+            await db.user_stats.update_one(
+                {"user_id": user_id},
+                {"$set": {"egg_record": today_count, "record_date": today}},
+                upsert=True
+            )
+        
+        # Build stats
+        result["stats"] = {
+            "today_eggs": today_count,
+            "yesterday_eggs": yesterday_count,
+            "week_average": round(week_average, 1),
+            "last_week_average": round(last_week_average, 1),
+            "total_eggs": total_eggs,
+            "hen_count": hen_count,
+            "new_record": new_record,
+            "egg_record": max(egg_record, today_count)
+        }
+        
+        # Determine notification to send
+        # Priority order: Record > Perfect Day > Milestone > Trend > Encouragement
+        
+        # 1. New record
+        if new_record:
+            result["should_notify"] = True
+            result["notification_type"] = "new_record"
+            result["notification_data"] = {"egg_count": today_count}
+            return result
+        
+        # 2. Perfect day (all hens laid)
+        if hen_count > 0 and today_count >= hen_count:
+            result["should_notify"] = True
+            result["notification_type"] = "perfect_day"
+            result["notification_data"] = {"egg_count": today_count, "hen_count": hen_count}
+            return result
+        
+        # 3. First egg ever
+        if total_eggs == today_count and today_count > 0:
+            result["should_notify"] = True
+            result["notification_type"] = "first_egg"
+            return result
+        
+        # 4. Milestones
+        milestones = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
+        for milestone in milestones:
+            if total_eggs >= milestone and total_eggs - today_count < milestone:
+                result["should_notify"] = True
+                result["notification_type"] = "milestone"
+                result["notification_data"] = {"count": milestone}
+                return result
+        
+        # 5. Production trends (only check if we have enough data)
+        if last_week_average > 0 and week_average > 0:
+            percent_change = ((week_average - last_week_average) / last_week_average) * 100
+            
+            if percent_change >= 15:
+                result["should_notify"] = True
+                result["notification_type"] = "production_up"
+                result["notification_data"] = {"percent": round(percent_change)}
+                return result
+            elif percent_change <= -20:
+                result["should_notify"] = True
+                result["notification_type"] = "production_down"
+                result["notification_data"] = {"percent": round(abs(percent_change))}
+                return result
+        
+        # 6. Random encouragement (5% chance)
+        import random
+        if random.random() < 0.05 and today_count > 0:
+            result["should_notify"] = True
+            result["notification_type"] = "encouragement"
+            return result
+            
+    except Exception as e:
+        logging.error(f"Error checking smart notifications: {e}")
+    
+    return result
+
+
+@api_router.get("/recommendations")
     """Get personalized product recommendations based on user's flock data"""
     user = await get_current_user(request)
     user_id = user.user_id if user else None
