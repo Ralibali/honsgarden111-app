@@ -769,14 +769,31 @@ export default function HomeScreen() {
             <Text style={styles.statLabel}>{t('home.hens')}</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
-            style={[styles.statCard, styles.eggCard]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          <Pressable 
+            style={({ pressed }) => [
+              styles.statCard, 
+              styles.eggCard,
+              pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
+            ]}
+            onPress={handleOneTapAdd}
+            onLongPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
               setShowQuickAdd(true);
             }}
-            activeOpacity={0.7}
+            delayLongPress={400}
           >
+            {/* Tap hint */}
+            <View style={{
+              position: 'absolute',
+              top: 6,
+              left: 6,
+              backgroundColor: colors.success + '20',
+              borderRadius: 8,
+              paddingHorizontal: 6,
+              paddingVertical: 2,
+            }}>
+              <Text style={{ fontSize: 9, color: colors.success, fontWeight: '600' }}>TAP +1</Text>
+            </View>
             {/* Plus icon in corner */}
             <View style={{
               position: 'absolute',
@@ -791,7 +808,9 @@ export default function HomeScreen() {
             <Animated.View style={{ transform: [{ scale: eggPopAnim }] }}>
               <Ionicons name="egg" size={28} color={colors.warning} />
             </Animated.View>
-            <Text style={styles.statValue}>{todayStats?.egg_count || 0}</Text>
+            <Animated.Text style={[styles.statValue, { transform: [{ scale: eggPopAnim }] }]}>
+              {todayStats?.egg_count || 0}
+            </Animated.Text>
             <Text style={styles.statLabel}>{t('home.eggsToday')}</Text>
             {/* Streak badge */}
             {summaryStats?.streak > 0 && (
@@ -808,12 +827,30 @@ export default function HomeScreen() {
               }}>
                 <Text style={{ fontSize: 10 }}>🔥</Text>
                 <Text style={{ fontSize: 10, color: '#f59e0b', fontWeight: '600', marginLeft: 2 }}>
-                  {summaryStats.streak}
+                  {summaryStats.streak} dagar
                 </Text>
               </View>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
+        
+        {/* Undo Toast */}
+        {showUndo && (
+          <Animated.View style={styles.undoToast}>
+            <Text style={styles.undoText}>+{lastRegisteredCount} ägg registrerat</Text>
+            <TouchableOpacity 
+              style={styles.undoButton}
+              onPress={async () => {
+                await undoLastAction();
+                setShowUndo(false);
+                await Promise.all([fetchTodayStats(), fetchSummaryStats()]);
+              }}
+            >
+              <Ionicons name="arrow-undo" size={16} color="#fff" />
+              <Text style={styles.undoButtonText}>Ångra</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
         
         {/* Quick Add Eggs Button */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
