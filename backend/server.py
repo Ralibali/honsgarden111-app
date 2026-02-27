@@ -4676,7 +4676,7 @@ async def get_year_statistics(year: int, request: Request):
 
 @api_router.get("/statistics/summary")
 async def get_summary_statistics(request: Request):
-    """Get overall summary statistics"""
+    """Get overall summary statistics including streak"""
     user_id = await require_user_id(request)
     
     all_eggs = await db.egg_records.find({"user_id": user_id}, {"_id": 0, "count": 1, "date": 1}).to_list(10000)
@@ -4694,17 +4694,59 @@ async def get_summary_statistics(request: Request):
     month_costs = sum(t['amount'] for t in all_transactions if t['type'] == 'cost' and t['date'] >= month_start)
     month_sales = sum(t['amount'] for t in all_transactions if t['type'] == 'sale' and t['date'] >= month_start)
     
+    # Calculate streak (consecutive days with egg registration)
+    egg_dates = set(e['date'] for e in all_eggs)
+    streak = 0
+    check_date = today
+    while True:
+        date_str = check_date.strftime('%Y-%m-%d')
+        if date_str in egg_dates:
+            streak += 1
+            check_date -= timedelta(days=1)
+        else:
+            break
+    
+    # Calculate average eggs per day this month
+    days_in_month = today.day
+    avg_eggs_per_day = round(month_eggs / days_in_month, 1) if days_in_month > 0 else 0
+    
+    # Previous month comparison
+    if today.month == 1:
+        prev_month_start = f"{today.year-1:04d}-12-01"
+        prev_month_end = f"{today.year-1:04d}-12-31"
+    else:
+        prev_month_start = f"{today.year:04d}-{today.month-1:02d}-01"
+        prev_month_end = f"{today.year:04d}-{today.month-1:02d}-31"
+    
+    prev_month_eggs = sum(e['count'] for e in all_eggs if prev_month_start <= e['date'] <= prev_month_end)
+    prev_month_costs = sum(t['amount'] for t in all_transactions if t['type'] == 'cost' and prev_month_start <= t['date'] <= prev_month_end)
+    prev_month_sales = sum(t['amount'] for t in all_transactions if t['type'] == 'sale' and prev_month_start <= t['date'] <= prev_month_end)
+    
+    # Calculate month-over-month change
+    egg_change_percent = round(((month_eggs - prev_month_eggs) / prev_month_eggs) * 100, 1) if prev_month_eggs > 0 else 0
+    
     return {
         "hen_count": hen_count,
         "total_eggs_all_time": total_eggs,
         "total_costs_all_time": total_costs,
         "total_sales_all_time": total_sales,
         "net_all_time": total_sales - total_costs,
+        "streak": streak,
+        "average_eggs_per_day": avg_eggs_per_day,
         "this_month": {
             "eggs": month_eggs,
             "costs": month_costs,
             "sales": month_sales,
-            "net": month_sales - month_costs
+            "net": month_sales - month_costs,
+            "total_eggs": month_eggs,
+            "total_sales": month_sales,
+            "egg_change_percent": egg_change_percent
+        },
+        "prev_month": {
+            "eggs": prev_month_eggs,
+            "costs": prev_month_costs,
+            "sales": prev_month_sales,
+            "net": prev_month_sales - prev_month_costs
         }
     }
 
