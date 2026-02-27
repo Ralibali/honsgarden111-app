@@ -86,6 +86,19 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 - Progress-indikator visar hur många sysslor som är klara
 - Sparat i AsyncStorage: `chores_seen_first_time`, `chores_auto_popup_disabled`
 
+#### Smart Notifications System ✅ (NYT)
+- **Backend:** `/api/notifications/smart-check` endpoint som analyserar användardata
+- **Triggers efter äggregistrering:**
+  - 🎊 **Nytt rekord** - När användaren slår sitt personliga rekord
+  - ⭐ **Perfekt dag** - När alla hönor värpt
+  - 🎉 **Första ägget** - För nya användare
+  - 🏆 **Milstolpar** - 10, 50, 100, 250, 500, 1000+ ägg
+  - 📈 **Produktion ökar** - +15% eller mer jämfört med förra veckan
+  - 📉 **Produktion minskar** - -20% eller mer (varning)
+  - 🌟 **Uppmuntran** - Slumpmässig positiv feedback (5% chans)
+- **Spårar:** Äggrekord, veckosnitt, totala ägg, produktionstrender
+- **Integrerat i:** `hens.tsx` - anropas efter varje äggregistrering
+
 ### Batch 2: UI & Feature Improvements (2025-02-27)
 
 #### Admin Panel Förbättringar ✅
