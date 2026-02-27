@@ -432,6 +432,7 @@ class EmailRegister(BaseModel):
     name: Optional[str] = None
     accepted_terms: bool = False
     accepted_marketing: bool = False
+    referral_code: Optional[str] = None  # For referral bonus
 
 class EmailLogin(BaseModel):
     email: EmailStr
