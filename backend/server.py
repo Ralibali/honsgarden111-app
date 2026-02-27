@@ -4834,8 +4834,10 @@ async def get_egg_forecast(request: Request):
     subscription = await db.subscriptions.find_one({"user_id": user_id})
     is_premium = subscription.get('is_active', False) if subscription else False
     
-    # Get historical data (last 30 days)
-    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime('%Y-%m-%d')
+    # Get historical data (last 30 days) using Stockholm time
+    thirty_days_ago = days_ago_stockholm(30)
+    seven_days_ago = days_ago_stockholm(7)
+    
     eggs_history = await db.egg_records.find(
         {"user_id": user_id, "date": {"$gte": thirty_days_ago}}
     ).to_list(1000)
@@ -4847,27 +4849,85 @@ async def get_egg_forecast(request: Request):
         if date_str:
             daily_totals[date_str] = daily_totals.get(date_str, 0) + egg.get('count', 0)
     
-    # Calculate average
+    # Calculate averages and trends
+    days_with_data = len(daily_totals)
+    
     if daily_totals:
-        avg_daily = sum(daily_totals.values()) / len(daily_totals)
+        avg_daily = sum(daily_totals.values()) / days_with_data
+        
+        # Calculate 7-day trend
+        last_7_days = [daily_totals.get(days_ago_stockholm(i), 0) for i in range(7)]
+        first_half = sum(last_7_days[4:7]) / 3 if any(last_7_days[4:7]) else avg_daily
+        second_half = sum(last_7_days[0:3]) / 3 if any(last_7_days[0:3]) else avg_daily
+        
+        if first_half > 0:
+            trend_pct = ((second_half - first_half) / first_half) * 100
+        else:
+            trend_pct = 0
+            
+        if trend_pct > 5:
+            trend_direction = "up"
+        elif trend_pct < -5:
+            trend_direction = "down"
+        else:
+            trend_direction = "stable"
     else:
         avg_daily = 0
+        trend_direction = "unknown"
+        trend_pct = 0
+    
+    # Find best day of week (if enough data)
+    best_day_of_week = None
+    if days_with_data >= 14:
+        day_totals = {i: [] for i in range(7)}  # 0=Monday, 6=Sunday
+        for date_str, count in daily_totals.items():
+            try:
+                d = datetime.strptime(date_str, '%Y-%m-%d')
+                day_totals[d.weekday()].append(count)
+            except:
+                pass
+        
+        day_avgs = {}
+        day_names_sv = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+        for day, counts in day_totals.items():
+            if counts:
+                day_avgs[day_names_sv[day]] = sum(counts) / len(counts)
+        
+        if day_avgs:
+            best_day_of_week = max(day_avgs, key=day_avgs.get)
+    
+    # Data quality score
+    data_quality = min(100, round((days_with_data / 30) * 100))
     
     # Get active hen count
-    hens = await db.hens.count_documents({"user_id": user_id, "is_active": True})
+    hens = await db.hens.count_documents({"user_id": user_id, "is_active": True, "hen_type": {"$ne": "rooster"}})
     
-    # Simple forecast (with slight variation)
-    import random
+    # Deterministic forecast based on trend (not random!)
     forecast = []
+    trend_factor = 1.0
+    if trend_direction == "up":
+        trend_factor = 1.02  # 2% increase per day
+    elif trend_direction == "down":
+        trend_factor = 0.98  # 2% decrease per day
+    
+    base_prediction = avg_daily
     for i in range(7):
-        date_future = (datetime.now(timezone.utc) + timedelta(days=i+1)).strftime('%Y-%m-%d')
-        # Add some realistic variation
-        variation = random.uniform(0.85, 1.15)
-        predicted = round(avg_daily * variation)
+        date_future = days_ahead_stockholm(i + 1)
+        # Apply trend factor cumulatively
+        predicted = round(base_prediction * (trend_factor ** (i + 1)))
+        
+        # Confidence based on data quality
+        if days_with_data >= 21:
+            confidence = "high"
+        elif days_with_data >= 7:
+            confidence = "medium"
+        else:
+            confidence = "low"
+            
         forecast.append({
             "date": date_future,
             "predicted_eggs": max(0, predicted),
-            "confidence": "medium" if len(daily_totals) > 7 else "low"
+            "confidence": confidence
         })
     
     total_forecast = sum(f['predicted_eggs'] for f in forecast)
@@ -4877,25 +4937,35 @@ async def get_egg_forecast(request: Request):
         return {
             "is_premium": False,
             "preview": True,
+            "used_fallback": False,
             "forecast": {
                 "message": "🔒 Din 7-dagars prognos är klar! Uppgradera till Premium för att se den.",
                 "blurred_preview": f"Förväntat antal ägg nästa vecka: ~{total_forecast} ägg baserat på historik.",
                 "avg_daily": round(avg_daily, 1),
                 "hen_count": hens,
-                "days_of_data": len(daily_totals)
+                "days_of_data": days_with_data
             }
         }
     
     return {
         "is_premium": True,
         "preview": False,
+        "used_fallback": False,
         "forecast": {
             "daily_predictions": forecast,
             "total_predicted": total_forecast,
             "avg_daily": round(avg_daily, 1),
             "hen_count": hens,
-            "days_of_data": len(daily_totals),
-            "generated_at": datetime.now(timezone.utc).isoformat()
+            "days_of_data": days_with_data,
+            "generated_at": now_stockholm().isoformat(),
+            # New insight fields
+            "insights": {
+                "trend_last_7_days": trend_direction,
+                "trend_percentage": round(trend_pct, 1),
+                "best_day_of_week": best_day_of_week,
+                "data_quality": data_quality,
+                "data_quality_label": "Bra" if data_quality >= 70 else ("Medel" if data_quality >= 40 else "Låg")
+            }
         }
     }
 
