@@ -78,12 +78,12 @@ const ONBOARDING_KEY = '@honsgarden_onboarding_complete';
 export default function OnboardingScreen() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
-  const slideRef = useRef<any>(null);
   
   const handleNext = () => {
     if (currentIndex < ONBOARDING_SLIDES.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
     } else {
       completeOnboarding();
     }
@@ -102,6 +102,52 @@ export default function OnboardingScreen() {
     router.replace('/(auth)/login');
   };
   
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      setCurrentIndex(viewableItems[0].index || 0);
+    }
+  }).current;
+  
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  }).current;
+  
+  const renderSlide = ({ item, index }: { item: typeof ONBOARDING_SLIDES[0]; index: number }) => (
+    <View style={styles.slideContainer}>
+      {/* Icon instead of image */}
+      <View style={styles.iconContainer}>
+        <View style={[styles.iconGlow, { backgroundColor: item.color }]} />
+        <View style={[styles.iconCircle, { backgroundColor: item.color }]}>
+          <Ionicons name={item.icon as any} size={80} color="#000" />
+        </View>
+      </View>
+      
+      {/* Text Content */}
+      <View style={styles.textContent}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={[styles.subtitle, { color: item.color }]}>
+          {item.subtitle}
+        </Text>
+        <Text style={styles.description}>{item.description}</Text>
+        
+        {/* Example Card */}
+        <View style={[styles.exampleCard, { borderColor: item.color }]}>
+          {item.isPremium && (
+            <View style={[styles.premiumBadge, { backgroundColor: item.color }]}>
+              <Ionicons name="star" size={12} color="#000" />
+              <Text style={styles.premiumBadgeText}>PREMIUM</Text>
+            </View>
+          )}
+          <Text style={styles.exampleLabel}>{item.example.label}</Text>
+          <Text style={[styles.exampleValue, { color: item.color }]}>
+            {item.example.value}
+          </Text>
+          <Text style={styles.exampleDetail}>{item.example.detail}</Text>
+        </View>
+      </View>
+    </View>
+  );
+  
   const currentSlide = ONBOARDING_SLIDES[currentIndex];
   
   return (
@@ -111,60 +157,51 @@ export default function OnboardingScreen() {
         <Text style={styles.skipText}>Hoppa över</Text>
       </TouchableOpacity>
       
-      {/* Content */}
-      <View style={styles.content}>
-        {/* Image */}
-        <View style={styles.imageContainer}>
-          <View style={[styles.imageGlow, { backgroundColor: currentSlide.color }]} />
-          <Image
-            source={{ uri: currentSlide.image }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-        </View>
-        
-        {/* Text Content */}
-        <View style={styles.textContent}>
-          <Text style={styles.title}>{currentSlide.title}</Text>
-          <Text style={[styles.subtitle, { color: currentSlide.color }]}>
-            {currentSlide.subtitle}
-          </Text>
-          <Text style={styles.description}>{currentSlide.description}</Text>
-          
-          {/* Example Card */}
-          <View style={[styles.exampleCard, { borderColor: currentSlide.color }]}>
-            {currentSlide.isPremium && (
-              <View style={[styles.premiumBadge, { backgroundColor: currentSlide.color }]}>
-                <Ionicons name="star" size={12} color="#000" />
-                <Text style={styles.premiumBadgeText}>PREMIUM</Text>
-              </View>
-            )}
-            <Text style={styles.exampleLabel}>{currentSlide.example.label}</Text>
-            <Text style={[styles.exampleValue, { color: currentSlide.color }]}>
-              {currentSlide.example.value}
-            </Text>
-            <Text style={styles.exampleDetail}>{currentSlide.example.detail}</Text>
-          </View>
-        </View>
-      </View>
+      {/* Swipeable content */}
+      <FlatList
+        ref={flatListRef}
+        data={ONBOARDING_SLIDES}
+        renderItem={renderSlide}
+        keyExtractor={(item) => item.id.toString()}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: false }
+        )}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        scrollEventThrottle={16}
+        bounces={false}
+      />
       
       {/* Bottom Section */}
       <View style={styles.bottomSection}>
         {/* Dots */}
         <View style={styles.dotsContainer}>
-          {ONBOARDING_SLIDES.map((_, index) => (
-            <View
+          {ONBOARDING_SLIDES.map((slide, index) => (
+            <TouchableOpacity
               key={index}
-              style={[
-                styles.dot,
-                {
-                  backgroundColor: index === currentIndex ? currentSlide.color : 'rgba(255,255,255,0.3)',
-                  width: index === currentIndex ? 24 : 8,
-                }
-              ]}
-            />
+              onPress={() => flatListRef.current?.scrollToIndex({ index, animated: true })}
+            >
+              <View
+                style={[
+                  styles.dot,
+                  {
+                    backgroundColor: index === currentIndex ? currentSlide.color : 'rgba(255,255,255,0.3)',
+                    width: index === currentIndex ? 24 : 8,
+                  }
+                ]}
+              />
+            </TouchableOpacity>
           ))}
         </View>
+        
+        {/* Swipe hint */}
+        <Text style={styles.swipeHint}>
+          {currentIndex < ONBOARDING_SLIDES.length - 1 ? 'Svep för att bläddra →' : ''}
+        </Text>
         
         {/* Button */}
         <TouchableOpacity
