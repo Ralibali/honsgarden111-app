@@ -6320,6 +6320,37 @@ async def create_community_post(request: Request, post_data: CommunityPostCreate
     if len(post_data.content) > 1000:
         raise HTTPException(status_code=400, detail="Inlägget får vara max 1000 tecken")
     
+    # Get coop stats if requested
+    coop_stats = None
+    if post_data.include_stats:
+        try:
+            coop = await db.coops.find_one({"user_id": user_id}, {"_id": 0})
+            if coop:
+                # Get eggs from last 7 days
+                week_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+                recent_eggs = await db.eggs.find({
+                    "user_id": user_id,
+                    "date": {"$gte": week_ago}
+                }).to_list(100)
+                
+                eggs_this_week = sum(e.get("count", 0) for e in recent_eggs)
+                hen_count = coop.get("hen_count", 0)
+                avg_per_day = round(eggs_this_week / 7, 1) if eggs_this_week > 0 else 0
+                
+                # Calculate productivity percentage
+                expected_per_week = hen_count * 7 * 0.7  # 70% expected laying rate
+                productivity = round((eggs_this_week / expected_per_week) * 100) if expected_per_week > 0 else 0
+                
+                coop_stats = {
+                    "coop_name": coop.get("coop_name", "Min hönsgård"),
+                    "hen_count": hen_count,
+                    "eggs_this_week": eggs_this_week,
+                    "avg_per_day": avg_per_day,
+                    "productivity": min(productivity, 150)  # Cap at 150%
+                }
+        except Exception as e:
+            logger.warning(f"Failed to get coop stats: {e}")
+    
     # Create post
     post = {
         "id": str(uuid.uuid4()),
@@ -6331,7 +6362,8 @@ async def create_community_post(request: Request, post_data: CommunityPostCreate
         "likes": 0,
         "liked_by": [],
         "is_hidden": False,
-        "hidden_reason": None
+        "hidden_reason": None,
+        "coop_stats": coop_stats
     }
     
     await db.community_posts.insert_one(post)
