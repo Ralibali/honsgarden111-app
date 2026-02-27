@@ -121,6 +121,7 @@ export default function HomeScreen() {
     loadHens();
     loadWeather();
     loadDailyChores();
+    loadCommunityPosts();
   }, []);
   
   // Show trial expiry warning when needed
@@ -129,6 +130,18 @@ export default function HomeScreen() {
       setShowTrialWarning(true);
     }
   }, [trialExpiryWarning, trialWarningDismissed]);
+  
+  const loadCommunityPosts = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/community/posts?limit=3`);
+      if (res.ok) {
+        const data = await res.json();
+        setCommunityPosts(data.posts?.slice(0, 3) || []);
+      }
+    } catch (error) {
+      console.error('Failed to load community posts:', error);
+    }
+  };
   
   const loadDailyChores = async () => {
     try {
