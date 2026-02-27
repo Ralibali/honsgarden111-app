@@ -338,10 +338,29 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
-        {/* Header */}
+        {/* Header with Weather Widget */}
         <View style={styles.header}>
-          <Text style={styles.title}>{coopSettings?.coop_name || 'Min Hönsgård'}</Text>
-          <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
+          <View style={styles.headerTop}>
+            <View style={styles.headerTitleSection}>
+              <Text style={styles.title}>{coopSettings?.coop_name || 'Min Hönsgård'}</Text>
+              <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
+            </View>
+            
+            {/* Compact Weather Widget */}
+            {weather && (
+              <TouchableOpacity 
+                style={styles.weatherWidget}
+                onPress={() => setShowWeatherModal(true)}
+                data-testid="weather-widget"
+              >
+                <Text style={styles.weatherWidgetIcon}>
+                  {getWeatherIcon(weather.description)}
+                </Text>
+                <Text style={styles.weatherWidgetTemp}>{Math.round(weather.temperature)}°</Text>
+                <Ionicons name="chevron-forward" size={14} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
           <Text style={styles.date}>{dateString}</Text>
         </View>
         
