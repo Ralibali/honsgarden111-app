@@ -44,6 +44,9 @@ export default {
     expenses: 'kr kostnader',
     eggsRegistered: '{{count}} ägg registrerade för idag',
     undoRegistration: 'Ångra registrering',
+    insights: 'Insikter',
+    costPerEgg: 'Kostnad per ägg',
+    productivity: 'Produktivitet',
   },
 
   // Eggs Screen
