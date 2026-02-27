@@ -547,6 +547,42 @@ export default function CommunityScreen() {
                   <Text style={styles.postTime}>{formatDate(post.created_at)}</Text>
                 </View>
                 
+                {/* Coop Stats Badge */}
+                {post.coop_stats && (
+                  <View style={{
+                    backgroundColor: colors.primary + '10',
+                    borderRadius: 12,
+                    padding: 12,
+                    marginBottom: 10,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Ionicons name="home" size={16} color={colors.primary} />
+                      <Text style={{ marginLeft: 6, color: colors.primary, fontWeight: '600', fontSize: 13 }}>
+                        {post.coop_stats.coop_name}
+                      </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                      <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontSize: 11, color: colors.textSecondary }}>{isSv ? 'Höns' : 'Hens'}</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>{post.coop_stats.hen_count}</Text>
+                      </View>
+                      <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontSize: 11, color: colors.textSecondary }}>{isSv ? 'Ägg/v' : 'Eggs/w'}</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>{post.coop_stats.eggs_this_week}</Text>
+                      </View>
+                      <View style={{ alignItems: 'center' }}>
+                        <Text style={{ fontSize: 11, color: colors.textSecondary }}>{isSv ? 'Prod.' : 'Prod.'}</Text>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: post.coop_stats.productivity >= 70 ? '#22c55e' : post.coop_stats.productivity >= 40 ? '#f59e0b' : '#ef4444' }}>
+                          {post.coop_stats.productivity}%
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
+                
                 <Text style={styles.postContent}>{post.content}</Text>
                 
                 <View style={styles.postFooter}>
