@@ -268,6 +268,46 @@ export default function AdminPanel() {
       ]
     );
   };
+  
+  // Handle premium management
+  const openPremiumModal = (user: User) => {
+    setSelectedUserForPremium(user);
+    setPremiumDays(user.is_premium ? '0' : '30');
+    setShowPremiumModal(true);
+  };
+  
+  const handleUpdatePremium = async (days: number) => {
+    if (!selectedUserForPremium) return;
+    
+    try {
+      const res = await fetch(`${API_URL}/api/admin/subscriptions/${selectedUserForPremium.user_id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          is_active: days !== 0,
+          days: days,
+          plan: days === -1 ? 'lifetime' : days === 0 ? 'cancelled' : 'admin_granted'
+        })
+      });
+      
+      if (res.ok) {
+        const message = days === 0 
+          ? 'Premium borttaget' 
+          : days === -1 
+            ? 'Premium för alltid aktiverat' 
+            : `Premium aktiverat i ${days} dagar`;
+        Alert.alert('Klart', message);
+        setShowPremiumModal(false);
+        loadUsers();
+        loadSubscriptions();
+      } else {
+        Alert.alert('Fel', 'Kunde inte uppdatera premium');
+      }
+    } catch (error) {
+      Alert.alert('Fel', 'Kunde inte ansluta till servern');
+    }
+  };
 
   // Toggle user selection
   const toggleUserSelection = (userId: string) => {
