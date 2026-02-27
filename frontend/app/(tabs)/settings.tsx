@@ -65,6 +65,12 @@ export default function SettingsScreen() {
   const [cancelReason, setCancelReason] = useState('');
   const [cancelling, setCancelling] = useState(false);
   
+  // Delete account modal states
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  
   // Feature preferences (Premium only)
   const [featurePrefs, setFeaturePrefs] = useState<any>(null);
   const [savingPrefs, setSavingPrefs] = useState(false);
