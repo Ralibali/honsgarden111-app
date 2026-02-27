@@ -254,7 +254,7 @@ export const useAuthStore = create<AuthState>()(
           // This ensures grace period remains active for a short while after login completes
           return true;
         } catch (error) {
-          loginInProgress = false;
+          // NOTE: loginInProgress is cleared by setSessionToken's timeout
           if (__DEV__) {
             console.error('[Auth] Login error:', error);
           }
