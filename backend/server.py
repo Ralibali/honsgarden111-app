@@ -5256,7 +5256,7 @@ async def send_reminder_email(email: str, name: str, coop_name: str):
     params = {
         "from": SENDER_EMAIL,
         "to": [email],
-        "subject": f"🥚 Påminnelse: Dags att plocka ägg!",
+        "subject": "🥚 Påminnelse: Dags att plocka ägg!",
         "html": html_content
     }
     
