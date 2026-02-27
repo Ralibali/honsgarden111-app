@@ -108,7 +108,7 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
   
-  if (!fontsLoaded || authLoading || hasSeenOnboarding === null) {
+  if (!fontsLoaded || hasSeenOnboarding === null) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0a0a0f' }}>
         <ActivityIndicator size="large" color="#4ade80" />
