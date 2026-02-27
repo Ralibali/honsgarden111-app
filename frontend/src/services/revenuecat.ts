@@ -75,6 +75,15 @@ export const initRevenueCat = async (): Promise<boolean> => {
   }
   
   try {
+    // Load RevenueCat dynamically
+    await loadRevenueCat();
+    
+    if (!Purchases) {
+      console.warn('RevenueCat: SDK not available');
+      isConfigured = true; // Mark as configured to prevent retry
+      return false;
+    }
+    
     // Set log level based on environment
     Purchases.setLogLevel(IS_PRODUCTION ? LOG_LEVEL.ERROR : LOG_LEVEL.VERBOSE);
     
@@ -94,6 +103,7 @@ export const initRevenueCat = async (): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('RevenueCat initialization failed:', error);
+    isConfigured = true; // Mark as configured to prevent retry
     return false;
   }
 };
