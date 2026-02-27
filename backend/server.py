@@ -5924,11 +5924,18 @@ async def get_ai_daily_report(request: Request):
         free_usage = await db.free_ai_usage.find_one({"user_id": user_id, "type": "daily_report"})
         
         week_ago_dt = datetime.now(timezone.utc) - timedelta(days=7)
-        has_free_report = not free_usage or (free_usage.get("used_at") and free_usage["used_at"] < week_ago_dt)
+        
+        # Handle timezone-naive datetimes from MongoDB
+        used_at = free_usage.get("used_at") if free_usage else None
+        if used_at and used_at.tzinfo is None:
+            used_at = used_at.replace(tzinfo=timezone.utc)
+        
+        has_free_report = not free_usage or (used_at and used_at < week_ago_dt)
         
         if not has_free_report:
             # No free report available - show preview
-            days_until_free = 7 - (datetime.now(timezone.utc) - free_usage["used_at"]).days if free_usage else 0
+            now_utc = datetime.now(timezone.utc)
+            days_until_free = 7 - (now_utc - used_at).days if used_at else 0
             return {
                 "is_premium": False,
                 "preview": True,
