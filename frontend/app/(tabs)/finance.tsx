@@ -197,14 +197,70 @@ export default function FinanceScreen() {
         </View>
         
         {/* Net Result */}
-        <View style={styles.netCard}>
-          <Text style={styles.netLabel}>{t('finance.netResult')}</Text>
+        <View style={[
+          styles.netCard,
+          { backgroundColor: net >= 0 ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)' },
+          { borderColor: net >= 0 ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)' }
+        ]}>
+          <View style={styles.netHeader}>
+            <Text style={styles.netLabel}>{t('finance.netResult')}</Text>
+            {net >= 0 ? (
+              <View style={styles.profitBadge}>
+                <Ionicons name="trending-up" size={14} color="#22c55e" />
+                <Text style={styles.profitBadgeText}>{isSv ? 'Vinst' : 'Profit'}</Text>
+              </View>
+            ) : (
+              <View style={styles.lossBadge}>
+                <Ionicons name="trending-down" size={14} color="#ef4444" />
+                <Text style={styles.lossBadgeText}>{isSv ? 'Förlust' : 'Loss'}</Text>
+              </View>
+            )}
+          </View>
           <Text style={[
             styles.netValue,
             { color: net >= 0 ? colors.success : colors.error }
           ]}>
             {net >= 0 ? '+' : ''}{formatCurrency(net)}
           </Text>
+        </View>
+        
+        {/* Economy Insights */}
+        <View style={styles.insightsCard}>
+          <Text style={styles.insightsTitle}>{isSv ? 'Ekonomiska insikter' : 'Economy Insights'}</Text>
+          
+          <View style={styles.insightRow}>
+            <View style={styles.insightItem}>
+              <Text style={styles.insightLabel}>{isSv ? 'Intäkt per ägg' : 'Revenue per egg'}</Text>
+              <Text style={styles.insightValue}>
+                {avgRevenuePerEgg > 0 ? formatCurrency(avgRevenuePerEgg) : '–'}
+              </Text>
+            </View>
+            <View style={styles.insightItem}>
+              <Text style={styles.insightLabel}>{isSv ? 'Break-even pris/ägg' : 'Break-even price/egg'}</Text>
+              <Text style={[
+                styles.insightValue,
+                breakEvenPricePerEgg > avgRevenuePerEgg && avgRevenuePerEgg > 0 
+                  ? { color: colors.error } 
+                  : { color: colors.success }
+              ]}>
+                {breakEvenPricePerEgg > 0 ? formatCurrency(breakEvenPricePerEgg) : '–'}
+              </Text>
+            </View>
+          </View>
+          
+          {mostCostlyCategory && (
+            <View style={styles.costlyCategoryRow}>
+              <Text style={styles.insightLabel}>{isSv ? 'Största kostnadskategori' : 'Most costly category'}</Text>
+              <View style={styles.costlyCategoryValue}>
+                <Text style={styles.costlyCategoryName}>
+                  {getCategoryInfo(mostCostlyCategory[0] as TransactionCategory)?.label || mostCostlyCategory[0]}
+                </Text>
+                <Text style={[styles.costlyCategoryAmount, { color: colors.error }]}>
+                  {formatCurrency(mostCostlyCategory[1])}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
         
         {/* Action Buttons */}
