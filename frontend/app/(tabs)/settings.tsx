@@ -289,6 +289,60 @@ export default function SettingsScreen() {
     }
   };
   
+  // Handle delete account (Google Play policy requirement)
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== 'DELETE') {
+      Alert.alert(
+        isSv ? 'Bekräftelse krävs' : 'Confirmation required',
+        isSv ? 'Skriv DELETE för att bekräfta' : 'Type DELETE to confirm'
+      );
+      return;
+    }
+    
+    if (!deletePassword.trim()) {
+      Alert.alert(
+        isSv ? 'Lösenord krävs' : 'Password required',
+        isSv ? 'Ange ditt lösenord för att radera kontot' : 'Enter your password to delete the account'
+      );
+      return;
+    }
+    
+    setDeletingAccount(true);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/delete-account`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          password: deletePassword,
+          confirmation: deleteConfirmation,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setShowDeleteAccountModal(false);
+        setDeletePassword('');
+        setDeleteConfirmation('');
+        Alert.alert(
+          isSv ? 'Konto raderat' : 'Account deleted',
+          isSv ? 'Ditt konto och all data har raderats.' : 'Your account and all data has been deleted.',
+          [{ text: 'OK', onPress: () => router.replace('/(auth)/login') }]
+        );
+      } else {
+        Alert.alert(
+          isSv ? 'Fel' : 'Error',
+          data.detail || (isSv ? 'Kunde inte radera kontot' : 'Could not delete account')
+        );
+      }
+    } catch (error) {
+      Alert.alert(t('common.error'), t('errors.networkError'));
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+  
   const handleContactSupport = () => {
     Linking.openURL('mailto:support@honsgarden.se?subject=Support%20-%20H%C3%B6nsg%C3%A5rden');
   };
