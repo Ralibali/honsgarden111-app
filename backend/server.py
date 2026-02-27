@@ -4259,8 +4259,37 @@ async def get_insights(request: Request, include_premium: bool = False):
         "productivity_index": productivity_index,
         "hen_count": hen_count,
         "hen_ranking": hen_ranking[:10],
-        "is_premium": is_premium
+        "is_premium": is_premium,
+        # New useful insights
+        "best_day": None,
+        "feed_cost_per_egg": 0,
+        "average_eggs_per_day": 0,
+        "total_sales": total_sales,
+        "profit_per_egg": 0,
+        "days_tracked": len(eggs_by_date),
     }
+    
+    # Calculate best day
+    if eggs_by_date:
+        best_date = max(eggs_by_date, key=eggs_by_date.get)
+        response["best_day"] = {
+            "date": best_date,
+            "eggs": eggs_by_date[best_date]
+        }
+    
+    # Calculate average eggs per day
+    if eggs_by_date:
+        response["average_eggs_per_day"] = round(total_eggs / len(eggs_by_date), 1)
+    
+    # Calculate feed cost per egg (only feed-related costs)
+    feed_costs = sum(t['amount'] for t in all_transactions 
+                    if t['type'] == 'cost' and 'foder' in str(t.get('category', '')).lower())
+    if total_eggs > 0:
+        response["feed_cost_per_egg"] = round(feed_costs / total_eggs, 2)
+    
+    # Calculate profit per egg
+    if total_eggs > 0 and total_sales > 0:
+        response["profit_per_egg"] = round((total_sales - total_costs) / total_eggs, 2)
     
     # ============ PREMIUM FEATURES ============
     if is_premium or include_premium:
