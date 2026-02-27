@@ -5915,6 +5915,38 @@ async def get_daily_tip(request: Request):
     }
 
 
+# Free tip endpoint for non-premium users (teaser)
+FREE_TIPS = [
+    "Visste du att höns behöver 14-16 timmar ljus per dygn för optimal värpning? Under vintern kan artificiell belysning hjälpa.",
+    "Kalcium är avgörande för hönornas äggproduktion! Ge alltid fri tillgång till ostronskalskal eller krossad kalksten.",
+    "En värphöna dricker 200-500 ml vatten per dag. Rent, svalt vatten är nyckeln till bra äggproduktion!",
+    "Höns älskar stoftbad! Det är deras naturliga sätt att hålla parasiter borta. Ge dem tillgång till torr sand eller jord.",
+    "En höna som sitter hopkurad med slutna ögon mitt på dagen mår inte bra. Agera samma dag - isolera och observera!",
+    "Ruggningen på hösten är helt naturlig. Ge extra protein (solrosfrön, insekter) så går den snabbare.",
+    "En tupp kan ta hand om 8-12 hönor. För många eller för få kan skapa stress i flocken.",
+    "Kontrollera alltid hönshuset för kvalster på kvällen - de gömmer sig i springor dagtid och suger blod nattetid.",
+]
+
+@api_router.get("/ai/free-tip")
+async def get_free_tip(request: Request):
+    """Get a free teaser tip for non-premium users"""
+    import hashlib
+    import random
+    
+    # Use current hour as part of seed for some variation
+    today = today_str_stockholm()
+    hour = now_stockholm().hour
+    seed = int(hashlib.md5(f"free-{today}-{hour // 4}".encode()).hexdigest()[:8], 16)
+    
+    tip_index = seed % len(FREE_TIPS)
+    
+    return {
+        "tip": FREE_TIPS[tip_index],
+        "is_teaser": True,
+        "message": "Uppgradera till Premium för dagliga personliga tips!"
+    }
+
+
 
 @api_router.put("/user-preferences/location")
 async def update_user_location(request: Request, lat: float, lon: float, location_name: str = ""):
