@@ -130,10 +130,36 @@ export default function HomeScreen() {
       if (res.ok) {
         const data = await res.json();
         setDailyChores(data.chores || []);
+        
+        // Check if we should auto-show the chores modal
+        const hasSeenBefore = await AsyncStorage.getItem('chores_seen_first_time');
+        const autoPopupDisabled = await AsyncStorage.getItem('chores_auto_popup_disabled');
+        
+        setHasSeenChoresFirstTime(hasSeenBefore === 'true');
+        setChoresAutoPopupEnabled(autoPopupDisabled !== 'true');
+        
+        // Show modal automatically if:
+        // 1. First time ever (mandatory)
+        // 2. Or auto-popup is still enabled
+        if (!hasSeenBefore || (hasSeenBefore && autoPopupDisabled !== 'true')) {
+          // Small delay so the main screen loads first
+          setTimeout(() => {
+            setShowChoresModal(true);
+            if (!hasSeenBefore) {
+              AsyncStorage.setItem('chores_seen_first_time', 'true');
+              setHasSeenChoresFirstTime(true);
+            }
+          }, 1500);
+        }
       }
     } catch (error) {
       console.error('Failed to load daily chores:', error);
     }
+  };
+  
+  const handleChoresAutoPopupToggle = async (enabled: boolean) => {
+    setChoresAutoPopupEnabled(enabled);
+    await AsyncStorage.setItem('chores_auto_popup_disabled', enabled ? 'false' : 'true');
   };
   
   const toggleChoreComplete = async (choreId: string, completed: boolean) => {
