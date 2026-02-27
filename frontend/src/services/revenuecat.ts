@@ -113,7 +113,7 @@ export const initRevenueCat = async (): Promise<boolean> => {
  * Call after user logs in
  */
 export const identifyUser = async (userId: string): Promise<CustomerInfo | null> => {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web' || !Purchases) return null;
   
   try {
     const { customerInfo } = await Purchases.logIn(userId);
@@ -130,7 +130,7 @@ export const identifyUser = async (userId: string): Promise<CustomerInfo | null>
  * Call when user logs out
  */
 export const logoutUser = async (): Promise<void> => {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || !Purchases) return;
   
   try {
     await Purchases.logOut();
@@ -144,7 +144,7 @@ export const logoutUser = async (): Promise<void> => {
  * Get current customer info
  */
 export const getCustomerInfo = async (): Promise<CustomerInfo | null> => {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web' || !Purchases) return null;
   
   try {
     return await Purchases.getCustomerInfo();
@@ -163,7 +163,7 @@ export const checkPremiumEntitlement = async (): Promise<{
   productId: string | null;
   willRenew: boolean;
 }> => {
-  if (Platform.OS === 'web') {
+  if (Platform.OS === 'web' || !Purchases) {
     return { isPremium: false, expiresAt: null, productId: null, willRenew: false };
   }
   
