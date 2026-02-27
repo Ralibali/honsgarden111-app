@@ -274,6 +274,12 @@ export default function AdminPanel() {
     u.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const filteredSubscriptions = subscriptions.filter(s =>
+    s.email?.toLowerCase().includes(subscriptionSearchQuery.toLowerCase()) ||
+    s.name?.toLowerCase().includes(subscriptionSearchQuery.toLowerCase()) ||
+    s.plan?.toLowerCase().includes(subscriptionSearchQuery.toLowerCase())
+  );
+
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
