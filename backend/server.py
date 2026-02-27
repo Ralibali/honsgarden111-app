@@ -1287,6 +1287,7 @@ async def register_email(data: EmailRegister, request: Request, response: Respon
         "password_hash": hashed_pw,
         "accepted_terms": True,
         "accepted_marketing": data.accepted_marketing,
+        "referred_by": data.referral_code.upper() if data.referral_code else None,
         "verification_code": verification_code,
         "expires_at": expires.isoformat(),
         "attempts": 0,
