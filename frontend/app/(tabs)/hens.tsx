@@ -1320,8 +1320,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   
   // Hen Info
   henInfo: { flex: 1 },
+  henNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   henName: { fontSize: 17, fontWeight: '600', color: colors.text },
   henBreed: { fontSize: 14, color: colors.textSecondary, marginTop: 2 },
+  roosterBadge: { backgroundColor: '#f59e0b', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
+  roosterBadgeText: { fontSize: 10, color: '#FFF', fontWeight: '600' },
   
   // Flock Badge
   flockBadge: { backgroundColor: 'rgba(99,102,241,0.15)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginTop: 4, alignSelf: 'flex-start' },
