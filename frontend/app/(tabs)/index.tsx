@@ -290,9 +290,10 @@ export default function HomeScreen() {
     if (!isPremium) return;
     setAiReportLoading(true);
     try {
+      const headers = await getAuthHeadersAsync();
       const res = await fetch(`${API_URL}/api/ai/daily-report`, {
         credentials: 'include',
-        headers: getAuthHeaders(),
+        headers: headers,
       });
       if (res.ok) {
         const data = await res.json();
