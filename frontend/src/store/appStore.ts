@@ -15,8 +15,26 @@ export const apiFetch = async (url: string, options: RequestInit = {}): Promise<
   // Always set Content-Type first
   headers.set('Content-Type', 'application/json');
   
-  // Get the current token DIRECTLY (not through getAuthHeaders to ensure freshness)
-  const currentToken = getSessionToken();
+  // Get the current token - if not in memory, try to load from AsyncStorage
+  let currentToken = getSessionToken();
+  
+  // If no token in memory and we're on native, try to load from AsyncStorage
+  if (!currentToken) {
+    try {
+      const storedToken = await AsyncStorage.getItem('session_token');
+      if (storedToken) {
+        // Also update the in-memory token via setSessionToken
+        setSessionToken(storedToken);
+        currentToken = storedToken;
+        if (__DEV__) {
+          console.log(`[apiFetch] Loaded token from AsyncStorage: ...${storedToken.slice(-6)}`);
+        }
+      }
+    } catch (e) {
+      console.error('[apiFetch] Failed to load token from AsyncStorage:', e);
+    }
+  }
+  
   if (currentToken) {
     headers.set('Authorization', `Bearer ${currentToken}`);
   }
@@ -40,13 +58,8 @@ export const apiFetch = async (url: string, options: RequestInit = {}): Promise<
   if (__DEV__) {
     console.log(`[apiFetch] ========== REQUEST ==========`);
     console.log(`[apiFetch] ${options.method || 'GET'} ${endpoint}`);
-    console.log(`[apiFetch] Token in memory: ${currentToken ? `present (...${currentToken.slice(-6)})` : 'NULL'}`);
-    console.log(`[apiFetch] hasSessionToken(): ${hasSessionToken()}`);
+    console.log(`[apiFetch] Token: ${currentToken ? `present (...${currentToken.slice(-6)})` : 'NULL'}`);
     console.log(`[apiFetch] Authorization header set: ${headers.has('Authorization')}`);
-    if (headers.has('Authorization')) {
-      const authValue = headers.get('Authorization') || '';
-      console.log(`[apiFetch] Auth header value: Bearer ...${authValue.slice(-6)}`);
-    }
     console.log(`[apiFetch] ================================`);
   }
   
