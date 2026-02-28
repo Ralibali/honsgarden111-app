@@ -7,6 +7,11 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ### Session 7: Kritiska Bugfixar + Lantligt Tema (2025-12-19)
 
+#### 📋 Dagens Sysslor UX-fix ✅ (BUGGFIX)
+- Tog bort automatisk popup vid appstart
+- Kortet "Dagens sysslor" finns på startsidan och öppnar modalen när användaren klickar på det
+- Tog bort toggle för "Visa automatiskt vid start" eftersom den inte längre behövs
+
 #### 🌾 Lantligt Tema ✅ (NY FUNKTION)
 - **themeStore.ts**: Ny `ruralTheme` med varma, jordnära färger
   - Bakgrund: #F5F0E6 (varm havremjölk)
