@@ -289,23 +289,29 @@ export default function HomeScreen() {
   
   // Load AI Daily Report
   const loadAiReport = async () => {
-    // Don't block on frontend premium check - let backend handle it
     setAiReportLoading(true);
     setShowAiReportModal(true);
     try {
       const res = await apiFetch(`${API_URL}/api/ai/daily-report`);
-      if (res.ok) {
-        const data = await res.json();
-        setAiReport(data);
-      } else if (res.status === 403) {
-        // User is not premium
+      const data = await res.json();
+      
+      // Check if user is not premium
+      if (data.is_premium === false) {
         setShowAiReportModal(false);
         showPremiumGate(isSv ? 'AI Dagsrapport' : 'AI Daily Report', 'analytics');
+        return;
+      }
+      
+      if (res.ok && data.report) {
+        setAiReport(data);
       } else {
-        console.error('AI Report not ok:', res.status);
+        if (__DEV__) console.error('AI Report issue:', res.status, data);
+        // Set error state so UI can show fallback
+        setAiReport({ error: true, message: isSv ? 'Rapporten kunde inte genereras just nu.' : 'The report could not be generated right now.' });
       }
     } catch (error) {
-      console.error('Failed to load AI report:', error);
+      if (__DEV__) console.error('Failed to load AI report:', error);
+      setAiReport({ error: true, message: isSv ? 'Ett tillfälligt fel uppstod.' : 'A temporary error occurred.' });
     } finally {
       setAiReportLoading(false);
     }
@@ -313,29 +319,31 @@ export default function HomeScreen() {
   
   // Load Egg Forecast
   const loadEggForecast = async () => {
-    console.log('[loadEggForecast] Starting...');
+    if (__DEV__) console.log('[loadEggForecast] Starting...');
     setForecastLoading(true);
     try {
       const res = await apiFetch(`${API_URL}/api/ai/egg-forecast`);
-      console.log('[loadEggForecast] Response status:', res.status);
-      if (res.ok) {
-        const data = await res.json();
-        console.log('[loadEggForecast] Data received:', JSON.stringify(data).substring(0, 200));
-        // Data is nested under 'forecast' key
-        if (data.forecast) {
-          setEggForecast({
-            ...data.forecast,
-            forecast_7_days: data.forecast.total_predicted,
-            daily_forecast: data.forecast.daily_predictions
-          });
-        } else {
-          setEggForecast(data);
-        }
+      const data = await res.json();
+      
+      if (__DEV__) console.log('[loadEggForecast] Response:', res.status);
+      
+      // Check if user is not premium
+      if (data.is_premium === false) {
+        showPremiumGate(isSv ? 'Äggprognos' : 'Egg Forecast', 'trending-up');
+        return;
+      }
+      
+      if (res.ok && data.forecast) {
+        setEggForecast({
+          ...data.forecast,
+          forecast_7_days: data.forecast.total_predicted,
+          daily_forecast: data.forecast.daily_predictions
+        });
       } else {
-        console.error('[loadEggForecast] Response not ok:', res.status);
+        if (__DEV__) console.error('[loadEggForecast] Issue:', res.status, data);
       }
     } catch (error) {
-      console.error('[loadEggForecast] Error:', error);
+      if (__DEV__) console.error('[loadEggForecast] Error:', error);
     } finally {
       setForecastLoading(false);
     }
