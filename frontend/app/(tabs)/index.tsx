@@ -139,10 +139,11 @@ export default function HomeScreen() {
     loadEggForecast(); // Load forecast on mount
   }, []);
   
-  // Refresh community posts when screen gets focus
+  // Refresh data when screen gets focus (e.g., after login or returning to tab)
   useFocusEffect(
     useCallback(() => {
       loadCommunityPosts();
+      loadEggForecast();
     }, [])
   );
   
