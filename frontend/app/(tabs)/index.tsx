@@ -148,6 +148,7 @@ export default function HomeScreen() {
     try {
       const res = await fetch(`${API_URL}/api/community/posts?limit=3`, {
         credentials: 'include',
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         const data = await res.json();
@@ -162,6 +163,7 @@ export default function HomeScreen() {
     try {
       const res = await fetch(`${API_URL}/api/daily-chores`, {
         credentials: 'include',
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         const data = await res.json();
