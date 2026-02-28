@@ -32,7 +32,7 @@ import { sv, enUS } from 'date-fns/locale';
 import PremiumGateModal from '../../components/PremiumGateModal';
 import { TrialBadge } from '../../src/components/TrialBadge';
 import { scheduleDailyChoresReminder } from '../../src/services/notifications';
-import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
+import { useAuthStore, getAuthHeaders, getAuthHeadersAsync } from '../../src/store/authStore';
 
 export default function HomeScreen() {
   const router = useRouter();
