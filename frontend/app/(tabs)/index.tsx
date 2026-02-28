@@ -312,11 +312,14 @@ export default function HomeScreen() {
   
   // Load Egg Forecast
   const loadEggForecast = async () => {
+    console.log('[loadEggForecast] Starting...');
     setForecastLoading(true);
     try {
       const res = await apiFetch(`${API_URL}/api/ai/egg-forecast`);
+      console.log('[loadEggForecast] Response status:', res.status);
       if (res.ok) {
         const data = await res.json();
+        console.log('[loadEggForecast] Data received:', JSON.stringify(data).substring(0, 200));
         // Data is nested under 'forecast' key
         if (data.forecast) {
           setEggForecast({
@@ -327,9 +330,11 @@ export default function HomeScreen() {
         } else {
           setEggForecast(data);
         }
+      } else {
+        console.error('[loadEggForecast] Response not ok:', res.status);
       }
     } catch (error) {
-      console.error('Failed to load egg forecast:', error);
+      console.error('[loadEggForecast] Error:', error);
     } finally {
       setForecastLoading(false);
     }
