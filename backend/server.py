@@ -1289,10 +1289,7 @@ async def get_current_user(request: Request, response: Response = None) -> Optio
     
     session = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
     if not session:
-        # Debug: Check if any sessions exist
-        all_sessions = await db.user_sessions.count_documents({})
         logger.warning(f"[Auth 401] Session NOT FOUND in DB for token ...{session_token[-6:]} (source: {token_source})")
-        logger.warning(f"[Auth 401] Total sessions in DB: {all_sessions}")
         logger.warning(f"[Auth 401] Path: {request_path}, User-Agent: {user_agent}")
         return None
     
