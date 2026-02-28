@@ -36,6 +36,7 @@ function AppRouter() {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/checkout/success" element={<CheckoutSuccess />} />
+      <Route path="/checkout-success" element={<CheckoutSuccess />} />
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/eggs" element={<Eggs />} />
