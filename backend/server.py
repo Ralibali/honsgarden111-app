@@ -1932,6 +1932,7 @@ async def verify_registration(data: dict, request: Request, response: Response):
         "user_id": user_id,
         "email": email,
         "name": pending["name"],
+        "session_token": session_token,
         "message": "Kontot skapat! Välkommen till Hönsgården!"
     }
 
