@@ -2004,9 +2004,17 @@ async def login_email(data: EmailLogin, request: Request, response: Response):
     # Find user
     email_lower = data.email.lower()
     logger.info(f"[Login] Attempting login for email: {email_lower}")
+    
+    # Debug: count users in collection
+    user_count = await db.users.count_documents({})
+    logger.info(f"[Login] Total users in db: {user_count}")
+    
+    # Try to find the user
     user = await db.users.find_one({"email": email_lower})
     if not user:
-        logger.warning(f"[Login] User not found: {email_lower}")
+        # Debug: list all emails
+        all_emails = [u["email"] async for u in db.users.find({}, {"email": 1})]
+        logger.warning(f"[Login] User not found: {email_lower}. All emails: {all_emails}")
         raise HTTPException(status_code=401, detail="Felaktig e-post eller lösenord")
     
     logger.info(f"[Login] User found: {email_lower}, has_password_hash: {bool(user.get('password_hash'))}")
