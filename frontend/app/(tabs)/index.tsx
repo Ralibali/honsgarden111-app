@@ -373,7 +373,8 @@ export default function HomeScreen() {
     
     try {
       const response = await fetch(`${API_URL}/api/ai/daily-tip`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       
       if (response.ok) {
@@ -404,7 +405,10 @@ export default function HomeScreen() {
     try {
       const response = await fetch(`${API_URL}/api/ai/advisor`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
         credentials: 'include',
         body: JSON.stringify({ question: agdaQuestion })
       });
