@@ -270,3 +270,71 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Enhanced Mobile Responsive */
+@media (max-width: 768px) {
+  .premium-page {
+    padding: 16px 0;
+  }
+  
+  .premium-header h1 {
+    font-size: 24px;
+  }
+  
+  .premium-header p {
+    font-size: 14px;
+  }
+  
+  .premium-star {
+    font-size: 40px;
+  }
+  
+  .trial-banner {
+    padding: 16px;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .trial-icon {
+    font-size: 36px;
+  }
+  
+  .pricing-card {
+    padding: 20px 16px;
+  }
+  
+  .price .amount {
+    font-size: 32px;
+  }
+  
+  .feature-item {
+    padding: 14px;
+  }
+  
+  .feature-icon {
+    font-size: 22px;
+  }
+  
+  .feature-item h3 {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .premium-header h1 {
+    font-size: 22px;
+  }
+  
+  .price .amount {
+    font-size: 28px;
+  }
+  
+  .pricing-card h3 {
+    font-size: 14px;
+  }
+  
+  .purchase-btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
