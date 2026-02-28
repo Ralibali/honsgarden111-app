@@ -5,6 +5,31 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2026-02-28)
 
+### Session 11: Webbapp Förbättringar (2026-02-28)
+
+#### ✅ Borttagen Google-inloggning
+- **Ändring:** Tog bort Google OAuth-inloggningen helt från webbappen
+- **Ändrade filer:** `honsgarden-web/frontend/src/pages/Login.tsx`
+  - Borttagna: `handleGoogleLogin`, `handleGoogleCallback`, `GOOGLE_AUTH_URL`, `useSearchParams`
+  - Borttagna: Alla "Fortsätt med Google"-knappar från welcome, login och register-vyerna
+  - Borttagna: "eller"-dividers mellan formulär och Google-knapp
+
+#### ✅ Nya AI-funktioner i webbappen
+- **Tillagda:** "Fråga Agda" (AI-rådgivare) och "Dagens tips" till Dashboard
+- **Ändrade filer:** `honsgarden-web/frontend/src/pages/Dashboard.tsx`
+  - Ny state: `advisorQuestion`, `advisorHistory`, utökad `aiModalType`
+  - Ny funktion: `askAgda()` - skickar frågor till `/api/ai/advisor`
+  - Utökad `loadAiData()` för att hantera 'advisor' och 'tip' typer
+  - Nytt chat-gränssnitt för Fråga Agda i AI-modalen
+  - Dagens tips-kort med `/api/ai/daily-tip` endpoint
+- **CSS:** Lagt till stilar för chat-interface, tip-card, etc.
+
+#### AI-funktioner nu tillgängliga i webbappen:
+1. 🐔 **Fråga Agda** - Chat-baserad AI-rådgivare
+2. 💡 **Dagens tips** - Dagligt hönstips  
+3. 📋 **Dagsrapport** - AI-genererad sammanfattning
+4. 📈 **7-dagars prognos** - Äggproduktionsprognos
+
 ### Session 10: Premium UI Null-Fix (2026-02-28)
 
 #### ✅ Bug Fix: "null dagar kvar" i premium-badge
