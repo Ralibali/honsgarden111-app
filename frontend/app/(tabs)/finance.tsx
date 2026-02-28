@@ -59,10 +59,13 @@ export default function FinanceScreen() {
   const loadData = async () => {
     const end = new Date();
     const start = subDays(end, isPremium ? 90 : 30);
-    await fetchTransactions(
-      format(start, 'yyyy-MM-dd'),
-      format(end, 'yyyy-MM-dd')
-    );
+    await Promise.all([
+      fetchTransactions(
+        format(start, 'yyyy-MM-dd'),
+        format(end, 'yyyy-MM-dd')
+      ),
+      fetchSummaryStats()
+    ]);
   };
   
   const onRefresh = async () => {
