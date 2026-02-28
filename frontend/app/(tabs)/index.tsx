@@ -806,101 +806,81 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
         
-        {/* ========== SECTION 2: MAIN EGG REGISTRATION (Hero) ========== */}
-        <View style={{
-          backgroundColor: colors.success,
-          borderRadius: 20,
-          padding: 24,
-          marginHorizontal: 16,
-          marginBottom: 16,
-          shadowColor: colors.success,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 6,
-        }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <View>
-              <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>
-                🥚 {isSv ? 'Registrera ägg' : 'Register Eggs'}
-              </Text>
-              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 2 }}>
-                {isSv ? 'Tryck för att lägga till' : 'Tap to add'}
-              </Text>
+        {/* ========== SECTION 2: QUICK STATS CARDS ========== */}
+        <View style={styles.statsRow}>
+          <TouchableOpacity 
+            style={[styles.statCard, styles.henCard]}
+            onPress={() => router.push('/(tabs)/hens')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="heart" size={28} color={colors.error} />
+            <Text style={styles.statValue}>{todayStats?.hen_count || 0}</Text>
+            <Text style={styles.statLabel}>{t('home.hens')}</Text>
+          </TouchableOpacity>
+          
+          <Pressable 
+            style={({ pressed }) => [
+              styles.statCard, 
+              styles.eggCard,
+              pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
+            ]}
+            onPress={handleOneTapAdd}
+            onLongPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+              setShowQuickAdd(true);
+            }}
+            delayLongPress={400}
+          >
+            {/* Tap hint */}
+            <View style={{
+              position: 'absolute',
+              top: 6,
+              left: 6,
+              backgroundColor: colors.success + '20',
+              borderRadius: 8,
+              paddingHorizontal: 6,
+              paddingVertical: 2,
+            }}>
+              <Text style={{ fontSize: 9, color: colors.success, fontWeight: '600' }}>TAP +1</Text>
+            </View>
+            {/* Plus icon in corner */}
+            <View style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              backgroundColor: colors.warning + '30',
+              borderRadius: 12,
+              padding: 4,
+            }}>
+              <Ionicons name="add" size={16} color={colors.warning} />
             </View>
             <Animated.View style={{ transform: [{ scale: eggPopAnim }] }}>
+              <Ionicons name="egg" size={28} color={colors.warning} />
+            </Animated.View>
+            <Animated.Text style={[styles.statValue, { transform: [{ scale: eggPopAnim }] }]}>
+              {todayStats?.egg_count || 0}
+            </Animated.Text>
+            <Text style={styles.statLabel}>{t('home.eggsToday')}</Text>
+            {/* Streak badge */}
+            {summaryStats?.streak > 0 && (
               <View style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                borderRadius: 16,
-                padding: 12,
+                position: 'absolute',
+                bottom: 8,
+                left: 8,
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#f59e0b20',
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                borderRadius: 8,
               }}>
-                <Text style={{ fontSize: 32, fontWeight: '800', color: '#fff' }}>
-                  {todayStats?.egg_count || 0}
-                </Text>
-                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', textAlign: 'center' }}>
-                  {isSv ? 'idag' : 'today'}
+                <Text style={{ fontSize: 10 }}>🔥</Text>
+                <Text style={{ fontSize: 10, color: '#f59e0b', fontWeight: '600', marginLeft: 2 }}>
+                  {summaryStats.streak} {isSv ? 'dagar' : 'days'}
                 </Text>
               </View>
-            </Animated.View>
-          </View>
-          
-          {/* Quick add buttons */}
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            {[1, 3, 6].map((num) => (
-              <TouchableOpacity
-                key={num}
-                style={{
-                  flex: 1,
-                  backgroundColor: 'rgba(255,255,255,0.95)',
-                  borderRadius: 12,
-                  paddingVertical: 14,
-                  alignItems: 'center',
-                }}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  registerEggsWithCount(num);
-                }}
-              >
-                <Text style={{ fontSize: 18, fontWeight: '700', color: colors.success }}>+{num}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                borderRadius: 12,
-                paddingVertical: 14,
-                alignItems: 'center',
-                borderWidth: 2,
-                borderColor: 'rgba(255,255,255,0.4)',
-              }}
-              onPress={() => setShowQuickAdd(true)}
-            >
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#fff' }}>
-                {isSv ? 'Mer' : 'More'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          
-          {/* Streak badge */}
-          {summaryStats?.streak > 0 && (
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginTop: 12,
-              backgroundColor: 'rgba(255,255,255,0.15)',
-              paddingVertical: 6,
-              paddingHorizontal: 12,
-              borderRadius: 20,
-              alignSelf: 'center',
-            }}>
-              <Text style={{ fontSize: 14 }}>🔥</Text>
-              <Text style={{ fontSize: 13, color: '#fff', fontWeight: '600', marginLeft: 4 }}>
-                {summaryStats.streak} {isSv ? 'dagars streak' : 'day streak'}
-              </Text>
-            </View>
-          )}
+            )}
+          </Pressable>
         </View>
         
         {/* Undo Toast */}
@@ -920,6 +900,18 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </Animated.View>
         )}
+        
+        {/* Quick Add Eggs Button */}
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          <TouchableOpacity
+            style={styles.quickAddButton}
+            onPress={() => setShowQuickAdd(true)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add-circle" size={24} color="#FFF" />
+            <Text style={styles.quickAddText}>{t('home.registerEggs')}</Text>
+          </TouchableOpacity>
+        </Animated.View>
         
         {/* ========== SECTION 3: QUICK STATS DASHBOARD ========== */}
         <View style={{
