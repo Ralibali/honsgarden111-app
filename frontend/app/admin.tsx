@@ -416,10 +416,10 @@ export default function AdminPanel() {
 
   if (loading || isAdmin === null) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background || '#F5F5F5' }]}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary, marginTop: 16 }]}>
+          <ActivityIndicator size="large" color={colors.primary || '#4CAF50'} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary || '#666', marginTop: 16 }]}>
             Kontrollerar admin-behörighet...
           </Text>
         </View>
@@ -429,18 +429,18 @@ export default function AdminPanel() {
   
   if (isAdmin === false || adminError) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background || '#F5F5F5' }]}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <Ionicons name="lock-closed" size={64} color={colors.error} />
-          <Text style={[styles.title, { color: colors.text, marginTop: 16, textAlign: 'center' }]}>
+          <Ionicons name="lock-closed" size={64} color={colors.error || '#FF6B6B'} />
+          <Text style={[styles.title, { color: colors.text || '#1A1A1A', marginTop: 16, textAlign: 'center' }]}>
             Ingen åtkomst
           </Text>
-          <Text style={[styles.loadingText, { color: colors.textSecondary, marginTop: 8, textAlign: 'center' }]}>
+          <Text style={[styles.loadingText, { color: colors.textSecondary || '#666', marginTop: 8, textAlign: 'center' }]}>
             {adminError || 'Du har inte admin-behörighet till denna sida'}
           </Text>
           <TouchableOpacity 
             onPress={() => router.back()} 
-            style={[styles.backButtonLarge, { backgroundColor: colors.primary, marginTop: 24 }]}
+            style={[styles.backButtonLarge, { backgroundColor: colors.primary || '#4CAF50', marginTop: 24 }]}
           >
             <Text style={{ color: '#FFF', fontWeight: '600' }}>Gå tillbaka</Text>
           </TouchableOpacity>
@@ -450,7 +450,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background || '#F5F5F5' }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
