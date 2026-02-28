@@ -545,6 +545,45 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           )}
           
+          {/* Goals Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{isSv ? '🎯 Mål' : '🎯 Goals'}</Text>
+            
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 16,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+              onPress={() => setShowGoalsModal(true)}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 15, fontWeight: '600', color: colors.text }}>
+                    {isSv ? 'Sätt dina mål' : 'Set your goals'}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 4 }}>
+                    {goals.eggsPerMonth || goals.profitTarget
+                      ? (isSv 
+                          ? `${goals.eggsPerMonth ? `${goals.eggsPerMonth} ägg/mån` : ''}${goals.eggsPerMonth && goals.profitTarget ? ' • ' : ''}${goals.profitTarget ? `${goals.profitTarget} kr vinst` : ''}`
+                          : `${goals.eggsPerMonth ? `${goals.eggsPerMonth} eggs/month` : ''}${goals.eggsPerMonth && goals.profitTarget ? ' • ' : ''}${goals.profitTarget ? `${goals.profitTarget} kr profit` : ''}`)
+                      : (isSv ? 'Inga mål satta ännu' : 'No goals set yet')
+                    }
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              </View>
+            </TouchableOpacity>
+            
+            <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 8, lineHeight: 18 }}>
+              {isSv 
+                ? '💡 Sätt mål för att följa din progress och få anpassade tips.'
+                : '💡 Set goals to track your progress and get personalized tips.'}
+            </Text>
+          </View>
+          
           {/* Theme Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{isSv ? 'Utseende' : 'Appearance'}</Text>
