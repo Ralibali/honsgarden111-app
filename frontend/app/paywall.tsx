@@ -33,6 +33,11 @@ export default function PaywallScreen() {
   const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
   const useNativeIAP = isNative;
   
+  // DEBUG: Log platform detection
+  console.log('[Paywall] Platform.OS:', Platform.OS);
+  console.log('[Paywall] isNative:', isNative);
+  console.log('[Paywall] useNativeIAP:', useNativeIAP);
+  
   // Handle successful purchase - navigate back
   const handlePurchaseComplete = () => {
     router.back();
