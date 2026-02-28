@@ -136,6 +136,7 @@ export default function HomeScreen() {
     loadWeather();
     loadDailyChores();
     loadCommunityPosts();
+    loadEggForecast(); // Load forecast on mount
   }, []);
   
   // Refresh community posts when screen gets focus
