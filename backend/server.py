@@ -7647,9 +7647,6 @@ async def serve_register_page():
             return HTMLResponse(content=f.read())
     return HTMLResponse(content="<h1>Page not found</h1>", status_code=404)
 
-# Include the router in the main app
-app.include_router(api_router)
-
 # CORS Configuration - Read from environment variable for deployment flexibility
 cors_origins_env = os.environ.get('CORS_ORIGINS', '')
 
