@@ -2831,6 +2831,54 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontWeight: '600',
     color: '#f59e0b',
   },
+  
+  // Daily Chores Card
+  dailyChoresCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#f59e0b30',
+  },
+  dailyChoresLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  dailyChoresIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  dailyChoresTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  dailyChoresSubtitle: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  dailyChoresProgress: {
+    width: 50,
+    height: 6,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: 3,
+    marginRight: 12,
+    overflow: 'hidden',
+  },
+  dailyChoresProgressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  
   aiCard: {
     flexDirection: 'row',
     alignItems: 'center',
