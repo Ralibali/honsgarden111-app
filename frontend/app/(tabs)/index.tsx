@@ -2010,12 +2010,66 @@ export default function HomeScreen() {
           </View>
           
           <ScrollView style={styles.aiModalContent} contentContainerStyle={{ padding: 16 }}>
-            <Text style={[styles.agdaIntro, { color: colors.textSecondary }]}>
-              {isSv 
-                ? 'Agda är din AI-drivna hönsgårdsrådgivare. Ställ frågor om hönsskötsel, hälsa, foder eller vad som helst!'
-                : 'Agda is your AI-powered coop advisor. Ask questions about chicken care, health, feed, or anything!'}
-            </Text>
+            {/* Introduction card */}
+            <View style={{
+              backgroundColor: colors.primary + '15',
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+              borderLeftWidth: 4,
+              borderLeftColor: colors.primary
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 28, marginRight: 12 }}>🐔</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>
+                    {isSv ? 'Hej! Jag är Agda' : "Hi! I'm Agda"}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary }}>
+                    {isSv ? 'Din personliga hönsgårdsrådgivare' : 'Your personal chicken advisor'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={{ fontSize: 14, color: colors.text, lineHeight: 20 }}>
+                {isSv 
+                  ? 'Jag kan hjälpa dig med allt om höns! Ställ frågor om skötsel, hälsa, foder, äggproduktion eller vad du undrar över.'
+                  : 'I can help you with everything about chickens! Ask about care, health, feed, egg production or anything you wonder about.'}
+              </Text>
+            </View>
             
+            {/* Question suggestions - only show if no answer yet */}
+            {!agdaAnswer && (
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textSecondary, marginBottom: 8 }}>
+                  {isSv ? '💡 Förslag på frågor:' : '💡 Suggested questions:'}
+                </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {[
+                    isSv ? 'Varför lägger mina höns färre ägg?' : 'Why are my hens laying fewer eggs?',
+                    isSv ? 'Vad ska jag ge mina höns att äta?' : 'What should I feed my chickens?',
+                    isSv ? 'Hur håller jag hönsen varma på vintern?' : 'How do I keep chickens warm in winter?',
+                    isSv ? 'Hur vet jag om en höna är sjuk?' : 'How do I know if a hen is sick?',
+                  ].map((suggestion, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={{
+                        backgroundColor: colors.surface,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        borderRadius: 20,
+                        borderWidth: 1,
+                        borderColor: colors.border
+                      }}
+                      onPress={() => setAgdaQuestion(suggestion)}
+                    >
+                      <Text style={{ fontSize: 13, color: colors.text }}>{suggestion}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+            
+            {/* Input field */}
             <View style={[styles.agdaInputContainer, { backgroundColor: colors.surface }]}>
               <TextInput
                 style={[styles.agdaInput, { color: colors.text }]}
