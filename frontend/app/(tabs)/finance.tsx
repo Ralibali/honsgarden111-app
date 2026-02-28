@@ -300,6 +300,40 @@ export default function FinanceScreen() {
             </View>
           )}
           
+          {/* ROI VISUALIZATION - Show potential gains */}
+          {avgRevenuePerEgg > 0 && (
+            <View style={{
+              backgroundColor: colors.success + '10',
+              borderRadius: 12,
+              padding: 14,
+              marginTop: 12,
+              borderWidth: 1,
+              borderColor: colors.success + '30',
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                <Ionicons name="trending-up" size={18} color={colors.success} />
+                <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '600', color: colors.text }}>
+                  {isSv ? 'Potentiell ökning' : 'Potential increase'}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 13, color: colors.text, lineHeight: 20 }}>
+                {isSv 
+                  ? `Om du ökar snittet med 1 ägg/dag → `
+                  : `If you increase average by 1 egg/day → `}
+                <Text style={{ fontWeight: '700', color: colors.success }}>
+                  +{formatCurrency(avgRevenuePerEgg * 30)}/mån
+                </Text>
+              </Text>
+              {breakEvenPricePerEgg > 0 && avgRevenuePerEgg > breakEvenPricePerEgg && (
+                <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 6 }}>
+                  💰 {isSv 
+                    ? `Varje extra ägg ger ${formatCurrency(avgRevenuePerEgg - breakEvenPricePerEgg)} i nettovinst!`
+                    : `Each extra egg gives ${formatCurrency(avgRevenuePerEgg - breakEvenPricePerEgg)} in net profit!`}
+                </Text>
+              )}
+            </View>
+          )}
+          
           {/* Contextual Premium prompt - only show when there's enough data */}
           {totalEggsProduced >= 20 && !isPremium && (
             <TouchableOpacity 
