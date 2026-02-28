@@ -656,29 +656,15 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
-        {/* Header with Weather Widget */}
+        {/* ========== SECTION 1: HEADER (Compact) ========== */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.headerTitleSection}>
               <Text style={styles.title}>{coopSettings?.coop_name || 'Min Hönsgård'}</Text>
-              <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
+              <Text style={styles.date}>{dateString}</Text>
             </View>
             
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              {/* Compact Weather Widget */}
-              {weather && (
-                <TouchableOpacity 
-                  style={styles.weatherWidget}
-                  onPress={() => setShowWeatherModal(true)}
-                  data-testid="weather-widget"
-                >
-                  <Text style={styles.weatherWidgetIcon}>
-                    {getWeatherIcon(weather.description)}
-                  </Text>
-                  <Text style={styles.weatherWidgetTemp}>{Math.round(weather.temperature)}°</Text>
-                </TouchableOpacity>
-              )}
-              
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               {/* Avatar - Settings Button */}
               <TouchableOpacity 
                 style={{
@@ -688,170 +674,119 @@ export default function HomeScreen() {
                   backgroundColor: colors.primary,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  position: 'relative',
                 }}
                 onPress={() => router.push('/(tabs)/settings')}
                 data-testid="avatar-settings-btn"
               >
-                <Text style={{ 
-                  color: '#fff', 
-                  fontSize: 18, 
-                  fontWeight: '700',
-                }}>
+                <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
                   {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
                 </Text>
-                {/* Small settings indicator */}
-                <View style={{
-                  position: 'absolute',
-                  bottom: -2,
-                  right: -2,
-                  width: 16,
-                  height: 16,
-                  borderRadius: 8,
-                  backgroundColor: colors.surface,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                }}>
-                  <Ionicons name="settings" size={10} color={colors.textSecondary} />
-                </View>
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.date}>{dateString}</Text>
         </View>
         
-        {/* Data Limits Banner for Free Users - Hidden Data Card */}
-        {dataLimits && !dataLimits.is_premium && !dismissedBanner && dataLimits.hidden_data?.months_of_history > 0 && (
-          <TouchableOpacity 
-            style={styles.hiddenDataCard}
-            onPress={() => showPremiumGate(isSv ? 'Statistikhistorik' : 'Statistics History', 'analytics')}
-            activeOpacity={0.9}
-          >
-            <View style={styles.hiddenDataOverlay}>
-              <View style={styles.hiddenDataLock}>
-                <Ionicons name="lock-closed" size={24} color="#FFF" />
-              </View>
-              <View style={styles.hiddenDataContent}>
-                <Text style={styles.hiddenDataTitle}>🔒 Gömd statistik</Text>
-                <Text style={styles.hiddenDataMessage}>
-                  Du har {dataLimits.hidden_data.months_of_history} månaders data sparad
-                </Text>
-                <Text style={styles.hiddenDataSubtext}>
-                  Uppgradera till Premium för att låsa upp all din historik
-                </Text>
-              </View>
-            </View>
-            <View style={styles.hiddenDataBlur}>
-              <Text style={styles.blurredText}>██ ägg</Text>
-              <Text style={styles.blurredText}>██ kr</Text>
-            </View>
-            <View style={styles.unlockButton}>
-              <Ionicons name="star" size={16} color="#FFF" />
-              <Text style={styles.unlockButtonText}>Lås upp</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        
-        {/* Productivity Alerts */}
-        {productivityAlerts && productivityAlerts.total_alerts > 0 && (
-          <TouchableOpacity 
-            style={styles.productivityAlertBanner}
-            onPress={() => router.push('/(tabs)/hens')}
-          >
-            <Text style={styles.alertBannerEmoji}>🥚</Text>
-            <View style={styles.alertBannerContent}>
-              <Text style={styles.alertBannerTitle}>Produktivitetsvarning</Text>
-              <Text style={styles.alertBannerText}>
-                {productivityAlerts.total_alerts} höna{productivityAlerts.total_alerts === 1 ? '' : 'r'} har ej värpt på {productivityAlerts.threshold_days}+ dagar
+        {/* ========== SECTION 2: MAIN EGG REGISTRATION (Hero) ========== */}
+        <View style={{
+          backgroundColor: colors.success,
+          borderRadius: 20,
+          padding: 24,
+          marginHorizontal: 16,
+          marginBottom: 16,
+          shadowColor: colors.success,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 6,
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <View>
+              <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>
+                🥚 {isSv ? 'Registrera ägg' : 'Register Eggs'}
+              </Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 2 }}>
+                {isSv ? 'Tryck för att lägga till' : 'Tap to add'}
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#92400e" />
-          </TouchableOpacity>
-        )}
-        
-        {/* Quick Stats Cards - Clickable with animations */}
-        <View style={styles.statsRow}>
-          <TouchableOpacity 
-            style={[styles.statCard, styles.henCard]}
-            onPress={() => router.push('/(tabs)/hens')}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="heart" size={28} color={colors.error} />
-            <Text style={styles.statValue}>{todayStats?.hen_count || 0}</Text>
-            <Text style={styles.statLabel}>{t('home.hens')}</Text>
-          </TouchableOpacity>
-          
-          <Pressable 
-            style={({ pressed }) => [
-              styles.statCard, 
-              styles.eggCard,
-              pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
-            ]}
-            onPress={handleOneTapAdd}
-            onLongPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-              setShowQuickAdd(true);
-            }}
-            delayLongPress={400}
-          >
-            {/* Tap hint */}
-            <View style={{
-              position: 'absolute',
-              top: 6,
-              left: 6,
-              backgroundColor: colors.success + '20',
-              borderRadius: 8,
-              paddingHorizontal: 6,
-              paddingVertical: 2,
-            }}>
-              <Text style={{ fontSize: 9, color: colors.success, fontWeight: '600' }}>TAP +1</Text>
-            </View>
-            {/* Plus icon in corner */}
-            <View style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              backgroundColor: colors.warning + '30',
-              borderRadius: 12,
-              padding: 4,
-            }}>
-              <Ionicons name="add" size={16} color={colors.warning} />
-            </View>
             <Animated.View style={{ transform: [{ scale: eggPopAnim }] }}>
-              <Ionicons name="egg" size={28} color={colors.warning} />
-            </Animated.View>
-            <Animated.Text style={[styles.statValue, { transform: [{ scale: eggPopAnim }] }]}>
-              {todayStats?.egg_count || 0}
-            </Animated.Text>
-            <Text style={styles.statLabel}>{t('home.eggsToday')}</Text>
-            {/* Streak badge */}
-            {summaryStats?.streak > 0 && (
               <View style={{
-                position: 'absolute',
-                bottom: 8,
-                left: 8,
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#f59e0b20',
-                paddingHorizontal: 6,
-                paddingVertical: 2,
-                borderRadius: 8,
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                borderRadius: 16,
+                padding: 12,
               }}>
-                <Text style={{ fontSize: 10 }}>🔥</Text>
-                <Text style={{ fontSize: 10, color: '#f59e0b', fontWeight: '600', marginLeft: 2 }}>
-                  {summaryStats.streak} dagar
+                <Text style={{ fontSize: 32, fontWeight: '800', color: '#fff' }}>
+                  {todayStats?.egg_count || 0}
+                </Text>
+                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', textAlign: 'center' }}>
+                  {isSv ? 'idag' : 'today'}
                 </Text>
               </View>
-            )}
-          </Pressable>
+            </Animated.View>
+          </View>
+          
+          {/* Quick add buttons */}
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {[1, 3, 6].map((num) => (
+              <TouchableOpacity
+                key={num}
+                style={{
+                  flex: 1,
+                  backgroundColor: 'rgba(255,255,255,0.95)',
+                  borderRadius: 12,
+                  paddingVertical: 14,
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  registerEggsWithCount(num);
+                }}
+              >
+                <Text style={{ fontSize: 18, fontWeight: '700', color: colors.success }}>+{num}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                borderRadius: 12,
+                paddingVertical: 14,
+                alignItems: 'center',
+                borderWidth: 2,
+                borderColor: 'rgba(255,255,255,0.4)',
+              }}
+              onPress={() => setShowQuickAdd(true)}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#fff' }}>
+                {isSv ? 'Mer' : 'More'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          {/* Streak badge */}
+          {summaryStats?.streak > 0 && (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 12,
+              backgroundColor: 'rgba(255,255,255,0.15)',
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              borderRadius: 20,
+              alignSelf: 'center',
+            }}>
+              <Text style={{ fontSize: 14 }}>🔥</Text>
+              <Text style={{ fontSize: 13, color: '#fff', fontWeight: '600', marginLeft: 4 }}>
+                {summaryStats.streak} {isSv ? 'dagars streak' : 'day streak'}
+              </Text>
+            </View>
+          )}
         </View>
         
         {/* Undo Toast */}
         {showUndo && (
-          <Animated.View style={styles.undoToast}>
-            <Text style={styles.undoText}>+{lastRegisteredCount} ägg registrerat</Text>
+          <Animated.View style={[styles.undoToast, { marginHorizontal: 16, marginBottom: 12 }]}>
+            <Text style={styles.undoText}>+{lastRegisteredCount} {isSv ? 'ägg registrerat' : 'eggs registered'}</Text>
             <TouchableOpacity 
               style={styles.undoButton}
               onPress={async () => {
@@ -861,282 +796,106 @@ export default function HomeScreen() {
               }}
             >
               <Ionicons name="arrow-undo" size={16} color="#fff" />
-              <Text style={styles.undoButtonText}>Ångra</Text>
+              <Text style={styles.undoButtonText}>{isSv ? 'Ångra' : 'Undo'}</Text>
             </TouchableOpacity>
           </Animated.View>
         )}
         
-        {/* Quick Add Eggs Button */}
-        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-          <TouchableOpacity
-            style={styles.quickAddButton}
-            onPress={() => setShowQuickAdd(true)}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="add-circle" size={24} color="#FFF" />
-            <Text style={styles.quickAddText}>{t('home.registerEggs')}</Text>
-          </TouchableOpacity>
-        </Animated.View>
-        
-        {/* Monthly Summary */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{t('home.thisMonth')}</Text>
-          <View style={styles.monthlyStats}>
-            <View style={styles.monthStat}>
-              <Text style={styles.monthValue}>{summaryStats?.this_month.eggs || 0}</Text>
-              <Text style={styles.monthLabel}>{t('home.eggs')}</Text>
-            </View>
-            <View style={styles.monthDivider} />
-            <View style={styles.monthStat}>
-              <Text style={[styles.monthValue, { color: colors.error }]}>
-                {formatCurrency(summaryStats?.this_month.costs || 0)}
-              </Text>
-              <Text style={styles.monthLabel}>{t('home.costs')}</Text>
-            </View>
-            <View style={styles.monthDivider} />
-            <View style={styles.monthStat}>
-              <Text style={[styles.monthValue, { color: colors.success }]}>
-                {formatCurrency(summaryStats?.this_month.sales || 0)}
-              </Text>
-              <Text style={styles.monthLabel}>{t('home.sales')}</Text>
-            </View>
-          </View>
-          <View style={styles.netRow}>
-            <Text style={styles.netLabel}>{t('home.net')}:</Text>
-            <Text style={[
-              styles.netValue,
-              { color: (summaryStats?.this_month.net || 0) >= 0 ? colors.success : colors.error }
-            ]}>
-              {(summaryStats?.this_month.net || 0) >= 0 ? '+' : ''}
-              {formatCurrency(summaryStats?.this_month.net || 0)}
-            </Text>
-          </View>
-        </View>
-        
-        {/* Week's Best Hen */}
-        {summaryStats?.best_hen_week && (
+        {/* ========== SECTION 3: QUICK STATS DASHBOARD ========== */}
+        <View style={{
+          flexDirection: 'row',
+          marginHorizontal: 16,
+          marginBottom: 16,
+          gap: 10,
+        }}>
+          {/* Eggs today */}
           <TouchableOpacity 
-            style={styles.bestHenCard}
-            onPress={() => router.push('/(tabs)/hens')}
-            activeOpacity={0.8}
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 16,
+              alignItems: 'center',
+              borderWidth: 2,
+              borderColor: colors.warning + '40',
+            }}
+            onPress={() => router.push('/(tabs)/eggs')}
           >
-            <View style={styles.bestHenIcon}>
-              <Text style={{ fontSize: 32 }}>🏆</Text>
-            </View>
-            <View style={styles.bestHenInfo}>
-              <Text style={styles.bestHenTitle}>{isSv ? 'Veckans bästa höna' : "Week's Best Hen"}</Text>
-              <Text style={styles.bestHenName}>{summaryStats.best_hen_week.name}</Text>
-              <Text style={styles.bestHenEggs}>
-                {summaryStats.best_hen_week.eggs_this_week} {isSv ? 'ägg denna vecka' : 'eggs this week'}
+            <Text style={{ fontSize: 28 }}>🥚</Text>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: colors.text, marginTop: 4 }}>
+              {todayStats?.egg_count || 0}
+            </Text>
+            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+              {isSv ? 'Ägg idag' : 'Eggs today'}
+            </Text>
+          </TouchableOpacity>
+          
+          {/* Hens count */}
+          <TouchableOpacity 
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 16,
+              alignItems: 'center',
+              borderWidth: 2,
+              borderColor: colors.error + '30',
+            }}
+            onPress={() => router.push('/(tabs)/hens')}
+          >
+            <Text style={{ fontSize: 28 }}>🐔</Text>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: colors.text, marginTop: 4 }}>
+              {todayStats?.hen_count || 0}
+            </Text>
+            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+              {isSv ? 'Höns' : 'Hens'}
+            </Text>
+          </TouchableOpacity>
+          
+          {/* Productivity */}
+          <TouchableOpacity 
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 16,
+              alignItems: 'center',
+              borderWidth: 2,
+              borderColor: colors.primary + '30',
+            }}
+            onPress={() => router.push('/(tabs)/statistics')}
+          >
+            <Text style={{ fontSize: 28 }}>📈</Text>
+            <Text style={{ fontSize: 24, fontWeight: '800', color: colors.text, marginTop: 4 }}>
+              {insights?.productivity_index || 0}%
+            </Text>
+            <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+              {isSv ? 'Produktivitet' : 'Productivity'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        {/* ========== SECTION 4: PRODUCTIVITY ALERTS ========== */}
+        {productivityAlerts && productivityAlerts.total_alerts > 0 && (
+          <TouchableOpacity 
+            style={[styles.productivityAlertBanner, { marginHorizontal: 16, marginBottom: 16 }]}
+            onPress={() => router.push('/(tabs)/hens')}
+          >
+            <Text style={styles.alertBannerEmoji}>⚠️</Text>
+            <View style={styles.alertBannerContent}>
+              <Text style={styles.alertBannerTitle}>{isSv ? 'Produktivitetsvarning' : 'Productivity Alert'}</Text>
+              <Text style={styles.alertBannerText}>
+                {productivityAlerts.total_alerts} {isSv ? 'höna har ej värpt på' : 'hen not laying for'} {productivityAlerts.threshold_days}+ {isSv ? 'dagar' : 'days'}
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color="#92400e" />
           </TouchableOpacity>
         )}
         
-        {/* Community Comparison */}
-        {summaryStats?.community_comparison && summaryStats.community_comparison.total_users > 1 && (
-          <View style={styles.communityCard}>
-            <View style={styles.communityHeader}>
-              <Ionicons name="people" size={20} color={colors.primary} />
-              <Text style={styles.communityTitle}>{isSv ? 'Jämfört med andra' : 'Compared to Others'}</Text>
-            </View>
-            <View style={styles.communityStats}>
-              <View style={styles.communityStat}>
-                <Text style={styles.communityStatValue}>
-                  #{summaryStats.community_comparison.your_rank}
-                </Text>
-                <Text style={styles.communityStatLabel}>{isSv ? 'Din placering' : 'Your Rank'}</Text>
-              </View>
-              <View style={styles.communityStat}>
-                <Text style={[
-                  styles.communityStatValue, 
-                  { color: summaryStats.community_comparison.vs_avg_percent >= 0 ? colors.success : colors.error }
-                ]}>
-                  {summaryStats.community_comparison.vs_avg_percent >= 0 ? '+' : ''}
-                  {summaryStats.community_comparison.vs_avg_percent}%
-                </Text>
-                <Text style={styles.communityStatLabel}>{isSv ? 'vs genomsnitt' : 'vs average'}</Text>
-              </View>
-              <View style={styles.communityStat}>
-                <Text style={[styles.communityStatValue, { color: colors.success }]}>
-                  {isSv ? `Topp ${Math.max(1, 100 - summaryStats.community_comparison.percentile)}%` : `Top ${Math.max(1, 100 - summaryStats.community_comparison.percentile)}%`}
-                </Text>
-                <Text style={styles.communityStatLabel}>{isSv ? 'av användare' : 'of users'}</Text>
-              </View>
-            </View>
-            <View style={styles.communityAvgRow}>
-              <Text style={styles.communityAvgLabel}>
-                {isSv ? 'Communitysnitt denna månad:' : 'Community avg this month:'}
-              </Text>
-              <Text style={styles.communityAvgValue}>
-                {summaryStats.community_comparison.community_avg} {isSv ? 'ägg' : 'eggs'}
-              </Text>
-            </View>
-          </View>
-        )}
-        
-        {/* All-time Summary */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{t('home.total')}</Text>
-          <View style={styles.totalRow}>
-            <View style={styles.totalItem}>
-              <Ionicons name="egg-outline" size={20} color={colors.warning} />
-              <Text style={styles.totalValue}>{summaryStats?.total_eggs_all_time || 0}</Text>
-              <Text style={styles.totalLabel}>{t('home.totalEggs')}</Text>
-            </View>
-            <View style={styles.totalItem}>
-              <Ionicons name="trending-up" size={20} color={colors.success} />
-              <Text style={styles.totalValue}>{formatCurrency(summaryStats?.total_sales_all_time || 0)}</Text>
-              <Text style={styles.totalLabel}>{t('home.income')}</Text>
-            </View>
-            <View style={styles.totalItem}>
-              <Ionicons name="trending-down" size={20} color={colors.error} />
-              <Text style={styles.totalValue}>{formatCurrency(summaryStats?.total_costs_all_time || 0)}</Text>
-              <Text style={styles.totalLabel}>{t('home.expenses')}</Text>
-            </View>
-          </View>
-        </View>
-        
-        {/* Insights Section - Enhanced */}
-        {insights && (
-          <View style={styles.card}>
-            <View style={styles.cardHeaderRow}>
-              <Text style={styles.cardTitle}>📊 {t('home.insights', { defaultValue: 'Insikter' })}</Text>
-              <Text style={styles.scrollHint}>← svep →</Text>
-            </View>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={true} 
-              style={styles.insightsScrollView}
-              contentContainerStyle={styles.insightsScrollContent}
-            >
-              <View style={styles.insightCard}>
-                <Text style={styles.insightIcon}>💰</Text>
-                <Text style={styles.insightValueLarge}>{insights.cost_per_egg} kr</Text>
-                <Text style={styles.insightLabelFull}>{t('home.costPerEgg', { defaultValue: 'Kostnad per ägg' })}</Text>
-              </View>
-              {insights.top_hen && (
-                <View style={[styles.insightCard, styles.insightTopHenCard]}>
-                  <Text style={styles.insightIcon}>🏆</Text>
-                  <Text style={styles.insightValueLarge}>{insights.top_hen.name}</Text>
-                  <Text style={styles.insightLabelFull}>Toppvärpare ({insights.top_hen.eggs} ägg)</Text>
-                </View>
-              )}
-              <View style={styles.insightCard}>
-                <Text style={styles.insightIcon}>📈</Text>
-                <Text style={styles.insightValueLarge}>{insights.productivity_index}%</Text>
-                <Text style={styles.insightLabelFull}>{t('home.productivity', { defaultValue: 'Produktivitet' })}</Text>
-              </View>
-              {/* New insights */}
-              <View style={styles.insightCard}>
-                <Text style={styles.insightIcon}>🥚</Text>
-                <Text style={styles.insightValueLarge}>{summaryStats?.average_eggs_per_day?.toFixed(1) || '0'}</Text>
-                <Text style={styles.insightLabelFull}>{isSv ? 'Ägg/dag snitt' : 'Eggs/day avg'}</Text>
-              </View>
-              {todayStats?.hen_count && todayStats.hen_count > 0 && (
-                <View style={styles.insightCard}>
-                  <Text style={styles.insightIcon}>🐔</Text>
-                  <Text style={styles.insightValueLarge}>{((todayStats.egg_count || 0) / todayStats.hen_count * 100).toFixed(0)}%</Text>
-                  <Text style={styles.insightLabelFull}>{isSv ? 'Värpning idag' : 'Laying today'}</Text>
-                </View>
-              )}
-              {summaryStats?.this_month?.net !== undefined && (
-                <View style={styles.insightCard}>
-                  <Text style={styles.insightIcon}>{summaryStats.this_month.net >= 0 ? '💚' : '🔴'}</Text>
-                  <Text style={[styles.insightValueLarge, { color: summaryStats.this_month.net >= 0 ? '#4ade80' : '#ef4444' }]}>
-                    {summaryStats.this_month.net >= 0 ? '+' : ''}{summaryStats.this_month.net} kr
-                  </Text>
-                  <Text style={styles.insightLabelFull}>{isSv ? 'Resultat denna mån' : 'This month'}</Text>
-                </View>
-              )}
-              
-              {/* PREMIUM INSIGHTS - Blurred for free users */}
-              {/* Total eggs all time */}
-              <TouchableOpacity 
-                style={[styles.insightCard, !isPremium && styles.insightCardLocked]}
-                onPress={() => !isPremium && router.push('/paywall')}
-                disabled={isPremium}
-              >
-                {!isPremium && (
-                  <View style={styles.lockBadge}>
-                    <Ionicons name="lock-closed" size={10} color="#fff" />
-                  </View>
-                )}
-                <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>🎯</Text>
-                <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
-                  {isPremium ? (summaryStats?.total_eggs_all_time || 0) : '847'}
-                </Text>
-                <Text style={styles.insightLabelFull}>{isSv ? 'Totalt ägg' : 'Total eggs'}</Text>
-                {!isPremium && <Text style={styles.exampleLabel}>{isSv ? 'Exempel' : 'Example'}</Text>}
-              </TouchableOpacity>
-              
-              {/* Best day record */}
-              <TouchableOpacity 
-                style={[styles.insightCard, !isPremium && styles.insightCardLocked]}
-                onPress={() => !isPremium && router.push('/paywall')}
-                disabled={isPremium}
-              >
-                {!isPremium && (
-                  <View style={styles.lockBadge}>
-                    <Ionicons name="lock-closed" size={10} color="#fff" />
-                  </View>
-                )}
-                <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>⭐</Text>
-                <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
-                  {isPremium ? (insights.best_day?.eggs || '-') : '12'}
-                </Text>
-                <Text style={styles.insightLabelFull}>{isSv ? 'Rekord ägg/dag' : 'Record eggs/day'}</Text>
-                {!isPremium && <Text style={styles.exampleLabel}>{isSv ? 'Exempel' : 'Example'}</Text>}
-              </TouchableOpacity>
-              
-              {/* Feed cost per egg */}
-              <TouchableOpacity 
-                style={[styles.insightCard, !isPremium && styles.insightCardLocked]}
-                onPress={() => !isPremium && router.push('/paywall')}
-                disabled={isPremium}
-              >
-                {!isPremium && (
-                  <View style={styles.lockBadge}>
-                    <Ionicons name="lock-closed" size={10} color="#fff" />
-                  </View>
-                )}
-                <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>🌾</Text>
-                <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
-                  {isPremium ? `${(insights.feed_cost_per_egg || 0).toFixed(2)} kr` : '2.45 kr'}
-                </Text>
-                <Text style={styles.insightLabelFull}>{isSv ? 'Foderkostnad/ägg' : 'Feed cost/egg'}</Text>
-                {!isPremium && <Text style={styles.exampleLabel}>{isSv ? 'Exempel' : 'Example'}</Text>}
-              </TouchableOpacity>
-              
-              {/* Revenue per egg */}
-              <TouchableOpacity 
-                style={[styles.insightCard, !isPremium && styles.insightCardLocked]}
-                onPress={() => !isPremium && router.push('/paywall')}
-                disabled={isPremium}
-              >
-                {!isPremium && (
-                  <View style={styles.lockBadge}>
-                    <Ionicons name="lock-closed" size={10} color="#fff" />
-                  </View>
-                )}
-                <Text style={[styles.insightIcon, !isPremium && { opacity: 0.5 }]}>💵</Text>
-                <Text style={[styles.insightValueLarge, !isPremium && styles.blurredText]}>
-                  {isPremium && summaryStats?.this_month?.total_sales > 0 && summaryStats?.this_month?.total_eggs > 0
-                    ? `${(summaryStats.this_month.total_sales / summaryStats.this_month.total_eggs).toFixed(2)} kr`
-                    : isPremium ? '0.00 kr' : '5.80 kr'}
-                </Text>
-                <Text style={styles.insightLabelFull}>{isSv ? 'Intäkt per ägg' : 'Revenue/egg'}</Text>
-                {!isPremium && <Text style={styles.exampleLabel}>{isSv ? 'Exempel' : 'Example'}</Text>}
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        )}
-        
-        {/* Dagens Sysslor Card */}
+        {/* ========== SECTION 5: DAILY CHORES ========== */}
         {dailyChores.length > 0 && (
           <TouchableOpacity
-            style={styles.dailyChoresCard}
+            style={[styles.dailyChoresCard, { marginHorizontal: 16, marginBottom: 16 }]}
             onPress={() => setShowChoresModal(true)}
             activeOpacity={0.8}
           >
@@ -1168,476 +927,336 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
         
-        {/* Quick Actions */}
-        <View style={styles.quickActionsSection}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={styles.cardTitle}>⚡ {isSv ? 'Snabbåtgärder' : 'Quick Actions'}</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontSize: 12, color: colors.textSecondary, marginRight: 4 }}>
-                {isSv ? 'Svep' : 'Swipe'}
-              </Text>
-              <Ionicons name="arrow-forward" size={14} color={colors.textSecondary} />
-            </View>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickActionsScroll}>
+        {/* ========== SECTION 6: QUICK ACTIONS (One place only) ========== */}
+        <View style={[styles.quickActionsSection, { marginHorizontal: 16, marginBottom: 16 }]}>
+          <Text style={[styles.cardTitle, { marginBottom: 12 }]}>⚡ {isSv ? 'Snabbåtgärder' : 'Quick Actions'}</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
             <TouchableOpacity
-              style={styles.quickActionCard}
+              style={{
+                flex: 1,
+                minWidth: '30%',
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 14,
+                alignItems: 'center',
+              }}
               onPress={() => router.push('/feed')}
             >
               <View style={[styles.quickActionIcon, { backgroundColor: '#f59e0b' }]}>
-                <Ionicons name="nutrition" size={20} color="#FFF" />
+                <Ionicons name="nutrition" size={18} color="#FFF" />
               </View>
-              <Text style={styles.quickActionLabel}>{isSv ? 'Foder' : 'Feed'}</Text>
+              <Text style={{ fontSize: 12, color: colors.text, marginTop: 6 }}>{isSv ? 'Foder' : 'Feed'}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={styles.quickActionCard}
+              style={{
+                flex: 1,
+                minWidth: '30%',
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 14,
+                alignItems: 'center',
+              }}
               onPress={() => router.push('/hatching')}
             >
               <View style={[styles.quickActionIcon, { backgroundColor: '#ec4899' }]}>
-                <Ionicons name="egg" size={20} color="#FFF" />
+                <Ionicons name="egg" size={18} color="#FFF" />
               </View>
-              <Text style={styles.quickActionLabel}>{isSv ? 'Kläckning' : 'Hatching'}</Text>
+              <Text style={{ fontSize: 12, color: colors.text, marginTop: 6 }}>{isSv ? 'Kläckning' : 'Hatching'}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => router.push('/(tabs)/community')}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: '#10b981' }]}>
-                <Ionicons name="chatbubbles" size={20} color="#FFF" />
-              </View>
-              <Text style={styles.quickActionLabel}>{isSv ? 'Community' : 'Community'}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={handleShareStatistics}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: '#3b82f6' }]}>
-                <Ionicons name="share-social" size={20} color="#FFF" />
-              </View>
-              <Text style={styles.quickActionLabel}>{isSv ? 'Dela' : 'Share'}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => router.push('/(tabs)/statistics')}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: '#8b5cf6' }]}>
-                <Ionicons name="stats-chart" size={20} color="#FFF" />
-              </View>
-              <Text style={styles.quickActionLabel}>{isSv ? 'Statistik' : 'Stats'}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.quickActionCard}
-              onPress={() => setShowChoresModal(true)}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: '#06b6d4' }]}>
-                <Ionicons name="checkbox" size={20} color="#FFF" />
-              </View>
-              <Text style={styles.quickActionLabel}>{isSv ? 'Sysslor' : 'Chores'}</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-        
-        {/* Community Preview Section */}
-        <View style={styles.card}>
-          <TouchableOpacity 
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}
-            onPress={() => router.push('/(tabs)/community')}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.cardTitle}>💬 Community</Text>
-              <View style={{
-                backgroundColor: colors.primary + '20',
-                paddingHorizontal: 8,
-                paddingVertical: 2,
-                borderRadius: 10,
-                marginLeft: 8,
-              }}>
-                <Text style={{ fontSize: 11, color: colors.primary, fontWeight: '600' }}>
-                  {isSv ? 'Nytt!' : 'New!'}
-                </Text>
-              </View>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontSize: 13, color: colors.primary, marginRight: 4 }}>
-                {isSv ? 'Visa alla' : 'View all'}
-              </Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.primary} />
-            </View>
-          </TouchableOpacity>
-          
-          {communityPosts.length > 0 ? (
-            <View>
-              {communityPosts.slice(0, 2).map((post: any, idx: number) => (
-                <TouchableOpacity 
-                  key={post.id || idx}
-                  style={{
-                    backgroundColor: colors.background,
-                    borderRadius: 12,
-                    padding: 12,
-                    marginBottom: idx < 1 ? 8 : 0,
-                  }}
-                  onPress={() => router.push('/(tabs)/community')}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                    <View style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 14,
-                      backgroundColor: colors.primary + '30',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: 8,
-                    }}>
-                      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary }}>
-                        {(post.user_name || 'A').charAt(0).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>
-                      {post.user_name || (isSv ? 'Anonym' : 'Anonymous')}
-                    </Text>
-                  </View>
-                  <Text 
-                    style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}
-                    numberOfLines={2}
-                  >
-                    {post.content}
-                  </Text>
-                  {post.replies_count > 0 && (
-                    <Text style={{ fontSize: 11, color: colors.textSecondary, marginTop: 6 }}>
-                      💬 {post.replies_count} {isSv ? 'svar' : 'replies'}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <TouchableOpacity 
               style={{
-                backgroundColor: colors.background,
+                flex: 1,
+                minWidth: '30%',
+                backgroundColor: colors.surface,
                 borderRadius: 12,
-                padding: 20,
+                padding: 14,
                 alignItems: 'center',
               }}
               onPress={() => router.push('/(tabs)/community')}
             >
-              <Ionicons name="chatbubbles-outline" size={32} color={colors.textSecondary} />
-              <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 8, textAlign: 'center' }}>
-                {isSv ? 'Var först med att starta en diskussion!' : 'Be the first to start a discussion!'}
-              </Text>
-              <View style={{
-                backgroundColor: colors.primary,
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                borderRadius: 20,
-                marginTop: 12,
-              }}>
-                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 13 }}>
-                  {isSv ? 'Skriv ett inlägg' : 'Write a post'}
-                </Text>
+              <View style={[styles.quickActionIcon, { backgroundColor: '#10b981' }]}>
+                <Ionicons name="chatbubbles" size={18} color="#FFF" />
               </View>
+              <Text style={{ fontSize: 12, color: colors.text, marginTop: 6 }}>Community</Text>
             </TouchableOpacity>
-          )}
+            
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                minWidth: '30%',
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 14,
+                alignItems: 'center',
+              }}
+              onPress={handleShareStatistics}
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: '#3b82f6' }]}>
+                <Ionicons name="share-social" size={18} color="#FFF" />
+              </View>
+              <Text style={{ fontSize: 12, color: colors.text, marginTop: 6 }}>{isSv ? 'Dela' : 'Share'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         
-        {/* Weather Card */}
+        {/* ========== SECTION 7: MONTHLY SUMMARY ========== */}
+        <View style={[styles.sectionCard, { marginHorizontal: 16, marginBottom: 16 }]}>
+          <Text style={styles.sectionTitle}>{t('home.thisMonth')}</Text>
+          <View style={styles.monthlyStats}>
+            <View style={styles.monthStat}>
+              <Text style={styles.monthValue}>{summaryStats?.this_month.eggs || 0}</Text>
+              <Text style={styles.monthLabel}>{t('home.eggs')}</Text>
+            </View>
+            <View style={styles.monthDivider} />
+            <View style={styles.monthStat}>
+              <Text style={[styles.monthValue, { color: colors.error }]}>
+                {formatCurrency(summaryStats?.this_month.costs || 0)}
+              </Text>
+              <Text style={styles.monthLabel}>{t('home.costs')}</Text>
+            </View>
+            <View style={styles.monthDivider} />
+            <View style={styles.monthStat}>
+              <Text style={[styles.monthValue, { color: colors.success }]}>
+                {formatCurrency(summaryStats?.this_month.sales || 0)}
+              </Text>
+              <Text style={styles.monthLabel}>{t('home.sales')}</Text>
+            </View>
+          </View>
+          <View style={[styles.netRow, { 
+            backgroundColor: (summaryStats?.this_month.net || 0) >= 0 ? colors.success + '15' : colors.error + '15',
+            borderRadius: 8,
+            padding: 8,
+            marginTop: 8,
+          }]}>
+            <Text style={styles.netLabel}>{t('home.net')}:</Text>
+            <Text style={[
+              styles.netValue,
+              { color: (summaryStats?.this_month.net || 0) >= 0 ? colors.success : colors.error, fontWeight: '700' }
+            ]}>
+              {(summaryStats?.this_month.net || 0) >= 0 ? '+' : ''}
+              {formatCurrency(summaryStats?.this_month.net || 0)}
+            </Text>
+          </View>
+        </View>
+        
+        {/* ========== SECTION 8: WEEK'S BEST HEN ========== */}
+        {summaryStats?.best_hen_week && (
+          <TouchableOpacity 
+            style={[styles.bestHenCard, { marginHorizontal: 16, marginBottom: 16 }]}
+            onPress={() => router.push('/(tabs)/hens')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.bestHenIcon}>
+              <Text style={{ fontSize: 32 }}>🏆</Text>
+            </View>
+            <View style={styles.bestHenInfo}>
+              <Text style={styles.bestHenTitle}>{isSv ? 'Veckans bästa höna' : "Week's Best Hen"}</Text>
+              <Text style={styles.bestHenName}>{summaryStats.best_hen_week.name}</Text>
+              <Text style={styles.bestHenEggs}>
+                {summaryStats.best_hen_week.eggs_this_week} {isSv ? 'ägg denna vecka' : 'eggs this week'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
+        
+        {/* ========== SECTION 9: WEATHER (Secondary) ========== */}
         {weather && (
           <TouchableOpacity 
-            style={styles.weatherCard}
-            onPress={() => isPremium ? setShowWeatherModal(true) : showPremiumGate(isSv ? 'Vädertips' : 'Weather Tips', 'cloudy')}
+            style={[styles.weatherCard, { marginHorizontal: 16, marginBottom: 16 }]}
+            onPress={() => setShowWeatherModal(true)}
           >
-            <View style={styles.weatherHeader}>
-              <Text style={styles.cardTitle}>🌤️ {isSv ? 'Väder' : 'Weather'}</Text>
-              {!isPremium && (
-                <View style={styles.premiumBadge}>
-                  <Text style={styles.premiumBadgeText}>Premium</Text>
-                </View>
-              )}
-            </View>
-            <View style={styles.weatherContent}>
-              <View style={styles.weatherMain}>
-                <Text style={styles.weatherTemp}>{weather.temperature}°C</Text>
-                <Text style={styles.weatherDesc}>{weather.description}</Text>
-              </View>
-              <View style={styles.weatherDetails}>
-                <Text style={styles.weatherDetail}>💧 {weather.humidity}%</Text>
-                <Text style={styles.weatherDetail}>💨 {weather.wind_speed} m/s</Text>
-              </View>
-            </View>
-            {isPremium && weather.tips && weather.tips.length > 0 && (
-              <View style={styles.weatherTips}>
-                <Text style={styles.weatherTipsTitle}>{isSv ? 'Tips för idag:' : 'Tips for today:'}</Text>
-                {weather.tips.slice(0, 2).map((tip: any, idx: number) => (
-                  <Text key={idx} style={styles.weatherTip}>
-                    {typeof tip === 'string' ? `💡 ${tip}` : tip.message || '💡 Tips'}
-                  </Text>
-                ))}
-              </View>
-            )}
-            {!isPremium && (
-              <View style={styles.weatherLocked}>
-                <Ionicons name="lock-closed" size={16} color="#f59e0b" />
-                <Text style={styles.weatherLockedText}>
-                  {isSv ? 'Uppgradera för vädertips' : 'Upgrade for weather tips'}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ fontSize: 36, marginRight: 12 }}>
+                  {getWeatherIcon(weather.description)}
                 </Text>
+                <View>
+                  <Text style={{ fontSize: 24, fontWeight: '700', color: colors.text }}>
+                    {Math.round(weather.temperature)}°C
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary, textTransform: 'capitalize' }}>
+                    {weather.description}
+                  </Text>
+                </View>
               </View>
-            )}
+              <View style={{ flexDirection: 'row', gap: 16 }}>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ fontSize: 16 }}>💧</Text>
+                  <Text style={{ fontSize: 12, color: colors.textSecondary }}>{weather.humidity}%</Text>
+                </View>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ fontSize: 16 }}>💨</Text>
+                  <Text style={{ fontSize: 12, color: colors.textSecondary }}>{weather.wind_speed}m/s</Text>
+                </View>
+              </View>
+            </View>
           </TouchableOpacity>
         )}
         
-        {/* Premium Insights */}
-        {isPremium && insights?.premium && (
-          <View style={styles.premiumInsightsCard}>
-            <View style={styles.premiumCardHeader}>
-              <Text style={styles.cardTitle}>⭐ Premium Insikter</Text>
-              <View style={styles.premiumBadge}>
-                <Text style={styles.premiumBadgeText}>Premium</Text>
-              </View>
+        {/* ========== SECTION 10: COMMUNITY COMPARISON ========== */}
+        {summaryStats?.community_comparison && summaryStats.community_comparison.total_users > 1 && (
+          <View style={[styles.communityCard, { marginHorizontal: 16, marginBottom: 16 }]}>
+            <View style={styles.communityHeader}>
+              <Ionicons name="people" size={20} color={colors.primary} />
+              <Text style={styles.communityTitle}>{isSv ? 'Jämfört med andra' : 'Compared to Others'}</Text>
             </View>
-            
-            {/* Summary */}
-            <View style={styles.premiumSummary}>
-              <Text style={styles.premiumSummaryText}>{insights.premium.summary}</Text>
-            </View>
-            
-            {/* Status + Forecast Row */}
-            <View style={styles.premiumStatsRow}>
-              <View style={[
-                styles.statusCard, 
-                insights.premium.production_status === 'normal' && styles.statusNormal,
-                insights.premium.production_status === 'low' && styles.statusLow,
-                insights.premium.production_status === 'high' && styles.statusHigh,
-              ]}>
-                <Text style={styles.statusText}>{insights.premium.production_text}</Text>
-                <Text style={styles.statusDetail}>
-                  {insights.premium.deviation_percent > 0 ? '+' : ''}{insights.premium.deviation_percent}%
+            <View style={styles.communityStats}>
+              <View style={styles.communityStat}>
+                <Text style={styles.communityStatValue}>
+                  #{summaryStats.community_comparison.your_rank}
                 </Text>
+                <Text style={styles.communityStatLabel}>{isSv ? 'Din placering' : 'Your Rank'}</Text>
               </View>
-              <View style={styles.forecastCard}>
-                <Text style={styles.forecastIcon}>🔮</Text>
-                <View style={styles.forecastData}>
-                  <Text style={styles.forecastValue}>~{insights.premium.forecast_7_days}</Text>
-                  <Text style={styles.forecastLabel}>ägg nästa 7d</Text>
-                </View>
-              </View>
-            </View>
-            
-            {/* Deviating Hens Alert */}
-            {insights.premium.deviating_hens.length > 0 && (
-              <View style={styles.alertSection}>
-                <Text style={styles.alertTitle}>⚠️ Avvikelser</Text>
-                {insights.premium.deviating_hens.map(hen => (
-                  <TouchableOpacity 
-                    key={hen.id} 
-                    style={styles.henAlert}
-                    onPress={() => router.push('/hens')}
-                  >
-                    <Text style={styles.alertIcon}>🐔</Text>
-                    <Text style={styles.alertText}>{hen.alert}</Text>
-                    <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-            
-            {/* Economy Comparison */}
-            <View style={styles.economySection}>
-              <Text style={styles.economyTitle}>💰 Ekonomi</Text>
-              <View style={styles.economyCards}>
-                <View style={styles.economyCard}>
-                  <Text style={styles.economyLabel}>Denna månad</Text>
-                  <Text style={[
-                    styles.economyValue,
-                    insights.premium.economy.this_month.profit >= 0 ? styles.economyPositive : styles.economyNegative
-                  ]}>
-                    {insights.premium.economy.this_month.profit >= 0 ? '+' : ''}{insights.premium.economy.this_month.profit} kr
-                  </Text>
-                </View>
-                <View style={[styles.economyCard, styles.economyCardFaded]}>
-                  <Text style={styles.economyLabel}>Förra månaden</Text>
-                  <Text style={styles.economyValue}>
-                    {insights.premium.economy.last_month.profit >= 0 ? '+' : ''}{insights.premium.economy.last_month.profit} kr
-                  </Text>
-                </View>
-              </View>
-              <View style={[
-                styles.economyChange,
-                insights.premium.economy.change >= 0 ? styles.economyChangePositive : styles.economyChangeNegative
-              ]}>
-                <Text style={styles.economyChangeText}>
-                  {insights.premium.economy.change >= 0 ? '📈' : '📉'} {insights.premium.economy.change >= 0 ? '+' : ''}{insights.premium.economy.change} kr ({insights.premium.economy.change_percent}%)
+              <View style={styles.communityStat}>
+                <Text style={[
+                  styles.communityStatValue, 
+                  { color: summaryStats.community_comparison.vs_avg_percent >= 0 ? colors.success : colors.error }
+                ]}>
+                  {summaryStats.community_comparison.vs_avg_percent >= 0 ? '+' : ''}
+                  {summaryStats.community_comparison.vs_avg_percent}%
                 </Text>
+                <Text style={styles.communityStatLabel}>{isSv ? 'vs genomsnitt' : 'vs average'}</Text>
+              </View>
+              <View style={styles.communityStat}>
+                <Text style={[styles.communityStatValue, { color: colors.success }]}>
+                  {isSv ? `Topp ${Math.max(1, 100 - summaryStats.community_comparison.percentile)}%` : `Top ${Math.max(1, 100 - summaryStats.community_comparison.percentile)}%`}
+                </Text>
+                <Text style={styles.communityStatLabel}>{isSv ? 'av användare' : 'of users'}</Text>
               </View>
             </View>
           </View>
         )}
         
-        {/* AI Premium Features Section - Blurred for free users */}
-        <View style={styles.aiPremiumSection}>
+        {/* ========== SECTION 11: AI & PREMIUM (Bottom) ========== */}
+        <View style={[styles.aiPremiumSection, { marginHorizontal: 16, marginBottom: 16 }]}>
           <View style={styles.aiSectionHeader}>
-            <Text style={styles.aiSectionTitle}>🤖 AI-funktioner</Text>
+            <Text style={styles.aiSectionTitle}>🤖 AI & Premium</Text>
             {!isPremium && (
-              <View style={styles.premiumBadgeSmall}>
-                <Ionicons name="lock-closed" size={12} color="#f59e0b" />
-                <Text style={styles.premiumBadgeSmallText}>Premium</Text>
-              </View>
+              <TouchableOpacity 
+                onPress={() => router.push('/paywall')}
+                style={{
+                  backgroundColor: colors.warning + '20',
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                <Ionicons name="star" size={12} color={colors.warning} />
+                <Text style={{ fontSize: 11, color: colors.warning, fontWeight: '600' }}>
+                  {isSv ? 'Uppgradera' : 'Upgrade'}
+                </Text>
+              </TouchableOpacity>
             )}
           </View>
           
-          {/* AI Daily Report Card */}
-          <TouchableOpacity 
-            style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
-            onPress={handleAiReportPress}
-            activeOpacity={0.7}
-          >
-            <View style={styles.aiCardIcon}>
-              <Ionicons name="document-text" size={24} color={isPremium ? colors.primary : '#9ca3af'} />
-            </View>
-            <View style={styles.aiCardContent}>
-              <Text style={styles.aiCardTitle}>{isSv ? 'AI Dagsrapport' : 'AI Daily Report'}</Text>
-              {isPremium ? (
-                <Text style={styles.aiCardDescription}>
-                  {isSv ? 'Tryck för att se din personliga AI-analys' : 'Tap to see your personal AI analysis'}
-                </Text>
-              ) : (
-                <Text style={styles.aiCardDescriptionBlurred}>
-                  {isSv ? 'Uppgradera för daglig AI-analys...' : 'Upgrade for daily AI analysis...'}
-                </Text>
-              )}
-            </View>
-            {isPremium ? (
-              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-            ) : (
-              <View style={styles.unlockButton}>
-                <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          
-          {/* Egg Forecast Card */}
-          <TouchableOpacity 
-            style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
-            onPress={handleForecastPress}
-            activeOpacity={0.7}
-          >
-            <View style={styles.aiCardIcon}>
-              <Ionicons name="trending-up" size={24} color={isPremium ? colors.success : '#9ca3af'} />
-            </View>
-            <View style={styles.aiCardContent}>
-              <Text style={styles.aiCardTitle}>{isSv ? 'Äggprognos 7 dagar' : '7-Day Egg Forecast'}</Text>
-              {isPremium ? (
-                <Text style={styles.aiCardDescription}>
-                  {isSv ? 'Tryck för att se din prognos' : 'Tap to see your forecast'}
-                </Text>
-              ) : (
-                <Text style={styles.aiCardDescriptionBlurred}>
-                  {isSv ? 'Se vad du kan förvänta dig...' : 'See what to expect...'}
-                </Text>
-              )}
-            </View>
-            {isPremium ? (
-              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-            ) : (
-              <View style={styles.unlockButton}>
-                <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          
-          {/* Daily Tip Card */}
-          <TouchableOpacity 
-            style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
-            onPress={loadDailyTip}
-            activeOpacity={0.7}
-          >
-            <View style={styles.aiCardIcon}>
-              <Ionicons name="bulb" size={24} color={isPremium ? '#f59e0b' : '#9ca3af'} />
-            </View>
-            <View style={styles.aiCardContent}>
-              <Text style={styles.aiCardTitle}>{isSv ? 'Dagens tips' : 'Daily Tip'}</Text>
-              {isPremium ? (
-                <Text style={styles.aiCardDescription}>
-                  {isSv ? 'Få ett dagligt AI-tips för din hönsgård' : 'Get a daily AI tip for your coop'}
-                </Text>
-              ) : (
-                <Text style={styles.aiCardDescriptionBlurred}>
-                  {isSv ? 'Uppgradera för dagliga tips...' : 'Upgrade for daily tips...'}
-                </Text>
-              )}
-            </View>
-            {isPremium ? (
-              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-            ) : (
-              <View style={styles.unlockButton}>
-                <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          
-          {/* Ask Agda Card */}
-          <TouchableOpacity 
-            style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
-            onPress={openAgdaModal}
-            activeOpacity={0.7}
-          >
-            <View style={styles.aiCardIcon}>
-              <Ionicons name="chatbubbles" size={24} color={isPremium ? '#8b5cf6' : '#9ca3af'} />
-            </View>
-            <View style={styles.aiCardContent}>
-              <Text style={styles.aiCardTitle}>{isSv ? 'Fråga Agda' : 'Ask Agda'}</Text>
-              {isPremium ? (
-                <Text style={styles.aiCardDescription}>
-                  {isSv ? 'Ställ frågor till din AI-rådgivare' : 'Ask questions to your AI advisor'}
-                </Text>
-              ) : (
-                <Text style={styles.aiCardDescriptionBlurred}>
-                  {isSv ? 'Uppgradera för AI-rådgivning...' : 'Upgrade for AI advice...'}
-                </Text>
-              )}
-            </View>
-            {isPremium ? (
-              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-            ) : (
-              <View style={styles.unlockButton}>
-                <Text style={styles.unlockButtonText}>{isSv ? 'Lås upp' : 'Unlock'}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          
-          {/* Blurred overlay hint for free users */}
-          {!isPremium && (
+          <View style={{ gap: 10 }}>
+            {/* Daily Tip */}
             <TouchableOpacity 
-              style={styles.aiUpgradeHint}
-              onPress={() => showPremiumGate(isSv ? 'AI-funktioner' : 'AI Features', 'sparkles')}
+              style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
+              onPress={loadDailyTip}
+              activeOpacity={0.7}
             >
-              <Ionicons name="sparkles" size={16} color="#f59e0b" />
-              <Text style={styles.aiUpgradeHintText}>
-                {isSv ? 'Uppgradera för full AI-upplevelse' : 'Upgrade for full AI experience'}
-              </Text>
+              <View style={styles.aiCardIcon}>
+                <Ionicons name="bulb" size={22} color={isPremium ? '#f59e0b' : '#9ca3af'} />
+              </View>
+              <View style={styles.aiCardContent}>
+                <Text style={styles.aiCardTitle}>{isSv ? 'Dagens tips' : 'Daily Tip'}</Text>
+                <Text style={[styles.aiCardDescription, !isPremium && { color: colors.textMuted }]}>
+                  {isPremium 
+                    ? (isSv ? 'Få ett dagligt AI-tips' : 'Get a daily AI tip')
+                    : (isSv ? 'Kräver Premium' : 'Requires Premium')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </TouchableOpacity>
-          )}
+            
+            {/* Ask Agda */}
+            <TouchableOpacity 
+              style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
+              onPress={openAgdaModal}
+              activeOpacity={0.7}
+            >
+              <View style={styles.aiCardIcon}>
+                <Ionicons name="chatbubbles" size={22} color={isPremium ? '#8b5cf6' : '#9ca3af'} />
+              </View>
+              <View style={styles.aiCardContent}>
+                <Text style={styles.aiCardTitle}>{isSv ? 'Fråga Agda' : 'Ask Agda'}</Text>
+                <Text style={[styles.aiCardDescription, !isPremium && { color: colors.textMuted }]}>
+                  {isPremium 
+                    ? (isSv ? 'Din AI-rådgivare' : 'Your AI advisor')
+                    : (isSv ? 'Kräver Premium' : 'Requires Premium')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </TouchableOpacity>
+            
+            {/* AI Report */}
+            <TouchableOpacity 
+              style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
+              onPress={handleAiReportPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.aiCardIcon}>
+                <Ionicons name="document-text" size={22} color={isPremium ? colors.primary : '#9ca3af'} />
+              </View>
+              <View style={styles.aiCardContent}>
+                <Text style={styles.aiCardTitle}>{isSv ? 'AI Dagsrapport' : 'AI Daily Report'}</Text>
+                <Text style={[styles.aiCardDescription, !isPremium && { color: colors.textMuted }]}>
+                  {isPremium 
+                    ? (isSv ? 'Personlig AI-analys' : 'Personal AI analysis')
+                    : (isSv ? 'Kräver Premium' : 'Requires Premium')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </TouchableOpacity>
+            
+            {/* Egg Forecast */}
+            <TouchableOpacity 
+              style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
+              onPress={handleForecastPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.aiCardIcon}>
+                <Ionicons name="trending-up" size={22} color={isPremium ? colors.success : '#9ca3af'} />
+              </View>
+              <View style={styles.aiCardContent}>
+                <Text style={styles.aiCardTitle}>{isSv ? 'Äggprognos' : 'Egg Forecast'}</Text>
+                <Text style={[styles.aiCardDescription, !isPremium && { color: colors.textMuted }]}>
+                  {isPremium 
+                    ? (isSv ? '7 dagars prognos' : '7-day forecast')
+                    : (isSv ? 'Kräver Premium' : 'Requires Premium')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
         </View>
         
-        {/* Premium Banner (if not premium) - simplified version */}
+        {/* ========== SECTION 12: PREMIUM BANNER (Only for free users) ========== */}
         {!isPremium && (
           <TouchableOpacity 
-            style={styles.premiumBanner}
-            onPress={() => showPremiumGate('', 'star')}
+            style={[styles.premiumBanner, { marginHorizontal: 16, marginBottom: 24 }]}
+            onPress={() => router.push('/paywall')}
           >
             <View style={styles.premiumBannerContent}>
               <Ionicons name="star" size={24} color={colors.warning} />
               <View style={styles.premiumBannerText}>
-                <Text style={styles.premiumBannerTitle}>{t('common.upgrade')} till Premium</Text>
-                <Text style={styles.premiumBannerSubtitle}>AI-rapporter, prognos, hälsologg & mer</Text>
+                <Text style={styles.premiumBannerTitle}>{isSv ? 'Uppgradera till Premium' : 'Upgrade to Premium'}</Text>
+                <Text style={styles.premiumBannerSubtitle}>{isSv ? 'AI-rapporter, prognos, hälsologg & mer' : 'AI reports, forecast, health log & more'}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
+        
+        {/* Bottom spacing */}
+        <View style={{ height: 20 }} />
       </ScrollView>
       
       {/* Undo Snackbar */}
