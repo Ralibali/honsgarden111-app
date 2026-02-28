@@ -51,7 +51,7 @@ export default function HomeScreen() {
     loading,
   } = useAppStore();
   
-  const { isPremium, isTrial, daysRemaining, trialExpiryWarning } = usePremiumStore();
+  const { isPremium, isTrial, daysRemaining, trialExpiryWarning, checkPremiumStatus } = usePremiumStore();
   const { colors, isDark } = useThemeStore();
   const { user } = useAuthStore();
   const { goals, progress, loadGoals, calculateProgress } = useGoalsStore();
