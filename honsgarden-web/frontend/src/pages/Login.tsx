@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
 const HERO_IMAGE = 'https://images.pexels.com/photos/4911743/pexels-photo-4911743.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260';
 
-// Google OAuth URL - Emergent Auth
-const GOOGLE_AUTH_URL = 'https://demobackend.emergentagent.com/auth/v1/env/oauth/google';
-
 export default function Login() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { setUser } = useAuth();
   const [showCookieBanner, setShowCookieBanner] = useState(false);
   
@@ -27,14 +23,6 @@ export default function Login() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedMarketing, setAcceptedMarketing] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
-
-  // Handle Google OAuth callback
-  useEffect(() => {
-    const sessionId = searchParams.get('session_id');
-    if (sessionId) {
-      handleGoogleCallback(sessionId);
-    }
-  }, [searchParams]);
   
   useEffect(() => {
     const cookieConsent = localStorage.getItem('cookie_consent');
@@ -42,42 +30,6 @@ export default function Login() {
       setShowCookieBanner(true);
     }
   }, []);
-
-  const handleGoogleCallback = async (sessionId: string) => {
-    setAuthLoading(true);
-    try {
-      const res = await fetch('/api/auth/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ session_id: sessionId })
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setUser({
-          user_id: data.user_id,
-          email: data.email,
-          name: data.name || '',
-          picture: data.picture
-        });
-        navigate('/');
-      } else {
-        setAuthError('Google-inloggning misslyckades');
-      }
-    } catch (error) {
-      setAuthError('Kunde inte ansluta till servern');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = () => {
-    // Use the full current URL including /api/web path
-    const currentUrl = window.location.href.split('?')[0].split('#')[0];
-    const redirectUrl = `${GOOGLE_AUTH_URL}?redirect_url=${encodeURIComponent(currentUrl)}`;
-    window.location.href = redirectUrl;
-  };
   
   const acceptAllCookies = () => {
     localStorage.setItem('cookie_consent', 'all');
