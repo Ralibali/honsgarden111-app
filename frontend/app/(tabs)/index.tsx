@@ -1930,16 +1930,61 @@ export default function HomeScreen() {
           <View style={styles.aiModalContent}>
             {dailyTipLoading ? (
               <View style={styles.loadingContainer}>
-                <Text style={styles.loadingEmoji}>💡</Text>
+                <Text style={{ fontSize: 48, marginBottom: 16 }}>💡</Text>
                 <Text style={[styles.loadingText, { color: colors.text || '#1A1A1A' }]}>
                   {isSv ? 'Hämtar dagens tips...' : 'Loading daily tip...'}
                 </Text>
               </View>
-            ) : (
-              <View style={[styles.reportCard, { backgroundColor: colors.surface || '#FFFFFF', margin: 16 }]}>
-                <Text style={[styles.reportText, { color: colors.text || '#1A1A1A' }]}>
-                  {dailyTip || (isSv ? 'Inget tips tillgängligt' : 'No tip available')}
+            ) : dailyTip ? (
+              <View style={{ padding: 16 }}>
+                {/* Tip Card */}
+                <View style={[styles.reportCard, { 
+                  backgroundColor: colors.surface || '#FFFFFF',
+                  padding: 20,
+                  borderRadius: 16,
+                  borderLeftWidth: 4,
+                  borderLeftColor: colors.primary || '#4CAF50'
+                }]}>
+                  <Text style={{ fontSize: 32, marginBottom: 12 }}>💡</Text>
+                  <Text style={[styles.reportText, { 
+                    color: colors.text || '#1A1A1A',
+                    fontSize: 16,
+                    lineHeight: 24
+                  }]}>
+                    {dailyTip}
+                  </Text>
+                </View>
+                
+                {/* Signature */}
+                <Text style={{ 
+                  textAlign: 'center', 
+                  marginTop: 16, 
+                  color: colors.textSecondary || '#666',
+                  fontStyle: 'italic'
+                }}>
+                  💛 {isSv ? 'Kacklande hälsningar, Agda' : 'Clucking regards, Agda'} 🐔
                 </Text>
+              </View>
+            ) : (
+              <View style={styles.loadingContainer}>
+                <Text style={{ fontSize: 48, marginBottom: 16 }}>😕</Text>
+                <Text style={[styles.loadingText, { color: colors.text || '#1A1A1A' }]}>
+                  {isSv ? 'Kunde inte ladda dagens tips' : 'Could not load daily tip'}
+                </Text>
+                <TouchableOpacity 
+                  style={{ 
+                    marginTop: 16, 
+                    backgroundColor: colors.primary || '#4CAF50',
+                    paddingHorizontal: 24,
+                    paddingVertical: 12,
+                    borderRadius: 8
+                  }}
+                  onPress={loadDailyTip}
+                >
+                  <Text style={{ color: '#FFF', fontWeight: '600' }}>
+                    {isSv ? 'Försök igen' : 'Try again'}
+                  </Text>
+                </TouchableOpacity>
               </View>
             )}
           </View>
