@@ -21,15 +21,12 @@ export const TrialBadge: React.FC<TrialBadgeProps> = ({
 }) => {
   const router = useRouter();
   const { colors } = useThemeStore();
-  const { isPremium, isTrial, daysRemaining, trialExpiryWarning, plan } = usePremiumStore();
+  const { isPremium, isTrial, daysRemaining, trialExpiryWarning, isLifetime } = usePremiumStore();
   
   const isSv = i18n.locale.startsWith('sv');
   
   // Don't show if not premium
   if (!isPremium) return null;
-  
-  // Check if this is a lifetime subscription
-  const isLifetime = plan === 'lifetime';
   
   // If paid premium (not trial), show small badge
   if (!isTrial) {
