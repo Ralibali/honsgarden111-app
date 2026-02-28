@@ -93,6 +93,40 @@ ADMIN_EMAILS = [email.strip() for email in os.environ.get('ADMIN_EMAILS', '').sp
 # Free trial period (days)
 FREE_TRIAL_DAYS = 7
 
+# Helper function to normalize LLM responses to plain strings
+def normalize_llm_response(response) -> str:
+    """
+    Normalize LLM API response to a plain string.
+    Handles various response formats from different providers.
+    """
+    if response is None:
+        return ""
+    
+    # If already a string, return as-is
+    if isinstance(response, str):
+        return response
+    
+    # If it's a dict (common for OpenAI/Anthropic responses)
+    if isinstance(response, dict):
+        # Try common response keys
+        for key in ['content', 'text', 'message', 'response', 'answer']:
+            if key in response:
+                value = response[key]
+                if isinstance(value, str):
+                    return value
+                elif isinstance(value, dict):
+                    # Nested content (e.g., {'content': {'text': '...'}})
+                    return normalize_llm_response(value)
+        # If nothing found, stringify the dict
+        return str(response)
+    
+    # If it's a list (e.g., [{'text': '...'}])
+    if isinstance(response, list) and len(response) > 0:
+        return normalize_llm_response(response[0])
+    
+    # Fallback: convert to string
+    return str(response)
+
 # Weather API (OpenWeatherMap free tier)
 WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY', '')
 
