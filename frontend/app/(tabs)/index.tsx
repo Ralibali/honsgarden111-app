@@ -29,7 +29,7 @@ import { format } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
 import PremiumGateModal from '../../components/PremiumGateModal';
 import { scheduleDailyChoresReminder } from '../../src/services/notifications';
-import { useAuthStore } from '../../src/store/authStore';
+import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
 
 export default function HomeScreen() {
   const router = useRouter();
