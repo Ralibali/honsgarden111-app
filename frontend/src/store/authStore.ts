@@ -76,7 +76,7 @@ export const waitForTokenInit = async (): Promise<void> => {
   }
 };
 
-// Export function to get auth headers for API calls
+// Export function to get auth headers for API calls (sync version)
 export const getAuthHeaders = (): Record<string, string> => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -92,6 +92,31 @@ export const getAuthHeaders = (): Record<string, string> => {
     }
   }
   return headers;
+};
+
+// Export async version that ensures token is loaded from storage first
+export const getAuthHeadersAsync = async (): Promise<Record<string, string>> => {
+  // If token not initialized yet, wait for it
+  if (!tokenInitialized && tokenInitPromise) {
+    await tokenInitPromise;
+  }
+  
+  // If still no token in memory, try to load from storage
+  if (!sessionToken) {
+    try {
+      const storedToken = await AsyncStorage.getItem('session_token');
+      if (storedToken) {
+        sessionToken = storedToken;
+        if (__DEV__) {
+          console.log(`[Auth] getAuthHeadersAsync: Loaded token from storage: ...${storedToken.slice(-6)}`);
+        }
+      }
+    } catch (e) {
+      console.error('[Auth] getAuthHeadersAsync: Failed to load token from storage:', e);
+    }
+  }
+  
+  return getAuthHeaders();
 };
 
 // Export function to check if we have a token
