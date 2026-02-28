@@ -8,7 +8,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://streaks-goals-update.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://egg-forecast-test.preview.emergentagent.com')
 
 # Test data - generated unique email
 TIMESTAMP = int(time.time())

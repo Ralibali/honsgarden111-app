@@ -7710,7 +7710,7 @@ else:
         "http://localhost:3000",
         "http://localhost:8081",
         "http://localhost:19006",
-        "https://streaks-goals-update.preview.emergentagent.com",
+        "https://egg-forecast-test.preview.emergentagent.com",
     ]
     
     # Add any additional origins from environment variable
