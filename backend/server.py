@@ -2002,9 +2002,14 @@ async def resend_verification(data: dict):
 async def login_email(data: EmailLogin, request: Request, response: Response):
     """Login with email and password"""
     # Find user
-    user = await db.users.find_one({"email": data.email.lower()})
+    email_lower = data.email.lower()
+    logger.info(f"[Login] Attempting login for email: {email_lower}")
+    user = await db.users.find_one({"email": email_lower})
     if not user:
+        logger.warning(f"[Login] User not found: {email_lower}")
         raise HTTPException(status_code=401, detail="Felaktig e-post eller lösenord")
+    
+    logger.info(f"[Login] User found: {email_lower}, has_password_hash: {bool(user.get('password_hash'))}")
     
     # Check if user has password (might be Google-only user)
     if not user.get("password_hash"):
@@ -2012,7 +2017,10 @@ async def login_email(data: EmailLogin, request: Request, response: Response):
     
     # Verify password
     if not verify_password(data.password, user["password_hash"]):
+        logger.warning(f"[Login] Password verification failed for: {email_lower}")
         raise HTTPException(status_code=401, detail="Felaktig e-post eller lösenord")
+    
+    logger.info(f"[Login] Password verified successfully for: {email_lower}")
     
     user_id = user["id"]
     
