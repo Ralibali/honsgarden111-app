@@ -275,6 +275,7 @@ export default function HomeScreen() {
     try {
       const res = await fetch(`${API_URL}/api/ai/daily-report`, {
         credentials: 'include',
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         const data = await res.json();
@@ -294,6 +295,7 @@ export default function HomeScreen() {
     try {
       const res = await fetch(`${API_URL}/api/ai/egg-forecast`, {
         credentials: 'include',
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         const data = await res.json();
