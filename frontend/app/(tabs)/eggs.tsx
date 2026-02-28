@@ -280,16 +280,7 @@ export default function EggsScreen() {
           </View>
         </View>
         
-        {/* Add Button */}
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setShowAddModal(true)}
-        >
-          <Ionicons name="add-circle" size={24} color="#FFF" />
-          <Text style={styles.addButtonText}>{t('eggs.addEggs')}</Text>
-        </TouchableOpacity>
-        
-        {/* Filter Buttons */}
+        {/* Filter Buttons - MOVED UP before Add button */}
         <View style={styles.filterRow}>
           <TouchableOpacity
             style={[styles.filterButton, filterDays === 7 && styles.filterButtonActive]}
@@ -308,6 +299,15 @@ export default function EggsScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+        
+        {/* Add Button */}
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setShowAddModal(true)}
+        >
+          <Ionicons name="add-circle" size={24} color="#FFF" />
+          <Text style={styles.addButtonText}>{t('eggs.addEggs')}</Text>
+        </TouchableOpacity>
         
         {/* Records List */}
         <View style={styles.listContainer}>
