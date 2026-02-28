@@ -971,19 +971,45 @@ export default function StatisticsScreen() {
         </View>
         
         {!isPremium ? (
-          <View style={styles.premiumLockSmall}>
-            <Ionicons name="lock-closed" size={24} color={colors.warning} />
-            <Text style={styles.premiumLockSmallText}>
-              {isSv ? 'Uppgradera till Premium för trend-analys' : 'Upgrade to Premium for trend analysis'}
-            </Text>
-            <TouchableOpacity 
-              style={styles.upgradeButtonSmall}
-              onPress={() => router.push('/paywall')}
-            >
-              <Text style={styles.upgradeButtonSmallText}>
-                {isSv ? 'Uppgradera' : 'Upgrade'}
-              </Text>
-            </TouchableOpacity>
+          // PARTIAL INSIGHT - Show teaser without locking completely
+          <View style={styles.premiumTeaserSection}>
+            {trendAnalysis && (
+              <View style={{
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 16,
+                borderLeftWidth: 4,
+                borderLeftColor: trendAnalysis.overall_trend === 'improving' ? colors.success 
+                  : trendAnalysis.overall_trend === 'declining' ? colors.error : colors.primary
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                  <Ionicons 
+                    name={trendAnalysis.overall_trend === 'improving' ? 'trending-up' 
+                      : trendAnalysis.overall_trend === 'declining' ? 'trending-down' : 'remove'} 
+                    size={20} 
+                    color={trendAnalysis.overall_trend === 'improving' ? colors.success 
+                      : trendAnalysis.overall_trend === 'declining' ? colors.error : colors.textMuted} 
+                  />
+                  <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '600', color: colors.text }}>
+                    {trendAnalysis.changes?.eggs?.value && trendAnalysis.changes.eggs.value !== 0
+                      ? (isSv 
+                          ? `Produktionen har ${trendAnalysis.changes.eggs.value > 0 ? 'ökat' : 'minskat'} med ${Math.abs(trendAnalysis.changes.eggs.value)}% jämfört med förra månaden.`
+                          : `Production has ${trendAnalysis.changes.eggs.value > 0 ? 'increased' : 'decreased'} by ${Math.abs(trendAnalysis.changes.eggs.value)}% compared to last month.`)
+                      : (isSv ? 'Produktionen är stabil.' : 'Production is stable.')}
+                  </Text>
+                </View>
+                <TouchableOpacity 
+                  style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}
+                  onPress={() => router.push('/paywall')}
+                >
+                  <Ionicons name="sparkles" size={14} color={colors.warning} />
+                  <Text style={{ marginLeft: 6, fontSize: 12, color: colors.warning, fontWeight: '500' }}>
+                    {isSv ? 'Se varför detta sker med Trend-analys' : 'See why this is happening with Trend Analysis'}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={14} color={colors.warning} style={{ marginLeft: 4 }} />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         ) : (
           <>
