@@ -185,18 +185,10 @@ export default function HomeScreen() {
           }
         }
         
-        // Show modal automatically if:
-        // 1. First time ever (mandatory)
-        // 2. Or auto-popup is still enabled
-        if (!hasSeenBefore || (hasSeenBefore && autoPopupDisabled !== 'true')) {
-          // Small delay so the main screen loads first
-          setTimeout(() => {
-            setShowChoresModal(true);
-            if (!hasSeenBefore) {
-              AsyncStorage.setItem('chores_seen_first_time', 'true');
-              setHasSeenChoresFirstTime(true);
-            }
-          }, 1500);
+        // Mark as seen first time (for tracking, but no auto-popup)
+        if (!hasSeenBefore) {
+          AsyncStorage.setItem('chores_seen_first_time', 'true');
+          setHasSeenChoresFirstTime(true);
         }
       }
     } catch (error) {
