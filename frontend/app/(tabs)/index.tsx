@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAppStore } from '../../src/store/appStore';
+import { useAppStore, apiFetch } from '../../src/store/appStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import { useThemeStore, ThemeColors } from '../../src/store/themeStore';
 import { useGoalsStore } from '../../src/store/goalsStore';
