@@ -1,197 +1,183 @@
 <analysis>**original_problem_statement**:
-The user wants to finalize and deploy the Hönsgården application. The initial goal was to fix critical bugs and remove a deprecated Google Sign-In feature. The scope has since expanded significantly based on several detailed audits (provided by the user via ChatGPT) to ensure the app is compliant with App Store policies, secure, and feature-complete before launch.
+The user's primary goal is to improve the User Experience (UX), clarity, and premium feel of the Hönsgården application to increase retention and reduce friction. This involves a complete overhaul of the app's structure, UX, and premium conversion strategy.
 
-**PRODUCT REQUIREMENTS (Consolidated & Updated):**
-
-1.  **Monetization & App Store Compliance (P0):**
-    *   **Separate Payment Flows:** Native app (iOS/Android) MUST use RevenueCat for In-App Purchases. The web version should use Stripe. All payment flows that redirect native users to a web payment page have been removed. **(In Progress)**
-    *   **Robust IAP Verification:** Backend verification of IAP receipts must be secure and not rely on client-side data alone. **(Partially Implemented)**
-    *   **Stripe Web Flow:** The Stripe checkout flow for web users must reliably activate premium status upon successful payment, without depending on webhooks. A  endpoint and a Thank You page have been implemented. **(Done, needs verification)**
-    *   **Dynamic Pricing:** Hardcoded prices must be removed from the UI and fetched dynamically from RevenueCat/Stripe. **(Done)**
-
-2.  **Critical Bug Fixes & Stability (P0):**
-    *   **Remove :** A critical backend bug where unauthenticated requests were assigned to a  must be fixed. All user-specific endpoints must require authentication and return a 401 error if the user is not logged in. **(In Progress)**
-    *   **Fix  Crash:** A recurring crash () caused by the  library when translations are missing must be permanently resolved. **(Fix Attempted)**
-    *   **Forgot Password Flow:** The password reset flow must work correctly on the web platform. **(Fix Attempted)**
-
-3.  **Feature Implementation (P1):**
-    *   **Weather Widget:** Display a compact weather widget at the top of the home screen. **(Done)**
-    *   **AI Features:** Implement UI for Dagens tips (Daily Tip) and Fråga Agda (Ask Agda), using existing backend endpoints. **(In Progress)**
-    *   **Add Roosters:** Allow users to add and track Tuppar (Roosters) in addition to hens. **(In Progress)**
-
-4.  **Policy & UX (P2):**
-    *   **Account Deletion:** Users must be able to delete their own accounts from within the app, as required by Google Play policy. **(Done)**
-    *   **Legal Links:** Links to the Privacy Policy and Terms of Service must be accessible from the settings and login screens. **(Done)**
-    *   **UI Cleanup:** Fix various UI layout issues reported by the user (responsive grids, modal button clipping, input field sizes). **(Done)**
+**PRODUCT REQUIREMENTS (from user messages):**
+*   **Restructure Core Tabs**: Reorganize the Home, Statistics, Economy, Hens, and Egg Log tabs to prioritize core actions (like registering eggs/costs) over analytics and premium upsells.
+*   **Implement a Freemium Model**: Instead of hard paywalls, show basic insights to free users and lock only the deep-dive analysis behind premium. This is to demonstrate value before asking for payment.
+*   **Implement a Full Premium Lifecycle**:
+    *   All new users get a 7-day free trial.
+    *   Display a Trial active - X days left badge.
+    *   Show a warning on days 5-6 of the trial.
+    *   After the trial, use contextual triggers (e.g., after 30 eggs registered) to show the premium offer.
+    *   Set prices to 19 kr/month and 149 kr/year.
+*   **Add Gamification/Retention Features**:
+    *   Implement a streak counter for daily registration.
+    *   Add a goal-setting system for egg production and profit.
+*   **UI/UX Enhancements**:
+    *   Add a Lantligt (rural) theme.
+    *   Add an ROI visualization in the Economy tab.
+    *   Improve empty states and modal instructions (e.g., for Fråga Agda).
+*   **Bug Fixes**: Fix a recurring set of critical bugs related to the admin panel being a white/black screen, AI features not working, and premium status disappearing after the app closes.
+*   **Layout Revert**: Revert the main Register Egg component on the home screen to a previous, less intrusive design, while keeping all newly added functionality.
 
 **User's preferred language**: Swedish (Svenska). The next agent MUST respond in Swedish.
 
 **what currently exists?**
-The application has undergone a massive overhaul based on detailed user feedback. Key App Store compliance issues have been addressed by creating separate payment flows for native (RevenueCat) and web (Stripe). Numerous security and stability fixes have been implemented, including tightening CORS, removing hardcoded keys, and adding a Delete Account feature. Several UI/UX bugs have been resolved, and a weather widget has been added.
+The agent has performed a massive overhaul of the application based on the user's detailed UX and premium strategy. Key tabs (, , , , ) have been restructured to prioritize actions over analysis. A sophisticated premium model has been implemented, including a 7-day trial, partial content locking (teasers), a goal-setting system, and analytics tracking, supported by new backend endpoints and frontend stores (, ).
 
-However, the application is currently in a **partially broken state**. The agent was in the middle of a critical backend fix to remove a  fallback that causes data corruption. This work is incomplete. Implementation of new AI features and the Rooster option is also in progress.
+Numerous critical bugs related to authentication, premium state persistence, and non-functional AI features were addressed. The agent also implemented a new Lantligt theme and made UI/UX improvements across the app. The last user request was to revert the home screen's main Register Egg component back to a previous design, which the agent started working on.
 
 **Last working item**:
--   Last item agent was working: Implementing the ability to add Tuppar (Roosters) in addition to hens. The agent had just updated the  interface and added state to the  modal, and was about to add the UI toggle for the user to select the type. This was part of a larger task to implement a batch of critical fixes and features.
+-   Last item agent was working: Reverting the home screen layout in . The user requested to remove the large, green hero component for egg registration and restore the previous design, which featured smaller cards. The agent was in the process of replacing the JSX and identifying duplicated code sections.
 -   Status: **IN PROGRESS**
 -   Agent Testing Done: N
--   Which testing method agent to use? both
+-   Which testing method agent to use? screenshot tool to visually verify the home screen layout is correct after the revert.
 -   User Testing Done: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Critical Auth Bug:  causes data corruption and incorrect premium/AI status. (P0)
--   Issue 2: Recurring  crash on web. (P1)
--   Issue 3: Forgot Password flow does not show the code input screen. (P2)
--   Issue 4: Backend IAP verification is not fully robust. (P2)
+-   Issue 1: Revert the home screen Register Egg component to its previous design. (P0)
+-   Issue 2: Verify fixes for critical recurring bugs. (P0)
+-   Issue 3:  crash on the web version. (P2)
 
 **Issues Detail**:
--   **Issue 1: Critical Auth Bug:  causes data corruption.**
-    -   **Attempted fixes**: The agent created a  dependency to replace the insecure  function. This has been applied to several backend endpoints in , but the work is not complete. All endpoints handling user data must be updated.
+-   **Issue 1: Revert the home screen Register Egg component.**
+    -   **Attempted fixes**: The agent identified the new hero section in  and began replacing it with the old card-based layout code. A duplicate QUICK STATS DASHBOARD section was also identified for removal.
     -   **Next debug checklist**:
-        1.  Globally search for  in  and replace all instances that protect user data with .
-        2.  Ensure endpoints that should be public (like ) are not affected.
-        3.  Test that accessing a protected endpoint without being logged in returns a 401 error.
-        4.  Verify that the frontend gracefully handles the 401 error by redirecting to the login screen.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is the highest priority bug. It causes all user data (eggs, hens, AI insights, premium status) to be mixed up or assigned incorrectly. Fixing it is essential for the app to function.
+        1.  In , complete the replacement of the hero section (lines ~715-760) with the old layout code.
+        2.  Remove the now-redundant QUICK STATS DASHBOARD section (lines ~762-808).
+        3.  Ensure all state and  handlers from the new functionality are correctly wired to the restored old layout.
+        4.  Use the screenshot tool to visually confirm the home screen looks as intended.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on other issue**: No
+    -   **Should Test frontend/backend/both after fix?**: Frontend
 
--   **Issue 2: Recurring  crash on web.**
-    -   **Attempted fixes**: The agent created a wrapper function for the  translation call in  to ensure it always returns a string. The user reported the crash again after this fix.
+-   **Issue 2: Verify fixes for critical recurring bugs.**
+    -   **Description**: The user reported in chat message 240 that the Admin panel is black, the Admin button is visible to non-admins, AI features are empty, and Premium status disappears on app restart. The agent implemented fixes, but these issues are highly recurrent and need explicit verification.
+    -   **Attempted fixes**:
+        *   **Premium Persistence**: Added  logic to  to save and load status.
+        *   **Admin Panel**: Added auth headers to  call in  and attempted style fixes in .
+        *   **Admin Button**: Wrapped the button in an  check in .
+        *   **AI/Premium Features**: Ensured all API calls use  and improved modal content.
     -   **Next debug checklist**:
-        1.  Re-examine the crash stack trace provided by the user.
-        2.  Verify the wrapper function is being used everywhere  is called.
-        3.  Add extensive logging inside the  wrapper to see what key is being requested and what is being returned just before the crash.
-        4.  Check if any component is attempting to render a translation object directly before the wrapper has a chance to process it.
-    -   **Why fix this issue and what will be achieved with the fix?**: The app is unusable on the web due to this crash.
-    -   **Status**: IN PROGRESS
+        1.  **Test Premium Persistence**: Log in, activate premium, close and restart the app, then verify premium is still active and the  shows the correct remaining days.
+        2.  **Test Admin Flow**: Log in as a non-admin and confirm the admin button is hidden in Settings. Log in as an admin and confirm the button is visible and leads to a functional, non-black admin panel.
+        3.  **Test AI Features**: With a premium account, open Dagens tips, Fråga Agda, and AI-dagsrapport to confirm they are not empty and load data correctly.
+    -   **Status**: USER VERIFICATION PENDING
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: Both
+
+-   **Issue 3: Recurring  crash on the web version.**
+    -   **Description**: The web app crashes on load because  (a native module) is accessed at the top level of , which breaks server-side rendering.
+    -   **Attempted fixes**: None in this session.
+    -   **Next debug checklist**:
+        1.  In , refactor the  logic to be lazy-loaded. It should only be called from within a  hook or a similar client-side-only context, not at the module's top level.
+    -   **Status**: NOT STARTED
     -   **Is recurring issue?**: Y
     -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: No
-
--   **Issue 3: Forgot Password flow does not show the code input screen.**
-    -   **Attempted fixes**: The agent identified that  callbacks do not work on the web. A fix was implemented in  using  to bypass the alert and directly set the auth mode on web.
-    -   **Next debug checklist**: User needs to test this flow again to confirm the fix works.
-    -   **Why fix this issue and what will be achieved with the fix?**: This is a core authentication feature that is currently broken.
-    -   **Status**: USER VERIFICATION PENDING
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Frontend
-    -   **Blocked on other issue**: No
-
--   **Issue 4: Backend IAP verification is not fully robust.**
-    -   **Attempted fixes**: The agent updated the  endpoint to call the RevenueCat API. However, it still relies on  from a potentially missing auth cookie.
-    -   **Next debug checklist**: Update the endpoint to use the  from the RevenueCat transaction data () as the primary way to identify the user, falling back to the auth cookie only if necessary. This makes the verification process stateless and more reliable.
-    -   **Why fix this issue and what will be achieved with the fix?**: Prevents a situation where a user pays for premium via IAP but the app fails to unlock it because of a transient auth issue.
-    -   **Status**: NOT STARTED
-    -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: Backend
-    -   **Blocked on other issue**: No
 
 **In progress Task List**:
--   **Task 1: Complete the ChatGPT Audit implementation batch.**
-    -   **Where to resume**: . Add the UI toggle/switch inside the Add/Edit Hen modal to allow users to select between Höna (Hen) and Tupp (Rooster). Ensure this  value is sent to the backend during creation and updates.
-    -   **What will be achieved with this?**: This will complete the implementation of several user-requested features and critical fixes, bringing the app closer to a releasable state.
-    -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: Both
-    -   **Blocked on something**: Blocked on finishing **Issue 1 ( fix)**. The new features will not work correctly until the auth model is secure.
+-   None apart from the issues listed above.
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks:**
-    -   (P0) Verify that the 7-day forecast and AI-dagrapport are working correctly for logged-in users after the  fix is complete.
-    -   (P0) Verify the Admin UI () correctly displays user names and emails.
-    -   (P1) Guide the user to deploy the application and configure their custom domain ().
-    -   (P1) Guide the user to trigger a new EAS build for the mobile app.
--   **Future Tasks:**
-    -   (P2) Integrate affiliate product links.
-    -   (P3) Refactor  into smaller, more manageable router files.
+-   **Future Tasks**:
+    -   (P1) **Refactor Monoliths**: Critically refactor  into a router-based structure and decompose the massive  component. This technical debt is significant and has been postponed multiple times.
+    -   (P2) **Integrate Adtraction Product Feed**: Implement once the user provides the necessary file.
 
 **Completed work in this session**
--   **Critical Fixes & Compliance**:
-    -   **Payment Flows**: Refactored payment logic to use RevenueCat for native (iOS/Android) and Stripe for web, removing non-compliant web redirects from the native app.
-    -   **Stripe Confirmation**: Implemented a robust  endpoint and updated the success page to ensure web purchases activate premium status immediately.
-    -   **Account Deletion**: Added a full Delete Account flow (backend endpoint + frontend UI) to comply with Google Play policies.
-    -   **Security**: Tightened backend CORS policy, removed hardcoded Stripe/RevenueCat keys, and removed the insecure  file.
-    -   **i18n Crash**: Implemented a wrapper for the translation function to prevent crashes from missing keys.
--   **Feature & UX Improvements**:
-    -   **Weather Widget**: Added a weather display at the top of the home screen.
-    -   **AI Features UI**: Added UI skeletons (modals, buttons) for Dagens tips and Fråga Agda in .
-    -   **UI Fixes**: Made the premium features grid responsive, fixed modal button clipping, and enlarged input fields for better usability.
-    -   **Legal Links**: Added links to Terms of Service and Privacy Policy on login and settings screens.
-    -   **Dynamic Pricing**: Removed hardcoded prices from the premium upsell modal.
+-   **Full UX & Premium Strategy Implemented**:
+    -   Restructured Home, Statistics, Economy, Hens, and Egg Log tabs for better UX hierarchy.
+    -   Implemented a teaser model for premium features on Statistics and Economy tabs.
+    -   Added a new Lantligt (rural) theme.
+-   **New Retention & Conversion Features**:
+    -   Implemented backend endpoints and frontend stores (, ) for a new **Goal-Setting System** and **Analytics Tracking**.
+    -   Added a **Goals UI** in the Settings page ().
+    -   Added an **ROI Visualization** card to the Economy page ().
+    -   Added a **Trial Badge** and **Progression indicators** (X days in a row) to the home screen.
+-   **Critical Bug Fixes**:
+    -   **Authentication**: Fixed dozens of  calls across the app that were missing  headers, which was the root cause of most data-loading and feature failures.
+    -   **Premium State**: Added logic to  to persist premium status to .
+    -   **UI Bugs**: Fixed the Dagens sysslor mandatory popup, making it a clickable card instead. Added a weather modal to make the weather icon clickable.
+-   **Layout Re-architecture**:
+    -   Re-architected the home screen layout to prioritize egg registration.
+    -   Started reverting the home screen layout per the user's latest request.
+
+**Earlier issues found/mentioned but not fixed**
+-   **Issue 1:  crash on the web version.** This was noted in the initial handoff summary and remains unresolved.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork**: EAS Build Failures.
--   **Recurrence count**: 5+
--   **Status**: **TESTING PENDING**. A new build has not been triggered since the last batch of fixes.
+-   **Issue recurrence in previous fork**: Authentication, Premium Status, and Admin Panel functionality.
+-   **Recurrence count**: 3+ times.
+-   **Status**: USER VERIFICATION PENDING. The user has repeatedly reported these issues. The latest fixes need thorough validation.
 
 **Code Architecture**
-t()
 
-**Key Technical Concepts**
--   **Frontend**: Expo (SDK 54), React Native, Expo Router, Zustand, i18n-js
--   **Backend**: FastAPI, MongoDB
--   **Monetization**: RevenueCat (Native IAP), Stripe (Web)
--   **Deployment**: EAS Build, Emergent Deployment
 
-**changes in tech stack**
--   No changes to the stack, but significant refactoring of payment and authentication logic.
+**key DB schema**
+-   **goals**: (New) Stores user-defined goals (e.g., ).
+-   **analytics_events**: (New) Stores tracking events (e.g., ).
 
 **All files of reference**
--   : Actively being modified for a critical auth fix ().
--   : Contains the new AI feature UI and weather widget.
--   : Where the Rooster feature is being implemented.
--   : Contains fixes for password reset and RevenueCat integration.
--   : Key file for the new native payment flow.
--   : Contains the attempted fix for the recurring web crash.
+-   : The main dashboard; site of the current layout revert.
+-   : Restructured with premium teasers.
+-   : Restructured with ROI visualization.
+-   : Contains the new goal-setting UI.
+-   : Critical for verifying the premium persistence fix.
+-   : New store for the goals feature.
+-   : New store for tracking.
+-   : Contains new endpoints for goals and analytics.
 
 **Areas that need refactoring**:
--    is a large monolithic file that should be broken into multiple routers for better maintainability.
+-   : **CRITICAL**. This monolith is a major source of bugs and instability. It must be broken down into a router-based architecture.
+-   : **CRITICAL**. This component is excessively large and complex, handling state and UI for over ten distinct features. It must be decomposed into smaller, self-contained components.
 
 **key api endpoints**
--   : New endpoint for user-initiated account deletion.
--   : New endpoint to confirm Stripe payment and activate premium status for web users.
--   , : Existing endpoints that are now being integrated into the frontend.
--   **Multiple endpoints**: Being updated to use  for authentication.
+-   **NEW**:
+    -   : Retrieves user goals.
+    -   : Sets or updates user goals.
+    -   : Logs a tracking event.
 
 **Critical Info for New Agent**
--   **PRIORITY #1: FIX THE  BUG.** The app's data integrity is compromised. The previous agent started replacing  with  in . This task must be completed first. All endpoints handling user data must require authentication.
--   **RECURRING CRASH:** The  crash on web () is persistent. The wrapper function fix was not enough. The next attempt must involve more detailed logging to pinpoint the exact translation key or component causing the issue.
--   **USER FEEDBACK IS GOLD:** The user provides extremely detailed, high-quality feedback from an external audit tool (ChatGPT). Treat these lists as the primary source of requirements and work through them systematically.
--   The app is in a broken state due to the half-finished critical auth fix. Do not attempt to test features until the  work is complete and the backend is stable.
+-   **USER IS FRUSTRATED**: The user has shown increasing frustration with recurring bugs. Your top priority is to **conclusively fix and verify** the long-standing issues with the Admin Panel, AI features, and Premium Status persistence. Do not assume previous fixes worked.
+-   **COMPLETE THE REVERT**: The user's most recent request was to revert the home screen. Finish this task first.
+-   **VERIFY NEW FEATURES**: A large number of features (Goals, ROI, Streaks) were just added. While they seem complete, they have not been tested by the user. Be prepared to debug them.
+-   **REFACTORING IS OVERDUE**: The technical debt in  and  is severe. After stabilizing the app, proposing this refactoring is the most important next step for the project's health.
 
 **documents and test reports created in this job**
--    was updated with all new requirements and completed tasks.
+-   : Updated multiple times with completed work and future plans.
+-   : A successful test run was completed by the testing agent, but it was before the user reported the latest batch of critical bugs.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Reports UI layout bugs and broken Stripe payment confirmation. (Resolved)
-2.  **Agent**: Implements fixes for UI and Stripe flow. (Done)
-3.  **User**: Provides a new, extensive list of critical issues including the  bug, IAP weaknesses, missing AI features, and the need to add Roosters.
-4.  **Agent**: Starts implementing the entire list, beginning with the  fix.
-5.  **Agent**: Implements UI for AI features (Dagens tips, Fråga Agda).
-6.  **Agent**: Begins implementing the Rooster feature in .
-7.  **(Pending from User)**: User has not yet tested the Forgot Password fix.
-8.  **(Pending from User)**: User has not yet verified if the i18n crash is resolved after the latest fix.
+-   10. User requests to revert the home screen's Register Egg component to the previous design, removing the large green box but keeping the functionality. (In Progress)
+-   9. User provides the next steps: add an ROI visualization to the Economy tab and a Goal-setting UI to the Settings tab. (Completed)
+-   8. User provides a highly detailed, 14-point plan for a full UX and Premium strategy overhaul, including pricing, trial logic, feature-gating, and analytics tracking. (Completed)
+-   7. User requests a major restructuring of the Statistics, Economy, Hens, and Egg Log tabs to improve UX and implement a teaser premium model. (Completed)
+-   6. User requests a major restructuring of the home page to prioritize core functions and move premium/AI features to the bottom. (Completed)
+-   5. User clarifies that Dagens tips should show a tip directly and Fråga Agda needs better placeholder text. (Completed)
+-   4. User reports that the Admin panel is still black, the admin button is visible to all, AI features are not working, and premium status disappears on app restart. This is a critical bug report. (Fixes Attempted, Verification Pending)
+-   3. User corrects the agent: Dagens syssla should be a clickable card, not a mandatory popup. (Completed)
+-   2. User reports that the Economic insights are not working, showing only dashes. (Completed)
+-   1. User expresses frustration that issues are not being fixed despite multiple attempts.
 
 **Project Health Check:**
--   **Broken**: The application is in a non-functional state due to the incomplete implementation of a critical backend authentication refactor ( removal). Many features will fail until this is completed.
+-   **Broken**: The application is unstable. Core features like Admin access and Premium persistence were reported as broken by the user in their latest feedback. While fixes have been implemented, they require verification.
 
 **3rd Party Integrations**
--   **OpenAI** (via ): Powers AI reports, daily tips, and Fråga Agda. (Uses Emergent LLM Key)
--   **Stripe**: For web-based subscriptions. (Requires User API Key)
--   **Resend**: For transactional emails. (Requires User API Key)
--   **RevenueCat**: For native in-app purchases on iOS & Android. (Requires User API Keys: , )
+-   **OpenAI**: For AI features (Fråga Agda) (Uses Emergent LLM Key).
+-   **Stripe**: For web subscriptions (Requires User API Key).
+-   **Resend**: For emails (Requires User API Key).
+-   **RevenueCat**: For native IAPs (Requires User API Keys).
 -   **MongoDB Atlas**: Production database.
+-   **Open-Meteo**: For weather data (No key required).
 
 **Testing status**
--   Testing agent used after significant changes: NO (not since the last batch of critical changes was started).
+-   Testing agent used after significant changes: YES, but this was before the user's latest bug reports. The fixes for those bugs have not been verified by the testing agent.
 -   Troubleshoot agent used after agent stuck in loop: NO
--   Test files created: None in this session.
--   Known regressions: Core functionality related to authenticated users is currently broken due to the in-progress  fix.
+-   Test files created: None.
+-   Known regressions: Admin Panel, AI Features, and Premium Status persistence are known regressions or recurring bugs.
 
 **Credentials to test flow:**
--   Available in .
+Register a new user to test the 7-day trial flow. An admin account is needed to test the admin panel; if one doesn't exist, it may need to be created manually in the database to test the fix.
 
 **What agent forgot to execute**
--   The agent did not forget any tasks but is in the middle of a very large, multi-part task that has left the application in a temporarily broken state. The work on  was also not started.</analysis>
+-   The critical refactoring of  and  was intentionally deferred multiple times and is now significant technical debt.
+-   The  web crash issue from the initial handoff remains unresolved.</analysis>
