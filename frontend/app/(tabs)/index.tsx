@@ -976,7 +976,7 @@ export default function HomeScreen() {
                 <Text style={[styles.communityStatValue, { color: colors.success }]}>
                   {isSv ? `Topp ${Math.max(1, 100 - summaryStats.community_comparison.percentile)}%` : `Top ${Math.max(1, 100 - summaryStats.community_comparison.percentile)}%`}
                 </Text>
-                <Text style={styles.communityStatLabel}>{isSv ? 'Du slår' : 'You beat'}</Text>
+                <Text style={styles.communityStatLabel}>{isSv ? 'av användare' : 'of users'}</Text>
               </View>
             </View>
             <View style={styles.communityAvgRow}>
