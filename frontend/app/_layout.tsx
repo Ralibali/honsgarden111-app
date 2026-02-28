@@ -27,7 +27,7 @@ const ONBOARDING_KEY = '@honsgarden_onboarding_complete';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { initializePremium } = usePremiumStore();
+  const { initializePremium, checkPremiumStatus } = usePremiumStore();
   const { initializeTheme, isDark, colors } = useThemeStore();
   const { checkAuth, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const router = useRouter();
