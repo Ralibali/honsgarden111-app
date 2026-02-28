@@ -807,24 +807,28 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
         
-        {/* ========== SECTION 2: QUICK STATS CARDS ========== */}
-        <View style={styles.statsRow}>
-          <TouchableOpacity 
-            style={[styles.statCard, styles.henCard]}
-            onPress={() => router.push('/(tabs)/hens')}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="heart" size={28} color={colors.error} />
-            <Text style={styles.statValue}>{todayStats?.hen_count || 0}</Text>
-            <Text style={styles.statLabel}>{t('home.hens')}</Text>
-          </TouchableOpacity>
-          
+        {/* ========== SECTION 2: THREE STATS CARDS (Ägg, Höns, Produktivitet) ========== */}
+        <View style={{
+          flexDirection: 'row',
+          marginHorizontal: 16,
+          marginBottom: 12,
+          gap: 10,
+        }}>
+          {/* Ägg idag - Gul/Guld ram */}
           <Pressable 
-            style={({ pressed }) => [
-              styles.statCard, 
-              styles.eggCard,
-              pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
-            ]}
+            style={({ pressed }) => ({
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              padding: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 2,
+              borderColor: '#9a8c4d',
+              minHeight: 120,
+              transform: [{ scale: pressed ? 0.96 : 1 }],
+              opacity: pressed ? 0.9 : 1,
+            })}
             onPress={handleOneTapAdd}
             onLongPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -836,52 +840,80 @@ export default function HomeScreen() {
             <View style={{
               position: 'absolute',
               top: 6,
-              left: 6,
-              backgroundColor: colors.success + '20',
+              right: 6,
+              backgroundColor: colors.success + '30',
               borderRadius: 8,
               paddingHorizontal: 6,
               paddingVertical: 2,
             }}>
               <Text style={{ fontSize: 9, color: colors.success, fontWeight: '600' }}>TAP +1</Text>
             </View>
-            {/* Plus icon in corner */}
-            <View style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              backgroundColor: colors.warning + '30',
-              borderRadius: 12,
-              padding: 4,
+            <Text style={{ fontSize: 32 }}>🥚</Text>
+            <Animated.Text style={{ 
+              fontSize: 32, 
+              fontWeight: '700', 
+              color: colors.text,
+              marginTop: 4,
+              transform: [{ scale: eggPopAnim }] 
             }}>
-              <Ionicons name="add" size={16} color={colors.warning} />
-            </View>
-            <Animated.View style={{ transform: [{ scale: eggPopAnim }] }}>
-              <Ionicons name="egg" size={28} color={colors.warning} />
-            </Animated.View>
-            <Animated.Text style={[styles.statValue, { transform: [{ scale: eggPopAnim }] }]}>
               {todayStats?.egg_count || 0}
             </Animated.Text>
-            <Text style={styles.statLabel}>{t('home.eggsToday')}</Text>
-            {/* Streak badge */}
-            {summaryStats?.streak > 0 && (
-              <View style={{
-                position: 'absolute',
-                bottom: 8,
-                left: 8,
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#f59e0b20',
-                paddingHorizontal: 6,
-                paddingVertical: 2,
-                borderRadius: 8,
-              }}>
-                <Text style={{ fontSize: 10 }}>🔥</Text>
-                <Text style={{ fontSize: 10, color: '#f59e0b', fontWeight: '600', marginLeft: 2 }}>
-                  {summaryStats.streak} {isSv ? 'dagar' : 'days'}
-                </Text>
-              </View>
-            )}
+            <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2 }}>
+              {isSv ? 'Ägg idag' : 'Eggs today'}
+            </Text>
           </Pressable>
+
+          {/* Höns - Röd/Brun ram */}
+          <TouchableOpacity 
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              padding: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 2,
+              borderColor: '#6b3a3a',
+              minHeight: 120,
+            }}
+            onPress={() => router.push('/(tabs)/hens')}
+            activeOpacity={0.7}
+          >
+            <Text style={{ fontSize: 32 }}>🐔</Text>
+            <Text style={{ fontSize: 32, fontWeight: '700', color: colors.text, marginTop: 4 }}>
+              {todayStats?.hen_count || 0}
+            </Text>
+            <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2 }}>
+              {isSv ? 'Höns' : 'Hens'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Produktivitet - Grön ram */}
+          <TouchableOpacity 
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 20,
+              padding: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 2,
+              borderColor: '#3d5a3d',
+              minHeight: 120,
+            }}
+            onPress={() => router.push('/(tabs)/statistics')}
+            activeOpacity={0.7}
+          >
+            <Text style={{ fontSize: 32 }}>📈</Text>
+            <Text style={{ fontSize: 32, fontWeight: '700', color: colors.text, marginTop: 4 }}>
+              {todayStats?.hen_count > 0 
+                ? Math.round((todayStats?.egg_count || 0) / todayStats.hen_count * 100) 
+                : 0}%
+            </Text>
+            <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2, textAlign: 'center' }}>
+              {isSv ? 'Produktivitet' : 'Productivity'}
+            </Text>
+          </TouchableOpacity>
         </View>
         
         {/* Undo Toast */}
