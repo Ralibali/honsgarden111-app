@@ -3,6 +3,41 @@
 ## Projektöversikt
 Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb. Appen hjälper användare att spåra äggproduktion, hantera hönor och tuppar, få AI-drivna insikter och prenumerera på premium-funktioner.
 
+## Nyligen Slutförda Uppgifter (2025-12-19)
+
+### Session 7: Kritiska Bugfixar + Lantligt Tema (2025-12-19)
+
+#### 🌾 Lantligt Tema ✅ (NY FUNKTION)
+- **themeStore.ts**: Ny `ruralTheme` med varma, jordnära färger
+  - Bakgrund: #F5F0E6 (varm havremjölk)
+  - Text: #3D2E1C (mörk brun jord)
+  - Accent: #7B6B3C (ockra/jord)
+  - Borders: #D4C4A8 (halm/vete)
+- **settings.tsx**: 4 tema-val nu tillgängliga: Ljust, Mörkt, Lantligt, System
+- Leaf-ikon för lantligt tema
+
+#### 🌤️ Vädermodal ✅ (BUGGFIX)
+- Väderikonen var tidigare inte klickbar
+- Ny komplett vädermodal implementerad med:
+  - Temperatur och väderikon
+  - Luftfuktighet och vindhastighet
+  - Premium-tips för betalande användare
+  - Uppgraderings-prompt för gratis-användare
+
+#### 🔐 Autentiserings-fix ✅ (KRITISK BUGGFIX)
+- **index.tsx**: Alla API-anrop (`loadCommunityPosts`, `loadDailyChores`, `loadWeather`, etc.) använder nu `getAuthHeaders()`
+- **authStore.ts**: `verifyRegistration` sparar nu `session_token` korrekt
+- Dessa fixar löser "vita modaler" för AI-funktioner och premium-insikter
+
+#### 🛡️ Admin-panel fix ✅ (BUGGFIX)
+- **admin.tsx**: SafeAreaView tillagd för alla return-statements
+- Förhindrar vit skärm på iOS-enheter
+- Bättre loading-indikator med "Kontrollerar admin-behörighet..."
+
+#### 📊 Community-text förbättring ✅ (UX-FIX)
+- Ändrade förvirrande "Du slår" till "av användare" för percentil-visning
+- Mer intuitivt för användaren att förstå sin ranking
+
 ## Nyligen Slutförda Uppgifter (2025-02-28)
 
 ### Session 6: Slutförande av UX-plan + Nya Funktioner (2025-02-28)
