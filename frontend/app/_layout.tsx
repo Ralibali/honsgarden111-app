@@ -1,7 +1,7 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useCallback, useState } from 'react';
-import { View, ActivityIndicator, Platform } from 'react-native';
+import { View, ActivityIndicator, Platform, Text, StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
 import { 
   PlayfairDisplay_400Regular,
@@ -20,8 +20,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePremiumStore } from '../src/store/premiumStore';
 import { useThemeStore } from '../src/store/themeStore';
 import { useAuthStore } from '../src/store/authStore';
+import config, { validateEnvironment } from '../src/config/env';
 
 const ONBOARDING_KEY = '@honsgarden_onboarding_complete';
+
+// Validate environment on startup
+const envValidation = validateEnvironment();
 
 // Keep splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
