@@ -3,6 +3,51 @@
 ## Projektöversikt
 Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb. Appen hjälper användare att spåra äggproduktion, hantera hönor och tuppar, få AI-drivna insikter och prenumerera på premium-funktioner.
 
+## Nyligen Slutförda Uppgifter (2026-02-28)
+
+### Session 8: Kritiska Buggfixar & Verifiering (2026-02-28)
+
+#### 🐛 Fixade Kritiska Buggar ✅
+
+**1. Premium-status visas inte efter inloggning - FIXAD**
+- Problem: Premium-status hämtades endast vid app-start, inte efter inloggning
+- Lösning: Lade till `checkPremiumStatus()` anrop i `_layout.tsx` efter autentisering
+- Fil: `frontend/app/_layout.tsx` (rad 92)
+
+**2. Admin-panel visar felskärm - FIXAD**
+- Problem: "Modal is not defined" fel i admin.tsx
+- Lösning: Importerade `Modal` från react-native
+- Fil: `frontend/app/admin.tsx` (rad 14)
+
+**3. Goals API returnerar 404 - FIXAD**
+- Problem: `app.include_router(api_router)` låg före endpoint-definitionerna
+- Lösning: Flyttade `include_router` till slutet av filen + fixade async/await
+- Fil: `backend/server.py` (rad 7830)
+
+**4. Datetime-jämförelsefel i admin subscriptions - FIXAD**
+- Problem: Jämförelse mellan naive och timezone-aware datetime
+- Lösning: Gör naive datetime timezone-aware innan jämförelse
+- Fil: `backend/server.py` (rad 5770)
+
+**5. setChoresAutoPopupEnabled undefined - FIXAD**
+- Problem: State-variabel användes utan att deklareras
+- Lösning: Lade till useState för `choresAutoPopupEnabled`
+- Fil: `frontend/app/(tabs)/index.tsx` (rad 74)
+
+#### ✅ Verifierade Funktioner (Testing Agent Iteration 24)
+- Login flow: PASS
+- Premium status API: PASS
+- Admin check API: PASS
+- Admin users list: PASS
+- Goals GET/SET: PASS
+- Home page APIs: PASS
+- UI verification: PASS för hem, settings och admin panel
+
+#### 📋 Testdata Skapad
+- Admin-konto: admin@test.com / admin123
+- Admin-status och lifetime premium tillagd i databas
+- ADMIN_EMAILS uppdaterad i backend/.env
+
 ## Nyligen Slutförda Uppgifter (2025-12-19)
 
 ### Session 7: Kritiska Bugfixar + Lantligt Tema (2025-12-19)
