@@ -421,13 +421,8 @@ export default function HomeScreen() {
     setAgdaLoading(true);
     
     try {
-      // Use async version to ensure token is loaded
-      const headers = await getAuthHeadersAsync();
-      
-      const response = await fetch(`${API_URL}/api/ai/advisor`, {
+      const response = await apiFetch(`${API_URL}/api/ai/advisor`, {
         method: 'POST',
-        headers: headers,
-        credentials: 'include',
         body: JSON.stringify({ question: agdaQuestion })
       });
       
