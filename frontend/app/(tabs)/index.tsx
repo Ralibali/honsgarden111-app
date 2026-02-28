@@ -331,14 +331,12 @@ export default function HomeScreen() {
   
   // Handle AI Report card click
   const handleAiReportPress = () => {
-    if (!isPremium) {
-      showPremiumGate(isSv ? 'AI Dagsrapport' : 'AI Daily Report', 'document-text');
-      return;
-    }
+    // Don't block on frontend premium check - loadAiReport will handle it
     if (!aiReport) {
       loadAiReport();
+    } else {
+      setShowAiReportModal(true);
     }
-    setShowAiReportModal(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
   
