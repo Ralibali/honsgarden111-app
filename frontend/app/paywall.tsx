@@ -44,16 +44,29 @@ export default function PaywallScreen() {
     // Method 3: Web detection - if window/document exist in a certain way
     const isWeb = typeof document !== 'undefined' && Platform.OS === 'web';
     
+    // Method 4: Check if RevenueCat is available (will only work on native)
+    // This is the most reliable check for IAP availability
+    let hasRevenueCat = false;
+    try {
+      // If we're in a native environment, react-native-purchases should be available
+      const Purchases = require('react-native-purchases');
+      hasRevenueCat = !!Purchases;
+    } catch (e) {
+      hasRevenueCat = false;
+    }
+    
     console.log('[Paywall] Platform.OS:', Platform.OS);
     console.log('[Paywall] Constants.executionEnvironment:', Constants.executionEnvironment);
     console.log('[Paywall] Constants.appOwnership:', Constants.appOwnership);
     console.log('[Paywall] platformCheck:', platformCheck);
     console.log('[Paywall] expoCheck:', expoCheck);
     console.log('[Paywall] isWeb:', isWeb);
+    console.log('[Paywall] hasRevenueCat:', hasRevenueCat);
     
     // If Platform.OS says iOS or Android, trust it
-    // Otherwise check Expo constants
-    return platformCheck || (expoCheck && !isWeb);
+    // If Expo constants indicate native app, use native IAP
+    // If RevenueCat is available, we're on native
+    return platformCheck || (expoCheck && !isWeb) || hasRevenueCat;
   }, []);
   
   const useNativeIAP = isNative;
