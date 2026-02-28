@@ -120,6 +120,30 @@ export default function RootLayout() {
     );
   }
   
+  // Show configuration error screen if environment validation failed
+  if (!envValidation.valid) {
+    return (
+      <View style={configErrorStyles.container}>
+        <Text style={configErrorStyles.icon}>⚠️</Text>
+        <Text style={configErrorStyles.title}>Konfigurationsfel</Text>
+        <Text style={configErrorStyles.message}>
+          Appen kunde inte startas på grund av saknad konfiguration.
+        </Text>
+        <Text style={configErrorStyles.details}>
+          Kontakta support om problemet kvarstår.
+        </Text>
+        {__DEV__ && (
+          <View style={configErrorStyles.devInfo}>
+            <Text style={configErrorStyles.devTitle}>Debug info:</Text>
+            {envValidation.errors.map((error, index) => (
+              <Text key={index} style={configErrorStyles.errorText}>{error}</Text>
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  }
+  
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
