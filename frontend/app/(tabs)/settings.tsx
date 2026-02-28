@@ -155,6 +155,21 @@ export default function SettingsScreen() {
     }
   }, [coopSettings]);
   
+  // Load goals on mount
+  useEffect(() => {
+    loadGoals();
+  }, []);
+  
+  // Update goals input when goals load
+  useEffect(() => {
+    if (goals.eggsPerMonth !== null) {
+      setEggsGoalInput(goals.eggsPerMonth.toString());
+    }
+    if (goals.profitTarget !== null) {
+      setProfitGoalInput(goals.profitTarget.toString());
+    }
+  }, [goals]);
+  
   useEffect(() => {
     if (coopSettings) {
       const nameChanged = coopName !== coopSettings.coop_name;
