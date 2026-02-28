@@ -212,19 +212,67 @@ export default function Dashboard() {
     }
   };
   
-  const loadAiData = async (type: 'daily' | 'forecast') => {
+  const loadAiData = async (type: 'daily' | 'forecast' | 'advisor' | 'tip') => {
     setAiLoading(true);
     setAiModalType(type);
     setShowAiModal(true);
+    setAiData(null);
+    
+    // For advisor, don't load initial data - user will type question
+    if (type === 'advisor') {
+      setAiLoading(false);
+      return;
+    }
+    
     try {
-      const endpoint = type === 'daily' ? '/api/ai/daily-report' : '/api/ai/egg-forecast';
+      let endpoint = '/api/ai/daily-report';
+      if (type === 'forecast') endpoint = '/api/ai/egg-forecast';
+      else if (type === 'tip') endpoint = '/api/ai/daily-tip';
+      
       const res = await fetch(endpoint, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setAiData(data);
+      } else if (res.status === 403) {
+        // Premium required
+        navigate('/premium');
       }
     } catch (error) {
       console.error('Failed to load AI data:', error);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+  
+  // Fråga Agda - send question to AI advisor
+  const askAgda = async () => {
+    if (!advisorQuestion.trim()) return;
+    
+    setAiLoading(true);
+    const question = advisorQuestion.trim();
+    setAdvisorHistory(prev => [...prev, { role: 'user', content: question }]);
+    setAdvisorQuestion('');
+    
+    try {
+      const res = await fetch('/api/ai/advisor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ question })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        const answer = data.response || data.advice || data.answer || 'Kunde inte generera svar.';
+        setAdvisorHistory(prev => [...prev, { role: 'assistant', content: answer }]);
+      } else if (res.status === 403) {
+        setAdvisorHistory(prev => [...prev, { role: 'assistant', content: 'Denna funktion kräver Premium. Uppgradera för att få personlig rådgivning!' }]);
+      } else {
+        setAdvisorHistory(prev => [...prev, { role: 'assistant', content: 'Ett fel uppstod. Försök igen.' }]);
+      }
+    } catch (error) {
+      console.error('Failed to ask Agda:', error);
+      setAdvisorHistory(prev => [...prev, { role: 'assistant', content: 'Kunde inte ansluta till servern.' }]);
     } finally {
       setAiLoading(false);
     }
