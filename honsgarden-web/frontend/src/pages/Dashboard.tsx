@@ -515,6 +515,35 @@ export default function Dashboard() {
         </div>
         
         <div className="ai-cards">
+          {/* Fråga Agda */}
+          <button 
+            className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
+            onClick={() => premium?.is_premium ? loadAiData('advisor') : navigate('/premium')}
+            data-testid="ask-agda-btn"
+          >
+            <span className="ai-icon">🐔</span>
+            <div className="ai-info">
+              <span className="ai-title">Fråga Agda</span>
+              <span className="ai-desc">{premium?.is_premium ? 'Din AI-rådgivare' : 'Lås upp med Premium'}</span>
+            </div>
+            {!premium?.is_premium && <span className="lock-icon">🔒</span>}
+          </button>
+          
+          {/* Dagens tips */}
+          <button 
+            className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
+            onClick={() => premium?.is_premium ? loadAiData('tip') : navigate('/premium')}
+            data-testid="daily-tip-btn"
+          >
+            <span className="ai-icon">💡</span>
+            <div className="ai-info">
+              <span className="ai-title">Dagens tips</span>
+              <span className="ai-desc">{premium?.is_premium ? 'Dagligt hönstips' : 'Lås upp med Premium'}</span>
+            </div>
+            {!premium?.is_premium && <span className="lock-icon">🔒</span>}
+          </button>
+          
+          {/* Dagsrapport */}
           <button 
             className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
             onClick={() => premium?.is_premium ? loadAiData('daily') : navigate('/premium')}
@@ -527,6 +556,7 @@ export default function Dashboard() {
             {!premium?.is_premium && <span className="lock-icon">🔒</span>}
           </button>
           
+          {/* 7-dagars prognos */}
           <button 
             className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
             onClick={() => premium?.is_premium ? loadAiData('forecast') : navigate('/premium')}
