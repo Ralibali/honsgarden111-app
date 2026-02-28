@@ -7,6 +7,29 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ### Session 7: Kritiska Bugfixar + Lantligt Tema (2025-12-19)
 
+#### 📱 Startsida Omdesignad ✅ (STOR UX-FÖRBÄTTRING - Session 7c)
+Helt ny layoutstruktur för maximal användarvänlighet:
+
+**Ny ordning (uppifrån och ner):**
+1. **🥚 Äggregistrering (Hero)** - Stort grönt kort med snabbknappar (+1, +3, +6, Mer)
+2. **📊 Snabbstatistik** - 3 kort på rad: Ägg idag, Höns, Produktivitet
+3. **⚠️ Produktivitetsvarningar** - Om höns inte värpt
+4. **📋 Dagens sysslor** - Klickbart kort med progress
+5. **⚡ Snabbåtgärder** - Grid med 4 knappar (Foder, Kläckning, Community, Dela)
+6. **📈 Månadsöversikt** - Ägg, Kostnader, Försäljning, Nettoresultat
+7. **🏆 Veckans bästa höna** - Om data finns
+8. **🌤️ Väder** - Kompakt kort (nedflyttat)
+9. **👥 Community-jämförelse** - Ranking vs andra
+10. **🤖 AI & Premium** - Längst ner (ej säljdrivet överst)
+11. **⭐ Premium Banner** - Endast för gratisanvändare
+
+**Borttaget/förenklat:**
+- Duplicerade snabbåtgärder
+- Insights-karusell (för komplex)
+- Community-förhandsgranskning (tog fokus)
+- All-time statistik-kort (onödigt)
+- Data limits banner (störande)
+
 #### 📋 Dagens Sysslor UX-fix ✅ (BUGGFIX)
 - Tog bort automatisk popup vid appstart
 - Kortet "Dagens sysslor" finns på startsidan och öppnar modalen när användaren klickar på det
