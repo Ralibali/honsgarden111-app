@@ -1053,4 +1053,12 @@ const styles = StyleSheet.create({
   checkbox: {
     marginRight: 0,
   },
+  loadingText: {
+    fontSize: 15,
+  },
+  backButtonLarge: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
 });
