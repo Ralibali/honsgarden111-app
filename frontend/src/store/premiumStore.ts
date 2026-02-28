@@ -126,6 +126,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
               expiresAt: parsed.expiresAt,
               plan: parsed.plan,
               isTrial: parsed.isTrial || false,
+              isLifetime: parsed.isLifetime || false,
               daysRemaining: parsed.daysRemaining,
               trialExpiryWarning: parsed.trialExpiryWarning,
             });
