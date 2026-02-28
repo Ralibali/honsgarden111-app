@@ -204,6 +204,22 @@ export default function SettingsScreen() {
     setCurrentLanguage(lang);
   };
   
+  const handleSaveGoals = async () => {
+    const eggsValue = eggsGoalInput ? parseInt(eggsGoalInput) : null;
+    const profitValue = profitGoalInput ? parseFloat(profitGoalInput) : null;
+    
+    if (eggsGoalInput && (isNaN(eggsValue!) || eggsValue! < 0)) {
+      Alert.alert(t('common.error'), isSv ? 'Ogiltigt äggmål' : 'Invalid egg goal');
+      return;
+    }
+    
+    await setGoal('eggsPerMonth', eggsValue);
+    await setGoal('profitTarget', profitValue);
+    
+    setShowGoalsModal(false);
+    Alert.alert(t('common.success'), isSv ? 'Mål sparade!' : 'Goals saved!');
+  };
+  
   const handleThemeChange = (newMode: ThemeMode) => {
     setThemeMode(newMode);
   };
