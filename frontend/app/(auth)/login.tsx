@@ -917,10 +917,10 @@ export default function LoginScreen() {
               
               {/* External links */}
               <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 16, gap: 16 }}>
-                <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy')}>
+                <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy.html')}>
                   <Text style={[styles.linkText, { fontSize: 14 }]}>Läs fullständig integritetspolicy</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/terms')}>
+                <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/terms.html')}>
                   <Text style={[styles.linkText, { fontSize: 14 }]}>Läs fullständiga villkor</Text>
                 </TouchableOpacity>
               </View>

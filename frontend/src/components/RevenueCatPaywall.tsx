@@ -349,11 +349,11 @@ export const RevenueCatPaywall: React.FC<PaywallProps> = ({
       </Text>
       
       <View style={styles.legalLinks}>
-        <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy')}>
+        <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy.html')}>
           <Text style={styles.legalLink}>Integritetspolicy</Text>
         </TouchableOpacity>
         <Text style={styles.legalSeparator}>•</Text>
-        <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/terms')}>
+        <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/terms.html')}>
           <Text style={styles.legalLink}>Användarvillkor</Text>
         </TouchableOpacity>
       </View>

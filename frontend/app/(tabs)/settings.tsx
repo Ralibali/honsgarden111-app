@@ -1041,7 +1041,7 @@ export default function SettingsScreen() {
             <View style={styles.legalLinksContainer}>
               <TouchableOpacity 
                 style={styles.legalLinkCard}
-                onPress={() => Linking.openURL('https://honsgarden.se/privacy')}
+                onPress={() => Linking.openURL('https://honsgarden.se/privacy.html')}
               >
                 <Ionicons name="shield-checkmark" size={20} color={colors.textSecondary} />
                 <Text style={styles.legalLinkText}>{isSv ? 'Integritetspolicy' : 'Privacy Policy'}</Text>
@@ -1050,7 +1050,7 @@ export default function SettingsScreen() {
               
               <TouchableOpacity 
                 style={styles.legalLinkCard}
-                onPress={() => Linking.openURL('https://honsgarden.se/terms')}
+                onPress={() => Linking.openURL('https://honsgarden.se/terms.html')}
               >
                 <Ionicons name="document-text" size={20} color={colors.textSecondary} />
                 <Text style={styles.legalLinkText}>{isSv ? 'Användarvillkor' : 'Terms of Service'}</Text>

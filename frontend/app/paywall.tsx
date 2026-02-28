@@ -215,11 +215,11 @@ export default function PaywallScreen() {
         
         {/* Legal Links */}
         <View style={styles.legalLinks}>
-          <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy')}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/privacy.html')}>
             <Text style={styles.legalLinkText}>{isSv ? 'Integritetspolicy' : 'Privacy Policy'}</Text>
           </TouchableOpacity>
           <Text style={styles.legalSeparator}>•</Text>
-          <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/terms')}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://honsgarden.se/terms.html')}>
             <Text style={styles.legalLinkText}>{isSv ? 'Användarvillkor' : 'Terms of Service'}</Text>
           </TouchableOpacity>
         </View>
