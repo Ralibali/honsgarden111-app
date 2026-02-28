@@ -5,6 +5,40 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2025-02-28)
 
+### Session 6: Slutförande av UX-plan + Nya Funktioner (2025-02-28)
+
+#### 🏆 Veckans Bästa Höna ✅ (NY FUNKTION)
+- **Backend**: `/api/statistics/summary` returnerar nu `best_hen_week` med:
+  - `id`: Hönans ID
+  - `name`: Hönans namn
+  - `eggs_this_week`: Antal ägg senaste 7 dagarna
+- **Frontend**: Guldigt kort på startsidan med trophy-ikon
+- Klickbart kort navigerar till Höns-fliken
+- Visas endast när data finns (kräver ägg med hen_id)
+
+#### 👥 Community Comparison ✅ (NY FUNKTION)
+- **Backend**: `/api/statistics/summary` returnerar nu `community_comparison` med:
+  - `your_eggs_this_month`: Dina ägg denna månad
+  - `community_avg`: Genomsnitt för alla användare
+  - `total_users`: Antal användare totalt
+  - `your_rank`: Din placering (1 = bäst)
+  - `percentile`: Vilken procent du tillhör
+  - `vs_avg_percent`: Hur mycket bättre/sämre än snittet
+- **Frontend**: "Jämfört med andra"-kort på startsidan
+- Visas endast när `total_users > 1`
+
+#### 🎁 Gratis AI-rapport (1/vecka) ✅ (NY FUNKTION)
+- **Backend**: `/api/ai/daily-report` ändrad
+- Icke-premium användare får 1 gratis AI-rapport per vecka
+- `free_ai_usage` collection spårar användning
+- Returnerar `free_report_available` och `days_until_free`
+- Premium-användare får obegränsad tillgång
+
+#### 🔧 i18n SSR-fix ✅
+- Fixade `window is not defined` fel på webben
+- AsyncStorage-initiering skippas i SSR-miljö
+- `authStore.ts` uppdaterad med window-check
+
 ### Session 5: Omfattande UX-förbättringar (2025-02-28)
 
 #### 🥚 One-Tap Äggregistrering ✅
