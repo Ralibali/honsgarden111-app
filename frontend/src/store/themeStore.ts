@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Appearance } from 'react-native';
 
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = 'light' | 'dark' | 'system' | 'rural';
 
 export interface ThemeColors {
   // Backgrounds
@@ -67,6 +67,25 @@ export const darkTheme: ThemeColors = {
   primaryLight: '#4CAF5022',
   tabBar: '#1C1C1E',
   tabBarBorder: '#2C2C2E',
+};
+
+// Lantligt tema - varma, jordnära färger inspirerade av svenska landsbygden
+export const ruralTheme: ThemeColors = {
+  background: '#F5F0E6',      // Varm havremjölk/papper
+  surface: '#FDF8F0',         // Kremvit som äggvita
+  surfaceSecondary: '#E8DFD0', // Ljust trä
+  card: '#FDF8F0',
+  text: '#3D2E1C',            // Mörk brun jord
+  textSecondary: '#6B5744',   // Varm brun
+  textMuted: '#8B7355',       // Ljusare brun
+  border: '#D4C4A8',          // Halm/vete-färg
+  success: '#5A8F4C',         // Gräsgrön
+  error: '#B54D42',           // Röd lada
+  warning: '#D4A03E',         // Gyllene vete
+  primary: '#7B6B3C',         // Ockra/jord
+  primaryLight: '#7B6B3C22',
+  tabBar: '#E8DFD0',          // Ljust trä
+  tabBarBorder: '#D4C4A8',    // Halm
 };
 
 interface ThemeState {
