@@ -930,7 +930,7 @@ export default function HomeScreen() {
             <View style={styles.communityStats}>
               <View style={styles.communityStat}>
                 <Text style={styles.communityStatValue}>
-                  {summaryStats.community_comparison.your_rank}/{summaryStats.community_comparison.total_users}
+                  #{summaryStats.community_comparison.your_rank}
                 </Text>
                 <Text style={styles.communityStatLabel}>{isSv ? 'Din placering' : 'Your Rank'}</Text>
               </View>
@@ -945,10 +945,10 @@ export default function HomeScreen() {
                 <Text style={styles.communityStatLabel}>{isSv ? 'vs genomsnitt' : 'vs average'}</Text>
               </View>
               <View style={styles.communityStat}>
-                <Text style={styles.communityStatValue}>
-                  Top {100 - summaryStats.community_comparison.percentile}%
+                <Text style={[styles.communityStatValue, { color: colors.success }]}>
+                  {isSv ? `Topp ${Math.max(1, 100 - summaryStats.community_comparison.percentile)}%` : `Top ${Math.max(1, 100 - summaryStats.community_comparison.percentile)}%`}
                 </Text>
-                <Text style={styles.communityStatLabel}>{isSv ? 'Percentil' : 'Percentile'}</Text>
+                <Text style={styles.communityStatLabel}>{isSv ? 'Du slår' : 'You beat'}</Text>
               </View>
             </View>
             <View style={styles.communityAvgRow}>
