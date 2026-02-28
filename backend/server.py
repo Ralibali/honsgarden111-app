@@ -7678,6 +7678,142 @@ else:
         allow_headers=["*"],
     )
 
+# ============ USER GOALS ENDPOINTS ============
+class UserGoalsUpdate(BaseModel):
+    eggs_per_month: int | None = None
+    profit_target: float | None = None
+
+@api_router.get("/user/goals")
+async def get_user_goals(user: dict = Depends(get_current_user)):
+    """Get user's goals"""
+    user_id = user["user_id"]
+    
+    user_doc = users_collection.find_one({"user_id": user_id}, {"goals": 1})
+    if user_doc and "goals" in user_doc:
+        return user_doc["goals"]
+    return {"eggs_per_month": None, "profit_target": None, "updated_at": None}
+
+@api_router.post("/user/goals")
+async def set_user_goals(goals: UserGoalsUpdate, user: dict = Depends(get_current_user)):
+    """Set user's goals"""
+    user_id = user["user_id"]
+    
+    update_data = {
+        "goals": {
+            "eggs_per_month": goals.eggs_per_month,
+            "profit_target": goals.profit_target,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+    }
+    
+    users_collection.update_one(
+        {"user_id": user_id},
+        {"$set": update_data}
+    )
+    
+    return {"success": True, **update_data["goals"]}
+
+
+# ============ ANALYTICS ENDPOINTS ============
+class AnalyticsEvent(BaseModel):
+    event: str
+    screen: str | None = None
+    count: int | None = None
+    total_eggs: int | None = None
+
+class ConversionData(BaseModel):
+    screenOnConversion: str | None = None
+    eggsAtConversion: int | None = None
+    streakAtConversion: int | None = None
+    daysToConversion: int | None = None
+
+@api_router.get("/analytics/user")
+async def get_user_analytics(user: dict = Depends(get_current_user)):
+    """Get user analytics data"""
+    user_id = user["user_id"]
+    
+    # Get egg statistics
+    egg_stats = list(eggs_collection.aggregate([
+        {"$match": {"user_id": user_id}},
+        {"$group": {
+            "_id": None,
+            "total_eggs": {"$sum": "$count"},
+            "first_date": {"$min": "$date"},
+            "last_date": {"$max": "$date"},
+            "days_count": {"$addToSet": "$date"}
+        }}
+    ]))
+    
+    # Get streak info from user doc
+    user_doc = users_collection.find_one({"user_id": user_id}, {"analytics": 1, "streak": 1})
+    
+    result = {
+        "total_eggs": egg_stats[0]["total_eggs"] if egg_stats else 0,
+        "first_activity_date": egg_stats[0]["first_date"] if egg_stats else None,
+        "last_activity_date": egg_stats[0]["last_date"] if egg_stats else None,
+        "days_active": len(egg_stats[0]["days_count"]) if egg_stats else 0,
+        "current_streak": user_doc.get("streak", 0) if user_doc else 0,
+        "longest_streak": user_doc.get("analytics", {}).get("longest_streak", 0) if user_doc else 0,
+    }
+    
+    return result
+
+@api_router.post("/analytics/track")
+async def track_analytics_event(event_data: AnalyticsEvent, user: dict = Depends(get_current_user)):
+    """Track an analytics event"""
+    user_id = user["user_id"]
+    
+    # Store event in analytics collection
+    analytics_collection = db["analytics"]
+    analytics_collection.insert_one({
+        "user_id": user_id,
+        "event": event_data.event,
+        "screen": event_data.screen,
+        "count": event_data.count,
+        "total_eggs": event_data.total_eggs,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    })
+    
+    # Update user analytics counters
+    update_ops = {}
+    if event_data.event == "screen_view" and event_data.screen:
+        update_ops[f"analytics.screen_views.{event_data.screen}"] = 1
+    
+    if update_ops:
+        users_collection.update_one(
+            {"user_id": user_id},
+            {"$inc": update_ops}
+        )
+    
+    return {"success": True}
+
+@api_router.post("/analytics/conversion")
+async def track_conversion(data: ConversionData, user: dict = Depends(get_current_user)):
+    """Track a premium conversion event"""
+    user_id = user["user_id"]
+    
+    conversion_doc = {
+        "user_id": user_id,
+        "screen_on_conversion": data.screenOnConversion,
+        "eggs_at_conversion": data.eggsAtConversion,
+        "streak_at_conversion": data.streakAtConversion,
+        "days_to_conversion": data.daysToConversion,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    # Store conversion event
+    conversions_collection = db["conversions"]
+    conversions_collection.insert_one(conversion_doc)
+    
+    # Update user document
+    users_collection.update_one(
+        {"user_id": user_id},
+        {"$set": {"analytics.conversion": conversion_doc}}
+    )
+    
+    return {"success": True}
+
+
 # ============ WEBAPP STATIC FILES ============
 # Serve webapp at ROOT (honsgarden.se) and keep /api/web for backwards compatibility
 if WEBAPP_DIR.exists():
