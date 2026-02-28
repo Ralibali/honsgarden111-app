@@ -1397,7 +1397,8 @@ async def exchange_session(session_req: SessionRequest, request: Request, respon
         "user_id": user_id,
         "email": email,
         "name": name,
-        "picture": picture
+        "picture": picture,
+        "session_token": session_token
     }
 
 @api_router.get("/auth/me")
