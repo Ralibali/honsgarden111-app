@@ -438,16 +438,24 @@ export default function HomeScreen() {
         body: JSON.stringify({ question: agdaQuestion })
       });
       
-      if (response.ok) {
-        const data = await response.json();
-        setAgdaAnswer(data.answer || data.response || data.message || '');
+      const data = await response.json();
+      
+      // Check if user is not premium
+      if (data.is_premium === false) {
+        setShowAgdaModal(false);
+        showPremiumGate(isSv ? 'Fråga Agda' : 'Ask Agda', 'chatbubble-ellipses');
+        return;
+      }
+      
+      if (response.ok && data.answer) {
+        setAgdaAnswer(data.answer);
       } else {
-        console.error('Agda response not ok:', response.status);
-        setAgdaAnswer(isSv ? 'Kunde inte få svar från Agda' : 'Could not get response from Agda');
+        if (__DEV__) console.error('Agda response issue:', response.status, data);
+        setAgdaAnswer(isSv ? 'Agda kunde inte svara just nu. Försök igen om en stund.' : 'Agda could not respond right now. Please try again shortly.');
       }
     } catch (error) {
-      console.error('Agda error:', error);
-      setAgdaAnswer(isSv ? 'Ett fel uppstod' : 'An error occurred');
+      if (__DEV__) console.error('Agda error:', error);
+      setAgdaAnswer(isSv ? 'Ett tillfälligt fel uppstod. Kontrollera din internetanslutning.' : 'A temporary error occurred. Check your internet connection.');
     } finally {
       setAgdaLoading(false);
     }
