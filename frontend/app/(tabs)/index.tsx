@@ -1119,6 +1119,41 @@ export default function HomeScreen() {
           </View>
         )}
         
+        {/* Dagens Sysslor Card */}
+        {dailyChores.length > 0 && (
+          <TouchableOpacity
+            style={styles.dailyChoresCard}
+            onPress={() => setShowChoresModal(true)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.dailyChoresLeft}>
+              <View style={[styles.dailyChoresIcon, { backgroundColor: '#f59e0b22' }]}>
+                <Ionicons name="checkbox-outline" size={24} color="#f59e0b" />
+              </View>
+              <View>
+                <Text style={styles.dailyChoresTitle}>
+                  {isSv ? 'Dagens sysslor' : "Today's Chores"}
+                </Text>
+                <Text style={styles.dailyChoresSubtitle}>
+                  {dailyChores.filter(c => c.completed).length}/{dailyChores.length} {isSv ? 'klara' : 'done'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.dailyChoresProgress}>
+              <View 
+                style={[
+                  styles.dailyChoresProgressFill, 
+                  { 
+                    width: `${(dailyChores.filter(c => c.completed).length / dailyChores.length) * 100}%`,
+                    backgroundColor: dailyChores.every(c => c.completed) ? colors.success : '#f59e0b'
+                  }
+                ]} 
+              />
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
+        
         {/* Quick Actions */}
         <View style={styles.quickActionsSection}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
