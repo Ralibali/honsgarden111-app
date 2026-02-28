@@ -104,11 +104,15 @@ export default function Dashboard() {
   const [showEggModal, setShowEggModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
-  const [aiModalType, setAiModalType] = useState<'daily' | 'forecast'>('daily');
+  const [aiModalType, setAiModalType] = useState<'daily' | 'forecast' | 'advisor' | 'tip'>('daily');
   const [aiData, setAiData] = useState<any>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [showWeatherModal, setShowWeatherModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
+  
+  // Fråga Agda state
+  const [advisorQuestion, setAdvisorQuestion] = useState('');
+  const [advisorHistory, setAdvisorHistory] = useState<Array<{role: 'user' | 'assistant', content: string}>>([]);
   
   // Animation state
   const [isVisible, setIsVisible] = useState(false);
