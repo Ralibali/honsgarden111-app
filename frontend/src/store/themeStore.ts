@@ -104,6 +104,9 @@ const getEffectiveTheme = (mode: ThemeMode): { colors: ThemeColors; isDark: bool
     const isDark = systemColorScheme === 'dark';
     return { colors: isDark ? darkTheme : lightTheme, isDark };
   }
+  if (mode === 'rural') {
+    return { colors: ruralTheme, isDark: false };
+  }
   const isDark = mode === 'dark';
   return { colors: isDark ? darkTheme : lightTheme, isDark };
 };
