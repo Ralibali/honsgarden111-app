@@ -5,7 +5,7 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2026-02-28)
 
-### Session 8: Kritiska Buggfixar & Verifiering (2026-02-28)
+### Session 8: Kritiska Buggfixar & UI-uppdateringar (2026-02-28)
 
 #### 🐛 Fixade Kritiska Buggar ✅
 
@@ -34,6 +34,22 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 - Lösning: Lade till useState för `choresAutoPopupEnabled`
 - Fil: `frontend/app/(tabs)/index.tsx` (rad 74)
 
+#### 🎨 UI-uppdateringar ✅
+
+**Hemskärmens layout uppdaterad enligt användarens önskemål:**
+- **Tre statistik-kort med emojis och färgade ramar**:
+  - 🥚 Ägg idag (gul/guld ram) - Klickbar för snabbregistrering
+  - 🐔 Höns (röd/brun ram) - Navigerar till höns-fliken
+  - 📈 Produktivitet (grön ram) - Navigerar till statistik
+- **Totalt ägg och Streak kort** visas överst när data finns
+- **Milestone-meddelanden** visas för produktionsmönster
+
+#### 🤖 AI-funktioner verifierade ✅
+
+- **Dagens tips** - Fungerar! Visar dagligt AI-genererat tips från Agda
+- **Fråga Agda** - Fungerar! AI-rådgivare med föreslagna frågor och fritt textinput
+- **API-endpoints fungerar**: `/api/ai/daily-tip`, `/api/ai/advisor`
+
 #### ✅ Verifierade Funktioner (Testing Agent Iteration 24)
 - Login flow: PASS
 - Premium status API: PASS
@@ -47,6 +63,7 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 - Admin-konto: admin@test.com / admin123
 - Admin-status och lifetime premium tillagd i databas
 - ADMIN_EMAILS uppdaterad i backend/.env
+- Testägg registrerade för att visa streak och milestone
 
 ## Nyligen Slutförda Uppgifter (2025-12-19)
 
