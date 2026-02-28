@@ -7632,25 +7632,49 @@ async def serve_register_page():
 # Include the router in the main app
 app.include_router(api_router)
 
-# CORS Configuration - Explicit origins for security
-# With credentials=True, we must specify explicit origins (not *)
-ALLOWED_ORIGINS = [
-    "https://honsgarden.se",
-    "https://www.honsgarden.se",
-    "http://localhost:3000",
-    "http://localhost:8081",
-    "http://localhost:19006",
-    # Add preview domains for development
-    "https://egg-tracker-premium.preview.emergentagent.com",
-]
+# CORS Configuration - Read from environment variable for deployment flexibility
+cors_origins_env = os.environ.get('CORS_ORIGINS', '')
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if cors_origins_env == '*':
+    # Wildcard mode - allow all origins (for development/preview)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,  # Cannot use credentials with wildcard
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    # Explicit origins mode - for production with secure cookie handling
+    # Start with defaults, then add environment-specified origins
+    ALLOWED_ORIGINS = [
+        "https://honsgarden.se",
+        "https://www.honsgarden.se",
+        "http://localhost:3000",
+        "http://localhost:8081",
+        "http://localhost:19006",
+        "https://egg-tracker-premium.preview.emergentagent.com",
+    ]
+    
+    # Add any additional origins from environment variable
+    if cors_origins_env:
+        env_origins = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
+        ALLOWED_ORIGINS.extend(env_origins)
+    
+    # Also add the production deployment domain pattern
+    # This will be set by Emergent's deployment system
+    production_domain = os.environ.get('PRODUCTION_DOMAIN', '')
+    if production_domain:
+        ALLOWED_ORIGINS.append(f"https://{production_domain}")
+        ALLOWED_ORIGINS.append(f"https://www.{production_domain}")
+    
+    app.add_middleware(
+        CORSMiddleware,
+        allow_credentials=True,
+        allow_origins=ALLOWED_ORIGINS,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # ============ WEBAPP STATIC FILES ============
 # Serve webapp at ROOT (honsgarden.se) and keep /api/web for backwards compatibility
