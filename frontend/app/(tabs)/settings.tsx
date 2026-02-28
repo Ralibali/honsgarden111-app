@@ -1270,6 +1270,159 @@ export default function SettingsScreen() {
         </View>
       </Modal>
       
+      {/* Goals Modal */}
+      <Modal
+        visible={showGoalsModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowGoalsModal(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'flex-end',
+        }}>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ width: '100%' }}
+          >
+            <View style={{
+              backgroundColor: colors.surface,
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              padding: 24,
+              paddingBottom: 40,
+            }}>
+              {/* Header */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>
+                  🎯 {isSv ? 'Sätt dina mål' : 'Set Your Goals'}
+                </Text>
+                <TouchableOpacity onPress={() => setShowGoalsModal(false)}>
+                  <Ionicons name="close" size={24} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+              
+              {/* Egg Goal */}
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>
+                  🥚 {isSv ? 'Ägg per månad' : 'Eggs per month'}
+                </Text>
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: colors.background,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}>
+                  <TextInput
+                    style={{
+                      flex: 1,
+                      padding: 14,
+                      fontSize: 16,
+                      color: colors.text,
+                    }}
+                    placeholder={isSv ? 'T.ex. 150' : 'E.g. 150'}
+                    placeholderTextColor={colors.textMuted}
+                    value={eggsGoalInput}
+                    onChangeText={setEggsGoalInput}
+                    keyboardType="number-pad"
+                  />
+                  <Text style={{ paddingRight: 14, color: colors.textSecondary }}>
+                    {isSv ? 'ägg' : 'eggs'}
+                  </Text>
+                </View>
+              </View>
+              
+              {/* Profit Goal */}
+              <View style={{ marginBottom: 24 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>
+                  💰 {isSv ? 'Vinst-mål' : 'Profit goal'}
+                </Text>
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: colors.background,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}>
+                  <TextInput
+                    style={{
+                      flex: 1,
+                      padding: 14,
+                      fontSize: 16,
+                      color: colors.text,
+                    }}
+                    placeholder={isSv ? 'T.ex. 500' : 'E.g. 500'}
+                    placeholderTextColor={colors.textMuted}
+                    value={profitGoalInput}
+                    onChangeText={setProfitGoalInput}
+                    keyboardType="numeric"
+                  />
+                  <Text style={{ paddingRight: 14, color: colors.textSecondary }}>kr</Text>
+                </View>
+              </View>
+              
+              {/* Info text */}
+              <View style={{
+                backgroundColor: colors.primary + '10',
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 20,
+              }}>
+                <Text style={{ fontSize: 12, color: colors.text, lineHeight: 18 }}>
+                  💡 {isSv 
+                    ? 'Med Premium får du prognos mot dina mål och förbättringsförslag för att nå dem snabbare.'
+                    : 'With Premium you get forecasts against your goals and improvement suggestions to reach them faster.'}
+                </Text>
+              </View>
+              
+              {/* Buttons */}
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <TouchableOpacity
+                  style={{
+                    flex: 1,
+                    backgroundColor: colors.background,
+                    borderRadius: 12,
+                    padding: 16,
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                  onPress={() => {
+                    setEggsGoalInput('');
+                    setProfitGoalInput('');
+                    setGoal('eggsPerMonth', null);
+                    setGoal('profitTarget', null);
+                    setShowGoalsModal(false);
+                  }}
+                >
+                  <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>
+                    {isSv ? 'Rensa' : 'Clear'}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    flex: 2,
+                    backgroundColor: colors.primary,
+                    borderRadius: 12,
+                    padding: 16,
+                    alignItems: 'center',
+                  }}
+                  onPress={handleSaveGoals}
+                >
+                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>
+                    {isSv ? 'Spara mål' : 'Save Goals'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
+      
       {/* Premium Gate Modal */}
       <PremiumGateModal
         visible={showPremiumModal}
