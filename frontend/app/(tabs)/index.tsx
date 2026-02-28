@@ -71,6 +71,7 @@ export default function HomeScreen() {
   const [dailyChores, setDailyChores] = useState<any[]>([]);
   const [showChoresModal, setShowChoresModal] = useState(false);
   const [hasSeenChoresFirstTime, setHasSeenChoresFirstTime] = useState(false);
+  const [choresAutoPopupEnabled, setChoresAutoPopupEnabled] = useState(true);
   
   // Community preview state
   const [communityPosts, setCommunityPosts] = useState<any[]>([]);
