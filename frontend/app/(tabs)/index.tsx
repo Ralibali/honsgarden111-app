@@ -379,11 +379,8 @@ export default function HomeScreen() {
   
   // Load Daily Tip
   const loadDailyTip = async () => {
-    if (!isPremium) {
-      showPremiumGate(isSv ? 'Dagens tips' : 'Daily Tip', 'bulb');
-      return;
-    }
-    
+    // Don't block on frontend premium check - let backend handle it
+    // This ensures the modal opens and shows appropriate message
     setDailyTipLoading(true);
     setShowDailyTipModal(true);
     
@@ -393,6 +390,10 @@ export default function HomeScreen() {
       if (response.ok) {
         const data = await response.json();
         setDailyTip(data.tip || data.message || '');
+      } else if (response.status === 403) {
+        // User is not premium
+        setShowDailyTipModal(false);
+        showPremiumGate(isSv ? 'Dagens tips' : 'Daily Tip', 'bulb');
       } else {
         console.error('Daily tip response not ok:', response.status);
         setDailyTip(isSv ? 'Kunde inte ladda dagens tips' : 'Could not load daily tip');
