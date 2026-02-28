@@ -1096,6 +1096,16 @@ const createStyles = (colors: any) => StyleSheet.create({
   required: {
     color: '#f87171',
   },
+  optional: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontStyle: 'italic',
+    fontWeight: 'normal',
+  },
+  inputHint: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 6,
+  },
   input: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
