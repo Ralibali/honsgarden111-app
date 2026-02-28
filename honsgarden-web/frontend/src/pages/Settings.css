@@ -470,3 +470,65 @@
   cursor: not-allowed;
 }
 
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .settings-page {
+    padding: 0;
+  }
+  
+  .settings-header h1 {
+    font-size: 24px;
+  }
+  
+  .settings-section {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  
+  .section-title {
+    font-size: 15px;
+  }
+  
+  .setting-item {
+    padding: 14px 0;
+  }
+  
+  .setting-label {
+    font-size: 14px;
+  }
+  
+  .setting-description {
+    font-size: 12px;
+  }
+  
+  .profile-form input {
+    font-size: 16px;
+    padding: 12px;
+  }
+  
+  .danger-section {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .setting-control {
+    width: 100%;
+  }
+  
+  .setting-control select,
+  .setting-control input {
+    width: 100%;
+  }
+  
+  .toggle-switch {
+    align-self: flex-start;
+  }
+}
