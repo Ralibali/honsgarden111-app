@@ -1931,13 +1931,13 @@ export default function HomeScreen() {
             {dailyTipLoading ? (
               <View style={styles.loadingContainer}>
                 <Text style={styles.loadingEmoji}>💡</Text>
-                <Text style={[styles.loadingText, { color: colors.text }]}>
+                <Text style={[styles.loadingText, { color: colors.text || '#1A1A1A' }]}>
                   {isSv ? 'Hämtar dagens tips...' : 'Loading daily tip...'}
                 </Text>
               </View>
             ) : (
-              <View style={[styles.reportCard, { backgroundColor: colors.surface, margin: 16 }]}>
-                <Text style={[styles.reportText, { color: colors.text }]}>
+              <View style={[styles.reportCard, { backgroundColor: colors.surface || '#FFFFFF', margin: 16 }]}>
+                <Text style={[styles.reportText, { color: colors.text || '#1A1A1A' }]}>
                   {dailyTip || (isSv ? 'Inget tips tillgängligt' : 'No tip available')}
                 </Text>
               </View>
