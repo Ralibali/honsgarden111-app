@@ -895,12 +895,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-            ) : (
-              <p className="ai-error">Kunde inte ladda data</p>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
