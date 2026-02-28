@@ -630,14 +630,35 @@ export default function HensScreen() {
           <View style={styles.emptyState}>
             <Ionicons name="heart-outline" size={64} color={colors.textMuted} />
             <Text style={styles.emptyTitle}>
-              {isSv ? 'Inga hönor' : 'No hens'}
+              {isSv ? 'Lägg till dina hönor' : 'Add your hens'}
             </Text>
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyText, { textAlign: 'center', paddingHorizontal: 20 }]}>
               {isSv 
-                ? selectedFlock !== 'all' ? 'Inga hönor i denna flock' : 'Lägg till dina hönor för att följa deras äggproduktion!'
-                : selectedFlock !== 'all' ? 'No hens in this flock' : 'Add your hens to track their egg production!'
+                ? selectedFlock !== 'all' 
+                  ? 'Inga hönor i denna flock'
+                  : 'Registrera dina hönor för att se individuell produktivitet, få bättre prognoser och hålla koll på varje hönas hälsa.'
+                : selectedFlock !== 'all' 
+                  ? 'No hens in this flock' 
+                  : 'Register your hens to see individual productivity, get better forecasts and track each hen\'s health.'
               }
             </Text>
+            {selectedFlock === 'all' && (
+              <View style={{ 
+                backgroundColor: colors.primary + '10', 
+                borderRadius: 12, 
+                padding: 16, 
+                marginTop: 16,
+                width: '100%',
+                borderLeftWidth: 4,
+                borderLeftColor: colors.primary
+              }}>
+                <Text style={{ fontSize: 13, color: colors.text, lineHeight: 20 }}>
+                  💡 {isSv 
+                    ? 'Tips: Med registrerade hönor kan du spåra vilka som värper bäst, upptäcka hälsoproblem tidigt och få mer exakta AI-prognoser.'
+                    : 'Tip: With registered hens you can track which ones lay best, detect health issues early and get more accurate AI forecasts.'}
+                </Text>
+              </View>
+            )}
           </View>
         ) : (
           <View style={styles.hensList}>
