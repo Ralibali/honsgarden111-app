@@ -311,16 +311,21 @@ export default function HomeScreen() {
   
   // Load Egg Forecast
   const loadEggForecast = async () => {
-    if (!isPremium) return;
     setForecastLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/ai/egg-forecast`, {
-        credentials: 'include',
-        headers: getAuthHeaders(),
-      });
+      const res = await apiFetch(`${API_URL}/api/ai/egg-forecast`);
       if (res.ok) {
         const data = await res.json();
-        setEggForecast(data);
+        // Data is nested under 'forecast' key
+        if (data.forecast) {
+          setEggForecast({
+            ...data.forecast,
+            forecast_7_days: data.forecast.total_predicted,
+            daily_forecast: data.forecast.daily_predictions
+          });
+        } else {
+          setEggForecast(data);
+        }
       }
     } catch (error) {
       console.error('Failed to load egg forecast:', error);
