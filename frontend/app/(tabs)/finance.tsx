@@ -188,6 +188,33 @@ export default function FinanceScreen() {
           </Text>
         </View>
         
+        {/* ACTION BUTTONS - MOVED UP TOP */}
+        <View style={styles.actionRow}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.costActionButton]}
+            onPress={() => {
+              setTransactionType('cost');
+              setSelectedCategory(null);
+              setShowAddModal(true);
+            }}
+          >
+            <Ionicons name="remove-circle" size={20} color={colors.error} />
+            <Text style={styles.actionButtonText}>{t('finance.addCost')}</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.actionButton, styles.saleActionButton]}
+            onPress={() => {
+              setTransactionType('sale');
+              setSelectedCategory(null);
+              setShowAddModal(true);
+            }}
+          >
+            <Ionicons name="add-circle" size={20} color={colors.success} />
+            <Text style={styles.actionButtonText}>{t('finance.addSale')}</Text>
+          </TouchableOpacity>
+        </View>
+        
         {/* Summary Cards */}
         <View style={styles.summaryRow}>
           <View style={[styles.summaryCard, styles.costCard]}>
@@ -234,10 +261,11 @@ export default function FinanceScreen() {
           </Text>
         </View>
         
-        {/* Economy Insights */}
+        {/* Economy Insights - OPEN for all, advanced locked */}
         <View style={styles.insightsCard}>
           <Text style={styles.insightsTitle}>{isSv ? 'Ekonomiska insikter' : 'Economy Insights'}</Text>
           
+          {/* OPEN: Basic insights for everyone */}
           <View style={styles.insightRow}>
             <View style={styles.insightItem}>
               <Text style={styles.insightLabel}>{isSv ? 'Intäkt per ägg' : 'Revenue per egg'}</Text>
@@ -271,33 +299,32 @@ export default function FinanceScreen() {
               </View>
             </View>
           )}
-        </View>
-        
-        {/* Action Buttons */}
-        <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.costActionButton]}
-            onPress={() => {
-              setTransactionType('cost');
-              setSelectedCategory(null);
-              setShowAddModal(true);
-            }}
-          >
-            <Ionicons name="remove-circle" size={20} color={colors.error} />
-            <Text style={styles.actionButtonText}>{t('finance.addCost')}</Text>
-          </TouchableOpacity>
           
-          <TouchableOpacity
-            style={[styles.actionButton, styles.saleActionButton]}
-            onPress={() => {
-              setTransactionType('sale');
-              setSelectedCategory(null);
-              setShowAddModal(true);
-            }}
-          >
-            <Ionicons name="add-circle" size={20} color={colors.success} />
-            <Text style={styles.actionButtonText}>{t('finance.addSale')}</Text>
-          </TouchableOpacity>
+          {/* Contextual Premium prompt - only show when there's enough data */}
+          {totalEggsProduced >= 20 && !isPremium && (
+            <TouchableOpacity 
+              style={{
+                backgroundColor: colors.warning + '10',
+                borderRadius: 12,
+                padding: 14,
+                marginTop: 12,
+                borderLeftWidth: 3,
+                borderLeftColor: colors.warning,
+              }}
+              onPress={() => router.push('/paywall')}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="bulb" size={18} color={colors.warning} />
+                <Text style={{ flex: 1, fontSize: 13, color: colors.text }}>
+                  {net >= 0 
+                    ? (isSv ? 'Du går med vinst! Se framtidsprognos med Premium.' : 'You\'re profitable! See future forecast with Premium.')
+                    : (isSv ? 'Få förslag på hur du kan minska kostnader med Premium.' : 'Get suggestions on reducing costs with Premium.')
+                  }
+                </Text>
+                <Ionicons name="chevron-forward" size={16} color={colors.warning} />
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
         
         {/* Transactions List */}
