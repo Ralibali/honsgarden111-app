@@ -276,7 +276,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       
-      register: async (email: string, password: string, name: string, acceptedTerms: boolean, acceptedMarketing: boolean) => {
+      register: async (email: string, password: string, name: string, acceptedTerms: boolean, acceptedMarketing: boolean, referralCode?: string) => {
         set({ isLoading: true, error: null });
         try {
           const res = await fetch(`${API_URL}/api/auth/register`, {
@@ -289,6 +289,7 @@ export const useAuthStore = create<AuthState>()(
               name,
               accepted_terms: acceptedTerms,
               accepted_marketing: acceptedMarketing,
+              referral_code: referralCode || undefined,
             }),
           });
           
