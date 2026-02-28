@@ -12,6 +12,13 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 - Kortet "Dagens sysslor" finns på startsidan och öppnar modalen när användaren klickar på det
 - Tog bort toggle för "Visa automatiskt vid start" eftersom den inte längre behövs
 
+#### 🔐 Admin & Auth Fixar ✅ (BUGGFIX - Session 7b)
+- **Admin-panel**: Lagt till fallback-färger för att förhindra svart skärm
+- **Admin-knapp i settings**: Döljs nu för icke-admins (auth headers tillagda)
+- **Settings-sidan**: `getAuthHeaders()` tillagd för alla API-anrop
+- **Premium-status**: Sparas nu till AsyncStorage vid appstart för att överleva omstarter
+- **AI-modaler**: Lagt till fallback-färger för text och bakgrund
+
 #### 🌾 Lantligt Tema ✅ (NY FUNKTION)
 - **themeStore.ts**: Ny `ruralTheme` med varma, jordnära färger
   - Bakgrund: #F5F0E6 (varm havremjölk)
