@@ -31,10 +31,6 @@ export default function PaywallScreen() {
   // Simple and reliable: if NOT web, use native IAP (RevenueCat)
   const useNativeIAP = Platform.OS !== 'web';
   
-  if (__DEV__) {
-    console.log('[Paywall] Platform.OS:', Platform.OS, '| useNativeIAP:', useNativeIAP);
-  }
-  
   // Handle successful purchase - navigate back
   const handlePurchaseComplete = () => {
     router.back();
