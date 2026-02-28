@@ -162,3 +162,53 @@ export default function RootLayout() {
     </View>
   );
 }
+
+// Styles for configuration error screen
+const configErrorStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0a0a0f',
+    padding: 32,
+  },
+  icon: {
+    fontSize: 64,
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  message: {
+    fontSize: 16,
+    color: '#9ca3af',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  details: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  devInfo: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: '#1f1f1f',
+    borderRadius: 8,
+    width: '100%',
+  },
+  devTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#f59e0b',
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginBottom: 4,
+  },
+});
