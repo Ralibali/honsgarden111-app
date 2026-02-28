@@ -691,6 +691,121 @@ export default function HomeScreen() {
           </View>
         </View>
         
+        {/* ========== TRIAL BADGE (Only during trial) ========== */}
+        {isTrial && (
+          <View style={{ marginHorizontal: 16, marginBottom: 12 }}>
+            <TrialBadge showUpgradeOnExpiring={true} />
+          </View>
+        )}
+        
+        {/* ========== PROGRESSION DISPLAY ========== */}
+        {(summaryStats?.total_eggs_all_time > 0 || summaryStats?.streak > 0) && (
+          <View style={{
+            flexDirection: 'row',
+            marginHorizontal: 16,
+            marginBottom: 12,
+            gap: 10,
+          }}>
+            {/* Total eggs registered */}
+            {summaryStats?.total_eggs_all_time > 0 && (
+              <View style={{
+                flex: 1,
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <Text style={{ fontSize: 20 }}>🥚</Text>
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>
+                    {summaryStats.total_eggs_all_time}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                    {isSv ? 'totalt' : 'total'}
+                  </Text>
+                </View>
+              </View>
+            )}
+            
+            {/* Streak */}
+            {summaryStats?.streak > 0 && (
+              <View style={{
+                flex: 1,
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                borderWidth: summaryStats.streak >= 7 ? 2 : 0,
+                borderColor: summaryStats.streak >= 7 ? colors.warning : 'transparent',
+              }}>
+                <Text style={{ fontSize: 20 }}>🔥</Text>
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>
+                    {summaryStats.streak} {isSv ? 'dagar' : 'days'}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                    {isSv ? 'i rad' : 'streak'}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+        
+        {/* Progression milestone messages */}
+        {summaryStats?.total_eggs_all_time >= 10 && summaryStats?.total_eggs_all_time < 30 && (
+          <View style={{
+            marginHorizontal: 16,
+            marginBottom: 12,
+            backgroundColor: colors.primary + '10',
+            borderRadius: 12,
+            padding: 12,
+            borderLeftWidth: 3,
+            borderLeftColor: colors.primary,
+          }}>
+            <Text style={{ fontSize: 13, color: colors.text }}>
+              🌱 {isSv 
+                ? 'Nu börjar vi se mönster i din produktion!' 
+                : 'We\'re starting to see patterns in your production!'}
+            </Text>
+          </View>
+        )}
+        
+        {summaryStats?.total_eggs_all_time >= 30 && !isPremium && (
+          <TouchableOpacity 
+            style={{
+              marginHorizontal: 16,
+              marginBottom: 12,
+              backgroundColor: colors.warning + '15',
+              borderRadius: 12,
+              padding: 12,
+              borderLeftWidth: 3,
+              borderLeftColor: colors.warning,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+            onPress={() => router.push('/paywall')}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>
+                📊 {isSv 
+                  ? `${summaryStats.total_eggs_all_time} ägg registrerade!` 
+                  : `${summaryStats.total_eggs_all_time} eggs registered!`}
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
+                {isSv 
+                  ? 'Du har nog data för trend-analys och prognoser.' 
+                  : 'You have enough data for trend analysis and forecasts.'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.warning} />
+          </TouchableOpacity>
+        )}
+        
         {/* ========== SECTION 2: MAIN EGG REGISTRATION (Hero) ========== */}
         <View style={{
           backgroundColor: colors.success,
