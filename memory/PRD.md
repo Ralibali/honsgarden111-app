@@ -7,6 +7,27 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ### Session 7: Kritiska Bugfixar + Lantligt Tema (2025-12-19)
 
+#### 💰 ROI-visualisering & Mål-system ✅ (Session 7f)
+
+**ROI-visualisering i Ekonomi:**
+- "Om du ökar snittet med 1 ägg/dag → +X kr/mån"
+- "Varje extra ägg ger X kr i nettovinst!"
+- Visas endast när avgRevenuePerEgg > 0
+
+**Mål-system i Inställningar:**
+- Ny sektion "🎯 Mål" i Settings
+- Modal för att sätta:
+  - Ägg per månad (t.ex. 150 ägg)
+  - Vinst-mål (t.ex. 500 kr)
+- Sparas i backend via /api/user/goals
+- Tips: "Med Premium får du prognos mot dina mål"
+
+**Tekniskt:**
+- goalsStore.ts: Hanterar mål-state och API-anrop
+- settings.tsx: UI för att visa/redigera mål
+- finance.tsx: ROI-visualisering
+- server.py: GET/POST /api/user/goals endpoints
+
 #### 🚀 Premium & Retention System ✅ (STOR UPPDATERING - Session 7e)
 
 **Implementerat:**
