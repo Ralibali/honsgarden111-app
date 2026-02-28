@@ -126,6 +126,9 @@ export default function HomeScreen() {
   const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
   
   useEffect(() => {
+    // Always check premium status when home screen mounts
+    checkPremiumStatus().catch(err => console.warn('Premium check failed:', err));
+    
     loadData();
     loadDataLimits();
     loadProductivityAlerts();
