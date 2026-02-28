@@ -4020,9 +4020,11 @@ async def create_egg_record(record: EggRecordCreate, request: Request):
     
     existing = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
     if existing:
+        # ADD to existing count instead of replacing
+        new_count = existing['count'] + record.count
         await db.egg_records.update_one(
             {"id": existing['id']},
-            {"$set": {"count": record.count, "notes": record.notes}}
+            {"$set": {"count": new_count, "notes": record.notes if record.notes else existing.get('notes')}}
         )
         updated = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
         return EggRecord(**updated)
