@@ -422,12 +422,12 @@ export default function HomeScreen() {
     setAgdaLoading(true);
     
     try {
+      // Use async version to ensure token is loaded
+      const headers = await getAuthHeadersAsync();
+      
       const response = await fetch(`${API_URL}/api/ai/advisor`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...getAuthHeaders()
-        },
+        headers: headers,
         credentials: 'include',
         body: JSON.stringify({ question: agdaQuestion })
       });
@@ -436,6 +436,7 @@ export default function HomeScreen() {
         const data = await response.json();
         setAgdaAnswer(data.answer || data.response || data.message || '');
       } else {
+        console.error('Agda response not ok:', response.status);
         setAgdaAnswer(isSv ? 'Kunde inte få svar från Agda' : 'Could not get response from Agda');
       }
     } catch (error) {
