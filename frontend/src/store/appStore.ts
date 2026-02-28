@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore, getAuthHeaders, setSessionToken, hasSessionToken, getMaskedToken, shouldIgnore401, getSessionToken } from './authStore';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
