@@ -5765,6 +5765,9 @@ async def get_admin_subscriptions(request: Request, active_only: bool = False):
                 except:
                     pass
             elif isinstance(expires_at, datetime):
+                # Make timezone-aware if naive
+                if expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
                 is_actually_active = expires_at > now
         
         # Skip inactive if active_only requested
