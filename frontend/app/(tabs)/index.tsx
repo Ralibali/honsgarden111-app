@@ -212,9 +212,17 @@ export default function HomeScreen() {
   const toggleChoreComplete = async (choreId: string, completed: boolean) => {
     try {
       if (completed) {
-        await fetch(`${API_URL}/api/daily-chores/${choreId}/complete`, { method: 'DELETE' });
+        await fetch(`${API_URL}/api/daily-chores/${choreId}/complete`, { 
+          method: 'DELETE',
+          headers: getAuthHeaders(),
+          credentials: 'include' 
+        });
       } else {
-        await fetch(`${API_URL}/api/daily-chores/${choreId}/complete`, { method: 'POST' });
+        await fetch(`${API_URL}/api/daily-chores/${choreId}/complete`, { 
+          method: 'POST',
+          headers: getAuthHeaders(),
+          credentials: 'include'
+        });
       }
       await loadDailyChores();
     } catch (error) {
@@ -224,7 +232,10 @@ export default function HomeScreen() {
   
   const loadDataLimits = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/account/data-limits`);
+      const res = await fetch(`${API_URL}/api/account/data-limits`, {
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setDataLimits(data);
@@ -236,7 +247,10 @@ export default function HomeScreen() {
   
   const loadProductivityAlerts = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/hens/productivity-alerts`);
+      const res = await fetch(`${API_URL}/api/hens/productivity-alerts`, {
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setProductivityAlerts(data);
@@ -248,7 +262,10 @@ export default function HomeScreen() {
   
   const loadHens = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/hens?active_only=true`);
+      const res = await fetch(`${API_URL}/api/hens?active_only=true`, {
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setHens(data);
@@ -260,7 +277,10 @@ export default function HomeScreen() {
   
   const loadWeather = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/weather`);
+      const res = await fetch(`${API_URL}/api/weather`, {
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setWeather(data);
