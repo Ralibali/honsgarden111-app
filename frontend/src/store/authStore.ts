@@ -347,6 +347,14 @@ export const useAuthStore = create<AuthState>()(
             return { success: false, message: data.detail || 'Verifiering misslyckades' };
           }
           
+          // CRITICAL: Save the session token for API calls!
+          if (data.session_token) {
+            await setSessionToken(data.session_token);
+            if (__DEV__) {
+              console.log('[Auth] verifyRegistration: Session token saved');
+            }
+          }
+          
           // User is now logged in
           set({
             user: {
