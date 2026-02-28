@@ -13,7 +13,7 @@ from datetime import date
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://egg-tracker-premium.preview.emergentagent.com"
+    BASE_URL = "https://hens-trial.preview.emergentagent.com"
 
 
 class TestHealthAndBasics:

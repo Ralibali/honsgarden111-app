@@ -17,7 +17,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://egg-tracker-premium.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://hens-trial.preview.emergentagent.com').rstrip('/')
 
 # Test user credentials (from previous iteration testing)
 TEST_EMAIL = "nativetest@test.com"
