@@ -52,7 +52,7 @@ export default function RootLayout() {
         // Check if user has seen onboarding
         if (Platform.OS !== 'web') {
           const value = await AsyncStorage.getItem(ONBOARDING_KEY);
-          console.log('Onboarding check result:', value);
+          if (__DEV__) console.log('Onboarding check result:', value);
           setHasSeenOnboarding(value === 'true');
         } else {
           // On web, skip onboarding by default (web users go to /api/web separately)
@@ -66,7 +66,7 @@ export default function RootLayout() {
         
         setIsInitialized(true);
       } catch (e) {
-        console.log('Initialization error:', e);
+        if (__DEV__) console.log('Initialization error:', e);
         setHasSeenOnboarding(true); // Default to skipping onboarding on error
         setIsInitialized(true);
       }
@@ -84,7 +84,7 @@ export default function RootLayout() {
     const inOnboarding = segments[0] === 'onboarding';
     const inTabs = segments[0] === '(tabs)';
     
-    console.log('Navigation check:', { hasSeenOnboarding, isAuthenticated, inAuthGroup, inOnboarding, inTabs, authLoading });
+    if (__DEV__) console.log('Navigation check:', { hasSeenOnboarding, isAuthenticated, inAuthGroup, inOnboarding, inTabs, authLoading });
     
     // If hasn't seen onboarding and not already there, go to onboarding
     if (!hasSeenOnboarding && !inOnboarding) {
