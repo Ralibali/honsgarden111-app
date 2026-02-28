@@ -7827,6 +7827,10 @@ async def track_conversion(data: ConversionData, user: dict = Depends(get_curren
     return {"success": True}
 
 
+# Include the router in the main app - MUST be after all route definitions
+app.include_router(api_router)
+
+
 # ============ WEBAPP STATIC FILES ============
 # Serve webapp at ROOT (honsgarden.se) and keep /api/web for backwards compatibility
 if WEBAPP_DIR.exists():
