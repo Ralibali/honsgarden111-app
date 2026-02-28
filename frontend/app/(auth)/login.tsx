@@ -97,7 +97,7 @@ export default function LoginScreen() {
       return;
     }
     
-    const result = await register(email, password, name.trim(), acceptedTerms, acceptedMarketing);
+    const result = await register(email, password, name.trim(), acceptedTerms, acceptedMarketing, referralCode.trim() || undefined);
     if (result.success) {
       if (result.requiresVerification) {
         // Go to verification step
