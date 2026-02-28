@@ -8,7 +8,7 @@ let consecutive401Count = 0;
 const MAX_401_BEFORE_LOGOUT = 3;
 
 // Robust API fetch helper with auth handling and logging
-const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+export const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
   // Build headers using a fresh Headers object for robustness
   const headers = new Headers();
   
