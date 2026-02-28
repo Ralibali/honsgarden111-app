@@ -88,16 +88,19 @@ export default function AdminPanel() {
       if (res.ok) {
         const data = await res.json();
         setIsAdmin(data.is_admin === true);
-        if (!data.is_admin) {
-          Alert.alert('Ingen åtkomst', 'Du har inte admin-behörighet');
-          router.back();
+        if (data.is_admin) {
+          await loadData();
+        } else {
+          setAdminError('Du har inte admin-behörighet');
         }
       } else {
-        router.back();
+        setAdminError('Kunde inte verifiera admin-status');
       }
     } catch (error) {
-      router.back();
+      console.error('Admin check failed:', error);
+      setAdminError('Kunde inte ansluta till servern');
     }
+    setLoading(false);
   };
 
   const loadUsers = async () => {
