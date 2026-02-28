@@ -50,6 +50,9 @@ export default function LoginScreen() {
   const [registerCode, setRegisterCode] = useState(['', '', '', '', '', '']);
   const registerCodeRefs = useRef<(TextInput | null)[]>([]);
   
+  // Referral code state
+  const [referralCode, setReferralCode] = useState('');
+  
   // Cooldown timer for resend code
   const [resendCooldown, setResendCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
