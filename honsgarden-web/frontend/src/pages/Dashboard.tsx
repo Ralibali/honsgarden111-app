@@ -772,42 +772,129 @@ export default function Dashboard() {
       {/* AI Modal */}
       {showAiModal && (
         <div className="modal-overlay" onClick={() => setShowAiModal(false)}>
-          <div className="modal modal-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="modal modal-slide-up ai-modal-large" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{aiModalType === 'daily' ? '📋 AI Dagsrapport' : '📈 7-dagars prognos'}</h3>
-              <button className="close-btn" onClick={() => setShowAiModal(false)}>✕</button>
+              <h3>
+                {aiModalType === 'advisor' && '🐔 Fråga Agda'}
+                {aiModalType === 'tip' && '💡 Dagens tips'}
+                {aiModalType === 'daily' && '📋 AI Dagsrapport'}
+                {aiModalType === 'forecast' && '📈 7-dagars prognos'}
+              </h3>
+              <button className="close-btn" onClick={() => { setShowAiModal(false); setAdvisorHistory([]); }}>✕</button>
             </div>
             
-            {aiLoading ? (
-              <div className="ai-loading">
-                <div className="loading-spinner">🤖</div>
-                <p>Genererar {aiModalType === 'daily' ? 'rapport' : 'prognos'}...</p>
-              </div>
-            ) : aiData ? (
-              <div className="ai-content">
-                {aiModalType === 'daily' ? (
-                  <>
-                    <p className="ai-summary">{aiData.report?.summary}</p>
-                    <div className="ai-stats-row">
-                      <div className="ai-stat-item">
-                        <span>🥚</span>
-                        <span>{aiData.report?.eggs_today || 0} ägg</span>
-                      </div>
-                      <div className="ai-stat-item">
-                        <span>🐔</span>
-                        <span>{aiData.report?.hen_count || 0} hönor</span>
-                      </div>
+            {/* Fråga Agda - Chat Interface */}
+            {aiModalType === 'advisor' && (
+              <div className="advisor-chat">
+                <div className="chat-messages">
+                  {advisorHistory.length === 0 && (
+                    <div className="chat-welcome">
+                      <p>Hej! Jag är Agda, din AI-drivna hönsgårdsrådgivare 🐔</p>
+                      <p>Ställ valfri fråga om dina höns, äggproduktion, hälsa, foder eller skötsel!</p>
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="forecast-total">
-                      Förväntat: <strong>{aiData.forecast?.total_predicted || 0} ägg</strong>
-                    </p>
-                    <p className="forecast-avg">Genomsnitt: {aiData.forecast?.avg_daily || 0} ägg/dag</p>
-                  </>
-                )}
+                  )}
+                  {advisorHistory.map((msg, idx) => (
+                    <div key={idx} className={`chat-message ${msg.role}`}>
+                      <span className="message-icon">{msg.role === 'user' ? '👤' : '🐔'}</span>
+                      <p>{msg.content}</p>
+                    </div>
+                  ))}
+                  {aiLoading && (
+                    <div className="chat-message assistant loading">
+                      <span className="message-icon">🐔</span>
+                      <p>Tänker...</p>
+                    </div>
+                  )}
+                </div>
+                <div className="chat-input-container">
+                  <input
+                    type="text"
+                    value={advisorQuestion}
+                    onChange={(e) => setAdvisorQuestion(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && askAgda()}
+                    placeholder="Ställ en fråga till Agda..."
+                    disabled={aiLoading}
+                    className="chat-input"
+                  />
+                  <button onClick={askAgda} disabled={aiLoading || !advisorQuestion.trim()} className="chat-send-btn">
+                    {aiLoading ? '⏳' : '➤'}
+                  </button>
+                </div>
               </div>
+            )}
+            
+            {/* Dagens tips */}
+            {aiModalType === 'tip' && (
+              aiLoading ? (
+                <div className="ai-loading">
+                  <div className="loading-spinner">💡</div>
+                  <p>Hämtar dagens tips...</p>
+                </div>
+              ) : aiData ? (
+                <div className="ai-content tip-content">
+                  <div className="tip-card">
+                    <span className="tip-icon">💡</span>
+                    <p className="tip-text">{aiData.tip || aiData.message || 'Inget tips tillgängligt just nu.'}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="ai-error">
+                  <p>Kunde inte hämta dagens tips. Försök igen senare.</p>
+                </div>
+              )
+            )}
+            
+            {/* Dagsrapport */}
+            {aiModalType === 'daily' && (
+              aiLoading ? (
+                <div className="ai-loading">
+                  <div className="loading-spinner">🤖</div>
+                  <p>Genererar rapport...</p>
+                </div>
+              ) : aiData ? (
+                <div className="ai-content">
+                  <p className="ai-summary">{aiData.report?.summary}</p>
+                  <div className="ai-stats-row">
+                    <div className="ai-stat-item">
+                      <span>🥚</span>
+                      <span>{aiData.report?.eggs_today || 0} ägg</span>
+                    </div>
+                    <div className="ai-stat-item">
+                      <span>🐔</span>
+                      <span>{aiData.report?.hen_count || 0} hönor</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="ai-error">
+                  <p>Kunde inte generera rapporten. Försök igen senare.</p>
+                </div>
+              )
+            )}
+            
+            {/* 7-dagars prognos */}
+            {aiModalType === 'forecast' && (
+              aiLoading ? (
+                <div className="ai-loading">
+                  <div className="loading-spinner">📈</div>
+                  <p>Genererar prognos...</p>
+                </div>
+              ) : aiData ? (
+                <div className="ai-content">
+                  <p className="forecast-total">
+                    Förväntat: <strong>{aiData.forecast?.total_predicted || aiData.predicted_eggs || 0} ägg</strong>
+                  </p>
+                  <p className="forecast-avg">Genomsnitt: {aiData.forecast?.avg_daily || Math.round((aiData.predicted_eggs || 0) / 7)} ägg/dag</p>
+                </div>
+              ) : (
+                <div className="ai-error">
+                  <p>Kunde inte generera prognosen. Försök igen senare.</p>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      )}
             ) : (
               <p className="ai-error">Kunde inte ladda data</p>
             )}
