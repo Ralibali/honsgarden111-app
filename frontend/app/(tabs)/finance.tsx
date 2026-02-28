@@ -131,11 +131,21 @@ export default function FinanceScreen() {
   const totalSales = transactions.filter(t => t.type === 'sale').reduce((sum, t) => sum + t.amount, 0);
   const net = totalSales - totalCosts;
   
-  // Calculate advanced insights
+  // Get total eggs from summaryStats (all-time or current period)
+  const totalEggsProduced = summaryStats?.total_eggs_all_time || summaryStats?.total_eggs || 0;
+  
+  // Calculate advanced insights using TOTAL EGGS PRODUCED (not just sold eggs with quantity)
   const eggSales = transactions.filter(t => t.category === 'egg_sale');
   const totalEggsSold = eggSales.reduce((sum, t) => sum + (t.quantity || 0), 0);
   const totalEggRevenue = eggSales.reduce((sum, t) => sum + t.amount, 0);
-  const avgRevenuePerEgg = totalEggsSold > 0 ? totalEggRevenue / totalEggsSold : 0;
+  
+  // Revenue per egg: Use total sales divided by total eggs produced
+  // This gives a more realistic picture of average revenue per egg
+  const avgRevenuePerEgg = totalEggsProduced > 0 ? totalSales / totalEggsProduced : 0;
+  
+  // Break-even price per egg: Total costs divided by total eggs produced
+  // This shows what price per egg you need to break even
+  const breakEvenPricePerEgg = totalEggsProduced > 0 ? totalCosts / totalEggsProduced : 0;
   
   // Most costly category this month
   const costsByCategory = transactions
