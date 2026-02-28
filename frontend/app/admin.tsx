@@ -413,10 +413,33 @@ export default function AdminPanel() {
     return date.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  if (!isAdmin) {
+  if (loading || isAdmin === null) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.textSecondary, marginTop: 16 }]}>
+          Kontrollerar admin-behörighet...
+        </Text>
+      </View>
+    );
+  }
+  
+  if (isAdmin === false || adminError) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+        <Ionicons name="lock-closed" size={64} color={colors.error} />
+        <Text style={[styles.title, { color: colors.text, marginTop: 16, textAlign: 'center' }]}>
+          Ingen åtkomst
+        </Text>
+        <Text style={[styles.loadingText, { color: colors.textSecondary, marginTop: 8, textAlign: 'center' }]}>
+          {adminError || 'Du har inte admin-behörighet till denna sida'}
+        </Text>
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          style={[styles.backButtonLarge, { backgroundColor: colors.primary, marginTop: 24 }]}
+        >
+          <Text style={{ color: '#FFF', fontWeight: '600' }}>Gå tillbaka</Text>
+        </TouchableOpacity>
       </View>
     );
   }
