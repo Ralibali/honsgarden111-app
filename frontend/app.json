@@ -10,20 +10,17 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "se.honsgarden.app",
-      "infoPlist": {
-        "NSCameraUsageDescription": "Tillåt Hönsgården att använda kameran för att ta bilder av dina hönor.",
-        "NSPhotoLibraryUsageDescription": "Tillåt Hönsgården att komma åt ditt fotobibliotek för att spara bilder av dina hönor.",
-        "NSPhotoLibraryAddUsageDescription": "Tillåt Hönsgården att spara bilder av dina hönor till fotobiblioteket."
-      }
+      "buildNumber": "1"
     },
     "android": {
       "package": "se.honsgarden.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000"
       },
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
