@@ -473,13 +473,8 @@ export default function HomeScreen() {
   };
   
   const openAgdaModal = () => {
-    if (!isPremium) {
-      // Show free teaser modal instead of premium gate
-      setShowFreeAgdaTeaser(true);
-      getFreeTeaserTip();
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      return;
-    }
+    // Don't block on frontend premium check - backend will handle authorization
+    // This ensures the modal opens properly
     setAgdaQuestion('');
     setAgdaAnswer('');
     setShowAgdaModal(true);
