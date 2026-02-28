@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { usePremiumStore } from '../src/store/premiumStore';
 import i18n from '../src/i18n';
 import { RevenueCatPaywall } from '../src/components/RevenueCatPaywall';
+import Constants from 'expo-constants';
 
 // Web premium URL - only used for Web platform (Stripe checkout)
 const PREMIUM_WEB_URL = 'https://honsgarden.se/premium';
@@ -30,13 +31,32 @@ export default function PaywallScreen() {
   // Determine if we should use native IAP
   // iOS & Android = RevenueCat (In-App Purchase)
   // Web = Stripe (Web redirect)
-  const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
-  const useNativeIAP = isNative;
+  // Use multiple methods to detect native vs web
+  const isNative = useMemo(() => {
+    // Method 1: Platform.OS check
+    const platformCheck = Platform.OS === 'ios' || Platform.OS === 'android';
+    
+    // Method 2: Check if running in Expo Go or standalone native app
+    const expoCheck = Constants.executionEnvironment === 'storeClient' || 
+                      Constants.executionEnvironment === 'standalone' ||
+                      Constants.appOwnership === 'expo';
+    
+    // Method 3: Web detection - if window/document exist in a certain way
+    const isWeb = typeof document !== 'undefined' && Platform.OS === 'web';
+    
+    console.log('[Paywall] Platform.OS:', Platform.OS);
+    console.log('[Paywall] Constants.executionEnvironment:', Constants.executionEnvironment);
+    console.log('[Paywall] Constants.appOwnership:', Constants.appOwnership);
+    console.log('[Paywall] platformCheck:', platformCheck);
+    console.log('[Paywall] expoCheck:', expoCheck);
+    console.log('[Paywall] isWeb:', isWeb);
+    
+    // If Platform.OS says iOS or Android, trust it
+    // Otherwise check Expo constants
+    return platformCheck || (expoCheck && !isWeb);
+  }, []);
   
-  // DEBUG: Log platform detection
-  console.log('[Paywall] Platform.OS:', Platform.OS);
-  console.log('[Paywall] isNative:', isNative);
-  console.log('[Paywall] useNativeIAP:', useNativeIAP);
+  const useNativeIAP = isNative;
   
   // Handle successful purchase - navigate back
   const handlePurchaseComplete = () => {
