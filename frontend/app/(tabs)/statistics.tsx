@@ -801,19 +801,75 @@ export default function StatisticsScreen() {
         </View>
         
         {!isPremium ? (
-          <View style={styles.premiumLockSmall}>
-            <Ionicons name="lock-closed" size={24} color={colors.warning} />
-            <Text style={styles.premiumLockSmallText}>
-              {isSv ? 'Uppgradera till Premium för avancerade insikter' : 'Upgrade to Premium for advanced insights'}
-            </Text>
-            <TouchableOpacity 
-              style={styles.upgradeButtonSmall}
-              onPress={() => router.push('/paywall')}
-            >
-              <Text style={styles.upgradeButtonSmallText}>
-                {isSv ? 'Uppgradera' : 'Upgrade'}
-              </Text>
-            </TouchableOpacity>
+          // PARTIAL INSIGHT - Show some value before locking
+          <View style={styles.premiumTeaserSection}>
+            {advancedInsights && (
+              <View style={{
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 16,
+              }}>
+                {/* Show productivity score partially */}
+                {advancedInsights.insights?.productivity_score !== null && (
+                  <View style={{ marginBottom: 16 }}>
+                    <Text style={{ fontSize: 13, color: colors.textSecondary, marginBottom: 4 }}>
+                      {isSv ? 'Din produktivitetspoäng' : 'Your productivity score'}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+                      <Text style={{ 
+                        fontSize: 32, 
+                        fontWeight: '700',
+                        color: advancedInsights.insights.productivity_score >= 70 ? colors.success 
+                          : advancedInsights.insights.productivity_score >= 40 ? colors.warning : colors.error
+                      }}>
+                        {advancedInsights.insights.productivity_score}
+                      </Text>
+                      <Text style={{ fontSize: 16, color: colors.textMuted, marginLeft: 2 }}>/100</Text>
+                    </View>
+                    <View style={{
+                      height: 6,
+                      backgroundColor: colors.border,
+                      borderRadius: 3,
+                      marginTop: 8,
+                      overflow: 'hidden',
+                    }}>
+                      <View style={{
+                        height: '100%',
+                        width: `${advancedInsights.insights.productivity_score}%`,
+                        backgroundColor: advancedInsights.insights.productivity_score >= 70 ? colors.success 
+                          : advancedInsights.insights.productivity_score >= 40 ? colors.warning : colors.error,
+                        borderRadius: 3,
+                      }} />
+                    </View>
+                  </View>
+                )}
+                
+                {/* Show teaser for detailed metrics */}
+                <TouchableOpacity 
+                  style={{ 
+                    backgroundColor: colors.warning + '10',
+                    borderRadius: 8,
+                    padding: 12,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  }}
+                  onPress={() => router.push('/paywall')}
+                >
+                  <Ionicons name="analytics" size={18} color={colors.warning} />
+                  <View style={{ flex: 1, marginLeft: 10 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>
+                      {isSv ? 'Se detaljerad analys' : 'See detailed analysis'}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: colors.textSecondary, marginTop: 2 }}>
+                      {isSv 
+                        ? 'Foderkonvertering, värpfrekvens, kostnad/ägg med mera'
+                        : 'Feed conversion, laying rate, cost/egg and more'}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.warning} />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         ) : (
           <>
