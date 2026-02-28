@@ -2393,38 +2393,6 @@ export default function HomeScreen() {
               )}
             </ScrollView>
             
-            {/* Auto-popup toggle - only show after first time */}
-            {hasSeenChoresFirstTime && (
-              <View style={{ 
-                flexDirection: 'row', 
-                alignItems: 'center', 
-                justifyContent: 'space-between',
-                backgroundColor: colors.background,
-                borderRadius: 12,
-                padding: 14,
-                marginTop: 12,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}>
-                <View style={{ flex: 1, marginRight: 12 }}>
-                  <Text style={{ fontWeight: '600', color: colors.text, fontSize: 14 }}>
-                    {isSv ? 'Visa automatiskt vid start' : 'Show automatically on startup'}
-                  </Text>
-                  <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
-                    {isSv 
-                      ? 'Du får fortfarande push-notiser!' 
-                      : 'You will still get push notifications!'}
-                  </Text>
-                </View>
-                <Switch
-                  value={choresAutoPopupEnabled}
-                  onValueChange={handleChoresAutoPopupToggle}
-                  trackColor={{ false: colors.border, true: colors.primary + '60' }}
-                  thumbColor={choresAutoPopupEnabled ? colors.primary : '#f4f3f4'}
-                />
-              </View>
-            )}
-            
             {/* Close button */}
             <TouchableOpacity
               style={{
