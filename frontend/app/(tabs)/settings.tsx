@@ -90,11 +90,14 @@ export default function SettingsScreen() {
   const checkAdminStatus = async () => {
     try {
       const res = await fetch(`${API_URL}/api/admin/check`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers: getAuthHeaders()
       });
       if (res.ok) {
         const data = await res.json();
         setIsAdmin(data.is_admin === true);
+      } else {
+        setIsAdmin(false);
       }
     } catch (error) {
       setIsAdmin(false);
