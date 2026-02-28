@@ -458,7 +458,7 @@ export default function HomeScreen() {
       // Use a simple tip endpoint that gives a short teaser
       const response = await fetch(`${API_URL}/api/ai/free-tip`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         credentials: 'include',
       });
       
