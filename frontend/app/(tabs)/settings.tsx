@@ -21,6 +21,7 @@ import { useAppStore } from '../../src/store/appStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import { useThemeStore, ThemeColors, ThemeMode } from '../../src/store/themeStore';
 import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
+import { useGoalsStore } from '../../src/store/goalsStore';
 import i18n, { setLanguage, getLanguage } from '../../src/i18n';
 import * as Notifications from 'expo-notifications';
 import PremiumGateModal from '../../components/PremiumGateModal';
@@ -40,11 +41,17 @@ export default function SettingsScreen() {
   const { isPremium, plan, expiresAt, clearPremiumStatus } = usePremiumStore();
   const { user, logout, isAuthenticated } = useAuthStore();
   const { colors, isDark, mode, setThemeMode } = useThemeStore();
+  const { goals, loadGoals, setGoal } = useGoalsStore();
   
   const [coopName, setCoopName] = useState('');
   const [henCount, setHenCount] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'sv' | 'en'>(getLanguage());
+  
+  // Goals state
+  const [showGoalsModal, setShowGoalsModal] = useState(false);
+  const [eggsGoalInput, setEggsGoalInput] = useState('');
+  const [profitGoalInput, setProfitGoalInput] = useState('');
   
   // Reminder states
   const [eggReminderEnabled, setEggReminderEnabled] = useState(false);
