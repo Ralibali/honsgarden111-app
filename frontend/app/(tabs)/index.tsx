@@ -2430,6 +2430,180 @@ export default function HomeScreen() {
         </View>
       </Modal>
       
+      {/* Weather Details Modal */}
+      <Modal
+        visible={showWeatherModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowWeatherModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {isSv ? 'Väder idag' : 'Weather Today'}
+              </Text>
+              <TouchableOpacity onPress={() => setShowWeatherModal(false)}>
+                <Ionicons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            
+            {weather && (
+              <View style={{ gap: 16 }}>
+                {/* Main weather display */}
+                <View style={{ 
+                  alignItems: 'center', 
+                  padding: 20,
+                  backgroundColor: colors.background,
+                  borderRadius: 16 
+                }}>
+                  <Text style={{ fontSize: 48 }}>
+                    {getWeatherIcon(weather.description)}
+                  </Text>
+                  <Text style={{ 
+                    fontSize: 36, 
+                    fontWeight: '700', 
+                    color: colors.text,
+                    marginTop: 8 
+                  }}>
+                    {Math.round(weather.temperature)}°C
+                  </Text>
+                  <Text style={{ 
+                    fontSize: 16, 
+                    color: colors.textSecondary,
+                    textTransform: 'capitalize',
+                    marginTop: 4
+                  }}>
+                    {weather.description}
+                  </Text>
+                </View>
+                
+                {/* Weather details */}
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <View style={{ 
+                    flex: 1, 
+                    backgroundColor: colors.background, 
+                    padding: 16, 
+                    borderRadius: 12,
+                    alignItems: 'center'
+                  }}>
+                    <Text style={{ fontSize: 24 }}>💧</Text>
+                    <Text style={{ 
+                      fontSize: 18, 
+                      fontWeight: '600', 
+                      color: colors.text,
+                      marginTop: 4
+                    }}>
+                      {weather.humidity}%
+                    </Text>
+                    <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                      {isSv ? 'Luftfuktighet' : 'Humidity'}
+                    </Text>
+                  </View>
+                  
+                  <View style={{ 
+                    flex: 1, 
+                    backgroundColor: colors.background, 
+                    padding: 16, 
+                    borderRadius: 12,
+                    alignItems: 'center'
+                  }}>
+                    <Text style={{ fontSize: 24 }}>💨</Text>
+                    <Text style={{ 
+                      fontSize: 18, 
+                      fontWeight: '600', 
+                      color: colors.text,
+                      marginTop: 4
+                    }}>
+                      {weather.wind_speed} m/s
+                    </Text>
+                    <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                      {isSv ? 'Vind' : 'Wind'}
+                    </Text>
+                  </View>
+                </View>
+                
+                {/* Weather tips for premium users */}
+                {isPremium && weather.tips && weather.tips.length > 0 && (
+                  <View style={{ 
+                    backgroundColor: colors.primary + '15',
+                    padding: 16,
+                    borderRadius: 12,
+                    borderLeftWidth: 4,
+                    borderLeftColor: colors.primary
+                  }}>
+                    <Text style={{ 
+                      fontSize: 14, 
+                      fontWeight: '600', 
+                      color: colors.primary,
+                      marginBottom: 8
+                    }}>
+                      {isSv ? 'Tips för idag' : 'Tips for today'}
+                    </Text>
+                    {weather.tips.map((tip: any, idx: number) => (
+                      <Text key={idx} style={{ 
+                        fontSize: 13, 
+                        color: colors.text,
+                        marginBottom: idx < weather.tips.length - 1 ? 6 : 0,
+                        lineHeight: 18
+                      }}>
+                        💡 {typeof tip === 'string' ? tip : tip.message || 'Tips'}
+                      </Text>
+                    ))}
+                  </View>
+                )}
+                
+                {/* Upgrade prompt for free users */}
+                {!isPremium && (
+                  <TouchableOpacity 
+                    style={{ 
+                      backgroundColor: colors.warning + '20',
+                      padding: 16,
+                      borderRadius: 12,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12
+                    }}
+                    onPress={() => {
+                      setShowWeatherModal(false);
+                      router.push('/paywall');
+                    }}
+                  >
+                    <Ionicons name="star" size={24} color={colors.warning} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ 
+                        fontSize: 14, 
+                        fontWeight: '600', 
+                        color: colors.text
+                      }}>
+                        {isSv ? 'Få personliga vädertips' : 'Get personalized weather tips'}
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 12, 
+                        color: colors.textSecondary,
+                        marginTop: 2
+                      }}>
+                        {isSv ? 'Uppgradera till Premium' : 'Upgrade to Premium'}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+            
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowWeatherModal(false)}
+            >
+              <Text style={styles.closeButtonText}>
+                {isSv ? 'Stäng' : 'Close'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
       {/* Premium Gate Modal */}
       <PremiumGateModal
         visible={showPremiumModal}
