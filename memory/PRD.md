@@ -5,6 +5,29 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2026-02-28)
 
+### Session 9: App Store/Google Play Förberedelser (2026-02-28)
+
+#### ✅ Permissions & Privacy (app.json)
+- **Borttaget:** Oanvända kamera-permissions (iOS NSCameraUsageDescription, NSPhotoLibraryUsageDescription, Android CAMERA)
+- **Tillagt:** `POST_NOTIFICATIONS` för Android 13+
+- **Tillagt:** `buildNumber: "1"` för iOS
+- **Tillagt:** `versionCode: 1` för Android
+
+#### ✅ Paywall Förenklad
+- Bytte ut komplex plattformsdetektering till enkel: `Platform.OS !== 'web'`
+- iOS/Android visar nu alltid RevenueCat native IAP
+- Webb visar Stripe-flöde
+- Console.log skyddas av `__DEV__`
+
+#### ✅ Debug Logs & Production Readiness
+- Alla `console.log` i `_layout.tsx` skyddas nu av `__DEV__`
+- Lagt till konfigurationsfel-skärm som visas om EXPO_PUBLIC_BACKEND_URL saknas
+- Felskärmen visar tydligt "Konfigurationsfel" + support-meddelande
+
+#### ✅ Admin-route
+- Redan skyddad av backend API-kontroll (`/api/admin/check`)
+- Knappen visas endast för verifierade admins
+
 ### Session 8: Kritiska Buggfixar & UI-uppdateringar (2026-02-28)
 
 #### 🐛 Fixade Kritiska Buggar ✅
