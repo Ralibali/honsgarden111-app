@@ -710,6 +710,21 @@ export default function LoginScreen() {
                   </View>
                 </View>
                 
+                {/* Referral Code (Optional) */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Inbjudningskod <Text style={styles.optional}>(valfritt)</Text></Text>
+                  <TextInput
+                    style={styles.input}
+                    value={referralCode}
+                    onChangeText={setReferralCode}
+                    placeholder="Ange kod om du har en"
+                    placeholderTextColor={colors.textMuted}
+                    autoCapitalize="characters"
+                    maxLength={8}
+                  />
+                  <Text style={styles.inputHint}>Har du fått en kod från en vän? Ange den här så får ni båda bonus!</Text>
+                </View>
+                
                 {/* GDPR Consent */}
                 <View style={styles.consentSection}>
                   <TouchableOpacity 
