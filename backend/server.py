@@ -2815,15 +2815,20 @@ async def get_premium_status(request: Request):
     else:
         source = purchase_source or None
     
+    # Determine if this is a lifetime subscription
+    plan = subscription.get('plan')
+    is_lifetime = plan == 'lifetime'
+    
     return {
         "is_premium": is_active,
         "subscription_id": subscription.get('stripe_session_id') or subscription.get('stripe_subscription_id'),
-        "plan": subscription.get('plan'),
+        "plan": plan,
         "expires_at": expires_at.isoformat() if expires_at else None,
         "stripe_customer_id": subscription.get('stripe_customer_id'),
         "source": source,
         "last_verified_at": subscription.get('updated_at').isoformat() if subscription.get('updated_at') else None,
         "is_trial": is_trial,
+        "is_lifetime": is_lifetime,
         "days_remaining": days_remaining,
         "trial_expiry_warning": trial_expiry_warning
     }

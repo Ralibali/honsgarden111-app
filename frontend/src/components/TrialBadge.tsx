@@ -21,12 +21,15 @@ export const TrialBadge: React.FC<TrialBadgeProps> = ({
 }) => {
   const router = useRouter();
   const { colors } = useThemeStore();
-  const { isPremium, isTrial, daysRemaining, trialExpiryWarning } = usePremiumStore();
+  const { isPremium, isTrial, daysRemaining, trialExpiryWarning, plan } = usePremiumStore();
   
   const isSv = i18n.locale.startsWith('sv');
   
-  // Don't show if not premium or not on trial
+  // Don't show if not premium
   if (!isPremium) return null;
+  
+  // Check if this is a lifetime subscription
+  const isLifetime = plan === 'lifetime';
   
   // If paid premium (not trial), show small badge
   if (!isTrial) {
@@ -34,7 +37,12 @@ export const TrialBadge: React.FC<TrialBadgeProps> = ({
     return (
       <View style={[styles.paidBadge, { backgroundColor: colors.primary + '20' }]}>
         <Ionicons name="star" size={14} color={colors.primary} />
-        <Text style={[styles.paidText, { color: colors.primary }]}>Premium</Text>
+        <Text style={[styles.paidText, { color: colors.primary }]}>
+          {isLifetime 
+            ? (isSv ? 'Livstid' : 'Lifetime')
+            : 'Premium'
+          }
+        </Text>
       </View>
     );
   }
@@ -43,7 +51,37 @@ export const TrialBadge: React.FC<TrialBadgeProps> = ({
   const isExpiringSoon = daysRemaining !== null && daysRemaining <= 2;
   const badgeColor = isExpiringSoon ? colors.warning : colors.success;
   
+  // Helper to render days remaining text safely (never show "null")
+  const renderDaysText = () => {
+    // If daysRemaining is null or undefined, show generic "Premium aktiv"
+    if (daysRemaining === null || daysRemaining === undefined) {
+      return isSv ? 'Premium aktiv' : 'Premium active';
+    }
+    
+    if (isExpiringSoon) {
+      return isSv 
+        ? `${daysRemaining} ${daysRemaining === 1 ? 'dag' : 'dagar'} kvar av testperioden`
+        : `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} left in trial`;
+    }
+    
+    return isSv 
+      ? `${daysRemaining} dagar kvar`
+      : `${daysRemaining} days remaining`;
+  };
+  
   if (compact) {
+    // Don't show days count if null
+    if (daysRemaining === null || daysRemaining === undefined) {
+      return (
+        <View style={[styles.compactBadge, { backgroundColor: badgeColor + '20', borderColor: badgeColor }]}>
+          <Ionicons name="star" size={12} color={badgeColor} />
+          <Text style={[styles.compactText, { color: badgeColor }]}>
+            {isSv ? 'Aktiv' : 'Active'}
+          </Text>
+        </View>
+      );
+    }
+    
     return (
       <TouchableOpacity 
         style={[styles.compactBadge, { backgroundColor: badgeColor + '20', borderColor: badgeColor }]}
@@ -78,17 +116,10 @@ export const TrialBadge: React.FC<TrialBadgeProps> = ({
             {isSv ? 'Premium aktiv' : 'Premium Active'}
           </Text>
           <Text style={[styles.trialDays, { color: badgeColor }]}>
-            {isExpiringSoon 
-              ? (isSv 
-                  ? `${daysRemaining} ${daysRemaining === 1 ? 'dag' : 'dagar'} kvar av testperioden`
-                  : `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} left in trial`)
-              : (isSv 
-                  ? `${daysRemaining} dagar kvar`
-                  : `${daysRemaining} days remaining`)
-            }
+            {renderDaysText()}
           </Text>
         </View>
-        {isExpiringSoon && showUpgradeOnExpiring && (
+        {isExpiringSoon && daysRemaining !== null && showUpgradeOnExpiring && (
           <View style={[styles.upgradeButton, { backgroundColor: badgeColor }]}>
             <Text style={styles.upgradeText}>
               {isSv ? 'Behåll' : 'Keep'}
@@ -97,8 +128,8 @@ export const TrialBadge: React.FC<TrialBadgeProps> = ({
         )}
       </View>
       
-      {/* Expiry warning message */}
-      {isExpiringSoon && (
+      {/* Expiry warning message - only show if daysRemaining is known */}
+      {isExpiringSoon && daysRemaining !== null && (
         <View style={[styles.warningMessage, { backgroundColor: badgeColor + '10' }]}>
           <Text style={[styles.warningText, { color: colors.text }]}>
             {isSv 
