@@ -888,7 +888,7 @@ export default function AdminPanel() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
