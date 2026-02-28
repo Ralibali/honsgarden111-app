@@ -191,7 +191,7 @@ export default function HomeScreen() {
           try {
             await scheduleDailyChoresReminder(7, 30, true);
           } catch (notifError) {
-            console.log('Could not schedule chores notification:', notifError);
+            if (__DEV__) console.log('Could not schedule chores notification:', notifError);
           }
         }
         
