@@ -7697,9 +7697,9 @@ class UserGoalsUpdate(BaseModel):
     profit_target: float | None = None
 
 @api_router.get("/user/goals")
-async def get_user_goals(user: dict = Depends(get_current_user)):
+async def get_user_goals(user = Depends(get_current_user)):
     """Get user's goals"""
-    user_id = user["user_id"]
+    user_id = user.user_id
     
     user_doc = await db.users.find_one({"id": user_id}, {"goals": 1, "_id": 0})
     if user_doc and "goals" in user_doc:
@@ -7707,9 +7707,9 @@ async def get_user_goals(user: dict = Depends(get_current_user)):
     return {"eggs_per_month": None, "profit_target": None, "updated_at": None}
 
 @api_router.post("/user/goals")
-async def set_user_goals(goals: UserGoalsUpdate, user: dict = Depends(get_current_user)):
+async def set_user_goals(goals: UserGoalsUpdate, user = Depends(get_current_user)):
     """Set user's goals"""
-    user_id = user["user_id"]
+    user_id = user.user_id
     
     update_data = {
         "goals": {
