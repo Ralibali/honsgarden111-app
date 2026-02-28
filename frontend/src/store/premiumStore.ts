@@ -110,6 +110,32 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
     if (get().initialized) return;
     
     try {
+      // ALWAYS load cached status first for instant UI update
+      const cached = await AsyncStorage.getItem('premium_status');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          // Check if cache is still valid (not expired)
+          const isValid = !parsed.expiresAt || new Date(parsed.expiresAt) > new Date();
+          if (isValid && parsed.isPremium) {
+            set({
+              isPremium: parsed.isPremium,
+              subscriptionId: parsed.subscriptionId,
+              expiresAt: parsed.expiresAt,
+              plan: parsed.plan,
+              isTrial: parsed.isTrial || false,
+              daysRemaining: parsed.daysRemaining,
+              trialExpiryWarning: parsed.trialExpiryWarning,
+            });
+            if (__DEV__) {
+              console.log('[Premium] Loaded from cache: isPremium =', parsed.isPremium);
+            }
+          }
+        } catch (e) {
+          console.warn('[Premium] Failed to parse cached status');
+        }
+      }
+      
       // Initialize RevenueCat (only on native platforms)
       if (Platform.OS === 'ios' || Platform.OS === 'android') {
         await initRevenueCat();
