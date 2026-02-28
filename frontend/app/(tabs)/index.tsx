@@ -195,11 +195,6 @@ export default function HomeScreen() {
     }
   };
   
-  const handleChoresAutoPopupToggle = async (enabled: boolean) => {
-    setChoresAutoPopupEnabled(enabled);
-    await AsyncStorage.setItem('chores_auto_popup_disabled', enabled ? 'false' : 'true');
-  };
-  
   const toggleChoreComplete = async (choreId: string, completed: boolean) => {
     try {
       if (completed) {
