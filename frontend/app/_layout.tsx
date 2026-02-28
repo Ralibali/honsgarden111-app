@@ -92,6 +92,8 @@ export default function RootLayout() {
     }
     // If authenticated and not in tabs, go to tabs
     else if (isAuthenticated && !inTabs && !inOnboarding) {
+      // Refresh premium status after authentication
+      checkPremiumStatus().catch(err => console.warn('Premium check failed:', err));
       router.replace('/(tabs)');
     }
     // Only redirect to login if not already in auth group and not in onboarding
