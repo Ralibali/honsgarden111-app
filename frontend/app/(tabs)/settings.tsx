@@ -107,7 +107,8 @@ export default function SettingsScreen() {
   const loadFeaturePreferences = async () => {
     try {
       const res = await fetch(`${API_URL}/api/feature-preferences`, {
-        credentials: 'include'
+        credentials: 'include',
+        headers: getAuthHeaders()
       });
       if (res.ok) {
         const data = await res.json();
