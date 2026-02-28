@@ -1621,6 +1621,9 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   premiumBadgeSmall: {
     padding: 4,
   },
+  premiumTeaserSection: {
+    marginBottom: 16,
+  },
   premiumLockSmall: {
     alignItems: 'center',
     padding: 20,
