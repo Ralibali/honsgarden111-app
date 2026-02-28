@@ -768,3 +768,105 @@
   background: rgba(255, 152, 0, 0.15);
   color: #ff9800;
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .hens-page {
+    padding: 0;
+  }
+  
+  .hens-header h1 {
+    font-size: 24px;
+  }
+  
+  .stats-overview {
+    gap: 10px;
+    padding: 0 12px;
+  }
+  
+  .stat-box {
+    padding: 14px;
+  }
+  
+  .stat-box .number {
+    font-size: 24px;
+  }
+  
+  .stat-box .label {
+    font-size: 11px;
+  }
+  
+  .hen-card {
+    padding: 14px;
+    gap: 12px;
+  }
+  
+  .hen-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 28px;
+  }
+  
+  .hen-name {
+    font-size: 15px;
+  }
+  
+  .hen-breed,
+  .hen-stats {
+    font-size: 12px;
+  }
+  
+  .add-hen-btn {
+    padding: 14px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-overview {
+    flex-wrap: wrap;
+  }
+  
+  .stat-box {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+    padding: 12px;
+  }
+  
+  .stat-box .number {
+    font-size: 20px;
+  }
+  
+  .hen-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .hen-info {
+    width: 100%;
+  }
+  
+  .hen-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* Modal on mobile */
+@media (max-width: 480px) {
+  .hen-modal {
+    margin: 12px;
+    max-height: 90vh;
+    border-radius: 16px;
+  }
+  
+  .modal-header h2 {
+    font-size: 18px;
+  }
+  
+  .form-group input,
+  .form-group select {
+    font-size: 16px;
+    padding: 12px;
+  }
+}
