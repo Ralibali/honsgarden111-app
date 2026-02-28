@@ -347,10 +347,7 @@ export default function HomeScreen() {
   
   // Handle Forecast card click
   const handleForecastPress = () => {
-    if (!isPremium) {
-      showPremiumGate(isSv ? 'Äggprognos' : 'Egg Forecast', 'trending-up');
-      return;
-    }
+    // Don't block on frontend premium check - loadEggForecast will handle it
     if (!eggForecast) {
       loadEggForecast();
     }
