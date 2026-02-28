@@ -5,6 +5,36 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2026-02-28)
 
+### Session 10: Premium UI Null-Fix (2026-02-28)
+
+#### ✅ Bug Fix: "null dagar kvar" i premium-badge
+- **Problem:** Premium-badge visade "null dagar kvar" när `days_remaining` var null
+- **Lösning - Backend:** Lade till `is_lifetime` flagga i `/api/premium/status` endpoint
+- **Lösning - Frontend:** Uppdaterade `TrialBadge.tsx` för att hantera null-värden graciöst
+  - Om `daysRemaining === null` → visar "Premium aktiv" istället
+  - Om `isLifetime === true` → visar "Livstid" för lifetime-prenumerationer
+  - Compact badge visar "Aktiv" istället för antal dagar om null
+
+#### Ändrade filer:
+- `backend/server.py`: Lade till `is_lifetime` i premium/status response (3 platser)
+- `frontend/src/components/TrialBadge.tsx`: Robust null-hantering i all rendering
+- `frontend/src/store/premiumStore.ts`: 
+  - Tillagd `isLifetime: boolean` i state
+  - Uppdaterad plan-typ för att inkludera 'lifetime' och 'admin_granted'
+  - Alla `set()` anrop uppdaterade för att inkludera `isLifetime`
+
+#### API Response Format (/api/premium/status):
+```json
+{
+  "is_premium": true,
+  "plan": "lifetime",
+  "is_lifetime": true,  // NY FLAGGA
+  "days_remaining": 26968,  // eller null om okänt
+  "is_trial": false,
+  ...
+}
+```
+
 ### Session 9: App Store/Google Play Förberedelser (2026-02-28)
 
 #### ✅ Permissions & Privacy (app.json)
