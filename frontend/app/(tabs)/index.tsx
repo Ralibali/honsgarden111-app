@@ -392,15 +392,13 @@ export default function HomeScreen() {
     setShowDailyTipModal(true);
     
     try {
-      const response = await fetch(`${API_URL}/api/ai/daily-tip`, {
-        credentials: 'include',
-        headers: getAuthHeaders(),
-      });
+      const response = await apiFetch(`${API_URL}/api/ai/daily-tip`);
       
       if (response.ok) {
         const data = await response.json();
         setDailyTip(data.tip || data.message || '');
       } else {
+        console.error('Daily tip response not ok:', response.status);
         setDailyTip(isSv ? 'Kunde inte ladda dagens tips' : 'Could not load daily tip');
       }
     } catch (error) {
