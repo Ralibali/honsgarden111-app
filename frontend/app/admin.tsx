@@ -76,7 +76,8 @@ export default function AdminPanel() {
   const [selectedUserForPremium, setSelectedUserForPremium] = useState<User | null>(null);
   const [premiumDays, setPremiumDays] = useState('30');
   
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null); // null = checking, false = not admin, true = admin
+  const [adminError, setAdminError] = useState<string | null>(null);
 
   const checkAdmin = async () => {
     try {
