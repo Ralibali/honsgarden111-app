@@ -24,10 +24,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppStore } from '../../src/store/appStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import { useThemeStore, ThemeColors } from '../../src/store/themeStore';
+import { useGoalsStore } from '../../src/store/goalsStore';
+import { useAnalyticsStore } from '../../src/store/analyticsStore';
 import i18n, { formatCurrency } from '../../src/i18n';
 import { format } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
 import PremiumGateModal from '../../components/PremiumGateModal';
+import { TrialBadge } from '../../src/components/TrialBadge';
 import { scheduleDailyChoresReminder } from '../../src/services/notifications';
 import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
 
