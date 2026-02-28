@@ -3212,6 +3212,72 @@ async def update_coop_settings(update: CoopSettingsUpdate, request: Request):
     update_data = {k: v for k, v in update.dict().items() if v is not None}
     update_data['updated_at'] = datetime.utcnow()
     
+    # Check if hen_count is being increased - auto-create hen profiles
+    if 'hen_count' in update_data:
+        new_count = update_data['hen_count']
+        current_hen_count = await db.hens.count_documents({"user_id": user_id, "is_active": True})
+        
+        if new_count > current_hen_count:
+            # Swedish hen names - classic and charming
+            swedish_hen_names = [
+                "Agda", "Berta", "Clara", "Dagny", "Ester", "Freja", "Greta", "Hedvig",
+                "Ingrid", "Jenny", "Karin", "Lisa", "Maja", "Nora", "Olga", "Petra",
+                "Rosa", "Signe", "Tilda", "Ulla", "Vera", "Wilma", "Ylva", "Åsa",
+                "Astrid", "Britta", "Doris", "Elsa", "Frida", "Gunhild", "Hanna", "Ida",
+                "Julia", "Kristina", "Lena", "Margareta", "Nina", "Olivia", "Paulina", "Ruth",
+                "Sofia", "Tekla", "Ulla-Britt", "Viola", "Wanja", "Yvonne", "Zelda", "Alma",
+                "Birgit", "Carin", "Dagmar", "Ebba", "Filippa", "Gerda", "Helga", "Inga",
+                "Josefin", "Klara", "Lovisa", "Marta", "Nellie", "Ottilia", "Pernilla", "Ragnhild"
+            ]
+            
+            # Swedish hen breeds
+            swedish_breeds = [
+                "Svensk Dvärghöna", "Hedemora", "Ölandshöna", "Gotlandshöna", 
+                "Skånsk Blommehöna", "Bjurholmshöna", "Kindahöna", "Orusthöna",
+                "Gammalsvensk Dvärghöna", "Bohuslän-Dals Svarthöna"
+            ]
+            
+            # Get existing hen names to avoid duplicates
+            existing_hens = await db.hens.find({"user_id": user_id}).to_list(100)
+            existing_names = {h.get('name', '') for h in existing_hens}
+            
+            # Filter out used names
+            available_names = [n for n in swedish_hen_names if n not in existing_names]
+            
+            # Calculate how many hens to create
+            hens_to_create = new_count - current_hen_count
+            
+            import random
+            for i in range(hens_to_create):
+                if available_names:
+                    name = available_names.pop(0)
+                else:
+                    # If we run out of names, add number suffix
+                    name = f"Höna {current_hen_count + i + 1}"
+                
+                breed = random.choice(swedish_breeds)
+                
+                new_hen = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "name": name,
+                    "breed": breed,
+                    "birth_date": None,
+                    "acquired_date": datetime.utcnow().isoformat(),
+                    "color": random.choice(["Brun", "Vit", "Svart", "Spräcklig", "Röd", "Grå"]),
+                    "status": "active",
+                    "is_active": True,
+                    "notes": f"Automatiskt skapad höna",
+                    "created_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow(),
+                    "egg_count": 0,
+                    "last_seen": None,
+                    "flock_id": None
+                }
+                await db.hens.insert_one(new_hen)
+            
+            logger.info(f"Auto-created {hens_to_create} hen profiles for user {user_id}")
+    
     await db.coop_settings.update_one(
         {"user_id": user_id},
         {"$set": update_data}
