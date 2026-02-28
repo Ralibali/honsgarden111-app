@@ -20,7 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppStore } from '../../src/store/appStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import { useThemeStore, ThemeColors, ThemeMode } from '../../src/store/themeStore';
-import { useAuthStore } from '../../src/store/authStore';
+import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
 import i18n, { setLanguage, getLanguage } from '../../src/i18n';
 import * as Notifications from 'expo-notifications';
 import PremiumGateModal from '../../components/PremiumGateModal';
