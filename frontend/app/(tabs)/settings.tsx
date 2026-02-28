@@ -543,6 +543,22 @@ export default function SettingsScreen() {
               <TouchableOpacity
                 style={[
                   styles.themeButton,
+                  mode === 'rural' && styles.themeButtonActive,
+                ]}
+                onPress={() => handleThemeChange('rural')}
+              >
+                <Ionicons name="leaf" size={24} color={mode === 'rural' ? colors.primary : colors.textSecondary} />
+                <Text style={[
+                  styles.themeText,
+                  mode === 'rural' && styles.themeTextActive,
+                ]}>
+                  {isSv ? 'Lantligt' : 'Rural'}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
                   mode === 'system' && styles.themeButtonActive,
                 ]}
                 onPress={() => handleThemeChange('system')}
