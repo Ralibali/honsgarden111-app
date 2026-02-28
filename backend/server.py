@@ -2751,6 +2751,7 @@ async def get_premium_status(request: Request):
             "source": None,
             "last_verified_at": None,
             "is_trial": False,
+            "is_lifetime": False,
             "days_remaining": None,
             "trial_expiry_warning": None
         }
@@ -2767,6 +2768,7 @@ async def get_premium_status(request: Request):
             "source": None,
             "last_verified_at": None,
             "is_trial": False,
+            "is_lifetime": False,
             "days_remaining": None,
             "trial_expiry_warning": None
         }
