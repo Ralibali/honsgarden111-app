@@ -54,6 +54,8 @@ export default function HomeScreen() {
   const { isPremium, isTrial, daysRemaining, trialExpiryWarning } = usePremiumStore();
   const { colors, isDark } = useThemeStore();
   const { user } = useAuthStore();
+  const { goals, progress, loadGoals, calculateProgress } = useGoalsStore();
+  const { data: analyticsData, loadAnalytics, trackEggRegistration, getConversionTrigger } = useAnalyticsStore();
   
   const [refreshing, setRefreshing] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
