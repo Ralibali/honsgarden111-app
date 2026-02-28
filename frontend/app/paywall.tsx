@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -16,7 +16,6 @@ import { useRouter } from 'expo-router';
 import { usePremiumStore } from '../src/store/premiumStore';
 import i18n from '../src/i18n';
 import { RevenueCatPaywall } from '../src/components/RevenueCatPaywall';
-import Constants from 'expo-constants';
 
 // Web premium URL - only used for Web platform (Stripe checkout)
 const PREMIUM_WEB_URL = 'https://honsgarden.se/premium';
@@ -29,47 +28,12 @@ export default function PaywallScreen() {
   const isSv = i18n.locale.startsWith('sv');
   
   // Determine if we should use native IAP
-  // iOS & Android = RevenueCat (In-App Purchase)
-  // Web = Stripe (Web redirect)
-  // Use multiple methods to detect native vs web
-  const isNative = useMemo(() => {
-    // Method 1: Platform.OS check
-    const platformCheck = Platform.OS === 'ios' || Platform.OS === 'android';
-    
-    // Method 2: Check if running in Expo Go or standalone native app
-    const expoCheck = Constants.executionEnvironment === 'storeClient' || 
-                      Constants.executionEnvironment === 'standalone' ||
-                      Constants.appOwnership === 'expo';
-    
-    // Method 3: Web detection - if window/document exist in a certain way
-    const isWeb = typeof document !== 'undefined' && Platform.OS === 'web';
-    
-    // Method 4: Check if RevenueCat is available (will only work on native)
-    // This is the most reliable check for IAP availability
-    let hasRevenueCat = false;
-    try {
-      // If we're in a native environment, react-native-purchases should be available
-      const Purchases = require('react-native-purchases');
-      hasRevenueCat = !!Purchases;
-    } catch (e) {
-      hasRevenueCat = false;
-    }
-    
-    console.log('[Paywall] Platform.OS:', Platform.OS);
-    console.log('[Paywall] Constants.executionEnvironment:', Constants.executionEnvironment);
-    console.log('[Paywall] Constants.appOwnership:', Constants.appOwnership);
-    console.log('[Paywall] platformCheck:', platformCheck);
-    console.log('[Paywall] expoCheck:', expoCheck);
-    console.log('[Paywall] isWeb:', isWeb);
-    console.log('[Paywall] hasRevenueCat:', hasRevenueCat);
-    
-    // If Platform.OS says iOS or Android, trust it
-    // If Expo constants indicate native app, use native IAP
-    // If RevenueCat is available, we're on native
-    return platformCheck || (expoCheck && !isWeb) || hasRevenueCat;
-  }, []);
+  // Simple and reliable: if NOT web, use native IAP (RevenueCat)
+  const useNativeIAP = Platform.OS !== 'web';
   
-  const useNativeIAP = isNative;
+  if (__DEV__) {
+    console.log('[Paywall] Platform.OS:', Platform.OS, '| useNativeIAP:', useNativeIAP);
+  }
   
   // Handle successful purchase - navigate back
   const handlePurchaseComplete = () => {
