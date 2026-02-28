@@ -7704,7 +7704,7 @@ async def get_user_goals(user: dict = Depends(get_current_user)):
     """Get user's goals"""
     user_id = user["user_id"]
     
-    user_doc = users_collection.find_one({"user_id": user_id}, {"goals": 1})
+    user_doc = await db.users.find_one({"id": user_id}, {"goals": 1, "_id": 0})
     if user_doc and "goals" in user_doc:
         return user_doc["goals"]
     return {"eggs_per_month": None, "profit_target": None, "updated_at": None}
@@ -7722,8 +7722,8 @@ async def set_user_goals(goals: UserGoalsUpdate, user: dict = Depends(get_curren
         }
     }
     
-    users_collection.update_one(
-        {"user_id": user_id},
+    await db.users.update_one(
+        {"id": user_id},
         {"$set": update_data}
     )
     
