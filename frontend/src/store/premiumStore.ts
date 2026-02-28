@@ -206,6 +206,8 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
         let isTrial = false;
         let daysRemaining = null;
         let trialExpiryWarning = null;
+        let isLifetime = false;
+        let backendPlan = null;
         
         try {
           const response = await apiFetch(`${API_URL}/api/premium/status`);
@@ -214,6 +216,8 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
             isTrial = data.is_trial || false;
             daysRemaining = data.days_remaining;
             trialExpiryWarning = data.trial_expiry_warning;
+            isLifetime = data.is_lifetime || false;
+            backendPlan = data.plan;
           }
         } catch (err) {
           // Ignore - use RevenueCat data as fallback
@@ -223,8 +227,9 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
           isPremium: result.isPremium,
           expiresAt: result.expiresAt,
           subscriptionId: result.productId,
-          plan: result.productId?.includes('yearly') ? 'yearly' : result.productId ? 'monthly' : null,
+          plan: backendPlan || (result.productId?.includes('yearly') ? 'yearly' : result.productId ? 'monthly' : null),
           isTrial,
+          isLifetime,
           daysRemaining,
           trialExpiryWarning,
           loading: false,
@@ -235,7 +240,9 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
           isPremium: result.isPremium,
           expiresAt: result.expiresAt,
           subscriptionId: result.productId,
+          plan: backendPlan,
           isTrial,
+          isLifetime,
           daysRemaining,
           trialExpiryWarning,
         }));
@@ -254,6 +261,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
             expiresAt: parsed.expiresAt,
             plan: parsed.plan,
             isTrial: parsed.isTrial || false,
+            isLifetime: parsed.isLifetime || false,
             daysRemaining: parsed.daysRemaining,
             trialExpiryWarning: parsed.trialExpiryWarning,
             loading: false,
@@ -273,6 +281,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
             expiresAt: data.expires_at,
             plan: data.plan,
             isTrial: data.is_trial || false,
+            isLifetime: data.is_lifetime || false,
             daysRemaining: data.days_remaining,
             trialExpiryWarning: data.trial_expiry_warning,
             loading: false,
@@ -284,6 +293,7 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
             expiresAt: data.expires_at,
             plan: data.plan,
             isTrial: data.is_trial || false,
+            isLifetime: data.is_lifetime || false,
             daysRemaining: data.days_remaining,
             trialExpiryWarning: data.trial_expiry_warning,
           }));
