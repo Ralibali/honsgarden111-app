@@ -287,13 +287,20 @@ export default function HomeScreen() {
   
   // Load AI Daily Report
   const loadAiReport = async () => {
-    if (!isPremium) return;
+    // Don't block on frontend premium check - let backend handle it
     setAiReportLoading(true);
+    setShowAiReportModal(true);
     try {
       const res = await apiFetch(`${API_URL}/api/ai/daily-report`);
       if (res.ok) {
         const data = await res.json();
         setAiReport(data);
+      } else if (res.status === 403) {
+        // User is not premium
+        setShowAiReportModal(false);
+        showPremiumGate(isSv ? 'AI Dagsrapport' : 'AI Daily Report', 'analytics');
+      } else {
+        console.error('AI Report not ok:', res.status);
       }
     } catch (error) {
       console.error('Failed to load AI report:', error);
