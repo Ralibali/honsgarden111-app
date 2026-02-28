@@ -6357,6 +6357,9 @@ Om frågan är oklar, ge generella tips om hönsskötsel."""
         message = UserMessage(text=prompt)
         ai_response = await chat.send_message(message)
         
+        # Normalize LLM response to plain string
+        answer_text = normalize_llm_response(ai_response)
+        
         logger.info(f"AI advisor responded successfully for user {user_id}")
         
         return {
@@ -6364,7 +6367,7 @@ Om frågan är oklar, ge generella tips om hönsskötsel."""
             "preview": False,
             "used_fallback": False,
             "ai_provider_ok": True,
-            "response": ai_response,
+            "answer": answer_text,
             "context": {
                 "hen_count": hen_count,
                 "rooster_count": rooster_count,
@@ -6378,7 +6381,7 @@ Om frågan är oklar, ge generella tips om hönsskötsel."""
             "preview": False,
             "used_fallback": True,
             "ai_provider_ok": False,
-            "response": "Agda kunde inte svara just nu. Försök igen om en stund!",
+            "answer": "Agda kunde tyvärr inte svara just nu. Det kan bero på tillfälliga problem med AI-tjänsten. Försök igen om en liten stund!",
             "error": True
         }
 
