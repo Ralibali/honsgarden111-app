@@ -22,7 +22,7 @@ import { sv, enUS } from 'date-fns/locale';
 import i18n, { formatCurrency } from '../../src/i18n';
 
 export default function FinanceScreen() {
-  const { transactions, fetchTransactions, addTransaction, deleteTransaction, loading } = useAppStore();
+  const { transactions, fetchTransactions, addTransaction, deleteTransaction, loading, summaryStats, fetchSummaryStats } = useAppStore();
   const { colors, isDark } = useThemeStore();
   const { isPremium } = usePremiumStore();
   
