@@ -393,28 +393,29 @@ export default function HomeScreen() {
   
   // Load Daily Tip
   const loadDailyTip = async () => {
-    // Don't block on frontend premium check - let backend handle it
-    // This ensures the modal opens and shows appropriate message
     setDailyTipLoading(true);
     setShowDailyTipModal(true);
     
     try {
       const response = await apiFetch(`${API_URL}/api/ai/daily-tip`);
+      const data = await response.json();
       
-      if (response.ok) {
-        const data = await response.json();
-        setDailyTip(data.tip || data.message || '');
-      } else if (response.status === 403) {
-        // User is not premium
+      // Check if user is not premium (backend returns is_premium field)
+      if (data.is_premium === false) {
         setShowDailyTipModal(false);
         showPremiumGate(isSv ? 'Dagens tips' : 'Daily Tip', 'bulb');
+        return;
+      }
+      
+      if (response.ok && data.tip) {
+        setDailyTip(data.tip);
       } else {
-        console.error('Daily tip response not ok:', response.status);
-        setDailyTip(isSv ? 'Kunde inte ladda dagens tips' : 'Could not load daily tip');
+        if (__DEV__) console.error('Daily tip response issue:', response.status, data);
+        setDailyTip(isSv ? 'Kunde inte ladda dagens tips. Försök igen senare.' : 'Could not load daily tip. Please try again later.');
       }
     } catch (error) {
-      console.error('Daily tip error:', error);
-      setDailyTip(isSv ? 'Ett fel uppstod' : 'An error occurred');
+      if (__DEV__) console.error('Daily tip error:', error);
+      setDailyTip(isSv ? 'Ett tillfälligt fel uppstod. Kontrollera din internetanslutning.' : 'A temporary error occurred. Check your internet connection.');
     } finally {
       setDailyTipLoading(false);
     }
