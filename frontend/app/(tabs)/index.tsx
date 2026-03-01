@@ -178,6 +178,44 @@ export default function HomeScreen() {
     }
   };
   
+  // Check if daily summary should be shown
+  const checkAndShowDailySummary = async () => {
+    try {
+      // Check if it was already shown today
+      const today = new Date().toISOString().split('T')[0];
+      const lastShown = await AsyncStorage.getItem(DAILY_SUMMARY_SHOWN_KEY);
+      
+      if (lastShown === today) {
+        // Already shown today, don't show again
+        return;
+      }
+      
+      // Check user preference
+      const response = await apiFetch(`${API_URL}/api/feature-preferences`);
+      if (response.ok) {
+        const prefs = await response.json();
+        if (prefs.show_daily_summary_popup === false) {
+          setDailySummaryEnabled(false);
+          return;
+        }
+      }
+      
+      // Show the popup after a short delay for better UX
+      setTimeout(() => {
+        setShowDailySummary(true);
+        // Mark as shown today
+        AsyncStorage.setItem(DAILY_SUMMARY_SHOWN_KEY, today);
+      }, 800);
+      
+    } catch (error) {
+      if (__DEV__) console.error('Failed to check daily summary:', error);
+    }
+  };
+  
+  const closeDailySummary = () => {
+    setShowDailySummary(false);
+  };
+  
   const loadDailyChores = async () => {
     try {
       const res = await fetch(`${API_URL}/api/daily-chores`, {
