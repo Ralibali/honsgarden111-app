@@ -104,10 +104,11 @@ export const initRevenueCat = async (): Promise<boolean> => {
     Purchases.setLogLevel(IS_PRODUCTION ? LOG_LEVEL.ERROR : LOG_LEVEL.VERBOSE);
     
     // Get platform-specific API key
-    const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_API_KEY : REVENUECAT_ANDROID_API_KEY;
+    const apiKey = Platform.OS === 'ios' ? REVENUECAT_KEYS.ios : REVENUECAT_KEYS.android;
     
     if (!apiKey) {
-      console.error('RevenueCat: No API key configured for', Platform.OS);
+      console.warn('RevenueCat: No API key configured for', Platform.OS, '- premium features disabled');
+      isConfigured = true; // Mark as configured to prevent retry
       return false;
     }
     
