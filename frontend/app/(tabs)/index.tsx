@@ -763,6 +763,22 @@ export default function HomeScreen() {
           </View>
         </View>
         
+        {/* ========== COMPACT DASHBOARD (NEW) ========== */}
+        <View style={{ marginHorizontal: 16, marginBottom: 8 }}>
+          <CompactDashboard
+            eggsYesterday={summaryStats?.this_month?.eggs || 0}
+            henCount={coopSettings?.hen_count || hens.length}
+            eggsThisWeek={summaryStats?.this_month?.eggs || 0}
+            estimatedMonthlyValue={Math.round((summaryStats?.this_month?.eggs || 0) * 4.5)}
+            todayEggCount={todayStats?.egg_count || 0}
+            isPremium={isPremium}
+            onRegisterEggs={() => setShowEggModal(true)}
+            greeting={greeting}
+            coopName={coopSettings?.coop_name || 'Min Hönsgård'}
+            dateString={dateString}
+          />
+        </View>
+        
         {/* ========== TRIAL BADGE (Only during trial) ========== */}
         {isTrial && (
           <View style={{ marginHorizontal: 16, marginBottom: 12 }}>
