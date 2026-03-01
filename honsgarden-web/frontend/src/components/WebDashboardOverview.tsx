@@ -1,9 +1,10 @@
 /**
  * WebDashboardOverview Component
- * Persistent KPI dashboard for web (not modal, always visible)
+ * Compact KPI dashboard - sits at top of page, not a hero/modal
  */
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './WebDashboardOverview.css';
 
 interface YesterdaySummary {
@@ -16,6 +17,7 @@ interface YesterdaySummary {
 }
 
 export default function WebDashboardOverview() {
+  const navigate = useNavigate();
   const [data, setData] = useState<YesterdaySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export default function WebDashboardOverview() {
     }
   };
 
-  // Time-based greeting (client locale)
+  // Time-based greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 10) return 'God morgon';
@@ -52,25 +54,8 @@ export default function WebDashboardOverview() {
     return 'God kväll';
   };
 
-  // Format date in Swedish
-  const formatDate = (dateStr?: string) => {
-    try {
-      const date = dateStr ? new Date(dateStr) : new Date();
-      const days = ['söndag', 'måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag'];
-      const months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 
-                      'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
-      
-      const dayName = days[date.getDay()];
-      const dayNum = date.getDate();
-      const monthName = months[date.getMonth()];
-      
-      return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)} ${dayNum} ${monthName}`;
-    } catch {
-      return 'Idag';
-    }
-  };
-
-  const getTodayDate = () => {
+  // Swedish date format
+  const getSwedishDate = () => {
     const today = new Date();
     const days = ['söndag', 'måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag'];
     const months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 
@@ -78,79 +63,117 @@ export default function WebDashboardOverview() {
     return `${days[today.getDay()].charAt(0).toUpperCase() + days[today.getDay()].slice(1)} ${today.getDate()} ${months[today.getMonth()]}`;
   };
 
+  // UI guard for unreasonable values (like 1500% laying percentage)
+  const getLayingPercentage = (): string => {
+    const henCount = data?.hen_count ?? 0;
+    const eggsYesterday = data?.eggs_yesterday ?? 0;
+    
+    // Guard: no hens or more eggs than hens
+    if (henCount <= 0) return '—';
+    if (eggsYesterday > henCount) return '—';
+    
+    const pct = Math.round((eggsYesterday / henCount) * 100);
+    return `${pct}%`;
+  };
+
   if (loading) {
     return (
-      <div className="dashboard-overview loading">
-        <div className="loading-spinner"></div>
-        <p>Laddar sammanställning...</p>
+      <div className="overview-wrapper">
+        <div className="overview-loading">
+          <span className="loading-dot"></span>
+          <span>Laddar...</span>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="dashboard-overview error">
-        <p>{error}</p>
-        <button onClick={loadData} className="retry-btn">Försök igen</button>
+      <div className="overview-wrapper">
+        <div className="overview-error">
+          <span>{error}</span>
+          <button onClick={loadData} className="retry-btn">Försök igen</button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-overview">
-      {/* Header with greeting */}
+    <div className="overview-wrapper" data-testid="dashboard-overview">
+      {/* Compact Header */}
       <div className="overview-header">
-        <h2 className="greeting">{getGreeting()}! <span className="emoji">🥚</span></h2>
-        <p className="date">{getTodayDate()}</p>
+        <div className="overview-greeting">{getGreeting()}</div>
+        <div className="overview-title">Min Hönsgård</div>
+        <div className="overview-date">{getSwedishDate()}</div>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* KPI Grid - Compact cards */}
       <div className="kpi-grid">
-        {/* Eggs Yesterday - Main highlight */}
-        <div className="kpi-card main-kpi">
-          <div className="kpi-icon-large">🥚</div>
+        {/* Eggs Yesterday */}
+        <div className="kpi-card" data-testid="kpi-eggs-yesterday">
+          <div className="kpi-icon-box">🥚</div>
           <div className="kpi-content">
-            <span className="kpi-value-large">{data?.eggs_yesterday ?? 0}</span>
-            <span className="kpi-label">ägg igår</span>
-            <span className="kpi-date">{formatDate(data?.yesterday_date)}</span>
+            <div className="kpi-value">{data?.eggs_yesterday ?? 0}</div>
+            <div className="kpi-label">ägg igår</div>
           </div>
         </div>
 
         {/* Hen Count */}
-        <div className="kpi-card">
-          <div className="kpi-icon">🐔</div>
+        <div className="kpi-card" data-testid="kpi-hen-count">
+          <div className="kpi-icon-box">🐔</div>
           <div className="kpi-content">
-            <span className="kpi-value">{data?.hen_count ?? 0}</span>
-            <span className="kpi-label">hönor</span>
+            <div className="kpi-value">{data?.hen_count ?? 0}</div>
+            <div className="kpi-label">hönor</div>
           </div>
         </div>
 
-        {/* Laying Percentage */}
-        <div className="kpi-card">
-          <div className="kpi-icon">📈</div>
+        {/* Laying Percentage - with guard */}
+        <div className="kpi-card" data-testid="kpi-laying-pct">
+          <div className="kpi-icon-box">📈</div>
           <div className="kpi-content">
-            <span className="kpi-value">{data?.laying_percentage ?? 0}%</span>
-            <span className="kpi-label">värpprocent</span>
+            <div className="kpi-value">{getLayingPercentage()}</div>
+            <div className="kpi-label">värpprocent</div>
           </div>
         </div>
 
         {/* Eggs This Week */}
-        <div className="kpi-card">
-          <div className="kpi-icon">📅</div>
+        <div className="kpi-card" data-testid="kpi-eggs-week">
+          <div className="kpi-icon-box">📅</div>
           <div className="kpi-content">
-            <span className="kpi-value">{data?.eggs_this_week ?? 0}</span>
-            <span className="kpi-label">denna vecka</span>
+            <div className="kpi-value">{data?.eggs_this_week ?? 0}</div>
+            <div className="kpi-label">denna vecka</div>
           </div>
         </div>
 
         {/* Monthly Value */}
-        <div className="kpi-card highlight">
-          <div className="kpi-icon">💰</div>
+        <div className="kpi-card kpi-highlight" data-testid="kpi-monthly-value">
+          <div className="kpi-icon-box">💰</div>
           <div className="kpi-content">
-            <span className="kpi-value success">+{data?.estimated_monthly_value ?? 0} kr</span>
-            <span className="kpi-label">estimerat/månad</span>
+            <div className="kpi-value kpi-value-success">+{data?.estimated_monthly_value ?? 0} kr</div>
+            <div className="kpi-label">estimerat/månad</div>
           </div>
         </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="quick-action-row">
+        <button 
+          className="quick-action-btn primary"
+          onClick={() => {
+            // Dispatch custom event to open egg modal in parent
+            window.dispatchEvent(new CustomEvent('openEggModal'));
+          }}
+          data-testid="quick-register-egg"
+        >
+          Registrera ägg
+        </button>
+        <button 
+          className="quick-action-btn secondary"
+          onClick={() => navigate('/hens')}
+          data-testid="quick-add-hen"
+        >
+          Lägg till höna
+        </button>
       </div>
     </div>
   );
