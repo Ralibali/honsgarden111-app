@@ -416,3 +416,116 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* User search and filter controls */
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.users-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  min-width: 200px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.filter-select {
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+/* Grant premium inline form */
+.grant-premium-form {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.days-select {
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.btn-sm {
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+  min-width: 32px;
+}
+
+.btn-cancel {
+  background: var(--border-color);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .users-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .users-controls {
+    flex-direction: column;
+  }
+  
+  .search-input,
+  .filter-select {
+    width: 100%;
+  }
+  
+  .admin-table {
+    font-size: 12px;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 8px 6px;
+  }
+  
+  .actions-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .actions-cell button {
+    width: 100%;
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  
+  .grant-premium-form {
+    flex-wrap: wrap;
+  }
+}
