@@ -145,6 +145,7 @@ export default function HomeScreen() {
     loadDailyChores();
     loadCommunityPosts();
     loadEggForecast(); // Load forecast on mount
+    checkAndShowDailySummary(); // Check if we should show daily summary
   }, []);
   
   // Refresh data when screen gets focus (e.g., after login or returning to tab)
