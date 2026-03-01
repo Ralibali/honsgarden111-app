@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: linear-gradient(135deg, #FDF8F3 0%, #F5EDE4 100%);
+  background: #1a1510;
 }
 
 .login-bg {
@@ -26,11 +26,12 @@
   left: 0;
   right: 0;
   bottom: 0;
+  /* Mjuk gradient som låter bilden synas men ger läsbar text */
   background: linear-gradient(
-    135deg,
-    rgba(253, 248, 243, 0.92) 0%,
-    rgba(245, 237, 228, 0.88) 50%,
-    rgba(253, 248, 243, 0.92) 100%
+    to bottom,
+    rgba(26, 21, 16, 0.3) 0%,
+    rgba(26, 21, 16, 0.2) 30%,
+    rgba(26, 21, 16, 0.4) 100%
   );
 }
 
