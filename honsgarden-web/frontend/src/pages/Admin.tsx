@@ -415,10 +415,6 @@ export default function Admin() {
                           </button>
                         </>
                       )}
-                        className="btn-danger"
-                      >
-                        Radera
-                      </button>
                     </td>
                   </tr>
                 ))}
