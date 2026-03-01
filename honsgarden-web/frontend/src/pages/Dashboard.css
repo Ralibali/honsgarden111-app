@@ -304,8 +304,14 @@
   background: var(--bg-secondary);
   border-radius: 20px;
   padding: 20px;
-  margin-bottom: 24px;
+  margin: 0 16px 24px 16px;
   border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+@media (min-width: 768px) {
+  .ai-section {
+    margin: 0 24px 24px 24px;
+  }
 }
 
 .section-header {
