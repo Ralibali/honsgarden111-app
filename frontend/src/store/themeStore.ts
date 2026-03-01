@@ -52,21 +52,21 @@ export const lightTheme: ThemeColors = {
 };
 
 export const darkTheme: ThemeColors = {
-  background: '#0D0D0D',
-  surface: '#1C1C1E',
-  surfaceSecondary: '#2C2C2E',
-  card: '#1C1C1E',
-  text: '#FFFFFF',
-  textSecondary: '#8E8E93',
-  textMuted: '#666666',
-  border: '#2C2C2E',
-  success: '#4CAF50',
-  error: '#FF6B6B',
-  warning: '#FFD93D',
-  primary: '#4CAF50',
-  primaryLight: '#4CAF5022',
-  tabBar: '#1C1C1E',
-  tabBarBorder: '#2C2C2E',
+  background: '#1a1a2e',
+  surface: '#1f2940',
+  surfaceSecondary: '#16213e',
+  card: '#1f2940',
+  text: '#ffffff',
+  textSecondary: '#a0aec0',
+  textMuted: '#6b7280',
+  border: '#374151',
+  success: '#22c55e',
+  error: '#ef4444',
+  warning: '#fbbf24',
+  primary: '#4ade80',
+  primaryLight: '#4ade8022',
+  tabBar: '#16213e',
+  tabBarBorder: '#374151',
 };
 
 // Lantligt tema - varma, jordnära färger inspirerade av svenska landsbygden
