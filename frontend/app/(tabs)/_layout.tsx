@@ -97,16 +97,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="community"
-        options={{
-          href: null, // Hidden - accessible from home screen
-          title: isSv ? 'Community' : 'Community',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles" size={size} color={color} />
-          ),
-        }}
-      />
     </Tabs>
   );
 }
