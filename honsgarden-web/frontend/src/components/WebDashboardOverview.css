@@ -1,0 +1,274 @@
+/**
+ * WebDashboardOverview Styles
+ * Responsive KPI dashboard for web
+ */
+
+.dashboard-overview {
+  background: linear-gradient(135deg, var(--card-bg) 0%, var(--background) 100%);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-overview.loading,
+.dashboard-overview.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  padding: 10px 20px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.retry-btn:hover {
+  opacity: 0.9;
+}
+
+/* Header */
+.overview-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.overview-header .greeting {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.overview-header .emoji {
+  font-size: 28px;
+}
+
+.overview-header .date {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* KPI Grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* Make main KPI span full width on first row */
+.kpi-grid .main-kpi {
+  grid-column: 1 / -1;
+}
+
+.kpi-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-card.main-kpi {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+  border-color: #FFD54F;
+  padding: 28px;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.kpi-card.highlight {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-color: #81C784;
+}
+
+.kpi-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.kpi-icon-large {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.main-kpi .kpi-content {
+  align-items: center;
+}
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.kpi-value-large {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.kpi-value.success {
+  color: #2E7D32;
+}
+
+.kpi-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.kpi-date {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+/* Tablet (2 columns) */
+@media (max-width: 900px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .kpi-grid .main-kpi {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile (1 column, stacked) */
+@media (max-width: 768px) {
+  .dashboard-overview {
+    padding: 16px;
+    border-radius: 16px;
+    margin: 0 -8px 16px -8px;
+    max-width: calc(100% + 16px);
+  }
+  
+  .overview-header {
+    margin-bottom: 16px;
+  }
+  
+  .overview-header .greeting {
+    font-size: 20px;
+  }
+  
+  .overview-header .emoji {
+    font-size: 24px;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .kpi-grid .main-kpi {
+    grid-column: 1;
+  }
+  
+  .kpi-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .kpi-card.main-kpi {
+    padding: 20px;
+  }
+  
+  .kpi-icon {
+    font-size: 28px;
+  }
+  
+  .kpi-icon-large {
+    font-size: 40px;
+  }
+  
+  .kpi-value {
+    font-size: 24px;
+  }
+  
+  .kpi-value-large {
+    font-size: 40px;
+  }
+  
+  .kpi-label {
+    font-size: 12px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .dashboard-overview {
+    padding: 12px;
+  }
+  
+  .overview-header .greeting {
+    font-size: 18px;
+  }
+  
+  .kpi-card {
+    padding: 14px;
+  }
+  
+  .kpi-value {
+    font-size: 22px;
+  }
+  
+  .kpi-value-large {
+    font-size: 36px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+  .kpi-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .kpi-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
