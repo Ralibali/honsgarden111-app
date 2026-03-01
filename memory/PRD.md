@@ -5,6 +5,44 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2026-03-01)
 
+### Session 14: Kompakt Dashboard Redesign (2026-03-01)
+
+#### ✅ WebDashboardOverview - Total Redesign
+- **Problem:** Dashboard tog för mycket plats (hero-panel som fyllde viewport)
+- **Lösning:** Kompakt KPI dashboard högst upp
+- **Ändringar:**
+  - Tagit bort stor hero-ruta
+  - Ny kompakt header (hälsning + titel + datum)
+  - KPI-grid: 2 kolumner mobil → 3 tablet → 5 desktop
+  - KPI-kort med ikon-box + värde + label
+  - Quick actions (Registrera ägg + Lägg till höna)
+  - UI-guard för orimliga värden (värpprocent > 100% eller hen_count <= 0 visar "—")
+
+#### ✅ Dashboard.tsx Refaktorering
+- Borttagen redundant header (WebDashboardOverview har egen)
+- Borttagen stor "Registrera ägg" hero-knapp
+- Ny weather-share-row under overview
+- Fixat useEffect hook order (var placerad efter conditional return)
+- Custom event listener för egg modal kommunikation
+
+#### ✅ CSS Uppdateringar
+- WebDashboardOverview.css - helt omskriven för kompakt design
+- Dashboard.css - lagt till weather-share-row styling och padding för sektioner
+- Responsive breakpoints: 480px, 640px, 768px, 1024px
+
+#### Ändrade filer:
+- `honsgarden-web/frontend/src/components/WebDashboardOverview.tsx` (total rewrite)
+- `honsgarden-web/frontend/src/components/WebDashboardOverview.css` (total rewrite)
+- `honsgarden-web/frontend/src/pages/Dashboard.tsx` (refaktorerad)
+- `honsgarden-web/frontend/src/pages/Dashboard.css` (ny styling)
+
+#### Done criteria ✅
+- [x] Dashboarden tar inte över viewport (kompakt layout)
+- [x] KPI ligger högst upp (5 kort desktop, 3 tablet, 2 mobil)
+- [x] Ingen horisontell scroll på mobil
+- [x] Snabbknappar under KPI
+- [x] Värpprocent visar aldrig orimliga värden (UI guard aktiv)
+
 ### Session 13: Webbapp Teknisk Förbättring (2026-03-01)
 
 #### B) ✅ Web Dashboard - Persistent startsida
