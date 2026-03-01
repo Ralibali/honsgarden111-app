@@ -122,6 +122,10 @@ export default function HomeScreen() {
   const [agdaAnswer, setAgdaAnswer] = useState('');
   const [agdaLoading, setAgdaLoading] = useState(false);
   
+  // Daily Summary Popup state
+  const [showDailySummary, setShowDailySummary] = useState(false);
+  const [dailySummaryEnabled, setDailySummaryEnabled] = useState(true);
+  
   // Animation refs
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const undoOpacity = useRef(new Animated.Value(0)).current;
