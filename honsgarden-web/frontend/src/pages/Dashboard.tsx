@@ -409,6 +409,9 @@ export default function Dashboard() {
         </button>
       </header>
       
+      {/* Daily Overview - Persistent KPI Dashboard */}
+      <WebDashboardOverview />
+      
       {/* Main Action - Add Eggs */}
       <button 
         className="main-action-btn slide-up"
