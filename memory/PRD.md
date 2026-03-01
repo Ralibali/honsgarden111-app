@@ -3,9 +3,50 @@
 ## Projektöversikt
 Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb. Appen hjälper användare att spåra äggproduktion, hantera hönor och tuppar, få AI-drivna insikter och prenumerera på premium-funktioner.
 
-## Nyligen Slutförda Uppgifter (2026-02-28)
+## Nyligen Slutförda Uppgifter (2026-03-01)
 
-### Session 12: Webbapp Mobilresponsivitet (2026-02-28)
+### Session 13: Webbapp Teknisk Förbättring (2026-03-01)
+
+#### B) ✅ Web Dashboard - Persistent startsida
+- **Ny komponent:** `WebDashboardOverview.tsx` + CSS
+- **Funktioner:**
+  - Tidsbaserad hälsning (God morgon/God förmiddag/God eftermiddag/God kväll)
+  - Svenskt datumformat
+  - KPI-kort: Ägg igår, Antal hönor, Värpprocent, Denna vecka, Estimerat månadsvärde
+- **Integrerad i:** Dashboard.tsx (ej modal, alltid synlig)
+- **Responsiv:** 3 kolumner desktop → 2 tablet → 1 mobil
+
+#### C) ✅ Statistik-sidan mobilresponsiv
+- Lagt till `overflow-x: hidden` på root
+- Cards stacker vertikalt på mobil
+- Max-width containers
+- Förbättrade breakpoints (768px, 480px, 360px)
+
+#### D) ✅ Stripe Premium checkout verifierad
+- API-nyckel fungerar (testad checkout session skapas)
+- Webhook endpoint finns (`/api/stripe/webhook`)
+- metadata innehåller user_id och plan
+
+#### E) ✅ Avvikelsedetektion implementerad
+- Endpoint: `GET /api/hens/productivity-alerts`
+- Logik: 14-dagars tröskel
+- Räknar avvikelse baserat på rolling average
+
+#### G) ✅ Admin web - förbättrad feature parity
+- **Ny sökning:** E-post och namn filter
+- **Premium filter:** Alla/Premium/Gratis
+- **Grant Premium:** Dropdown med 7d/30d/90d/1år/Livstid val
+- **Responsiv:** Mobilanpassad tabell och knappar
+
+#### Ändrade filer:
+- `honsgarden-web/frontend/src/components/WebDashboardOverview.tsx` (NY)
+- `honsgarden-web/frontend/src/components/WebDashboardOverview.css` (NY)
+- `honsgarden-web/frontend/src/pages/Dashboard.tsx` (uppdaterad)
+- `honsgarden-web/frontend/src/pages/Statistics.css` (responsivitet)
+- `honsgarden-web/frontend/src/pages/Admin.tsx` (sök/filter/grant premium)
+- `honsgarden-web/frontend/src/pages/Admin.css` (ny styling)
+
+### Session 12: Daglig Sammanställning Popup (2026-02-28)
 
 #### ✅ Mobilresponsiv design implementerad
 - **Dashboard.css**: Komplett responsiv layout för alla skärmstorlekar (768px, 480px, 360px)
