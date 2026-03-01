@@ -368,67 +368,50 @@ export default function Dashboard() {
   const dateString = format(today, 'EEEE d MMMM', { locale: sv });
   const greeting = today.getHours() < 12 ? 'God morgon' : today.getHours() < 18 ? 'God eftermiddag' : 'God kväll';
 
+  // Listen for custom event from WebDashboardOverview to open egg modal
+  useEffect(() => {
+    const handleOpenEggModal = () => setShowEggModal(true);
+    window.addEventListener('openEggModal', handleOpenEggModal);
+    return () => window.removeEventListener('openEggModal', handleOpenEggModal);
+  }, []);
+
   return (
     <div className={`dashboard ${isVisible ? 'visible' : ''}`} data-testid="dashboard">
       <DataLimitsBanner />
       <ProductivityAlerts flocks={flocks} />
       
-      {/* Header */}
-      <header className="dashboard-header fade-in">
-        <div className="header-content">
-          <p className="greeting">{greeting}!</p>
-          <div className="header-title-row">
-            <h1>{coop?.coop_name || 'Min Hönsgård'}</h1>
-            <button 
-              className="weather-widget"
-              onClick={() => setShowWeatherModal(true)}
-              title="Klicka för vädertips"
-            >
-              {weather?.current ? (
-                <>
-                  <span className="weather-icon">
-                    {weather.current.temp < 0 ? '❄️' : 
-                     weather.current.temp < 10 ? '🌥️' : 
-                     weather.current.temp < 20 ? '⛅' : 
-                     weather.current.temp < 25 ? '☀️' : '🔥'}
-                  </span>
-                  <span className="weather-temp">{Math.round(weather.current.temp)}°</span>
-                </>
-              ) : (
-                <>
-                  <span className="weather-icon">🌤️</span>
-                  <span className="weather-temp">--°</span>
-                </>
-              )}
-            </button>
-          </div>
-          <p className="date">{dateString}</p>
-        </div>
-        <button className="share-btn" onClick={() => setShowShareModal(true)} title="Dela">
-          <span>📤</span>
-        </button>
-      </header>
-      
-      {/* Daily Overview - Persistent KPI Dashboard */}
+      {/* Compact KPI Dashboard with integrated header and quick actions */}
       <WebDashboardOverview />
       
-      {/* Main Action - Add Eggs */}
-      <button 
-        className="main-action-btn slide-up"
-        onClick={() => setShowEggModal(true)}
-        data-testid="main-add-egg-btn"
-      >
-        <div className="action-icon">🥚</div>
-        <div className="action-content">
-          <span className="action-title">Registrera ägg</span>
-          <span className="action-subtitle">
-            {(todayStats?.egg_count ?? 0) > 0 
-              ? `${todayStats?.egg_count} ägg idag` 
-              : 'Tryck för att lägga till'}
-          </span>
-        </div>
-        <div className="action-arrow">→</div>
-      </button>
+      {/* Weather widget row */}
+      <div className="weather-share-row fade-in">
+        <button 
+          className="weather-widget"
+          onClick={() => setShowWeatherModal(true)}
+          title="Klicka för vädertips"
+        >
+          {weather?.current ? (
+            <>
+              <span className="weather-icon">
+                {weather.current.temp < 0 ? '❄️' : 
+                 weather.current.temp < 10 ? '🌥️' : 
+                 weather.current.temp < 20 ? '⛅' : 
+                 weather.current.temp < 25 ? '☀️' : '🔥'}
+              </span>
+              <span className="weather-temp">{Math.round(weather.current.temp)}°</span>
+              <span className="weather-location">{weather.current.location}</span>
+            </>
+          ) : (
+            <>
+              <span className="weather-icon">🌤️</span>
+              <span className="weather-temp">--°</span>
+            </>
+          )}
+        </button>
+        <button className="share-btn" onClick={() => setShowShareModal(true)} title="Dela">
+          <span>📤</span> Dela
+        </button>
+      </div>
       
       {/* Quick Stats */}
       <div className="stats-grid slide-up delay-1">
