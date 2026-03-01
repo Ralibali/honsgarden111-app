@@ -5,8 +5,15 @@
   padding-bottom: 100px;
   /* Fix Safari orientation change */
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
+}
+
+@media (max-width: 480px) {
+  .statistics-page {
+    padding: 12px;
+  }
 }
 
 /* Demo data notice banner */
