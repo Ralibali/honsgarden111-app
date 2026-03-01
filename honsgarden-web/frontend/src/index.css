@@ -114,12 +114,14 @@ button:disabled {
 }
 
 .btn-secondary {
-  background-color: var(--bg-surface);
+  background-color: var(--bg-secondary);
   color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover:not(:disabled) {
   background-color: var(--bg-surface-hover);
+  border-color: var(--border-strong);
 }
 
 input, select, textarea {
