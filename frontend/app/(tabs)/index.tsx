@@ -34,9 +34,13 @@ import { TrialBadge } from '../../src/components/TrialBadge';
 import DailySummaryPopup from '../../src/components/DailySummaryPopup';
 import { scheduleDailyChoresReminder } from '../../src/services/notifications';
 import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
+import config from '../../src/config/env';
 
 // Key for tracking if daily summary was shown today
 const DAILY_SUMMARY_SHOWN_KEY = '@honsgarden_daily_summary_shown';
+
+// API URL from centralized config
+const API_URL = config.apiBaseUrl;
 
 export default function HomeScreen() {
   const router = useRouter();
