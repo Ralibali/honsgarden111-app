@@ -7842,7 +7842,7 @@ else:
         "http://localhost:3000",
         "http://localhost:8081",
         "http://localhost:19006",
-        "https://egg-forecast-test.preview.emergentagent.com",
+        "https://lantligt-theme.preview.emergentagent.com",
     ]
     
     # Add any additional origins from environment variable

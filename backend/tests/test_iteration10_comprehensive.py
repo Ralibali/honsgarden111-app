@@ -7,7 +7,7 @@ import requests
 import uuid
 import time
 
-BASE_URL = "https://egg-forecast-test.preview.emergentagent.com"
+BASE_URL = "https://lantligt-theme.preview.emergentagent.com"
 
 
 class TestHealthAndBasics:
