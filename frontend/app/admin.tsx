@@ -18,7 +18,8 @@ import { useRouter } from 'expo-router';
 import { useThemeStore } from '../src/store/themeStore';
 import { getAuthHeaders } from '../src/store/authStore';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../src/config/env';
+const API_URL = config.apiBaseUrl;
 
 interface User {
   user_id: string;
