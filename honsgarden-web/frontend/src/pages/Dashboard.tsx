@@ -5,6 +5,7 @@ import { sv } from 'date-fns/locale';
 import './Dashboard.css';
 import DataLimitsBanner from '../components/DataLimitsBanner';
 import ProductivityAlerts from '../components/ProductivityAlerts';
+import WebDashboardOverview from '../components/WebDashboardOverview';
 
 interface TodayStats {
   date: string;
