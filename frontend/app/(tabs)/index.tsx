@@ -235,7 +235,7 @@ export default function NewHomeScreen() {
             <View style={styles.statItem}>
               <Text style={styles.statIcon}>🐔</Text>
               <Text style={styles.statValue}>{yesterdaySummary?.hen_count ?? hens.length}</Text>
-              <Text style={styles.statLabel}>hönor</Text>
+              <Text style={styles.statLabel}>{(yesterdaySummary?.hen_count ?? hens.length) === 1 ? 'höna' : 'hönor'}</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
