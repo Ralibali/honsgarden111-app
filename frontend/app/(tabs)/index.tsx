@@ -31,7 +31,7 @@ import { format } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
 import PremiumGateModal from '../../components/PremiumGateModal';
 import { TrialBadge } from '../../src/components/TrialBadge';
-import { DailySummaryPopup } from '../../src/components/DailySummaryPopup';
+import DailySummaryPopup from '../../src/components/DailySummaryPopup';
 import { scheduleDailyChoresReminder } from '../../src/services/notifications';
 import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
 
