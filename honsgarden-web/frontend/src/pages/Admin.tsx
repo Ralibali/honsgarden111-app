@@ -155,6 +155,37 @@ export default function Admin() {
       alert('Kunde inte uppdatera prenumeration');
     }
   };
+  
+  // Grant premium to user
+  const handleGrantPremium = async (userId: string) => {
+    const days = parseInt(grantPremiumDays) || 30;
+    try {
+      const res = await fetch(`/api/admin/subscriptions/${userId}?is_active=true&plan=admin_granted&days=${days}`, {
+        method: 'PUT',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        setGrantPremiumUserId(null);
+        loadData();
+        alert(`Premium aktiverat i ${days} dagar`);
+      }
+    } catch (error) {
+      alert('Kunde inte aktivera premium');
+    }
+  };
+  
+  // Filter users based on search and premium status
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = searchQuery === '' || 
+      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (u.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesFilter = filterPremium === 'all' ||
+      (filterPremium === 'premium' && u.is_premium) ||
+      (filterPremium === 'free' && !u.is_premium);
+    
+    return matchesSearch && matchesFilter;
+  });
 
   const handleFeedbackStatus = async (feedbackId: string, status: string) => {
     try {
