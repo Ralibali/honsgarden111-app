@@ -22,6 +22,9 @@ import { format, parseISO, subDays } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
 import i18n from '../../src/i18n';
 import * as Haptics from 'expo-haptics';
+import config from '../../src/config/env';
+
+const API_URL = config.apiBaseUrl;
 
 export default function EggsScreen() {
   const { eggRecords, fetchEggRecords, addEggRecord, deleteEggRecord, loading } = useAppStore();
@@ -36,8 +39,6 @@ export default function EggsScreen() {
   const [selectedHenId, setSelectedHenId] = useState('');
   const [filterDays, setFilterDays] = useState(30); // 7 or 30 day filter
   const [editingRecord, setEditingRecord] = useState<EggRecord | null>(null);
-  
-  const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
   
   const t = i18n.t.bind(i18n);
   const getLocale = () => i18n.locale.startsWith('sv') ? sv : enUS;
