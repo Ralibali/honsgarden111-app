@@ -135,8 +135,6 @@ export default function HomeScreen() {
   const undoOpacity = useRef(new Animated.Value(0)).current;
   const undoTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-  
   useEffect(() => {
     // Always check premium status when home screen mounts
     checkPremiumStatus().catch(err => console.warn('Premium check failed:', err));
