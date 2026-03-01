@@ -21,7 +21,8 @@ import { sv, enUS } from 'date-fns/locale';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../../src/config/env';
+const API_URL = config.apiBaseUrl;
 
 type ViewMode = 'month' | 'year';
 

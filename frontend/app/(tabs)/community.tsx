@@ -20,7 +20,8 @@ import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
 import { usePremiumStore } from '../../src/store/premiumStore';
 import i18n from '../../src/i18n';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../../src/config/env';
+const API_URL = config.apiBaseUrl;
 
 interface CommunityPost {
   id: string;

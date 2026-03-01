@@ -32,7 +32,8 @@ import {
   sendTestNotification 
 } from '../../src/services/notifications';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../../src/config/env';
+const API_URL = config.apiBaseUrl;
 const ONBOARDING_KEY = '@honsgarden_onboarding_complete';
 
 export default function SettingsScreen() {

@@ -21,7 +21,8 @@ import { useRouter } from 'expo-router';
 import i18n from '../../src/i18n';
 import { SmartNotifications } from '../../src/services/notifications';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../../src/config/env';
+const API_URL = config.apiBaseUrl;
 const { width } = Dimensions.get('window');
 
 interface Flock {
