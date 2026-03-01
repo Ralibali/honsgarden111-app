@@ -725,6 +725,7 @@ class FeaturePreferences(BaseModel):
     show_hatching_module: bool = True
     show_productivity_alerts: bool = True
     show_economy_insights: bool = True
+    show_daily_summary_popup: bool = True  # Daily summary popup on app start
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class FeaturePreferencesUpdate(BaseModel):
@@ -735,6 +736,7 @@ class FeaturePreferencesUpdate(BaseModel):
     show_hatching_module: Optional[bool] = None
     show_productivity_alerts: Optional[bool] = None
     show_economy_insights: Optional[bool] = None
+    show_daily_summary_popup: Optional[bool] = None
 
 # ============ AFFILIATE/PRODUCT RECOMMENDATION MODELS ============
 class ProductCategory(str, Enum):
