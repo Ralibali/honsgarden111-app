@@ -910,3 +910,188 @@
     font-size: 12px;
   }
 }
+
+/* =============================================
+   ENHANCED MOBILE RESPONSIVE - NO HORIZONTAL SCROLL
+   ============================================= */
+
+/* Root level overflow control */
+.statistics-page {
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .statistics-page {
+    padding: 12px;
+    padding-bottom: 90px;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  .page-header h1 {
+    font-size: 22px;
+  }
+  
+  /* Tab navigation - horizontal scroll with snap */
+  .tab-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 6px;
+    padding-bottom: 8px;
+    margin: 0 -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .tab-nav::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .tab-btn {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  
+  /* Period navigation */
+  .period-nav {
+    padding: 10px;
+    gap: 8px;
+  }
+  
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+  
+  .period-text {
+    font-size: 15px;
+  }
+  
+  /* Summary cards - full width stack */
+  .summary-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .summary-card {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    flex-shrink: 0;
+  }
+  
+  /* Charts - constrain width */
+  .chart-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 14px;
+  }
+  
+  .chart-container canvas,
+  .chart-container svg {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .stat-card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Tables - horizontal scroll container */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Demo notice */
+  .demo-data-notice {
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .demo-data-notice span {
+    font-size: 20px;
+  }
+  
+  .demo-data-notice p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .statistics-page {
+    padding: 10px;
+  }
+  
+  .page-header h1 {
+    font-size: 20px;
+  }
+  
+  .tab-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .summary-card {
+    padding: 12px;
+  }
+  
+  .summary-card .value {
+    font-size: 22px;
+  }
+  
+  .summary-card .label {
+    font-size: 11px;
+  }
+  
+  .chart-container {
+    padding: 10px;
+    min-height: 220px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 360px) {
+  .statistics-page {
+    padding: 8px;
+  }
+  
+  .summary-card .value {
+    font-size: 20px;
+  }
+}
+
+/* Prevent ANY horizontal overflow */
+* {
+  max-width: 100%;
+}
+
+.statistics-page * {
+  box-sizing: border-box;
+}
