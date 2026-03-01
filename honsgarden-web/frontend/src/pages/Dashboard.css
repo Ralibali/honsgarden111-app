@@ -394,6 +394,13 @@
 /* Quick Actions */
 .quick-actions {
   margin-bottom: 24px;
+  padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .quick-actions {
+    padding: 0 24px;
+  }
 }
 
 .quick-actions h2 {
