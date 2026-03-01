@@ -585,74 +585,22 @@ export default function SettingsScreen() {
             </Text>
           </View>
           
-          {/* Theme Section */}
+          {/* Theme Section - Locked to Rural */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{isSv ? 'Utseende' : 'Appearance'}</Text>
-            
-            <View style={styles.themeContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.themeButton,
-                  mode === 'light' && styles.themeButtonActive,
-                ]}
-                onPress={() => handleThemeChange('light')}
-              >
-                <Ionicons name="sunny" size={24} color={mode === 'light' ? colors.primary : colors.textSecondary} />
-                <Text style={[
-                  styles.themeText,
-                  mode === 'light' && styles.themeTextActive,
-                ]}>
-                  {isSv ? 'Ljust' : 'Light'}
+            <View style={[styles.settingItem, { backgroundColor: colors.surface }]}>
+              <View style={styles.settingIcon}>
+                <Ionicons name="leaf" size={20} color={colors.primary} />
+              </View>
+              <View style={styles.settingContent}>
+                <Text style={[styles.settingLabel, { color: colors.text }]}>
+                  {isSv ? 'Lantligt tema' : 'Rural theme'}
                 </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[
-                  styles.themeButton,
-                  mode === 'dark' && styles.themeButtonActive,
-                ]}
-                onPress={() => handleThemeChange('dark')}
-              >
-                <Ionicons name="moon" size={24} color={mode === 'dark' ? colors.primary : colors.textSecondary} />
-                <Text style={[
-                  styles.themeText,
-                  mode === 'dark' && styles.themeTextActive,
-                ]}>
-                  {isSv ? 'Mörkt' : 'Dark'}
+                <Text style={[styles.settingDescription, { color: colors.textSecondary }]}>
+                  {isSv ? 'Varma, jordnära färger' : 'Warm, earthy colors'}
                 </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[
-                  styles.themeButton,
-                  mode === 'rural' && styles.themeButtonActive,
-                ]}
-                onPress={() => handleThemeChange('rural')}
-              >
-                <Ionicons name="leaf" size={24} color={mode === 'rural' ? colors.primary : colors.textSecondary} />
-                <Text style={[
-                  styles.themeText,
-                  mode === 'rural' && styles.themeTextActive,
-                ]}>
-                  {isSv ? 'Lantligt' : 'Rural'}
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[
-                  styles.themeButton,
-                  mode === 'system' && styles.themeButtonActive,
-                ]}
-                onPress={() => handleThemeChange('system')}
-              >
-                <Ionicons name="phone-portrait" size={24} color={mode === 'system' ? colors.primary : colors.textSecondary} />
-                <Text style={[
-                  styles.themeText,
-                  mode === 'system' && styles.themeTextActive,
-                ]}>
-                  {isSv ? 'System' : 'System'}
-                </Text>
-              </TouchableOpacity>
+              </View>
+              <Ionicons name="checkmark-circle" size={24} color={colors.success} />
             </View>
           </View>
           
