@@ -3286,6 +3286,55 @@ async def update_coop_settings(update: CoopSettingsUpdate, request: Request):
     updated = await db.coop_settings.find_one({"user_id": user_id})
     return CoopSettings(**updated)
 
+# ============ YESTERDAY SUMMARY ENDPOINT ============
+@api_router.get("/stats/yesterday-summary")
+async def get_yesterday_summary(request: Request):
+    """Get yesterday's egg production summary for daily popup"""
+    user_id = await require_user_id(request)
+    
+    # Calculate yesterday's date
+    today = datetime.now(timezone.utc).date()
+    yesterday = today - timedelta(days=1)
+    yesterday_str = yesterday.isoformat()
+    
+    # Get yesterday's eggs
+    eggs_yesterday = await db.eggs.find_one({
+        "user_id": user_id,
+        "date": yesterday_str
+    }, {"_id": 0})
+    eggs_count = eggs_yesterday.get('count', 0) if eggs_yesterday else 0
+    
+    # Get hen count
+    settings = await db.coop_settings.find_one({"user_id": user_id})
+    hen_count = settings.get('hen_count', 0) if settings else 0
+    
+    # Calculate laying percentage (eggs / hens * 100)
+    laying_percentage = round((eggs_count / hen_count * 100), 0) if hen_count > 0 else 0
+    
+    # Get eggs this week
+    week_start = today - timedelta(days=today.weekday())
+    week_start_str = week_start.isoformat()
+    week_eggs = await db.eggs.find({
+        "user_id": user_id,
+        "date": {"$gte": week_start_str, "$lte": today.isoformat()}
+    }).to_list(100)
+    eggs_this_week = sum(e.get('count', 0) for e in week_eggs)
+    
+    # Estimate monthly value (eggs * egg_price from settings or default 4 kr)
+    egg_price = settings.get('egg_price_kr', 4) if settings else 4
+    # Estimate based on daily average
+    avg_daily = eggs_this_week / max(1, (today - week_start).days + 1)
+    estimated_monthly_value = round(avg_daily * 30 * egg_price)
+    
+    return {
+        "eggs_yesterday": eggs_count,
+        "hen_count": hen_count,
+        "laying_percentage": int(laying_percentage),
+        "eggs_this_week": eggs_this_week,
+        "estimated_monthly_value": estimated_monthly_value,
+        "yesterday_date": yesterday_str
+    }
+
 # ============ FEATURE PREFERENCES ENDPOINTS ============
 @api_router.get("/feature-preferences")
 async def get_feature_preferences(request: Request):
