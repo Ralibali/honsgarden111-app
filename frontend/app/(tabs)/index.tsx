@@ -2446,6 +2446,12 @@ export default function HomeScreen() {
         featureName={premiumFeatureName}
         featureIcon={premiumFeatureIcon}
       />
+      
+      {/* Daily Summary Popup - Shows yesterday's stats on app open */}
+      <DailySummaryPopup
+        visible={showDailySummary}
+        onClose={closeDailySummary}
+      />
     </SafeAreaView>
   );
 }
