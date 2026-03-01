@@ -3299,10 +3299,11 @@ async def get_yesterday_summary(request: Request):
     yesterday = today - timedelta(days=1)
     yesterday_str = yesterday.isoformat()
     
-    # Get yesterday's eggs
-    eggs_yesterday = await db.eggs.find_one({
+    # Get yesterday's eggs (use egg_records collection)
+    eggs_yesterday = await db.egg_records.find_one({
         "user_id": user_id,
-        "date": yesterday_str
+        "date": yesterday_str,
+        "hen_id": None  # Get total count, not per-hen
     }, {"_id": 0})
     eggs_count = eggs_yesterday.get('count', 0) if eggs_yesterday else 0
     
@@ -3316,9 +3317,10 @@ async def get_yesterday_summary(request: Request):
     # Get eggs this week
     week_start = today - timedelta(days=today.weekday())
     week_start_str = week_start.isoformat()
-    week_eggs = await db.eggs.find({
+    week_eggs = await db.egg_records.find({
         "user_id": user_id,
-        "date": {"$gte": week_start_str, "$lte": today.isoformat()}
+        "date": {"$gte": week_start_str, "$lte": today.isoformat()},
+        "hen_id": None
     }).to_list(100)
     eggs_this_week = sum(e.get('count', 0) for e in week_eggs)
     
