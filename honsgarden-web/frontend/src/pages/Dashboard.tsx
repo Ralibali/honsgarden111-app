@@ -375,13 +375,6 @@ export default function Dashboard() {
   const dateString = format(today, 'EEEE d MMMM', { locale: sv });
   const greeting = today.getHours() < 12 ? 'God morgon' : today.getHours() < 18 ? 'God eftermiddag' : 'God kväll';
 
-  // Listen for custom event from WebDashboardOverview to open egg modal
-  useEffect(() => {
-    const handleOpenEggModal = () => setShowEggModal(true);
-    window.addEventListener('openEggModal', handleOpenEggModal);
-    return () => window.removeEventListener('openEggModal', handleOpenEggModal);
-  }, []);
-
   return (
     <div className={`dashboard ${isVisible ? 'visible' : ''}`} data-testid="dashboard">
       <DataLimitsBanner />
