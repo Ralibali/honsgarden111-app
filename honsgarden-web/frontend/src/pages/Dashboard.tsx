@@ -158,6 +158,13 @@ export default function Dashboard() {
     setTimeout(() => setIsVisible(true), 100);
   }, []);
 
+  // Listen for custom event from WebDashboardOverview to open egg modal
+  useEffect(() => {
+    const handleOpenEggModal = () => setShowEggModal(true);
+    window.addEventListener('openEggModal', handleOpenEggModal);
+    return () => window.removeEventListener('openEggModal', handleOpenEggModal);
+  }, []);
+
   const loadData = async () => {
     try {
       const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes] = await Promise.all([
