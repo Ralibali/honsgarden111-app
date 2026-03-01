@@ -343,7 +343,7 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {users.map(u => (
+                {filteredUsers.map(u => (
                   <tr key={u.user_id}>
                     <td className="user-cell">
                       {u.picture && <img src={u.picture} alt="" className="user-avatar" />}
@@ -370,14 +370,51 @@ export default function Admin() {
                       </span>
                     </td>
                     <td className="actions-cell">
-                      <button 
-                        onClick={() => handleToggleSubscription(u.user_id, u.is_premium)}
-                        className={u.is_premium ? 'btn-warning' : 'btn-success'}
-                      >
-                        {u.is_premium ? 'Ta bort Premium' : 'Ge Premium'}
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteUser(u.user_id, u.email)}
+                      {grantPremiumUserId === u.user_id ? (
+                        <div className="grant-premium-form">
+                          <select 
+                            value={grantPremiumDays} 
+                            onChange={(e) => setGrantPremiumDays(e.target.value)}
+                            className="days-select"
+                          >
+                            <option value="7">7 dagar</option>
+                            <option value="30">30 dagar</option>
+                            <option value="90">90 dagar</option>
+                            <option value="365">1 år</option>
+                            <option value="36500">Livstid</option>
+                          </select>
+                          <button onClick={() => handleGrantPremium(u.user_id)} className="btn-success btn-sm">
+                            ✓
+                          </button>
+                          <button onClick={() => setGrantPremiumUserId(null)} className="btn-cancel btn-sm">
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          {u.is_premium ? (
+                            <button 
+                              onClick={() => handleToggleSubscription(u.user_id, true)}
+                              className="btn-warning"
+                            >
+                              Ta bort Premium
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => setGrantPremiumUserId(u.user_id)}
+                              className="btn-success"
+                            >
+                              Ge Premium
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => handleDeleteUser(u.user_id, u.email)}
+                            className="btn-danger"
+                          >
+                            Radera
+                          </button>
+                        </>
+                      )}
                         className="btn-danger"
                       >
                         Radera
