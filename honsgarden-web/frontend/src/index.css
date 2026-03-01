@@ -101,12 +101,16 @@ button:disabled {
 }
 
 .btn-primary {
-  background-color: var(--accent-primary);
-  color: var(--bg-primary);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, #A86B4A 100%);
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #22c55e;
+  background: linear-gradient(135deg, #A86B4A 0%, var(--accent-primary) 100%);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-secondary {
