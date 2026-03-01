@@ -31,8 +31,12 @@ import { format } from 'date-fns';
 import { sv, enUS } from 'date-fns/locale';
 import PremiumGateModal from '../../components/PremiumGateModal';
 import { TrialBadge } from '../../src/components/TrialBadge';
+import { DailySummaryPopup } from '../../src/components/DailySummaryPopup';
 import { scheduleDailyChoresReminder } from '../../src/services/notifications';
 import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
+
+// Key for tracking if daily summary was shown today
+const DAILY_SUMMARY_SHOWN_KEY = '@honsgarden_daily_summary_shown';
 
 export default function HomeScreen() {
   const router = useRouter();
