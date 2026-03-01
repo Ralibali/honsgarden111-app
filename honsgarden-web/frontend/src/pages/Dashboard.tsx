@@ -5,7 +5,6 @@ import { sv } from 'date-fns/locale';
 import './Dashboard.css';
 import DataLimitsBanner from '../components/DataLimitsBanner';
 import ProductivityAlerts from '../components/ProductivityAlerts';
-import WebDashboardOverview from '../components/WebDashboardOverview';
 
 interface TodayStats {
   date: string;
@@ -85,6 +84,14 @@ interface FlockStats {
   }>;
 }
 
+interface YesterdaySummary {
+  eggs_yesterday: number;
+  hen_count: number;
+  laying_percentage: number;
+  eggs_this_week: number;
+  estimated_monthly_value: number;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [todayStats, setTodayStats] = useState<TodayStats | null>(null);
@@ -96,6 +103,7 @@ export default function Dashboard() {
   const [insights, setInsights] = useState<Insights | null>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [flockStats, setFlockStats] = useState<FlockStats | null>(null);
+  const [yesterdaySummary, setYesterdaySummary] = useState<YesterdaySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [eggCount, setEggCount] = useState('');
   const [selectedHen, setSelectedHen] = useState<string>('');
@@ -128,12 +136,10 @@ export default function Dashboard() {
             lon: position.coords.longitude
           };
           setUserLocation(coords);
-          // Fetch weather with user's location
           fetchWeatherWithLocation(coords.lat, coords.lon);
         },
         (error) => {
           console.log('Geolocation not available:', error.message);
-          // Use default Stockholm coords
         },
         { enableHighAccuracy: false, timeout: 5000 }
       );
@@ -154,20 +160,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadData();
-    // Trigger entrance animations
     setTimeout(() => setIsVisible(true), 100);
-  }, []);
-
-  // Listen for custom event from WebDashboardOverview to open egg modal
-  useEffect(() => {
-    const handleOpenEggModal = () => setShowEggModal(true);
-    window.addEventListener('openEggModal', handleOpenEggModal);
-    return () => window.removeEventListener('openEggModal', handleOpenEggModal);
   }, []);
 
   const loadData = async () => {
     try {
-      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
@@ -176,7 +174,8 @@ export default function Dashboard() {
         fetch('/api/flocks', { credentials: 'include' }),
         fetch('/api/insights', { credentials: 'include' }),
         fetch('/api/weather', { credentials: 'include' }),
-        fetch('/api/flock/statistics', { credentials: 'include' })
+        fetch('/api/flock/statistics', { credentials: 'include' }),
+        fetch('/api/stats/yesterday-summary', { credentials: 'include' })
       ]);
 
       if (statsRes.ok) setTodayStats(await statsRes.json());
@@ -188,6 +187,7 @@ export default function Dashboard() {
       if (insightsRes.ok) setInsights(await insightsRes.json());
       if (weatherRes.ok) setWeather(await weatherRes.json());
       if (flockStatsRes.ok) setFlockStats(await flockStatsRes.json());
+      if (yesterdayRes.ok) setYesterdaySummary(await yesterdayRes.json());
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -198,52 +198,55 @@ export default function Dashboard() {
   const handleQuickAdd = async (count: number) => {
     setSaving(true);
     try {
-      const today = format(new Date(), 'yyyy-MM-dd');
-      await fetch('/api/eggs', {
+      const body: any = { count, date: format(new Date(), 'yyyy-MM-dd') };
+      if (selectedHen) body.hen_id = selectedHen;
+      
+      const res = await fetch('/api/eggs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ 
-          date: today, 
-          count,
-          hen_id: selectedHen || undefined
-        })
+        body: JSON.stringify(body)
       });
-      await loadData();
-      setEggCount('');
-      setSelectedHen('');
-      setShowEggModal(false);
+      
+      if (res.ok) {
+        await loadData();
+        setEggCount('');
+        setSelectedHen('');
+        setShowEggModal(false);
+      }
     } catch (error) {
       console.error('Failed to add eggs:', error);
     } finally {
       setSaving(false);
     }
   };
-  
+
   const loadAiData = async (type: 'daily' | 'forecast' | 'advisor' | 'tip') => {
-    setAiLoading(true);
+    if (!premium?.is_premium) {
+      navigate('/premium');
+      return;
+    }
     setAiModalType(type);
     setShowAiModal(true);
-    setAiData(null);
     
-    // For advisor, don't load initial data - user will type question
     if (type === 'advisor') {
-      setAiLoading(false);
+      setAdvisorHistory([]);
       return;
     }
     
+    setAiLoading(true);
+    setAiData(null);
+    
     try {
-      let endpoint = '/api/ai/daily-report';
-      if (type === 'forecast') endpoint = '/api/ai/egg-forecast';
+      let endpoint = '';
+      if (type === 'daily') endpoint = '/api/ai/daily-report';
+      else if (type === 'forecast') endpoint = '/api/ai/forecast';
       else if (type === 'tip') endpoint = '/api/ai/daily-tip';
       
       const res = await fetch(endpoint, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setAiData(data);
-      } else if (res.status === 403) {
-        // Premium required
-        navigate('/premium');
       }
     } catch (error) {
       console.error('Failed to load AI data:', error);
@@ -251,116 +254,72 @@ export default function Dashboard() {
       setAiLoading(false);
     }
   };
-  
-  // Fråga Agda - send question to AI advisor
-  const askAgda = async () => {
+
+  const sendAdvisorMessage = async () => {
     if (!advisorQuestion.trim()) return;
     
-    setAiLoading(true);
-    const question = advisorQuestion.trim();
-    setAdvisorHistory(prev => [...prev, { role: 'user', content: question }]);
+    const userMessage = advisorQuestion;
     setAdvisorQuestion('');
+    setAdvisorHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+    setAiLoading(true);
     
     try {
       const res = await fetch('/api/ai/advisor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ question })
+        body: JSON.stringify({ question: userMessage, history: advisorHistory })
       });
       
       if (res.ok) {
         const data = await res.json();
-        const answer = data.response || data.advice || data.answer || 'Kunde inte generera svar.';
-        setAdvisorHistory(prev => [...prev, { role: 'assistant', content: answer }]);
-      } else if (res.status === 403) {
-        setAdvisorHistory(prev => [...prev, { role: 'assistant', content: 'Denna funktion kräver Premium. Uppgradera för att få personlig rådgivning!' }]);
-      } else {
-        setAdvisorHistory(prev => [...prev, { role: 'assistant', content: 'Ett fel uppstod. Försök igen.' }]);
+        setAdvisorHistory(prev => [...prev, { role: 'assistant', content: data.response }]);
       }
     } catch (error) {
-      console.error('Failed to ask Agda:', error);
-      setAdvisorHistory(prev => [...prev, { role: 'assistant', content: 'Kunde inte ansluta till servern.' }]);
+      console.error('Failed to send message:', error);
     } finally {
       setAiLoading(false);
     }
   };
-  
-  // Share functionality
-  const handleShare = async (platform: 'native' | 'facebook' | 'twitter' | 'download') => {
-    const shareText = `🐔 Min hönsgård idag!\n\n🥚 ${todayStats?.egg_count || 0} ägg idag\n🐔 ${todayStats?.hen_count || 0} hönor\n📊 ${summary?.this_month?.eggs || 0} ägg denna månad\n\n#Hönsgården #Höns #Ägg`;
-    const shareUrl = 'https://honsgarden.se';
-    
-    if (platform === 'native' && navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Min Hönsgård',
-          text: shareText,
-          url: shareUrl
-        });
-      } catch (err) {
-        console.log('Share cancelled');
-      }
-    } else if (platform === 'facebook') {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank');
-    } else if (platform === 'twitter') {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
-    } else if (platform === 'download') {
-      // Create shareable image
-      const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1080;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Background gradient
-        const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
-        gradient.addColorStop(0, '#1a2e1a');
-        gradient.addColorStop(1, '#0f1a0f');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 1080, 1080);
-        
-        // Title
-        ctx.fillStyle = '#4ade80';
-        ctx.font = 'bold 72px system-ui';
-        ctx.textAlign = 'center';
-        ctx.fillText('🐔 Hönsgården', 540, 150);
-        
-        // Stats
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 120px system-ui';
-        ctx.fillText(`${todayStats?.egg_count || 0}`, 540, 400);
-        ctx.font = '48px system-ui';
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillText('ägg idag', 540, 470);
-        
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 80px system-ui';
-        ctx.fillText(`${summary?.this_month?.eggs || 0}`, 540, 620);
-        ctx.font = '36px system-ui';
-        ctx.fillStyle = '#9ca3af';
-        ctx.fillText('ägg denna månad', 540, 680);
-        
-        // Hens
-        ctx.fillStyle = '#f59e0b';
-        ctx.font = 'bold 60px system-ui';
-        ctx.fillText(`🐔 ${todayStats?.hen_count || 0} hönor`, 540, 820);
-        
-        // Footer
-        ctx.fillStyle = '#6b7280';
-        ctx.font = '32px system-ui';
-        ctx.fillText(format(new Date(), 'd MMMM yyyy', { locale: sv }), 540, 980);
-        
-        // Download
-        const link = document.createElement('a');
-        link.download = `honsgarden-${format(new Date(), 'yyyy-MM-dd')}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      }
-    }
-    setShowShareModal(false);
+
+  // Helper functions
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 10) return 'God morgon';
+    if (hour < 12) return 'God förmiddag';
+    if (hour < 18) return 'God eftermiddag';
+    return 'God kväll';
   };
-  
-  const hasData = (todayStats?.egg_count ?? 0) > 0 || (summary?.total_eggs_all_time ?? 0) > 0;
+
+  const getSwedishDate = () => {
+    const today = new Date();
+    const days = ['söndag', 'måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag'];
+    const months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 
+                    'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
+    return `${days[today.getDay()].charAt(0).toUpperCase() + days[today.getDay()].slice(1)} ${today.getDate()} ${months[today.getMonth()]}`;
+  };
+
+  // UI guard for unreasonable laying percentage
+  const getLayingPercentage = (): string => {
+    const henCount = yesterdaySummary?.hen_count ?? 0;
+    const eggsYesterday = yesterdaySummary?.eggs_yesterday ?? 0;
+    if (henCount <= 0) return '—';
+    if (eggsYesterday > henCount) return '—';
+    const pct = Math.round((eggsYesterday / henCount) * 100);
+    return `${pct}%`;
+  };
+
+  // Preview AI insight for non-premium
+  const getPreviewInsight = () => {
+    const eggsYesterday = yesterdaySummary?.eggs_yesterday ?? 0;
+    const henCount = yesterdaySummary?.hen_count ?? 0;
+    if (henCount === 0) return "Lägg till dina hönor för personlig analys.";
+    if (eggsYesterday === 0) return "Registrera ägg för att få AI-analys.";
+    const pct = Math.round((eggsYesterday / henCount) * 100);
+    if (pct >= 80) return "Äggproduktionen ser stabil ut idag.";
+    if (pct >= 50) return "Produktionen är normal för årstiden.";
+    return "Vi ser potential för optimering.";
+  };
   
   if (loading) {
     return (
@@ -370,213 +329,221 @@ export default function Dashboard() {
       </div>
     );
   }
-  
-  const today = new Date();
-  const dateString = format(today, 'EEEE d MMMM', { locale: sv });
-  const greeting = today.getHours() < 12 ? 'God morgon' : today.getHours() < 18 ? 'God eftermiddag' : 'God kväll';
 
   return (
     <div className={`dashboard ${isVisible ? 'visible' : ''}`} data-testid="dashboard">
       <DataLimitsBanner />
       <ProductivityAlerts flocks={flocks} />
       
-      {/* Compact KPI Dashboard with integrated header and quick actions */}
-      <WebDashboardOverview />
-      
-      {/* Weather widget row */}
-      <div className="weather-share-row fade-in">
-        <button 
-          className="weather-widget"
-          onClick={() => setShowWeatherModal(true)}
-          title="Klicka för vädertips"
-        >
-          {weather?.current ? (
-            <>
-              <span className="weather-icon">
-                {weather.current.temp < 0 ? '❄️' : 
-                 weather.current.temp < 10 ? '🌥️' : 
-                 weather.current.temp < 20 ? '⛅' : 
-                 weather.current.temp < 25 ? '☀️' : '🔥'}
-              </span>
-              <span className="weather-temp">{Math.round(weather.current.temp)}°</span>
-              <span className="weather-location">{weather.current.location}</span>
-            </>
-          ) : (
-            <>
-              <span className="weather-icon">🌤️</span>
-              <span className="weather-temp">--°</span>
-            </>
-          )}
-        </button>
-        <button className="share-btn" onClick={() => setShowShareModal(true)} title="Dela">
-          <span>📤</span> Dela
-        </button>
-      </div>
-      
-      {/* Quick Stats */}
-      <div className="stats-grid slide-up delay-1">
-        <Link to="/hens" className="stat-card">
-          <span className="stat-emoji">🐔</span>
-          <span className="stat-value">{flockStats?.hens || todayStats?.hen_count || 0}</span>
-          <span className="stat-label">Hönor</span>
-        </Link>
-        {flockStats && flockStats.roosters > 0 && (
-          <Link to="/hens" className="stat-card">
-            <span className="stat-emoji">🐓</span>
-            <span className="stat-value">{flockStats.roosters}</span>
-            <span className="stat-label">Tuppar</span>
-          </Link>
-        )}
-        <Link to="/statistics" className="stat-card">
-          <span className="stat-emoji">🥚</span>
-          <span className="stat-value">{summary?.this_month?.eggs || 0}</span>
-          <span className="stat-label">Denna månad</span>
-        </Link>
-        <Link to="/finance" className="stat-card">
-          <span className="stat-emoji">💰</span>
-          <span className="stat-value">{summary?.this_month?.net || 0}</span>
-          <span className="stat-label">kr netto</span>
-        </Link>
-      </div>
-      
-      {/* Flock Recommendations */}
-      {flockStats && flockStats.recommendations && flockStats.recommendations.length > 0 && (
-        <section className="flock-recommendations slide-up delay-2">
-          <div className="section-header">
-            <h2>🐔 Flockråd</h2>
+      {/* ══════════════════════════════════════════════════════════════════
+          SEKTION 1: Header + Kompakt Stat-rad
+      ══════════════════════════════════════════════════════════════════ */}
+      <header className="dashboard-header">
+        <div className="header-top">
+          <div className="header-greeting">
+            <span className="greeting-text">{getGreeting()}</span>
+            <h1 className="header-title">{coop?.coop_name || 'Min Hönsgård'}</h1>
+            <span className="header-date">{getSwedishDate()}</span>
           </div>
-          <div className="recommendations">
-            {flockStats.recommendations.map((rec, idx) => (
-              <div key={idx} className={`recommendation ${rec.type}`}>
-                {rec.type === 'success' && '✅ '}
-                {rec.type === 'warning' && '⚠️ '}
-                {rec.type === 'info' && '💡 '}
-                {rec.message}
-              </div>
-            ))}
+          {weather?.current && (
+            <button className="weather-pill" onClick={() => setShowWeatherModal(true)}>
+              <span>{weather.current.temp < 5 ? '❄️' : weather.current.temp < 15 ? '🌥️' : '☀️'}</span>
+              <span>{Math.round(weather.current.temp)}°</span>
+            </button>
+          )}
+        </div>
+        
+        {/* Kompakt horisontell stat-rad */}
+        <div className="stat-strip">
+          <div className="stat-item">
+            <span className="stat-icon">🥚</span>
+            <span className="stat-value">{yesterdaySummary?.eggs_yesterday ?? 0}</span>
+            <span className="stat-label">igår</span>
+          </div>
+          <div className="stat-divider" />
+          <div className="stat-item">
+            <span className="stat-icon">🐔</span>
+            <span className="stat-value">{yesterdaySummary?.hen_count ?? hens.length}</span>
+            <span className="stat-label">hönor</span>
+          </div>
+          <div className="stat-divider" />
+          <div className="stat-item">
+            <span className="stat-icon">📅</span>
+            <span className="stat-value">{yesterdaySummary?.eggs_this_week ?? 0}</span>
+            <span className="stat-label">veckan</span>
+          </div>
+          <div className="stat-divider" />
+          <div className="stat-item highlight">
+            <span className="stat-icon">💰</span>
+            <span className="stat-value">+{yesterdaySummary?.estimated_monthly_value ?? 0}</span>
+            <span className="stat-label">kr/mån</span>
+          </div>
+        </div>
+      </header>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SEKTION 2: Primär CTA - Registrera ägg
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="primary-cta-section">
+        <button 
+          className="primary-cta"
+          onClick={() => setShowEggModal(true)}
+          data-testid="main-add-egg-btn"
+        >
+          <span className="cta-icon">🥚</span>
+          <div className="cta-content">
+            <span className="cta-title">Registrera ägg</span>
+            <span className="cta-subtitle">
+              {(todayStats?.egg_count ?? 0) > 0 
+                ? `${todayStats?.egg_count} ägg idag` 
+                : 'Tryck för att lägga till'}
+            </span>
+          </div>
+          <span className="cta-arrow">→</span>
+        </button>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SEKTION 3: Premium Teaser (aspirational, inte blockerande)
+      ══════════════════════════════════════════════════════════════════ */}
+      {!premium?.is_premium && (
+        <section className="premium-teaser-section">
+          <div className="ai-preview-card">
+            <div className="ai-preview-header">
+              <span className="ai-robot">🤖</span>
+              <span className="ai-label">AI-insikt</span>
+            </div>
+            <p className="ai-preview-text">"{getPreviewInsight()}"</p>
+            <button 
+              className="unlock-btn"
+              onClick={() => navigate('/premium')}
+            >
+              <span>⭐</span> Lås upp djupare analys
+            </button>
+          </div>
+          
+          <div className="premium-features-preview">
+            <button className="feature-preview" onClick={() => navigate('/premium')}>
+              <span>📈</span>
+              <span>Se 7-dagars prognos</span>
+            </button>
+            <button className="feature-preview" onClick={() => navigate('/premium')}>
+              <span>🐔</span>
+              <span>Få smart flockråd</span>
+            </button>
           </div>
         </section>
       )}
-      
-      {/* Quick Actions - Moved higher */}
-      <section className="quick-actions slide-up delay-2">
-        <h2>Snabbåtgärder</h2>
-        <div className="actions-grid">
-          <button 
-            className="action-card"
-            onClick={() => setShowEggModal(true)}
-          >
-            <span>🥚</span>
-            <span>Registrera ägg</span>
-          </button>
-          <Link to="/hens" className="action-card">
-            <span>🐔</span>
-            <span>Mina hönor</span>
+
+      {/* Premium users: Full AI access */}
+      {premium?.is_premium && (
+        <section className="ai-section-premium">
+          <div className="ai-grid">
+            <button className="ai-card-premium" onClick={() => loadAiData('advisor')}>
+              <span className="ai-icon">🐔</span>
+              <div className="ai-info">
+                <span className="ai-title">Fråga Agda</span>
+                <span className="ai-desc">Din AI-rådgivare</span>
+              </div>
+            </button>
+            <button className="ai-card-premium" onClick={() => loadAiData('tip')}>
+              <span className="ai-icon">💡</span>
+              <div className="ai-info">
+                <span className="ai-title">Dagens tips</span>
+                <span className="ai-desc">Dagligt hönstips</span>
+              </div>
+            </button>
+            <button className="ai-card-premium" onClick={() => loadAiData('daily')}>
+              <span className="ai-icon">📋</span>
+              <div className="ai-info">
+                <span className="ai-title">Dagsrapport</span>
+                <span className="ai-desc">Personlig AI-analys</span>
+              </div>
+            </button>
+            <button className="ai-card-premium" onClick={() => loadAiData('forecast')}>
+              <span className="ai-icon">📈</span>
+              <div className="ai-info">
+                <span className="ai-title">7-dagars prognos</span>
+                <span className="ai-desc">Förutsäg produktion</span>
+              </div>
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SEKTION 4: Min Flock
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="flock-section">
+        <h2 className="section-title">Min flock</h2>
+        <div className="flock-grid">
+          <Link to="/hens" className="flock-card">
+            <span className="card-icon">🐔</span>
+            <div className="card-info">
+              <span className="card-title">Mina hönor</span>
+              <span className="card-meta">{hens.length} st</span>
+            </div>
           </Link>
-          <Link to="/feed" className="action-card">
-            <span>🌾</span>
-            <span>Foder</span>
-            {!premium?.is_premium && <span className="action-badge">Premium</span>}
+          <Link to="/hens?add=true" className="flock-card">
+            <span className="card-icon">➕</span>
+            <div className="card-info">
+              <span className="card-title">Lägg till höna</span>
+            </div>
           </Link>
-          <Link to="/hatching" className="action-card">
-            <span>🐣</span>
-            <span>Kläckning</span>
-            {!premium?.is_premium && <span className="action-badge">Premium</span>}
-          </Link>
-          <Link to="/finance" className="action-card">
-            <span>💰</span>
-            <span>Ekonomi</span>
-          </Link>
-          <Link to="/statistics" className="action-card">
-            <span>📊</span>
-            <span>Statistik</span>
-          </Link>
-        </div>
-      </section>
-      
-      {/* AI Features Section */}
-      <section className="ai-section slide-up delay-3">
-        <div className="section-header">
-          <h2>🤖 AI-insikter</h2>
-          {!premium?.is_premium && <span className="premium-badge">Premium</span>}
         </div>
         
-        <div className="ai-cards">
-          {/* Fråga Agda */}
+        {/* Flockråd inline */}
+        {flockStats?.recommendations && flockStats.recommendations.length > 0 && (
+          <div className="flock-tips">
+            {flockStats.recommendations.slice(0, 2).map((rec, idx) => (
+              <div key={idx} className={`flock-tip ${rec.type}`}>
+                <span>{rec.type === 'success' ? '✅' : rec.type === 'warning' ? '⚠️' : '💡'}</span>
+                <span>{rec.message}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SEKTION 5: Analys & Ekonomi (sekundär nivå)
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="secondary-section">
+        <h2 className="section-title">Analys & Ekonomi</h2>
+        <div className="secondary-grid">
+          <Link to="/statistics" className="secondary-card">
+            <span className="card-icon">📊</span>
+            <span className="card-title">Statistik</span>
+          </Link>
+          <Link to="/finance" className="secondary-card">
+            <span className="card-icon">💰</span>
+            <span className="card-title">Ekonomi</span>
+          </Link>
+          <Link to="/eggs" className="secondary-card">
+            <span className="card-icon">🥚</span>
+            <span className="card-title">Ägglogg</span>
+          </Link>
           <button 
-            className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
-            onClick={() => premium?.is_premium ? loadAiData('advisor') : navigate('/premium')}
-            data-testid="ask-agda-btn"
+            className="secondary-card" 
+            onClick={() => setShowShareModal(true)}
           >
-            <span className="ai-icon">🐔</span>
-            <div className="ai-info">
-              <span className="ai-title">Fråga Agda</span>
-              <span className="ai-desc">{premium?.is_premium ? 'Din AI-rådgivare' : 'Lås upp med Premium'}</span>
-            </div>
-            {!premium?.is_premium && <span className="lock-icon">🔒</span>}
-          </button>
-          
-          {/* Dagens tips */}
-          <button 
-            className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
-            onClick={() => premium?.is_premium ? loadAiData('tip') : navigate('/premium')}
-            data-testid="daily-tip-btn"
-          >
-            <span className="ai-icon">💡</span>
-            <div className="ai-info">
-              <span className="ai-title">Dagens tips</span>
-              <span className="ai-desc">{premium?.is_premium ? 'Dagligt hönstips' : 'Lås upp med Premium'}</span>
-            </div>
-            {!premium?.is_premium && <span className="lock-icon">🔒</span>}
-          </button>
-          
-          {/* Dagsrapport */}
-          <button 
-            className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
-            onClick={() => premium?.is_premium ? loadAiData('daily') : navigate('/premium')}
-          >
-            <span className="ai-icon">📋</span>
-            <div className="ai-info">
-              <span className="ai-title">Dagsrapport</span>
-              <span className="ai-desc">{premium?.is_premium ? 'Personlig AI-analys' : 'Lås upp med Premium'}</span>
-            </div>
-            {!premium?.is_premium && <span className="lock-icon">🔒</span>}
-          </button>
-          
-          {/* 7-dagars prognos */}
-          <button 
-            className={`ai-card ${!premium?.is_premium ? 'locked' : ''}`}
-            onClick={() => premium?.is_premium ? loadAiData('forecast') : navigate('/premium')}
-          >
-            <span className="ai-icon">📈</span>
-            <div className="ai-info">
-              <span className="ai-title">7-dagars prognos</span>
-              <span className="ai-desc">{premium?.is_premium ? 'Förutsäg produktion' : 'Lås upp med Premium'}</span>
-            </div>
-            {!premium?.is_premium && <span className="lock-icon">🔒</span>}
+            <span className="card-icon">📤</span>
+            <span className="card-title">Dela</span>
           </button>
         </div>
       </section>
-      
-      {/* Upgrade Banner for Free Users */}
-      {!premium?.is_premium && (
-        <Link to="/premium" className="upgrade-banner slide-up delay-4">
-          <span className="upgrade-icon">⭐</span>
-          <div className="upgrade-text">
-            <span className="upgrade-title">Uppgradera till Premium</span>
-            <span className="upgrade-desc">AI-rapporter, prognos, hälsologg & mer</span>
-          </div>
-          <span className="upgrade-arrow">→</span>
-        </Link>
-      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          MODALS
+      ══════════════════════════════════════════════════════════════════ */}
       
       {/* Egg Registration Modal */}
       {showEggModal && (
         <div className="modal-overlay" onClick={() => setShowEggModal(false)}>
-          <div className="modal modal-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>🥚 Registrera ägg</h3>
-              <button className="close-btn" onClick={() => setShowEggModal(false)}>✕</button>
+              <button className="close-btn" onClick={() => setShowEggModal(false)}>×</button>
             </div>
             
             {hens.length > 0 && (
@@ -623,262 +590,148 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-      
-      {/* Weather Modal */}
-      {showWeatherModal && (
-        <div className="modal-overlay" onClick={() => setShowWeatherModal(false)}>
-          <div className="modal modal-slide-up weather-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>🌤️ Väder & Tips</h3>
-              <button className="close-btn" onClick={() => setShowWeatherModal(false)}>✕</button>
-            </div>
-            <div className="weather-modal-content">
-              {weather?.current ? (
-                <>
-                  <div className="weather-main">
-                    <div className="weather-big-icon">
-                      {weather.current.temp < 0 ? '❄️' : 
-                       weather.current.temp < 10 ? '🌥️' : 
-                       weather.current.temp < 20 ? '⛅' : 
-                       weather.current.temp < 25 ? '☀️' : '🔥'}
-                    </div>
-                    <div className="weather-info">
-                      <span className="weather-big-temp">{Math.round(weather.current.temp)}°C</span>
-                      <span className="weather-feels">Känns som {Math.round(weather.current.feels_like)}°</span>
-                      <span className="weather-desc">{weather.current.description}</span>
-                      <span className="weather-location">📍 {weather.current.location}</span>
-                    </div>
-                  </div>
-                  <div className="weather-details">
-                    <div className="weather-detail">
-                      <span className="detail-label">Luftfuktighet</span>
-                      <span className="detail-value">{weather.current.humidity}%</span>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <p className="weather-loading">Laddar väderdata...</p>
-              )}
-              
-              {weather?.tips && weather.tips.length > 0 && (
-                <div className="weather-tips-section">
-                  <h4>💡 Tips för din hönsgård</h4>
-                  {premium?.is_premium ? (
-                    <div className="tips-list">
-                      {weather.tips.map((tip, idx) => (
-                        <div key={idx} className={`tip-card ${tip.priority}`}>
-                          <span>{tip.message}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="premium-lock-card">
-                      <span className="lock-icon">🔒</span>
-                      <p>Vädertips är en Premium-funktion</p>
-                      <button 
-                        className="btn-upgrade-small"
-                        onClick={() => {
-                          setShowWeatherModal(false);
-                          navigate('/premium');
-                        }}
-                      >
-                        Uppgradera till Premium
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              {!userLocation && (
-                <button 
-                  className="location-btn"
-                  onClick={() => {
-                    if (navigator.geolocation) {
-                      navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                          const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-                          setUserLocation(coords);
-                          fetchWeatherWithLocation(coords.lat, coords.lon);
-                        },
-                        () => alert('Kunde inte hämta din plats')
-                      );
-                    }
-                  }}
-                >
-                  📍 Använd min plats
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      
+
       {/* Share Modal */}
       {showShareModal && (
         <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
-          <div className="modal modal-slide-up" onClick={e => e.stopPropagation()}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📤 Dela din statistik</h3>
-              <button className="close-btn" onClick={() => setShowShareModal(false)}>✕</button>
+              <h3>📤 Dela statistik</h3>
+              <button className="close-btn" onClick={() => setShowShareModal(false)}>×</button>
             </div>
-            
             <div className="share-preview">
-              <div className="share-card-preview">
-                <p className="share-title">🐔 {coop?.coop_name || 'Min Hönsgård'}</p>
-                <p className="share-stat-big">{todayStats?.egg_count || 0} ägg idag</p>
-                <p className="share-stat-small">{summary?.this_month?.eggs || 0} ägg denna månad</p>
+              <div className="share-card">
+                <h4>🥚 {coop?.coop_name || 'Min Hönsgård'}</h4>
+                <p>{todayStats?.egg_count || 0} ägg idag</p>
+                <p>{yesterdaySummary?.eggs_this_week || 0} ägg denna vecka</p>
               </div>
             </div>
-            
-            <div className="share-buttons">
-              {navigator.share && (
-                <button onClick={() => handleShare('native')} className="share-option">
-                  <span>📱</span>
-                  <span>Dela</span>
-                </button>
-              )}
-              <button onClick={() => handleShare('facebook')} className="share-option facebook">
-                <span>📘</span>
-                <span>Facebook</span>
-              </button>
-              <button onClick={() => handleShare('twitter')} className="share-option twitter">
-                <span>🐦</span>
-                <span>Twitter</span>
-              </button>
-              <button onClick={() => handleShare('download')} className="share-option download">
-                <span>📥</span>
-                <span>Ladda ner bild</span>
+            <div className="share-actions">
+              <button className="share-action" onClick={() => {
+                navigator.clipboard?.writeText(
+                  `🥚 ${coop?.coop_name || 'Min Hönsgård'}\n${todayStats?.egg_count || 0} ägg idag\n${yesterdaySummary?.eggs_this_week || 0} ägg denna vecka`
+                );
+                setShowShareModal(false);
+              }}>
+                📋 Kopiera text
               </button>
             </div>
-            
-            <p className="share-hint">Ladda ner bilden för att dela på Instagram Stories!</p>
           </div>
         </div>
       )}
-      
+
+      {/* Weather Modal */}
+      {showWeatherModal && (
+        <div className="modal-overlay" onClick={() => setShowWeatherModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🌤️ Väder & tips</h3>
+              <button className="close-btn" onClick={() => setShowWeatherModal(false)}>×</button>
+            </div>
+            {weather?.current && (
+              <div className="weather-details">
+                <div className="weather-main">
+                  <span className="weather-temp-large">{Math.round(weather.current.temp)}°C</span>
+                  <span className="weather-desc">{weather.current.description}</span>
+                  <span className="weather-loc">{weather.current.location}</span>
+                </div>
+                {weather.tips && weather.tips.length > 0 && (
+                  <div className="weather-tips">
+                    <h4>Tips för idag:</h4>
+                    {weather.tips.map((tip, i) => (
+                      <p key={i} className={`tip tip-${tip.priority}`}>{tip.message}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* AI Modal */}
       {showAiModal && (
         <div className="modal-overlay" onClick={() => setShowAiModal(false)}>
-          <div className="modal modal-slide-up ai-modal-large" onClick={e => e.stopPropagation()}>
+          <div className="modal modal-lg" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>
+                {aiModalType === 'daily' && '📋 Dagsrapport'}
+                {aiModalType === 'forecast' && '📈 7-dagars prognos'}
                 {aiModalType === 'advisor' && '🐔 Fråga Agda'}
                 {aiModalType === 'tip' && '💡 Dagens tips'}
-                {aiModalType === 'daily' && '📋 AI Dagsrapport'}
-                {aiModalType === 'forecast' && '📈 7-dagars prognos'}
               </h3>
-              <button className="close-btn" onClick={() => { setShowAiModal(false); setAdvisorHistory([]); }}>✕</button>
+              <button className="close-btn" onClick={() => setShowAiModal(false)}>×</button>
             </div>
             
-            {/* Fråga Agda - Chat Interface */}
-            {aiModalType === 'advisor' && (
-              <div className="advisor-chat">
-                <div className="chat-messages">
-                  {advisorHistory.length === 0 && (
-                    <div className="chat-welcome">
-                      <p>Hej! Jag är Agda, din AI-drivna hönsgårdsrådgivare 🐔</p>
-                      <p>Ställ valfri fråga om dina höns, äggproduktion, hälsa, foder eller skötsel!</p>
-                    </div>
-                  )}
-                  {advisorHistory.map((msg, idx) => (
-                    <div key={idx} className={`chat-message ${msg.role}`}>
-                      <span className="message-icon">{msg.role === 'user' ? '👤' : '🐔'}</span>
-                      <p>{msg.content}</p>
-                    </div>
-                  ))}
-                  {aiLoading && (
-                    <div className="chat-message assistant loading">
-                      <span className="message-icon">🐔</span>
-                      <p>Tänker...</p>
-                    </div>
-                  )}
-                </div>
-                <div className="chat-input-container">
-                  <input
-                    type="text"
-                    value={advisorQuestion}
-                    onChange={(e) => setAdvisorQuestion(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && askAgda()}
-                    placeholder="Ställ en fråga till Agda..."
-                    disabled={aiLoading}
-                    className="chat-input"
-                  />
-                  <button onClick={askAgda} disabled={aiLoading || !advisorQuestion.trim()} className="chat-send-btn">
-                    {aiLoading ? '⏳' : '➤'}
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* Dagens tips */}
-            {aiModalType === 'tip' && (
-              aiLoading ? (
-                <div className="ai-loading">
-                  <div className="loading-spinner">💡</div>
-                  <p>Hämtar dagens tips...</p>
-                </div>
-              ) : aiData ? (
-                <div className="ai-content tip-content">
-                  <div className="tip-card">
-                    <span className="tip-icon">💡</span>
-                    <p className="tip-text">{aiData.tip || aiData.message || 'Inget tips tillgängligt just nu.'}</p>
+            <div className="modal-content">
+              {aiModalType === 'advisor' ? (
+                <div className="advisor-chat">
+                  <div className="chat-history">
+                    {advisorHistory.length === 0 && (
+                      <div className="chat-empty">
+                        <span>🐔</span>
+                        <p>Hej! Jag är Agda, din hönsexpert. Fråga mig vad som helst om dina hönor!</p>
+                      </div>
+                    )}
+                    {advisorHistory.map((msg, i) => (
+                      <div key={i} className={`chat-msg ${msg.role}`}>
+                        <p>{msg.content}</p>
+                      </div>
+                    ))}
+                    {aiLoading && <div className="chat-loading">Agda tänker...</div>}
+                  </div>
+                  <div className="chat-input">
+                    <input
+                      type="text"
+                      placeholder="Ställ en fråga..."
+                      value={advisorQuestion}
+                      onChange={e => setAdvisorQuestion(e.target.value)}
+                      onKeyPress={e => e.key === 'Enter' && sendAdvisorMessage()}
+                    />
+                    <button onClick={sendAdvisorMessage} disabled={aiLoading}>Skicka</button>
                   </div>
                 </div>
-              ) : (
-                <div className="ai-error">
-                  <p>Kunde inte hämta dagens tips. Försök igen senare.</p>
-                </div>
-              )
-            )}
-            
-            {/* Dagsrapport */}
-            {aiModalType === 'daily' && (
-              aiLoading ? (
+              ) : aiLoading ? (
                 <div className="ai-loading">
-                  <div className="loading-spinner">🤖</div>
-                  <p>Genererar rapport...</p>
+                  <span>🤖</span>
+                  <p>Analyserar din data...</p>
                 </div>
               ) : aiData ? (
-                <div className="ai-content">
-                  <p className="ai-summary">{aiData.report?.summary}</p>
-                  <div className="ai-stats-row">
-                    <div className="ai-stat-item">
-                      <span>🥚</span>
-                      <span>{aiData.report?.eggs_today || 0} ägg</span>
-                    </div>
-                    <div className="ai-stat-item">
-                      <span>🐔</span>
-                      <span>{aiData.report?.hen_count || 0} hönor</span>
-                    </div>
-                  </div>
+                <div className="ai-result">
+                  {aiModalType === 'tip' && (
+                    <>
+                      <p className="ai-tip">{aiData.tip}</p>
+                      {aiData.category && <span className="ai-category">{aiData.category}</span>}
+                    </>
+                  )}
+                  {aiModalType === 'daily' && (
+                    <>
+                      <p className="ai-report">{aiData.report}</p>
+                      {aiData.highlights && (
+                        <ul className="ai-highlights">
+                          {aiData.highlights.map((h: string, i: number) => <li key={i}>{h}</li>)}
+                        </ul>
+                      )}
+                    </>
+                  )}
+                  {aiModalType === 'forecast' && (
+                    <>
+                      <p className="ai-forecast">{aiData.forecast}</p>
+                      {aiData.prediction && (
+                        <div className="forecast-prediction">
+                          <span>Förväntat: </span>
+                          <strong>{aiData.prediction} ägg/dag</strong>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="ai-error">
-                  <p>Kunde inte generera rapporten. Försök igen senare.</p>
+                  <p>Kunde inte ladda data. Försök igen.</p>
                 </div>
-              )
-            )}
-            
-            {/* 7-dagars prognos */}
-            {aiModalType === 'forecast' && (
-              aiLoading ? (
-                <div className="ai-loading">
-                  <div className="loading-spinner">📈</div>
-                  <p>Genererar prognos...</p>
-                </div>
-              ) : aiData ? (
-                <div className="ai-content">
-                  <p className="forecast-total">
-                    Förväntat: <strong>{aiData.forecast?.total_predicted || aiData.predicted_eggs || 0} ägg</strong>
-                  </p>
-                  <p className="forecast-avg">Genomsnitt: {aiData.forecast?.avg_daily || Math.round((aiData.predicted_eggs || 0) / 7)} ägg/dag</p>
-                </div>
-              ) : (
-                <div className="ai-error">
-                  <p>Kunde inte generera prognosen. Försök igen senare.</p>
-                </div>
-              )
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
