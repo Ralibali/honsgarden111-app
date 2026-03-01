@@ -1,48 +1,56 @@
 /**
  * WebDashboardOverview Styles
- * Responsive KPI dashboard for web
+ * Compact KPI dashboard - NOT a hero panel
  */
 
-.dashboard-overview {
-  background: linear-gradient(135deg, var(--card-bg) 0%, var(--background) 100%);
-  border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 24px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+/* Wrapper - keeps everything compact */
+.overview-wrapper {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 1024px;
+  padding: 16px 16px 0 16px;
 }
 
-.dashboard-overview.loading,
-.dashboard-overview.error {
+@media (min-width: 768px) {
+  .overview-wrapper {
+    padding: 24px 24px 0 24px;
+  }
+}
+
+/* Loading & Error states */
+.overview-loading,
+.overview-error {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
-  gap: 16px;
+  gap: 12px;
+  padding: 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-color);
-  border-top-color: var(--primary-color);
+.loading-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-primary);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: pulse 1s ease-in-out infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
 }
 
 .retry-btn {
-  padding: 10px 20px;
-  background: var(--primary-color);
+  padding: 8px 16px;
+  background: var(--accent-primary);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 13px;
   transition: opacity 0.2s;
 }
 
@@ -50,224 +58,234 @@
   opacity: 0.9;
 }
 
-/* Header */
+/* Compact Header */
 .overview-header {
-  text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
-.overview-header .greeting {
+.overview-greeting {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.overview-title {
   font-size: 24px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 4px 0;
-}
-
-.overview-header .emoji {
-  font-size: 28px;
-}
-
-.overview-header .date {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* KPI Grid */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-/* Make main KPI span full width on first row */
-.kpi-grid .main-kpi {
-  grid-column: 1 / -1;
-}
-
-.kpi-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.kpi-card.main-kpi {
-  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
-  border-color: #FFD54F;
-  padding: 28px;
-  justify-content: center;
-  flex-direction: column;
-  text-align: center;
-}
-
-.kpi-card.highlight {
-  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
-  border-color: #81C784;
-}
-
-.kpi-icon {
-  font-size: 32px;
-  flex-shrink: 0;
-}
-
-.kpi-icon-large {
-  font-size: 48px;
-  margin-bottom: 8px;
-}
-
-.kpi-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.main-kpi .kpi-content {
-  align-items: center;
-}
-
-.kpi-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-family: var(--font-heading);
   line-height: 1.2;
 }
 
-.kpi-value-large {
-  font-size: 48px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.1;
+.overview-date {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
-.kpi-value.success {
-  color: #2E7D32;
+/* KPI Grid - Responsive: 2 → 3 → 5 columns */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .kpi-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* KPI Card - Compact design */
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* Light theme adjustment */
+@media (prefers-color-scheme: light) {
+  .kpi-card {
+    background: var(--bg-surface);
+    border-color: var(--border-color);
+  }
+}
+
+/* Force light theme (our app uses light theme) */
+.kpi-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+}
+
+.kpi-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Icon box */
+.kpi-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  font-size: 20px;
+}
+
+/* Content */
+.kpi-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.kpi-value {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.kpi-value-success {
+  color: var(--accent-success);
 }
 
 .kpi-label {
-  font-size: 13px;
-  color: var(--text-secondary);
-  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.kpi-date {
-  font-size: 11px;
-  color: var(--text-secondary);
-  opacity: 0.8;
-  margin-top: 4px;
+/* Highlight card (monthly value) */
+.kpi-highlight {
+  background: linear-gradient(135deg, var(--cream-white) 0%, var(--bg-secondary) 100%);
 }
 
-/* Tablet (2 columns) */
-@media (max-width: 900px) {
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .kpi-grid .main-kpi {
-    grid-column: 1 / -1;
+/* Quick Actions Row */
+.quick-action-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+@media (min-width: 480px) {
+  .quick-action-row {
+    flex-direction: row;
   }
 }
 
-/* Mobile (1 column, stacked) */
-@media (max-width: 768px) {
-  .dashboard-overview {
-    padding: 16px;
-    border-radius: 16px;
-    margin: 0 -8px 16px -8px;
-    max-width: calc(100% + 16px);
+.quick-action-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+@media (min-width: 480px) {
+  .quick-action-btn {
+    flex: 0 1 auto;
+    width: auto;
+  }
+}
+
+.quick-action-btn.primary {
+  background: var(--accent-success);
+  color: white;
+  border: none;
+}
+
+.quick-action-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(107, 142, 90, 0.3);
+}
+
+.quick-action-btn.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* Light theme for secondary button */
+.quick-action-btn.secondary {
+  background: var(--bg-surface);
+}
+
+.quick-action-btn.secondary:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-strong);
+}
+
+/* Mobile optimizations */
+@media (max-width: 380px) {
+  .overview-wrapper {
+    padding: 12px 12px 0 12px;
   }
   
-  .overview-header {
-    margin-bottom: 16px;
-  }
-  
-  .overview-header .greeting {
+  .overview-title {
     font-size: 20px;
   }
   
-  .overview-header .emoji {
-    font-size: 24px;
-  }
-  
   .kpi-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .kpi-grid .main-kpi {
-    grid-column: 1;
+    gap: 8px;
   }
   
   .kpi-card {
-    padding: 16px;
-    border-radius: 12px;
+    padding: 10px;
+    gap: 10px;
   }
   
-  .kpi-card.main-kpi {
-    padding: 20px;
-  }
-  
-  .kpi-icon {
-    font-size: 28px;
-  }
-  
-  .kpi-icon-large {
-    font-size: 40px;
-  }
-  
-  .kpi-value {
-    font-size: 24px;
-  }
-  
-  .kpi-value-large {
-    font-size: 40px;
-  }
-  
-  .kpi-label {
-    font-size: 12px;
-  }
-}
-
-/* Very small phones */
-@media (max-width: 380px) {
-  .dashboard-overview {
-    padding: 12px;
-  }
-  
-  .overview-header .greeting {
+  .kpi-icon-box {
+    width: 36px;
+    height: 36px;
     font-size: 18px;
   }
   
-  .kpi-card {
-    padding: 14px;
-  }
-  
   .kpi-value {
-    font-size: 22px;
+    font-size: 16px;
   }
   
-  .kpi-value-large {
-    font-size: 36px;
+  .kpi-label {
+    font-size: 11px;
+  }
+  
+  .quick-action-btn {
+    padding: 12px 16px;
+    font-size: 14px;
   }
 }
 
-/* Touch device optimizations */
+/* Touch optimizations */
 @media (hover: none) {
   .kpi-card:hover {
-    transform: none;
+    border-color: var(--border-color);
     box-shadow: none;
   }
   
   .kpi-card:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  
+  .quick-action-btn:active {
     transform: scale(0.98);
     opacity: 0.9;
   }
