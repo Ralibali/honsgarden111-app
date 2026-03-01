@@ -1,9 +1,9 @@
 /* Dashboard - Clean & Modern Design with Animations */
 
 .dashboard {
-  max-width: 600px;
+  max-width: 1024px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 0;
   padding-bottom: 100px;
   opacity: 0;
   transition: opacity 0.4s ease;
