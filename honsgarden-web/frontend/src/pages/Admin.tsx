@@ -309,7 +309,27 @@ export default function Admin() {
 
         {!loading && activeTab === 'users' && (
           <div className="users-section">
-            <h2>Alla användare ({users.length})</h2>
+            <div className="users-header">
+              <h2>Alla användare ({filteredUsers.length} av {users.length})</h2>
+              <div className="users-controls">
+                <input
+                  type="text"
+                  placeholder="Sök e-post eller namn..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="search-input"
+                />
+                <select 
+                  value={filterPremium} 
+                  onChange={(e) => setFilterPremium(e.target.value as any)}
+                  className="filter-select"
+                >
+                  <option value="all">Alla</option>
+                  <option value="premium">Premium</option>
+                  <option value="free">Gratis</option>
+                </select>
+              </div>
+            </div>
             <table className="admin-table">
               <thead>
                 <tr>
