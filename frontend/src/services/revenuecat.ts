@@ -38,10 +38,20 @@ export type CustomerInfo = MockCustomerInfo;
 export type PurchasesOffering = any;
 export type PurchasesPackage = any;
 
-// RevenueCat API Keys from environment
-// No hardcoded keys - must be set in production!
-const REVENUECAT_IOS_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || '';
-const REVENUECAT_ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || '';
+// Import config for API keys
+import config from '../config/env';
+import Constants from 'expo-constants';
+
+// RevenueCat API Keys - try multiple sources
+const getRevenueCatKeys = () => {
+  const ios = Constants.expoConfig?.extra?.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || 
+              process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || '';
+  const android = Constants.expoConfig?.extra?.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || 
+                  process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || '';
+  return { ios, android };
+};
+
+const REVENUECAT_KEYS = getRevenueCatKeys();
 
 // Get platform-specific API key
 const getRevenueCatApiKey = (): string => {
