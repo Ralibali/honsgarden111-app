@@ -112,9 +112,9 @@ const getEffectiveTheme = (mode: ThemeMode): { colors: ThemeColors; isDark: bool
 };
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
-  mode: 'dark',
-  colors: darkTheme,
-  isDark: true,
+  mode: 'rural',
+  colors: ruralTheme,
+  isDark: false,
   
   setThemeMode: async (mode: ThemeMode) => {
     const { colors, isDark } = getEffectiveTheme(mode);
@@ -125,7 +125,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
   initializeTheme: async () => {
     try {
       const savedMode = await AsyncStorage.getItem('theme_mode') as ThemeMode | null;
-      const mode = savedMode || 'dark';
+      const mode = savedMode || 'rural';
       const { colors, isDark } = getEffectiveTheme(mode);
       set({ mode, colors, isDark });
       
