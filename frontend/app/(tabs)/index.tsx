@@ -35,6 +35,7 @@ import DailySummaryPopup from '../../src/components/DailySummaryPopup';
 import { scheduleDailyChoresReminder } from '../../src/services/notifications';
 import { useAuthStore, getAuthHeaders } from '../../src/store/authStore';
 import config from '../../src/config/env';
+import CompactDashboard from '../../src/components/CompactDashboard';
 
 // Key for tracking if daily summary was shown today
 const DAILY_SUMMARY_SHOWN_KEY = '@honsgarden_daily_summary_shown';
