@@ -364,7 +364,7 @@ export default function Dashboard() {
           <div className="stat-item">
             <span className="stat-icon">🐔</span>
             <span className="stat-value">{yesterdaySummary?.hen_count ?? hens.length}</span>
-            <span className="stat-label">hönor</span>
+            <span className="stat-label">{(yesterdaySummary?.hen_count ?? hens.length) === 1 ? 'höna' : 'hönor'}</span>
           </div>
           <div className="stat-divider" />
           <div className="stat-item">
