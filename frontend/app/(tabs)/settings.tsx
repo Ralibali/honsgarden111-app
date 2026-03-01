@@ -896,6 +896,23 @@ export default function SettingsScreen() {
                   thumbColor={featurePrefs.preferences?.show_economy_insights ? colors.primary : colors.textMuted}
                 />
               </View>
+              
+              <View style={styles.featureToggleCard}>
+                <View style={styles.featureToggleInfo}>
+                  <Text style={styles.featureToggleEmoji}>📋</Text>
+                  <View>
+                    <Text style={styles.featureToggleName}>{isSv ? 'Daglig sammanställning' : 'Daily summary'}</Text>
+                    <Text style={styles.featureToggleDesc}>{isSv ? 'Visa igårs statistik vid appstart' : 'Show yesterday stats on app start'}</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={featurePrefs.preferences?.show_daily_summary_popup ?? true}
+                  onValueChange={(v) => updateFeaturePreference('show_daily_summary_popup', v)}
+                  disabled={savingPrefs}
+                  trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                  thumbColor={featurePrefs.preferences?.show_daily_summary_popup ? colors.primary : colors.textMuted}
+                />
+              </View>
             </View>
           )}
           
