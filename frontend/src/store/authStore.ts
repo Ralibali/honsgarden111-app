@@ -2,12 +2,13 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { identifyUser as identifyRevenueCatUser, logoutUser as logoutRevenueCatUser } from '../services/revenuecat';
+import config from '../config/env';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+const API_URL = config.apiBaseUrl;
 
 // Runtime guard - log warning if API_URL is not configured
 if (!API_URL) {
-  console.error('CRITICAL: EXPO_PUBLIC_BACKEND_URL is not configured. API calls will fail.');
+  console.error('CRITICAL: API_URL is not configured. API calls will fail.');
 } else if (__DEV__) {
   console.log('[Auth] API_URL:', API_URL);
 }
