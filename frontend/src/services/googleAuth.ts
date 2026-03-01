@@ -18,7 +18,8 @@ const GOOGLE_IOS_CLIENT_ID = Constants.expoConfig?.extra?.GOOGLE_IOS_CLIENT_ID |
 const GOOGLE_ANDROID_CLIENT_ID = Constants.expoConfig?.extra?.GOOGLE_ANDROID_CLIENT_ID || 
   process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../config/env';
+const API_URL = config.apiBaseUrl;
 
 export interface GoogleAuthResult {
   success: boolean;

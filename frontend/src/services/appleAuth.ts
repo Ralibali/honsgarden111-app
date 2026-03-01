@@ -5,7 +5,8 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Platform } from 'react-native';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../config/env';
+const API_URL = config.apiBaseUrl;
 
 export interface AppleAuthResult {
   success: boolean;

@@ -13,7 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useThemeStore } from '../store/themeStore';
 import i18n from '../i18n';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../config/env';
+const API_URL = config.apiBaseUrl;
 
 interface Hen {
   id: string;

@@ -11,7 +11,8 @@ import {
 } from '../services/revenuecat';
 import { useAuthStore, getAuthHeaders, setSessionToken, hasSessionToken, getMaskedToken, shouldIgnore401, getSessionToken } from './authStore';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../config/env';
+const API_URL = config.apiBaseUrl;
 
 // Robust API fetch helper with auth handling and logging
 const apiFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {

@@ -6,7 +6,8 @@ import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAuthHeaders } from './authStore';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../config/env';
+const API_URL = config.apiBaseUrl;
 
 export interface AnalyticsData {
   // User engagement metrics

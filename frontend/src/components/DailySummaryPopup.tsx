@@ -18,7 +18,8 @@ import { useThemeStore } from '../store/themeStore';
 import { apiFetch } from '../store/appStore';
 import i18n from '../i18n';
 
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import config from '../config/env';
+const API_URL = config.apiBaseUrl;
 const { width } = Dimensions.get('window');
 
 interface DailySummaryData {
