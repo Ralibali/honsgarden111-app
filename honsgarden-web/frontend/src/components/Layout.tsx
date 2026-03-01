@@ -101,6 +101,15 @@ export default function Layout() {
             <span className="mobile-nav-label">{item.label}</span>
           </NavLink>
         ))}
+        {isAdmin && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) => `mobile-nav-item admin-nav ${isActive ? 'active' : ''}`}
+          >
+            <span className="mobile-nav-icon">👑</span>
+            <span className="mobile-nav-label">Admin</span>
+          </NavLink>
+        )}
       </nav>
     </div>
   );
