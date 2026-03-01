@@ -53,14 +53,6 @@ const getRevenueCatKeys = () => {
 
 const REVENUECAT_KEYS = getRevenueCatKeys();
 
-// Get platform-specific API key
-const getRevenueCatApiKey = (): string => {
-  if (Platform.OS === 'ios') {
-    return REVENUECAT_IOS_API_KEY;
-  }
-  return REVENUECAT_ANDROID_API_KEY;
-};
-
 // Environment check - use typeof to avoid web bundling issues
 const IS_DEV = typeof __DEV__ !== 'undefined' ? __DEV__ : true;
 const IS_PRODUCTION = !IS_DEV;
