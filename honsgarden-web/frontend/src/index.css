@@ -141,8 +141,14 @@ input:focus, select:focus, textarea:focus {
 
 .card {
   background-color: var(--bg-surface);
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .container {
@@ -156,3 +162,90 @@ input:focus, select:focus, textarea:focus {
     padding: 0 16px;
   }
 }
+
+/* ============================================
+   LANTLIGA EXTRA STILAR
+   ============================================ */
+
+/* Subtil textur för bakgrund */
+body {
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(244, 211, 94, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(193, 127, 89, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(123, 158, 107, 0.03) 0%, transparent 50%);
+}
+
+/* Scrollbar styling för lantligt tema */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* Selection color */
+::selection {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* Focus states med lantlig ton */
+*:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Lantlig badge/tag stil */
+.badge-rustic {
+  background: linear-gradient(135deg, var(--hay-gold) 0%, #C49A3B 100%);
+  color: var(--text-primary);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-rustic.premium {
+  background: linear-gradient(135deg, var(--egg-yellow) 0%, var(--hay-gold) 100%);
+}
+
+.badge-rustic.success {
+  background: linear-gradient(135deg, var(--grass-green) 0%, #5A7A4A 100%);
+  color: white;
+}
+
+/* Lantliga ikoner container */
+.rustic-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--cream-white) 0%, var(--bg-secondary) 100%);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  font-size: 24px;
+}
+
+/* Animationer */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
