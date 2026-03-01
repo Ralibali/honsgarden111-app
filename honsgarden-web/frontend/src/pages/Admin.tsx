@@ -58,6 +58,10 @@ export default function Admin() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterPremium, setFilterPremium] = useState<'all' | 'premium' | 'free'>('all');
+  const [grantPremiumUserId, setGrantPremiumUserId] = useState<string | null>(null);
+  const [grantPremiumDays, setGrantPremiumDays] = useState('30');
 
   useEffect(() => {
     checkAdminStatus();
