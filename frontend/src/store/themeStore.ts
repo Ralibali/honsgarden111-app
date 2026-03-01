@@ -112,30 +112,25 @@ const getEffectiveTheme = (mode: ThemeMode): { colors: ThemeColors; isDark: bool
 };
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
-  mode: 'dark',
-  colors: darkTheme,
-  isDark: true,
+  // RURAL/LANTLIGT tema är nu default och LÅST
+  mode: 'rural',
+  colors: ruralTheme,
+  isDark: false,
   
   setThemeMode: async (mode: ThemeMode) => {
-    const { colors, isDark } = getEffectiveTheme(mode);
-    set({ mode, colors, isDark });
-    await AsyncStorage.setItem('theme_mode', mode);
+    // Tvinga alltid rural tema - ignorera andra val
+    const { colors, isDark } = getEffectiveTheme('rural');
+    set({ mode: 'rural', colors, isDark });
+    await AsyncStorage.setItem('theme_mode', 'rural');
   },
   
   initializeTheme: async () => {
     try {
-      const savedMode = await AsyncStorage.getItem('theme_mode') as ThemeMode | null;
-      const mode = savedMode || 'dark';
+      // ALLTID lantligt tema - ignorera sparade val
+      const mode: ThemeMode = 'rural';
       const { colors, isDark } = getEffectiveTheme(mode);
       set({ mode, colors, isDark });
-      
-      // Listen for system theme changes
-      Appearance.addChangeListener(({ colorScheme }) => {
-        if (get().mode === 'system') {
-          const isDark = colorScheme === 'dark';
-          set({ colors: isDark ? darkTheme : lightTheme, isDark });
-        }
-      });
+      await AsyncStorage.setItem('theme_mode', 'rural');
     } catch (error) {
       console.error('Failed to initialize theme:', error);
     }
