@@ -240,7 +240,7 @@ export default function Dashboard() {
     try {
       let endpoint = '';
       if (type === 'daily') endpoint = '/api/ai/daily-report';
-      else if (type === 'forecast') endpoint = '/api/ai/forecast';
+      else if (type === 'forecast') endpoint = '/api/ai/egg-forecast';
       else if (type === 'tip') endpoint = '/api/ai/daily-tip';
       
       const res = await fetch(endpoint, { credentials: 'include' });
