@@ -1085,79 +1085,96 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
         
-        {/* ========== SECTION 6: QUICK ACTIONS (One place only) ========== */}
-        <View style={[styles.quickActionsSection, { marginHorizontal: 16, marginBottom: 16 }]}>
-          <Text style={[styles.cardTitle, { marginBottom: 12 }]}>⚡ {isSv ? 'Snabbåtgärder' : 'Quick Actions'}</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                minWidth: '30%',
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 14,
-                alignItems: 'center',
-              }}
-              onPress={() => router.push('/feed')}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: '#f59e0b' }]}>
-                <Ionicons name="nutrition" size={18} color="#FFF" />
-              </View>
-              <Text style={{ fontSize: 12, color: colors.text, marginTop: 6 }}>{isSv ? 'Foder' : 'Feed'}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                minWidth: '30%',
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 14,
-                alignItems: 'center',
-              }}
-              onPress={() => router.push('/hatching')}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: '#ec4899' }]}>
-                <Ionicons name="egg" size={18} color="#FFF" />
-              </View>
-              <Text style={{ fontSize: 12, color: colors.text, marginTop: 6 }}>{isSv ? 'Kläckning' : 'Hatching'}</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                minWidth: '30%',
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 14,
-                alignItems: 'center',
-              }}
-              onPress={() => router.push('/(tabs)/community')}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: '#10b981' }]}>
-                <Ionicons name="chatbubbles" size={18} color="#FFF" />
-              </View>
-              <Text style={{ fontSize: 12, color: colors.text, marginTop: 6 }}>Community</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                minWidth: '30%',
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 14,
-                alignItems: 'center',
-              }}
-              onPress={handleShareStatistics}
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: '#3b82f6' }]}>
-                <Ionicons name="share-social" size={18} color="#FFF" />
-              </View>
-              <Text style={{ fontSize: 12, color: colors.text, marginTop: 6 }}>{isSv ? 'Dela' : 'Share'}</Text>
-            </TouchableOpacity>
+        {/* ========== SECTION 6: AI FEATURES GRID (2x2 - Premium users) ========== */}
+        {isPremium && (
+          <View style={{ marginHorizontal: 16, marginBottom: 16 }} data-testid="ai-features-grid">
+            <View style={{ 
+              flexDirection: 'row', 
+              flexWrap: 'wrap', 
+              gap: 10,
+            }}>
+              {/* Fråga Agda */}
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  minWidth: '47%',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+                onPress={openAgdaModal}
+                activeOpacity={0.8}
+                data-testid="ai-card-agda"
+              >
+                <Text style={{ fontSize: 26, marginBottom: 8 }}>🐔</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Fråga Agda</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>Din AI-rådgivare</Text>
+              </TouchableOpacity>
+
+              {/* Dagens tips */}
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  minWidth: '47%',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+                onPress={loadDailyTip}
+                activeOpacity={0.8}
+                data-testid="ai-card-tip"
+              >
+                <Text style={{ fontSize: 26, marginBottom: 8 }}>💡</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Dagens tips</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>Dagligt hönstips</Text>
+              </TouchableOpacity>
+
+              {/* Dagsrapport */}
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  minWidth: '47%',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+                onPress={handleAiReportPress}
+                activeOpacity={0.8}
+                data-testid="ai-card-report"
+              >
+                <Text style={{ fontSize: 26, marginBottom: 8 }}>📋</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Dagsrapport</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>Personlig AI-analys</Text>
+              </TouchableOpacity>
+
+              {/* 7-dagars prognos */}
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  minWidth: '47%',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+                onPress={handleForecastPress}
+                activeOpacity={0.8}
+                data-testid="ai-card-forecast"
+              >
+                <Text style={{ fontSize: 26, marginBottom: 8 }}>📈</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>7-dagars prognos</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>Förutsäg produktion</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        )}
         
         {/* ========== SECTION 7: MONTHLY SUMMARY ========== */}
         <View style={[styles.sectionCard, { marginHorizontal: 16, marginBottom: 16 }]}>
