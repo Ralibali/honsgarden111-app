@@ -787,7 +787,7 @@ export default function HomeScreen() {
             estimatedMonthlyValue={Math.round((summaryStats?.this_month?.eggs || 0) * 4.5)}
             todayEggCount={todayStats?.egg_count || 0}
             isPremium={isPremium}
-            onRegisterEggs={() => setShowEggModal(true)}
+            onRegisterEggs={() => setShowQuickAdd(true)}
             greeting={greeting}
             coopName={coopSettings?.coop_name || 'Min Hönsgård'}
             dateString={dateString}
