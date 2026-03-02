@@ -5,6 +5,37 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2026-03-02)
 
+### Session 17: P0 Fixlista - 6 buggar fixade (2026-03-02)
+
+#### ✅ 1) Premium i ExpoGo - Fallback till backend
+- **Problem:** RevenueCat returnerade false i ExpoGo -> isPremium=false
+- **Lösning:** Om RevenueCat misslyckas, kollar vi backend `/api/premium/status`
+- **Fil:** `frontend/src/store/premiumStore.ts`
+
+#### ✅ 2) Dubbel header på Home - Borttagen
+- **Problem:** Både SECTION 1 och CompactDashboard visade header
+- **Lösning:** Tog bort SECTION 1: HEADER helt
+- **Fil:** `frontend/app/(tabs)/index.tsx`
+
+#### ✅ 3) "20 totalt"-kort borttaget
+- **Problem:** PROGRESSION DISPLAY visades med onödig info
+- **Lösning:** Tog bort hela sektionen + milestone-meddelanden
+- **Fil:** `frontend/app/(tabs)/index.tsx`
+
+#### ✅ 4) Produktivitet flyttad till toppraden
+- **Problem:** Produktivitet visades som separat stort kort
+- **Lösning:** Flyttade till stat-strip, tog bort dubblett
+- **Filer:** `frontend/src/components/CompactDashboard.tsx`, `frontend/app/(tabs)/index.tsx`
+
+#### ✅ 5) Admin premium grant fixad
+- **Problem:** Admin.tsx skickade query params, backend väntade JSON body
+- **Lösning:** Ändrade fetch till JSON body + error handling
+- **Fil:** `honsgarden-web/frontend/src/pages/Admin.tsx`
+
+#### ✅ 6) Stripe checkout verifierad
+- **Status:** FUNGERAR! Backend returnerar 200 + checkout URL
+- **Logg:** `POST /api/checkout/create HTTP/1.1 200 OK`
+
 ### Session 16: Statistik-fix + Tema-sektion borttagen + Svensk Microcopy (2026-03-02)
 
 #### ✅ Statistik-bugg fixad (P0)

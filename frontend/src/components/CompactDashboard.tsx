@@ -71,7 +71,7 @@ export default function CompactDashboard({
         <Text style={styles.dateText}>{dateString}</Text>
       </View>
 
-      {/* Compact Stat Strip */}
+      {/* Compact Stat Strip - now includes productivity */}
       <View style={styles.statStrip}>
         <View style={styles.statItem}>
           <Text style={styles.statIcon}>🥚</Text>
@@ -83,6 +83,12 @@ export default function CompactDashboard({
           <Text style={styles.statIcon}>🐔</Text>
           <Text style={styles.statValue}>{henCount}</Text>
           <Text style={styles.statLabel}>{henCount === 1 ? 'höna' : 'hönor'}</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statIcon}>📈</Text>
+          <Text style={styles.statValue}>{getLayingPercentage()}</Text>
+          <Text style={styles.statLabel}>produktivitet</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>

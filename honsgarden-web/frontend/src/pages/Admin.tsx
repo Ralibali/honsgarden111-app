@@ -143,13 +143,21 @@ export default function Admin() {
 
   const handleToggleSubscription = async (userId: string, currentStatus: boolean) => {
     try {
-      const res = await fetch(`/api/admin/subscriptions/${userId}?is_active=${!currentStatus}&plan=yearly`, {
+      const res = await fetch(`/api/admin/subscriptions/${userId}`, {
         method: 'PUT',
-        credentials: 'include'
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          is_active: !currentStatus, 
+          plan: 'yearly' 
+        })
       });
       if (res.ok) {
         loadData();
         alert(currentStatus ? 'Prenumeration avaktiverad' : 'Prenumeration aktiverad');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Kunde inte uppdatera prenumeration');
       }
     } catch (error) {
       alert('Kunde inte uppdatera prenumeration');
@@ -160,14 +168,23 @@ export default function Admin() {
   const handleGrantPremium = async (userId: string) => {
     const days = parseInt(grantPremiumDays) || 30;
     try {
-      const res = await fetch(`/api/admin/subscriptions/${userId}?is_active=true&plan=admin_granted&days=${days}`, {
+      const res = await fetch(`/api/admin/subscriptions/${userId}`, {
         method: 'PUT',
-        credentials: 'include'
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          is_active: true, 
+          plan: 'admin_granted', 
+          days: days 
+        })
       });
       if (res.ok) {
         setGrantPremiumUserId(null);
         loadData();
         alert(`Premium aktiverat i ${days} dagar`);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Kunde inte aktivera premium');
       }
     } catch (error) {
       alert('Kunde inte aktivera premium');

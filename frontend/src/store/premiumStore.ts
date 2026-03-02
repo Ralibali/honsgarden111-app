@@ -200,36 +200,67 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
   checkPremiumStatus: async () => {
     set({ loading: true });
     try {
-      // For native platforms, also check backend for trial info
+      // For native platforms, check both RevenueCat AND backend
       if (Platform.OS === 'ios' || Platform.OS === 'android') {
-        const result = await checkPremiumEntitlement();
+        let revenueCatPremium = false;
+        let revenueCatResult = null;
         
-        // Also get trial info from backend
+        // Try RevenueCat first (may fail in ExpoGo)
+        try {
+          revenueCatResult = await checkPremiumEntitlement();
+          revenueCatPremium = revenueCatResult.isPremium;
+        } catch (rcError) {
+          if (__DEV__) {
+            console.log('[Premium] RevenueCat not available (ExpoGo?), falling back to backend');
+          }
+        }
+        
+        // Always check backend for trial info and as fallback
+        let backendPremium = false;
         let isTrial = false;
         let daysRemaining = null;
         let trialExpiryWarning = null;
         let isLifetime = false;
         let backendPlan = null;
+        let backendExpiresAt = null;
+        let backendSubscriptionId = null;
         
         try {
           const response = await apiFetch(`${API_URL}/api/premium/status`);
           if (response.ok) {
             const data = await response.json();
+            backendPremium = data.is_premium || false;
             isTrial = data.is_trial || false;
             daysRemaining = data.days_remaining;
             trialExpiryWarning = data.trial_expiry_warning;
             isLifetime = data.is_lifetime || false;
             backendPlan = data.plan;
+            backendExpiresAt = data.expires_at;
+            backendSubscriptionId = data.subscription_id;
+            
+            if (__DEV__) {
+              console.log('[Premium] Backend says isPremium =', backendPremium);
+            }
           }
         } catch (err) {
-          // Ignore - use RevenueCat data as fallback
+          if (__DEV__) {
+            console.log('[Premium] Backend check failed:', err);
+          }
+        }
+        
+        // FALLBACK LOGIC: Use backend if RevenueCat says false but backend says true
+        // This handles ExpoGo, admin grants, web purchases, etc.
+        const finalIsPremium = revenueCatPremium || backendPremium;
+        
+        if (__DEV__) {
+          console.log(`[Premium] RevenueCat: ${revenueCatPremium}, Backend: ${backendPremium}, Final: ${finalIsPremium}`);
         }
         
         set({
-          isPremium: result.isPremium,
-          expiresAt: result.expiresAt,
-          subscriptionId: result.productId,
-          plan: backendPlan || (result.productId?.includes('yearly') ? 'yearly' : result.productId ? 'monthly' : null),
+          isPremium: finalIsPremium,
+          expiresAt: revenueCatResult?.expiresAt || backendExpiresAt,
+          subscriptionId: revenueCatResult?.productId || backendSubscriptionId,
+          plan: backendPlan || (revenueCatResult?.productId?.includes('yearly') ? 'yearly' : revenueCatResult?.productId ? 'monthly' : null),
           isTrial,
           isLifetime,
           daysRemaining,
@@ -239,9 +270,9 @@ export const usePremiumStore = create<PremiumState>((set, get) => ({
         
         // Cache locally
         await AsyncStorage.setItem('premium_status', JSON.stringify({
-          isPremium: result.isPremium,
-          expiresAt: result.expiresAt,
-          subscriptionId: result.productId,
+          isPremium: finalIsPremium,
+          expiresAt: revenueCatResult?.expiresAt || backendExpiresAt,
+          subscriptionId: revenueCatResult?.productId || backendSubscriptionId,
           plan: backendPlan,
           isTrial,
           isLifetime,

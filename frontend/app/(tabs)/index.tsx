@@ -749,37 +749,7 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
-        {/* ========== SECTION 1: HEADER (Compact) ========== */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <View style={styles.headerTitleSection}>
-              <Text style={styles.title}>{coopSettings?.coop_name || 'Min Hönsgård'}</Text>
-              <Text style={styles.date}>{dateString}</Text>
-            </View>
-            
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              {/* Avatar - Settings Button */}
-              <TouchableOpacity 
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  backgroundColor: colors.primary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                onPress={() => router.push('/(tabs)/settings')}
-                data-testid="avatar-settings-btn"
-              >
-                <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
-                  {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-        
-        {/* ========== COMPACT DASHBOARD (NEW) ========== */}
+        {/* ========== COMPACT DASHBOARD (Main header/stats component) ========== */}
         <View style={{ marginHorizontal: 16, marginBottom: 8 }}>
           <CompactDashboard
             eggsYesterday={summaryStats?.this_month?.eggs || 0}
@@ -802,115 +772,7 @@ export default function HomeScreen() {
           </View>
         )}
         
-        {/* ========== PROGRESSION DISPLAY ========== */}
-        {(summaryStats?.total_eggs_all_time > 0 || summaryStats?.streak > 0) && (
-          <View style={{
-            flexDirection: 'row',
-            marginHorizontal: 16,
-            marginBottom: 12,
-            gap: 10,
-          }}>
-            {/* Total eggs registered */}
-            {summaryStats?.total_eggs_all_time > 0 && (
-              <View style={{
-                flex: 1,
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-              }}>
-                <Text style={{ fontSize: 20 }}>🥚</Text>
-                <View>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>
-                    {summaryStats.total_eggs_all_time}
-                  </Text>
-                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-                    {isSv ? 'totalt' : 'total'}
-                  </Text>
-                </View>
-              </View>
-            )}
-            
-            {/* Streak */}
-            {summaryStats?.streak > 0 && (
-              <View style={{
-                flex: 1,
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-                borderWidth: summaryStats.streak >= 7 ? 2 : 0,
-                borderColor: summaryStats.streak >= 7 ? colors.warning : 'transparent',
-              }}>
-                <Text style={{ fontSize: 20 }}>🔥</Text>
-                <View>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>
-                    {summaryStats.streak} {isSv ? 'dagar' : 'days'}
-                  </Text>
-                  <Text style={{ fontSize: 11, color: colors.textSecondary }}>
-                    {isSv ? 'i rad' : 'streak'}
-                  </Text>
-                </View>
-              </View>
-            )}
-          </View>
-        )}
-        
-        {/* Progression milestone messages */}
-        {summaryStats?.total_eggs_all_time >= 10 && summaryStats?.total_eggs_all_time < 30 && (
-          <View style={{
-            marginHorizontal: 16,
-            marginBottom: 12,
-            backgroundColor: colors.primary + '10',
-            borderRadius: 12,
-            padding: 12,
-            borderLeftWidth: 3,
-            borderLeftColor: colors.primary,
-          }}>
-            <Text style={{ fontSize: 13, color: colors.text }}>
-              🌱 {isSv 
-                ? 'Nu börjar vi se mönster i din produktion!' 
-                : 'We\'re starting to see patterns in your production!'}
-            </Text>
-          </View>
-        )}
-        
-        {summaryStats?.total_eggs_all_time >= 30 && !isPremium && (
-          <TouchableOpacity 
-            style={{
-              marginHorizontal: 16,
-              marginBottom: 12,
-              backgroundColor: colors.warning + '15',
-              borderRadius: 12,
-              padding: 12,
-              borderLeftWidth: 3,
-              borderLeftColor: colors.warning,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-            onPress={() => router.push('/paywall')}
-          >
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.text }}>
-                📊 {isSv 
-                  ? `${summaryStats.total_eggs_all_time} ägg registrerade!` 
-                  : `${summaryStats.total_eggs_all_time} eggs registered!`}
-              </Text>
-              <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>
-                {isSv 
-                  ? 'Du har nog data för trend-analys och prognoser.' 
-                  : 'You have enough data for trend analysis and forecasts.'}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.warning} />
-          </TouchableOpacity>
-        )}
-        
-        {/* ========== SECTION 2: THREE STATS CARDS (Ägg, Höns, Produktivitet) ========== */}
+        {/* ========== SECTION 2: TWO STATS CARDS (Ägg, Höns) - Produktivitet moved to stat strip ========== */}
         <View style={{
           flexDirection: 'row',
           marginHorizontal: 16,
@@ -988,33 +850,6 @@ export default function HomeScreen() {
             </Text>
             <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2 }}>
               {isSv ? 'Höns' : 'Hens'}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Produktivitet - Grön ram */}
-          <TouchableOpacity 
-            style={{
-              flex: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 20,
-              padding: 16,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 2,
-              borderColor: '#3d5a3d',
-              minHeight: 120,
-            }}
-            onPress={() => router.push('/(tabs)/statistics')}
-            activeOpacity={0.7}
-          >
-            <Text style={{ fontSize: 32 }}>📈</Text>
-            <Text style={{ fontSize: 32, fontWeight: '700', color: colors.text, marginTop: 4 }}>
-              {todayStats?.hen_count > 0 
-                ? Math.round((todayStats?.egg_count || 0) / todayStats.hen_count * 100) 
-                : 0}%
-            </Text>
-            <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2, textAlign: 'center' }}>
-              {isSv ? 'Produktivitet' : 'Productivity'}
             </Text>
           </TouchableOpacity>
         </View>
