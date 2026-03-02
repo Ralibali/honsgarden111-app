@@ -5,6 +5,45 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2026-03-02)
 
+### Session 16: Statistik-fix + Tema-sektion borttagen + Svensk Microcopy (2026-03-02)
+
+#### ✅ Statistik-bugg fixad (P0)
+- **Problem:** avg_eggs beräknades som total_eggs / days_with_eggs (fel!)
+- **Lösning:** avg_eggs_per_day = total_eggs / dagar_i_månaden
+- **Ändringar:**
+  - `/api/statistics/month/{year}/{month}` - använder nu dagar_i_månaden
+  - `/api/statistics/year/{year}` - varje månad har korrekt avg_eggs_per_day
+  - `daily_breakdown` innehåller nu ALLA dagar i månaden (även dagar med 0 ägg)
+
+#### ✅ Tema-sektion borttagen från inställningar (P0)
+- **Problem:** "Utseende" / "Lantligt tema" sektionen fanns fortfarande i settings.tsx
+- **Lösning:** Sektionen är nu helt borttagen
+- **Ändringar:**
+  - `frontend/app/(tabs)/settings.tsx` - Tagit bort hela Theme Section
+
+#### ✅ Svensk microcopy implementerad (P0)
+- **Problem:** Texter var inte enhetliga eller tillräckligt varma
+- **Lösning:** Centraliserad microcopy-fil med alla svenska texter
+- **Ändringar:**
+  - Ny fil: `frontend/src/constants/microcopy.ts`
+  - AI-kort använder nu microcopy-texter
+  - Snälla feltexter för alla scenarios (timeout, nätverksfel, etc.)
+
+#### Ändrade filer:
+- `backend/server.py` (statistik avg_eggs_per_day fix)
+- `frontend/app/(tabs)/settings.tsx` (borttagen tema-sektion)
+- `frontend/app/(tabs)/index.tsx` (använder MICROCOPY)
+- `frontend/src/constants/microcopy.ts` (NY FIL)
+
+#### Done criteria ✅
+- [x] avg_eggs_per_day = total_eggs / dagar_i_månaden
+- [x] daily_breakdown visar alla dagar i månaden
+- [x] Tema-sektion borttagen från inställningar
+- [x] AI-kort använder microcopy-texter
+- [x] Snälla feltexter implementerade
+
+---
+
 ### Session 15: P0 UI/AI Parity Fix (2026-03-02)
 
 #### ✅ Backend AI-stabilisering (P0)
