@@ -867,11 +867,31 @@
             window.location.href = '/api/web/login?redirect=/api/premium-page';
         }
         
+        // Get auth token from cookies
+        function getAuthToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'session_token' || name === 'auth_token') {
+                    return value;
+                }
+            }
+            return localStorage.getItem('session_token') || localStorage.getItem('auth_token');
+        }
+        
         // Check if user is logged in
         async function checkAuthStatus() {
             try {
+                const authToken = getAuthToken();
+                const headers = { 'Content-Type': 'application/json' };
+                
+                if (authToken) {
+                    headers['Authorization'] = 'Bearer ' + authToken;
+                }
+                
                 const response = await fetch('/api/auth/me', {
-                    credentials: 'include'
+                    credentials: 'include',
+                    headers: headers
                 });
                 if (response.ok) {
                     currentUser = await response.json();
