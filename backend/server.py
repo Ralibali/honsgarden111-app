@@ -6851,7 +6851,8 @@ DAILY_TIPS_POOL = [
 
 @api_router.get("/ai/daily-tip")
 async def get_daily_tip(request: Request):
-    """Get today's tip from Agda based on season, weather and flock data"""
+    """Get today's tip from Agda based on season, weather and flock data
+    Returns standardized response with ok field"""
     user_id = await require_user_id(request)
     
     # Get current context using Stockholm time
@@ -6888,6 +6889,7 @@ async def get_daily_tip(request: Request):
         pass
     
     return {
+        "ok": True,
         "date": today,
         "tip": selected_tip["tip"],
         "category": selected_tip["category"],
