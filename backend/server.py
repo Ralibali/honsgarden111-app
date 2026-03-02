@@ -4990,8 +4990,11 @@ async def get_year_statistics(year: int, request: Request):
         "date": {"$gte": start_date, "$lt": end_date}
     }, {"_id": 0, "count": 1, "date": 1}).to_list(10000)
     total_eggs = sum(e['count'] for e in eggs)
-    days_with_eggs = len(set(e['date'] for e in eggs))
-    avg_eggs = total_eggs / days_with_eggs if days_with_eggs > 0 else 0
+    
+    # FIX: avg_eggs_per_day = total_eggs / days_in_year (365 or 366)
+    import calendar
+    days_in_year = 366 if calendar.isleap(year) else 365
+    avg_eggs = total_eggs / days_in_year if days_in_year > 0 else 0
     
     transactions = await db.transactions.find({
         "user_id": user_id,
@@ -5008,6 +5011,8 @@ async def get_year_statistics(year: int, request: Request):
         else:
             m_end = f"{year:04d}-{m+1:02d}-01"
         
+        # FIX: Use days_in_month for monthly avg
+        days_in_month = calendar.monthrange(year, m)[1]
         m_eggs = sum(e['count'] for e in eggs if m_start <= e['date'] < m_end)
         m_costs = sum(t['amount'] for t in transactions if t['type'] == 'cost' and m_start <= t['date'] < m_end)
         m_sales = sum(t['amount'] for t in transactions if t['type'] == 'sale' and m_start <= t['date'] < m_end)
@@ -5015,6 +5020,7 @@ async def get_year_statistics(year: int, request: Request):
         monthly.append({
             "month": m,
             "eggs": m_eggs,
+            "avg_eggs_per_day": round(m_eggs / days_in_month, 1) if days_in_month > 0 else 0,
             "costs": m_costs,
             "sales": m_sales,
             "net": m_sales - m_costs
