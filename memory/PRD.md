@@ -3,6 +3,66 @@
 ## Projektöversikt
 Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb. Appen hjälper användare att spåra äggproduktion, hantera hönor och tuppar, få AI-drivna insikter och prenumerera på premium-funktioner.
 
+## Nyligen Slutförda Uppgifter (2026-03-02)
+
+### Session 15: P0 UI/AI Parity Fix (2026-03-02)
+
+#### ✅ Backend AI-stabilisering (P0)
+- **Problem:** AI-funktioner kraschade eller hängde sig
+- **Lösning:** Robusta endpoints med timeout och fallback
+- **Ändringar:**
+  - Ny `/api/ai/health` endpoint - returnerar AI-tjänstens status
+  - Alla AI-endpoints har nu 15s timeout
+  - Standardiserade JSON-svar: `{ok: true/false, ...}`
+  - Fallback-svar vid timeout eller fel (aldrig 500-error)
+  - Graceful hantering av låg/ingen data i äggprognos
+  - Detaljerad loggning med request_id, user_id, duration_ms
+
+#### ✅ Mobilapp UI-paritet med webb (P0)
+- **Problem:** Mobilappen hade gammal layout med "Snabbåtgärder" grid
+- **Lösning:** Byggt om hem-skärmen för att matcha webbappen
+- **Ändringar:**
+  - Borttagen "Snabbåtgärder"-sektion (Foder/Kläckning/Community/Dela)
+  - Ny 2x2 AI-kort grid: Fråga Agda, Dagens tips, Dagsrapport, 7-dagars prognos
+  - Grön "Registrera ägg" CTA matchar webb exakt
+  - Stat-strip: ägg igår, hönor, veckan, kr/mån
+
+#### ✅ Community-flik borttagen (P0)
+- **Problem:** Community-flik fanns fortfarande i navigation
+- **Lösning:** Tab dold och fil redirectar till hem
+- **Ändringar:**
+  - `_layout.tsx` - Community tab med `href: null` för att dölja
+  - `community.tsx` - Redirectar till hem istället för att visa sidan
+
+#### ✅ Tema låst till "lantligt" (P0)
+- **Problem:** Tema-switcher kunde störa konsistent design
+- **Lösning:** Tema är hårdkodat till "rural"
+- **Ändringar:**
+  - `themeStore.ts` - `setThemeMode()` ignorerar alla val utom 'rural'
+  - Inställningssidan visar bara "Lantligt tema" med checkmark (ingen väljare)
+
+#### Ändrade filer:
+- `backend/server.py` (AI endpoints med timeout/fallback/health)
+- `frontend/app/(tabs)/index.tsx` (2x2 AI-grid, borttagen Snabbåtgärder)
+- `frontend/app/(tabs)/_layout.tsx` (Community tab dold)
+- `frontend/app/(tabs)/community.tsx` (Redirect till hem)
+- `frontend/src/store/themeStore.ts` (Låst till rural)
+
+#### Test-resultat (iteration_25):
+- Backend: 100% (12/12 tester passerade)
+- Frontend: 100% (alla UI-krav verifierade)
+
+#### Done criteria ✅
+- [x] AI Health endpoint returnerar ok: true
+- [x] Alla AI-endpoints har timeout och fallback
+- [x] Mobilapp-layout matchar webbappen (screenshot "bild 1")
+- [x] 2x2 AI-kort grid visas på hem-sidan
+- [x] Ingen "Snabbåtgärder"-sektion
+- [x] Ingen Community-tab i navigation
+- [x] Tema låst till "lantligt"
+
+---
+
 ## Nyligen Slutförda Uppgifter (2026-03-01)
 
 ### Session 14: Kompakt Dashboard Redesign (2026-03-01)
