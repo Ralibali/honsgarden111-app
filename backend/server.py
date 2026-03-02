@@ -6046,6 +6046,25 @@ async def update_user_subscription(request: Request, user_id: str):
     }
 
 # ============ AI PREMIUM FEATURES ============
+
+# AI Configuration
+AI_TIMEOUT_SECONDS = 15  # Max time for AI calls
+AI_PROVIDER_CONFIGURED = bool(EMERGENT_LLM_KEY)
+
+@api_router.get("/ai/health")
+async def ai_health_check():
+    """
+    AI Health endpoint - Check if AI services are properly configured
+    Returns: { ok: true/false, providerConfigured: bool, version: str }
+    """
+    return {
+        "ok": AI_PROVIDER_CONFIGURED,
+        "providerConfigured": AI_PROVIDER_CONFIGURED,
+        "version": "1.0.0",
+        "timeout_seconds": AI_TIMEOUT_SECONDS,
+        "message": "AI services are ready" if AI_PROVIDER_CONFIGURED else "AI provider key not configured"
+    }
+
 @api_router.get("/ai/daily-report")
 async def get_ai_daily_report(request: Request):
     """Generate AI daily report - Premium only
