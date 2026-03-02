@@ -1362,7 +1362,7 @@ export default function HomeScreen() {
                   borderColor: colors.border,
                   opacity: 0.6,
                 }}
-                onPress={() => setShowPremiumGate(true)}
+                onPress={() => showPremiumGate(isSv ? 'Fråga Agda' : 'Ask Agda', 'chatbubble-ellipses')}
                 activeOpacity={0.8}
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>🐔</Text>
@@ -1382,7 +1382,7 @@ export default function HomeScreen() {
                   borderColor: colors.border,
                   opacity: 0.6,
                 }}
-                onPress={() => setShowPremiumGate(true)}
+                onPress={() => showPremiumGate(isSv ? 'Dagens tips' : 'Daily Tip', 'bulb')}
                 activeOpacity={0.8}
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>💡</Text>
@@ -1402,7 +1402,7 @@ export default function HomeScreen() {
                   borderColor: colors.border,
                   opacity: 0.6,
                 }}
-                onPress={() => setShowPremiumGate(true)}
+                onPress={() => showPremiumGate(isSv ? 'AI Dagsrapport' : 'AI Daily Report', 'analytics')}
                 activeOpacity={0.8}
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>📋</Text>
@@ -1422,7 +1422,7 @@ export default function HomeScreen() {
                   borderColor: colors.border,
                   opacity: 0.6,
                 }}
-                onPress={() => setShowPremiumGate(true)}
+                onPress={() => showPremiumGate(isSv ? 'Äggprognos' : 'Egg Forecast', 'trending-up')}
                 activeOpacity={0.8}
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>📈</Text>
