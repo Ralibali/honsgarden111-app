@@ -6197,18 +6197,40 @@ async def get_ai_daily_report(request: Request):
     else:
         season_context = "Höst - ruggningssäsong, minskad produktion naturligt"
     
-    # Generate AI report for premium users
+    # Generate AI report for premium users with robust error handling
+    request_id = f"report-{user_id}-{today_str_stockholm()}-{uuid.uuid4().hex[:6]}"
+    start_time = time.time()
     used_fallback = False
     ai_provider_ok = True
+    
+    # Fallback response generator
+    def generate_fallback_report():
+        """Generate a basic report when AI is unavailable"""
+        productivity_text = ""
+        if hen_count > 0:
+            if productivity_pct >= 70:
+                productivity_text = "Bra produktivitet!"
+            elif productivity_pct >= 40:
+                productivity_text = "Produktiviteten kan förbättras."
+            else:
+                productivity_text = "Låg produktivitet - kontrollera flocken."
+        
+        alert_text = ""
+        if alerts:
+            alert_text = f" ⚠️ {len(alerts)} varning(ar) att uppmärksamma."
+        
+        return f"🐔 Daglig sammanfattning för {coop_name}: {total_eggs} ägg från {hen_count} höns idag. {productivity_text}{alert_text}\n\n💛 Kacklande hälsningar, Agda 🐔"
     
     try:
         if not EMERGENT_LLM_KEY:
             raise ValueError("EMERGENT_LLM_KEY not configured")
-            
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"daily-report-{user_id}-{today}",
-            system_message=f"""Du är Agda, en erfaren och varm hönsgårdsrådgivare med över 10 års erfarenhet.
+        
+        # Create AI chat with timeout
+        async def generate_ai_report():
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"daily-report-{user_id}-{today}",
+                system_message=f"""Du är Agda, en erfaren och varm hönsgårdsrådgivare med över 10 års erfarenhet.
 Du skriver personliga, praktiska och uppmuntrande rapporter på svenska.
 Du använder din djupa kunskap om hönsskötsel för att ge relevanta tips baserat på säsong, väder och produktion.
 
@@ -6220,15 +6242,15 @@ VIKTIGT:
 - Ge ETT konkret, relevant tips baserat på data
 - Använd max 2-3 emojis
 - Avsluta alltid med 'Kacklande hälsningar, Agda 🐔'"""
-        ).with_model("openai", "gpt-4o")
-        
-        weather_info = ""
-        if weather_data:
-            temp = weather_data.get("temperature", "okänd")
-            desc = weather_data.get("description", "")
-            weather_info = f"- Väder idag: {temp}°C, {desc}"
-        
-        prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
+            ).with_model("openai", "gpt-4o")
+            
+            weather_info = ""
+            if weather_data:
+                temp = weather_data.get("temperature", "okänd")
+                desc = weather_data.get("description", "")
+                weather_info = f"- Väder idag: {temp}°C, {desc}"
+            
+            prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
 
 DATA FÖR IDAG ({today}):
 - Antal ägg idag: {total_eggs}
@@ -6252,38 +6274,68 @@ Anpassa tipset efter:
 - Säsongen ({season_context})
 - Produktionsnivån ({productivity_pct:.0f}%)
 - Eventuella varningar"""
+            
+            message = UserMessage(text=prompt)
+            return await chat.send_message(message)
         
-        message = UserMessage(text=prompt)
-        ai_response = await chat.send_message(message)
+        # Execute with timeout
+        ai_response = await asyncio.wait_for(generate_ai_report(), timeout=AI_TIMEOUT_SECONDS)
         
-        logger.info(f"AI daily-report generated successfully for user {user_id}")
+        # Normalize response
+        report_text = normalize_llm_response(ai_response)
+        
+        duration_ms = int((time.time() - start_time) * 1000)
+        logger.info(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/daily-report duration_ms={duration_ms} status=success")
         
         return {
+            "ok": True,
             "is_premium": True,
             "preview": False,
             "used_fallback": False,
             "ai_provider_ok": True,
-            "report": {
-                "summary": ai_response,
+            "report": report_text,
+            "data": {
                 "eggs_today": total_eggs,
                 "hen_count": hen_count,
                 "alerts": alerts,
                 "generated_at": now_stockholm().isoformat()
             }
         }
-    except Exception as e:
-        logger.error(f"AI report generation failed for user {user_id}: {e}")
-        used_fallback = True
-        ai_provider_ok = False
+        
+    except asyncio.TimeoutError:
+        duration_ms = int((time.time() - start_time) * 1000)
+        logger.warning(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/daily-report duration_ms={duration_ms} status=timeout")
         
         return {
+            "ok": True,
+            "is_premium": True,
+            "preview": False,
+            "used_fallback": True,
+            "ai_provider_ok": True,  # Provider is OK, just slow
+            "error": {"code": "TIMEOUT", "message": "AI-tjänsten tog för lång tid. Fallback-rapport genererad."},
+            "report": generate_fallback_report(),
+            "data": {
+                "eggs_today": total_eggs,
+                "hen_count": hen_count,
+                "alerts": alerts,
+                "generated_at": now_stockholm().isoformat(),
+                "fallback": True
+            }
+        }
+        
+    except Exception as e:
+        duration_ms = int((time.time() - start_time) * 1000)
+        logger.error(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/daily-report duration_ms={duration_ms} status=error error={str(e)}")
+        
+        return {
+            "ok": True,
             "is_premium": True,
             "preview": False,
             "used_fallback": True,
             "ai_provider_ok": False,
-            "report": {
-                "summary": f"🐔 Daglig sammanfattning: {total_eggs} ägg från {hen_count} höns. " + 
-                          (f"⚠️ {len(alerts)} varningar kräver uppmärksamhet." if alerts else "Allt ser bra ut!"),
+            "error": {"code": "AI_ERROR", "message": "AI-tjänsten är tillfälligt otillgänglig."},
+            "report": generate_fallback_report(),
+            "data": {
                 "eggs_today": total_eggs,
                 "hen_count": hen_count,
                 "alerts": alerts,
