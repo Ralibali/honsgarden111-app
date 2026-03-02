@@ -1423,12 +1423,12 @@ export default function HomeScreen() {
                   borderColor: colors.border,
                   opacity: 0.6,
                 }}
-                onPress={() => showPremiumGate(isSv ? 'Äggprognos' : 'Egg Forecast', 'trending-up')}
+                onPress={() => showPremiumGate(MICROCOPY.ai.forecast.title, 'trending-up')}
                 activeOpacity={0.8}
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>📈</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>7-dagars prognos</Text>
-                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 Kräver Premium</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{MICROCOPY.ai.forecast.title}</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 {MICROCOPY.errors.unauthorized.title}</Text>
               </TouchableOpacity>
             </View>
           </View>
