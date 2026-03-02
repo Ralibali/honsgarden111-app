@@ -12,7 +12,7 @@ import requests
 import os
 from datetime import date
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://lantligt-theme.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://agda-rebuild.preview.emergentagent.com').rstrip('/')
 
 
 class TestPremiumStatus:
