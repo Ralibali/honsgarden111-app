@@ -4921,13 +4921,18 @@ async def get_month_statistics(year: int, month: int, request: Request):
     else:
         end_date = f"{year:04d}-{month+1:02d}-01"
     
+    # Calculate days in this month
+    import calendar
+    days_in_month = calendar.monthrange(year, month)[1]
+    
     eggs = await db.egg_records.find({
         "user_id": user_id,
         "date": {"$gte": start_date, "$lt": end_date}
     }, {"_id": 0, "count": 1, "date": 1}).to_list(1000)
     total_eggs = sum(e['count'] for e in eggs)
-    days_with_eggs = len(set(e['date'] for e in eggs))
-    avg_eggs = total_eggs / days_with_eggs if days_with_eggs > 0 else 0
+    
+    # FIX: avg_eggs_per_day = total_eggs / days_in_month (not days_with_eggs)
+    avg_eggs = total_eggs / days_in_month if days_in_month > 0 else 0
     
     transactions = await db.transactions.find({
         "user_id": user_id,
@@ -4940,21 +4945,24 @@ async def get_month_statistics(year: int, month: int, request: Request):
     hen_count = settings['hen_count'] if settings else 0
     eggs_per_hen = total_eggs / hen_count if hen_count > 0 else None
     
+    # FIX: Create daily_breakdown with ALL days in month (including days with 0 eggs)
     daily_data = {}
+    for day in range(1, days_in_month + 1):
+        date_str = f"{year:04d}-{month:02d}-{day:02d}"
+        daily_data[date_str] = {'date': date_str, 'eggs': 0, 'costs': 0, 'sales': 0}
+    
     for egg in eggs:
         d = egg['date']
-        if d not in daily_data:
-            daily_data[d] = {'date': d, 'eggs': 0, 'costs': 0, 'sales': 0}
-        daily_data[d]['eggs'] += egg['count']
+        if d in daily_data:
+            daily_data[d]['eggs'] += egg['count']
     
     for trans in transactions:
         d = trans['date']
-        if d not in daily_data:
-            daily_data[d] = {'date': d, 'eggs': 0, 'costs': 0, 'sales': 0}
-        if trans['type'] == 'cost':
-            daily_data[d]['costs'] += trans['amount']
-        else:
-            daily_data[d]['sales'] += trans['amount']
+        if d in daily_data:
+            if trans['type'] == 'cost':
+                daily_data[d]['costs'] += trans['amount']
+            else:
+                daily_data[d]['sales'] += trans['amount']
     
     daily_breakdown = sorted(daily_data.values(), key=lambda x: x['date'])
     
