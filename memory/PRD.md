@@ -3,7 +3,34 @@
 ## Projektöversikt
 Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb. Appen hjälper användare att spåra äggproduktion, hantera hönor och tuppar, få AI-drivna insikter och prenumerera på premium-funktioner.
 
-## Nyligen Slutförda Uppgifter (2026-03-02)
+## Nyligen Slutförda Uppgifter
+
+### Session 19: Safari-fix + Testverifiering (2026-03-02)
+
+#### ✅ Safari responsivitetsfix för statistiksidan
+- **Problem:** CSS `gap` property fungerade inte bra i äldre Safari-versioner
+- **Lösning:** Ersatt alla `gap`-stilar med `margin`-baserade alternativ
+- **Ändringar i `statistics.tsx`:**
+  - `statsGrid`: marginHorizontal: -6 istället för gap
+  - `statItem`: margin: 6 istället för gap
+  - `metricsGrid`: marginHorizontal: -6 istället för gap
+  - `metricCard`: margin: 6 istället för gap
+  - `changesGrid`: marginHorizontal: -4 istället för gap
+  - `changeItem`: margin: 4 istället för gap
+  - Lade till WebkitOverflowScrolling för smooth scrolling
+  - overflow: 'hidden' för att förhindra horisontellt overflow
+
+#### ✅ Testverifiering (iteration 26)
+- Backend: 100% (5/5 tester passerade)
+- Frontend: Mobil viewport (390x844) renderas korrekt utan overflow
+- AI-endpoints: /api/ai/daily-tip och /api/ai/egg-forecast fungerar
+- Hälsocheck: /api/health returnerar status: healthy
+
+#### Testade credentials:
+- Email: admin@test.com
+- Password: admin123
+
+---
 
 ### Session 18: Hem-skärm exakt webb-paritet + Streak (2026-03-02)
 
