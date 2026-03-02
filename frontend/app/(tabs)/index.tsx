@@ -1340,7 +1340,7 @@ export default function HomeScreen() {
               >
                 <Ionicons name="star" size={12} color={colors.warning} />
                 <Text style={{ fontSize: 11, color: colors.warning, fontWeight: '600' }}>
-                  {isSv ? 'Uppgradera' : 'Upgrade'}
+                  {MICROCOPY.buttons.primary.upgrade}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1363,12 +1363,12 @@ export default function HomeScreen() {
                   borderColor: colors.border,
                   opacity: 0.6,
                 }}
-                onPress={() => showPremiumGate(isSv ? 'Fråga Agda' : 'Ask Agda', 'chatbubble-ellipses')}
+                onPress={() => showPremiumGate(MICROCOPY.ai.askAgda.title, 'chatbubble-ellipses')}
                 activeOpacity={0.8}
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>🐔</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Fråga Agda</Text>
-                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 Kräver Premium</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{MICROCOPY.ai.askAgda.title}</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 {MICROCOPY.errors.unauthorized.title}</Text>
               </TouchableOpacity>
 
               {/* Dagens tips */}
@@ -1383,12 +1383,12 @@ export default function HomeScreen() {
                   borderColor: colors.border,
                   opacity: 0.6,
                 }}
-                onPress={() => showPremiumGate(isSv ? 'Dagens tips' : 'Daily Tip', 'bulb')}
+                onPress={() => showPremiumGate(MICROCOPY.ai.dailyTip.title, 'bulb')}
                 activeOpacity={0.8}
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>💡</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Dagens tips</Text>
-                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 Kräver Premium</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{MICROCOPY.ai.dailyTip.title}</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 {MICROCOPY.errors.unauthorized.title}</Text>
               </TouchableOpacity>
 
               {/* Dagsrapport */}
@@ -1403,12 +1403,12 @@ export default function HomeScreen() {
                   borderColor: colors.border,
                   opacity: 0.6,
                 }}
-                onPress={() => showPremiumGate(isSv ? 'AI Dagsrapport' : 'AI Daily Report', 'analytics')}
+                onPress={() => showPremiumGate(MICROCOPY.ai.dailyReport.title, 'analytics')}
                 activeOpacity={0.8}
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>📋</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Dagsrapport</Text>
-                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 Kräver Premium</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{MICROCOPY.ai.dailyReport.title}</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 {MICROCOPY.errors.unauthorized.title}</Text>
               </TouchableOpacity>
 
               {/* 7-dagars prognos */}
