@@ -5,6 +5,38 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter (2026-03-02)
 
+### Session 18: Hem-skärm exakt webb-paritet + Streak (2026-03-02)
+
+#### ✅ Hem-skärmen matchar nu webben EXAKT (bild 1)
+- **Borttagna komponenter:**
+  - "Eggs today/Hens" summary-kort - BORTTAGET
+  - Brun "Register eggs today" knapp - BORTTAGET
+  - "This month" sektion - BORTTAGET
+  - "Today's Chores" på hem - BORTTAGET
+  - "Week's Best Hen" kort - BORTTAGET
+  - "Weather" kort - BORTTAGET
+  - "Community Comparison" kort - BORTTAGET
+  - Gamla SECTION 6-12 - BORTTAGNA
+
+- **Ny layout (exakt som webb):**
+  1. Header: Hälsning + Gårdsnamn + Datum
+  2. Stat-strip: igår | hönor | 🔥streak | veckan | kr/mån
+  3. Grön "Registrera ägg" CTA
+  4. AI-INSIKT kort med citat + "Se AI-dagsrapport" knapp
+  5. 2 AI-kort: "Se 7-dagars prognos" | "Få smart flockråd"
+  6. MIN FLOCK: "Mina hönor" + "Lägg till höna"
+  7. Info om tupp
+  8. ANALYS & EKONOMI: Statistik | Ekonomi | Ägglogg | Dela
+
+#### ✅ Streak tillagt i stat-strip
+- Visar 🔥 och antal dagar i rad
+- Blir orange vid 7+ dagar
+- Finns i både app och webb
+
+#### Ändrade filer:
+- `frontend/app/(tabs)/index.tsx` - Total omskrivning av layout
+- `frontend/src/components/CompactDashboard.tsx` - Streak prop tillagt
+
 ### Session 17: P0 Fixlista - 6 buggar fixade (2026-03-02)
 
 #### ✅ 1) Premium i ExpoGo - Fallback till backend

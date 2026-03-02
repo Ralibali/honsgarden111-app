@@ -25,6 +25,7 @@ interface CompactDashboardProps {
   greeting: string;
   coopName: string;
   dateString: string;
+  streak?: number;  // Registreringsstreak i dagar
 }
 
 export default function CompactDashboard({
@@ -38,6 +39,7 @@ export default function CompactDashboard({
   greeting,
   coopName,
   dateString,
+  streak = 0,
 }: CompactDashboardProps) {
   const router = useRouter();
   const { colors } = useThemeStore();
@@ -71,7 +73,7 @@ export default function CompactDashboard({
         <Text style={styles.dateText}>{dateString}</Text>
       </View>
 
-      {/* Compact Stat Strip - now includes productivity */}
+      {/* Compact Stat Strip - now includes productivity and streak */}
       <View style={styles.statStrip}>
         <View style={styles.statItem}>
           <Text style={styles.statIcon}>🥚</Text>
@@ -85,12 +87,16 @@ export default function CompactDashboard({
           <Text style={styles.statLabel}>{henCount === 1 ? 'höna' : 'hönor'}</Text>
         </View>
         <View style={styles.statDivider} />
-        <View style={styles.statItem}>
-          <Text style={styles.statIcon}>📈</Text>
-          <Text style={styles.statValue}>{getLayingPercentage()}</Text>
-          <Text style={styles.statLabel}>produktivitet</Text>
-        </View>
-        <View style={styles.statDivider} />
+        {streak > 0 && (
+          <>
+            <View style={styles.statItem}>
+              <Text style={styles.statIcon}>🔥</Text>
+              <Text style={[styles.statValue, streak >= 7 && { color: '#f59e0b' }]}>{streak}</Text>
+              <Text style={styles.statLabel}>dagar</Text>
+            </View>
+            <View style={styles.statDivider} />
+          </>
+        )}
         <View style={styles.statItem}>
           <Text style={styles.statIcon}>📅</Text>
           <Text style={styles.statValue}>{eggsThisWeek}</Text>
