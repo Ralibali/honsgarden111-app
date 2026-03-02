@@ -1305,11 +1305,11 @@ export default function HomeScreen() {
           </View>
         )}
         
-        {/* ========== SECTION 11: AI & PREMIUM (Bottom) ========== */}
-        <View style={[styles.aiPremiumSection, { marginHorizontal: 16, marginBottom: 16 }]}>
-          <View style={styles.aiSectionHeader}>
-            <Text style={styles.aiSectionTitle}>🤖 AI & Premium</Text>
-            {!isPremium && (
+        {/* ========== SECTION 11: AI FEATURES GRID (Non-Premium users) ========== */}
+        {!isPremium && (
+          <View style={{ marginHorizontal: 16, marginBottom: 16 }} data-testid="ai-features-preview">
+            <View style={styles.aiSectionHeader}>
+              <Text style={styles.aiSectionTitle}>🤖 AI & Premium</Text>
               <TouchableOpacity 
                 onPress={() => router.push('/paywall')}
                 style={{
@@ -1327,91 +1327,96 @@ export default function HomeScreen() {
                   {isSv ? 'Uppgradera' : 'Upgrade'}
                 </Text>
               </TouchableOpacity>
-            )}
+            </View>
+            
+            {/* 2x2 Preview Grid for Non-Premium */}
+            <View style={{ 
+              flexDirection: 'row', 
+              flexWrap: 'wrap', 
+              gap: 10,
+            }}>
+              {/* Fråga Agda */}
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  minWidth: '47%',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  opacity: 0.6,
+                }}
+                onPress={() => setShowPremiumGate(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={{ fontSize: 26, marginBottom: 8 }}>🐔</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Fråga Agda</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 Kräver Premium</Text>
+              </TouchableOpacity>
+
+              {/* Dagens tips */}
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  minWidth: '47%',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  opacity: 0.6,
+                }}
+                onPress={() => setShowPremiumGate(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={{ fontSize: 26, marginBottom: 8 }}>💡</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Dagens tips</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 Kräver Premium</Text>
+              </TouchableOpacity>
+
+              {/* Dagsrapport */}
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  minWidth: '47%',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  opacity: 0.6,
+                }}
+                onPress={() => setShowPremiumGate(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={{ fontSize: 26, marginBottom: 8 }}>📋</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Dagsrapport</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 Kräver Premium</Text>
+              </TouchableOpacity>
+
+              {/* 7-dagars prognos */}
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  minWidth: '47%',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  opacity: 0.6,
+                }}
+                onPress={() => setShowPremiumGate(true)}
+                activeOpacity={0.8}
+              >
+                <Text style={{ fontSize: 26, marginBottom: 8 }}>📈</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>7-dagars prognos</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>🔒 Kräver Premium</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          
-          <View style={{ gap: 10 }}>
-            {/* Daily Tip */}
-            <TouchableOpacity 
-              style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
-              onPress={loadDailyTip}
-              activeOpacity={0.7}
-            >
-              <View style={styles.aiCardIcon}>
-                <Ionicons name="bulb" size={22} color={isPremium ? '#f59e0b' : '#9ca3af'} />
-              </View>
-              <View style={styles.aiCardContent}>
-                <Text style={styles.aiCardTitle}>{isSv ? 'Dagens tips' : 'Daily Tip'}</Text>
-                <Text style={[styles.aiCardDescription, !isPremium && { color: colors.textMuted }]}>
-                  {isPremium 
-                    ? (isSv ? 'Få ett dagligt AI-tips' : 'Get a daily AI tip')
-                    : (isSv ? 'Kräver Premium' : 'Requires Premium')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-            </TouchableOpacity>
-            
-            {/* Ask Agda */}
-            <TouchableOpacity 
-              style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
-              onPress={openAgdaModal}
-              activeOpacity={0.7}
-            >
-              <View style={styles.aiCardIcon}>
-                <Ionicons name="chatbubbles" size={22} color={isPremium ? '#8b5cf6' : '#9ca3af'} />
-              </View>
-              <View style={styles.aiCardContent}>
-                <Text style={styles.aiCardTitle}>{isSv ? 'Fråga Agda' : 'Ask Agda'}</Text>
-                <Text style={[styles.aiCardDescription, !isPremium && { color: colors.textMuted }]}>
-                  {isPremium 
-                    ? (isSv ? 'Din AI-rådgivare' : 'Your AI advisor')
-                    : (isSv ? 'Kräver Premium' : 'Requires Premium')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-            </TouchableOpacity>
-            
-            {/* AI Report */}
-            <TouchableOpacity 
-              style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
-              onPress={handleAiReportPress}
-              activeOpacity={0.7}
-            >
-              <View style={styles.aiCardIcon}>
-                <Ionicons name="document-text" size={22} color={isPremium ? colors.primary : '#9ca3af'} />
-              </View>
-              <View style={styles.aiCardContent}>
-                <Text style={styles.aiCardTitle}>{isSv ? 'AI Dagsrapport' : 'AI Daily Report'}</Text>
-                <Text style={[styles.aiCardDescription, !isPremium && { color: colors.textMuted }]}>
-                  {isPremium 
-                    ? (isSv ? 'Personlig AI-analys' : 'Personal AI analysis')
-                    : (isSv ? 'Kräver Premium' : 'Requires Premium')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-            </TouchableOpacity>
-            
-            {/* Egg Forecast */}
-            <TouchableOpacity 
-              style={[styles.aiCard, !isPremium && styles.aiCardBlurred]}
-              onPress={handleForecastPress}
-              activeOpacity={0.7}
-            >
-              <View style={styles.aiCardIcon}>
-                <Ionicons name="trending-up" size={22} color={isPremium ? colors.success : '#9ca3af'} />
-              </View>
-              <View style={styles.aiCardContent}>
-                <Text style={styles.aiCardTitle}>{isSv ? 'Äggprognos' : 'Egg Forecast'}</Text>
-                <Text style={[styles.aiCardDescription, !isPremium && { color: colors.textMuted }]}>
-                  {isPremium 
-                    ? (isSv ? '7 dagars prognos' : '7-day forecast')
-                    : (isSv ? 'Kräver Premium' : 'Requires Premium')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        )}
         
         {/* ========== SECTION 12: PREMIUM BANNER (Only for free users) ========== */}
         {!isPremium && (
