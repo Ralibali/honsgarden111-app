@@ -709,6 +709,21 @@ export default function HomeScreen() {
   const t = i18n.t.bind(i18n);
   const isSv = i18n.locale.startsWith('sv');
   
+  // Generate greeting based on time of day
+  const getGreeting = (): string => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return isSv ? 'God morgon!' : 'Good morning!';
+    } else if (hour >= 12 && hour < 17) {
+      return isSv ? 'God eftermiddag!' : 'Good afternoon!';
+    } else if (hour >= 17 && hour < 22) {
+      return isSv ? 'God kväll!' : 'Good evening!';
+    } else {
+      return isSv ? 'God natt!' : 'Good night!';
+    }
+  };
+  const greeting = getGreeting();
+  
   // Helper function to get weather icon based on description
   const getWeatherIcon = (description: string): string => {
     const desc = description?.toLowerCase() || '';
