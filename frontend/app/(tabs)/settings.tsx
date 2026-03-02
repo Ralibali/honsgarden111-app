@@ -585,25 +585,6 @@ export default function SettingsScreen() {
             </Text>
           </View>
           
-          {/* Theme Section - Locked to Rural */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{isSv ? 'Utseende' : 'Appearance'}</Text>
-            <View style={[styles.settingItem, { backgroundColor: colors.surface }]}>
-              <View style={styles.settingIcon}>
-                <Ionicons name="leaf" size={20} color={colors.primary} />
-              </View>
-              <View style={styles.settingContent}>
-                <Text style={[styles.settingLabel, { color: colors.text }]}>
-                  {isSv ? 'Lantligt tema' : 'Rural theme'}
-                </Text>
-                <Text style={[styles.settingDescription, { color: colors.textSecondary }]}>
-                  {isSv ? 'Varma, jordnära färger' : 'Warm, earthy colors'}
-                </Text>
-              </View>
-              <Ionicons name="checkmark-circle" size={24} color={colors.success} />
-            </View>
-          </View>
-          
           {/* Reminders Section (Premium) */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
