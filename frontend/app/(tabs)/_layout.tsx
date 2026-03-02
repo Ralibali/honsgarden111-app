@@ -97,6 +97,16 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="community"
+        options={{
+          href: null, // Community has been removed - this hides the auto-discovered tab
+          title: 'Community',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
