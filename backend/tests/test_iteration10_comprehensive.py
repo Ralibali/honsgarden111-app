@@ -7,7 +7,7 @@ import requests
 import uuid
 import time
 
-BASE_URL = "https://agda-rebuild.preview.emergentagent.com"
+BASE_URL = "https://garden-app-align.preview.emergentagent.com"
 
 
 class TestHealthAndBasics:

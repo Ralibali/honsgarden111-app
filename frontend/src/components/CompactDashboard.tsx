@@ -26,6 +26,7 @@ interface CompactDashboardProps {
   coopName: string;
   dateString: string;
   streak?: number;  // Registreringsstreak i dagar
+  weather?: { temperature: number; description: string } | null;  // Väderdata
 }
 
 export default function CompactDashboard({
@@ -40,6 +41,7 @@ export default function CompactDashboard({
   coopName,
   dateString,
   streak = 0,
+  weather = null,
 }: CompactDashboardProps) {
   const router = useRouter();
   const { colors } = useThemeStore();
@@ -63,14 +65,39 @@ export default function CompactDashboard({
   };
 
   const styles = createStyles(colors);
+  
+  // Väderikon baserat på beskrivning
+  const getWeatherIcon = (desc: string) => {
+    if (!desc) return '☀️';
+    const d = desc.toLowerCase();
+    if (d.includes('rain') || d.includes('regn')) return '🌧️';
+    if (d.includes('cloud') || d.includes('moln')) return '☁️';
+    if (d.includes('snow') || d.includes('snö')) return '❄️';
+    if (d.includes('thunder') || d.includes('åska')) return '⛈️';
+    if (d.includes('fog') || d.includes('dimma')) return '🌫️';
+    if (d.includes('clear') || d.includes('klar')) return '☀️';
+    return '🌤️';
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header with weather */}
       <View style={styles.header}>
-        <Text style={styles.greetingText}>{greeting}</Text>
-        <Text style={styles.coopName}>{coopName}</Text>
-        <Text style={styles.dateText}>{dateString}</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.greetingText}>{greeting}</Text>
+            <Text style={styles.coopName}>{coopName}</Text>
+            <Text style={styles.dateText}>{dateString}</Text>
+          </View>
+          {weather && (
+            <View style={{ alignItems: 'center', marginLeft: 12 }}>
+              <Text style={{ fontSize: 28 }}>{getWeatherIcon(weather.description)}</Text>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+                {Math.round(weather.temperature)}°
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
 
       {/* Compact Stat Strip - now includes productivity and streak */}

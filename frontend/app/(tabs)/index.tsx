@@ -763,6 +763,7 @@ export default function HomeScreen() {
             coopName={coopSettings?.coop_name || 'Min Hönsgård'}
             dateString={dateString}
             streak={summaryStats?.streak || 0}
+            weather={weather}
           />
         </View>
         

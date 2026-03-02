@@ -1249,14 +1249,21 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    // Safari fix: prevent horizontal overflow
+    overflow: 'hidden',
   },
   scrollView: {
     flex: 1,
-  },
+    // Safari fix: ensure proper scrolling behavior
+    WebkitOverflowScrolling: 'touch',
+  } as any,
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
-  },
+    // Safari fix: prevent content from overflowing
+    maxWidth: '100%',
+    overflow: 'hidden',
+  } as any,
   header: {
     marginBottom: 20,
   },
@@ -1277,7 +1284,6 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    gap: 6,
     borderWidth: 1,
     borderColor: colors.primary + '44',
   },
@@ -1352,8 +1358,9 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
     marginBottom: 16,
+    // Safari fix: use margin instead of gap
+    marginHorizontal: -6,
   },
   statItem: {
     flex: 1,
@@ -1362,11 +1369,13 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
+    // Safari fix: use margin instead of gap
+    margin: 6,
   },
   statHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    // Safari fix: use margin instead of gap
   },
   statValue: {
     fontSize: 24,
@@ -1385,7 +1394,7 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
-    gap: 2,
+    // Safari fix: remove gap
   },
   trendUp: {
     backgroundColor: colors.success + '22',
@@ -1396,6 +1405,7 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   trendText: {
     fontSize: 11,
     fontWeight: '600',
+    marginLeft: 2,
   },
   forecastCard: {
     flexDirection: 'row',
@@ -1404,13 +1414,13 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
-    gap: 12,
     borderWidth: 1,
     borderColor: colors.warning + '33',
   },
   forecastText: {
     fontSize: 14,
     color: colors.textSecondary,
+    marginLeft: 12,
   },
   forecastValue: {
     color: colors.text,
@@ -1478,12 +1488,12 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    gap: 4,
   },
   bestDayText: {
     fontSize: 11,
     color: colors.warning,
     fontWeight: '600',
+    marginLeft: 4,
   },
   trendIndicator: {
     height: 14,
@@ -1552,16 +1562,16 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   monthStats: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
   },
   monthStat: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    marginRight: 16,
   },
   monthStatText: {
     fontSize: 14,
     color: colors.text,
+    marginLeft: 4,
   },
   monthNet: {
     fontSize: 14,
@@ -1610,7 +1620,6 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     marginBottom: 16,
   },
   sectionTitle: {
@@ -1618,6 +1627,7 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontWeight: '600',
     color: colors.text,
     flex: 1,
+    marginLeft: 8,
   },
   premiumBadgeSmall: {
     padding: 4,
@@ -1687,14 +1697,17 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   metricsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    // Safari fix: use margin instead of gap
+    marginHorizontal: -6,
   },
   metricCard: {
-    width: '47%',
+    width: '46%',
     backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
+    // Safari fix: use margin instead of gap
+    margin: 6,
   },
   metricIconWrap: {
     width: 36,
@@ -1724,7 +1737,6 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   insightCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     backgroundColor: isDark ? 'rgba(255,215,0,0.1)' : 'rgba(255,215,0,0.15)',
     borderRadius: 10,
     padding: 12,
@@ -1734,6 +1746,7 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     fontSize: 14,
     color: colors.text,
     flex: 1,
+    marginLeft: 8,
   },
   insightHighlight: {
     fontWeight: '600',
@@ -1752,10 +1765,10 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
-    gap: 12,
   },
   trendBannerText: {
     flex: 1,
+    marginLeft: 12,
   },
   trendStatus: {
     fontSize: 18,
@@ -1804,15 +1817,18 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   changesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
     marginBottom: 16,
+    // Safari fix: use margin instead of gap
+    marginHorizontal: -4,
   },
   changeItem: {
-    width: '48%',
+    width: '47%',
     backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
     borderRadius: 10,
     padding: 12,
     alignItems: 'center',
+    // Safari fix: use margin instead of gap
+    margin: 4,
   },
   changeLabel: {
     fontSize: 12,
@@ -1822,11 +1838,12 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   changeValueRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    // Safari fix: use marginLeft instead of gap
   },
   changeValue: {
     fontSize: 18,
     fontWeight: '600',
+    marginLeft: 4,
   },
   insightsList: {
     borderTopWidth: 1,
@@ -1842,13 +1859,14 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
   insightItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
     marginBottom: 8,
+    // Safari fix: use marginRight instead of gap
   },
   insightItemText: {
     fontSize: 13,
     color: colors.textSecondary,
     flex: 1,
     lineHeight: 18,
+    marginLeft: 8,
   },
 });

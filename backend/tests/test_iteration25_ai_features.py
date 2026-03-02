@@ -15,7 +15,7 @@ import os
 import time
 
 # Base URL from environment - PUBLIC URL for testing
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://agda-rebuild.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://garden-app-align.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 TEST_EMAIL = "admin@test.com"
