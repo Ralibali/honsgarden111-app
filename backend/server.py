@@ -6348,7 +6348,8 @@ Anpassa tipset efter:
 @api_router.get("/ai/egg-forecast")
 async def get_egg_forecast(request: Request):
     """7-day egg production forecast - Premium only
-    Returns a blurred preview for free users"""
+    Returns a blurred preview for free users
+    ROBUST: Handles 0-2 days of data gracefully with data_quality indicators"""
     user_id = await require_user_id(request)
     
     # Check premium status
@@ -6373,29 +6374,81 @@ async def get_egg_forecast(request: Request):
     # Calculate averages and trends
     days_with_data = len(daily_totals)
     
-    if daily_totals:
-        avg_daily = sum(daily_totals.values()) / days_with_data
+    # Get active hen count
+    hens = await db.hens.count_documents({"user_id": user_id, "is_active": True, "hen_type": {"$ne": "rooster"}})
+    
+    # ROBUST: Handle low/no data scenarios
+    if days_with_data <= 2:
+        # Not enough data for forecast - return graceful response
+        data_quality = "low"
+        data_quality_label = "Otillräcklig"
         
-        # Calculate 7-day trend
-        last_7_days = [daily_totals.get(days_ago_stockholm(i), 0) for i in range(7)]
-        first_half = sum(last_7_days[4:7]) / 3 if any(last_7_days[4:7]) else avg_daily
-        second_half = sum(last_7_days[0:3]) / 3 if any(last_7_days[0:3]) else avg_daily
+        # Estimate based on hen count if we have hens but no data
+        estimated_daily = hens * 0.7 if hens > 0 else 0  # Assume 70% productivity
         
-        if first_half > 0:
-            trend_pct = ((second_half - first_half) / first_half) * 100
-        else:
-            trend_pct = 0
-            
-        if trend_pct > 5:
-            trend_direction = "up"
-        elif trend_pct < -5:
-            trend_direction = "down"
-        else:
-            trend_direction = "stable"
+        if not is_premium:
+            return {
+                "ok": True,
+                "is_premium": False,
+                "preview": True,
+                "used_fallback": False,
+                "data_quality": data_quality,
+                "forecast": {
+                    "message": "🔒 Din 7-dagars prognos kräver mer data. Uppgradera till Premium för att se den.",
+                    "blurred_preview": "Fortsätt registrera ägg för att få en noggrann prognos.",
+                    "avg_daily": round(estimated_daily, 1),
+                    "hen_count": hens,
+                    "days_of_data": days_with_data
+                }
+            }
+        
+        return {
+            "ok": True,
+            "is_premium": True,
+            "preview": False,
+            "used_fallback": False,
+            "data_quality": data_quality,
+            "forecast": {
+                "message": f"⚠️ Inte tillräckligt med data för en noggrann prognos. Registrera ägg i minst 3 dagar för bättre resultat.",
+                "daily_predictions": [
+                    {"date": days_ahead_stockholm(i + 1), "predicted_eggs": round(estimated_daily), "confidence": "low"}
+                    for i in range(7)
+                ],
+                "total_predicted": round(estimated_daily * 7),
+                "avg_daily": round(estimated_daily, 1),
+                "hen_count": hens,
+                "days_of_data": days_with_data,
+                "generated_at": now_stockholm().isoformat(),
+                "insights": {
+                    "trend_last_7_days": "unknown",
+                    "trend_percentage": 0,
+                    "best_day_of_week": None,
+                    "data_quality": 0,
+                    "data_quality_label": data_quality_label,
+                    "needs_more_data": True
+                }
+            }
+        }
+    
+    # Normal calculation with sufficient data
+    avg_daily = sum(daily_totals.values()) / days_with_data
+    
+    # Calculate 7-day trend
+    last_7_days = [daily_totals.get(days_ago_stockholm(i), 0) for i in range(7)]
+    first_half = sum(last_7_days[4:7]) / 3 if any(last_7_days[4:7]) else avg_daily
+    second_half = sum(last_7_days[0:3]) / 3 if any(last_7_days[0:3]) else avg_daily
+    
+    if first_half > 0:
+        trend_pct = ((second_half - first_half) / first_half) * 100
     else:
-        avg_daily = 0
-        trend_direction = "unknown"
         trend_pct = 0
+        
+    if trend_pct > 5:
+        trend_direction = "up"
+    elif trend_pct < -5:
+        trend_direction = "down"
+    else:
+        trend_direction = "stable"
     
     # Find best day of week (if enough data)
     best_day_of_week = None
@@ -6419,9 +6472,7 @@ async def get_egg_forecast(request: Request):
     
     # Data quality score
     data_quality = min(100, round((days_with_data / 30) * 100))
-    
-    # Get active hen count
-    hens = await db.hens.count_documents({"user_id": user_id, "is_active": True, "hen_type": {"$ne": "rooster"}})
+    data_quality_label = "Bra" if data_quality >= 70 else ("Medel" if data_quality >= 40 else "Låg")
     
     # Deterministic forecast based on trend (not random!)
     forecast = []
@@ -6456,9 +6507,11 @@ async def get_egg_forecast(request: Request):
     if not is_premium:
         # Return blurred preview for free users
         return {
+            "ok": True,
             "is_premium": False,
             "preview": True,
             "used_fallback": False,
+            "data_quality": data_quality_label.lower(),
             "forecast": {
                 "message": "🔒 Din 7-dagars prognos är klar! Uppgradera till Premium för att se den.",
                 "blurred_preview": f"Förväntat antal ägg nästa vecka: ~{total_forecast} ägg baserat på historik.",
@@ -6469,9 +6522,11 @@ async def get_egg_forecast(request: Request):
         }
     
     return {
+        "ok": True,
         "is_premium": True,
         "preview": False,
         "used_fallback": False,
+        "data_quality": data_quality_label.lower(),
         "forecast": {
             "daily_predictions": forecast,
             "total_predicted": total_forecast,
@@ -6479,13 +6534,12 @@ async def get_egg_forecast(request: Request):
             "hen_count": hens,
             "days_of_data": days_with_data,
             "generated_at": now_stockholm().isoformat(),
-            # New insight fields
             "insights": {
                 "trend_last_7_days": trend_direction,
                 "trend_percentage": round(trend_pct, 1),
                 "best_day_of_week": best_day_of_week,
                 "data_quality": data_quality,
-                "data_quality_label": "Bra" if data_quality >= 70 else ("Medel" if data_quality >= 40 else "Låg")
+                "data_quality_label": data_quality_label
             }
         }
     }
