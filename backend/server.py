@@ -6510,10 +6510,12 @@ async def get_ai_advisor(request: Request):
     
     if not is_premium:
         return {
+            "ok": False,
             "is_premium": False,
             "preview": True,
             "used_fallback": False,
-            "response": "🔒 AI-rådgivaren Agda är en Premium-funktion. Uppgradera för personliga råd om dina höns!"
+            "error": {"code": "PREMIUM_REQUIRED", "message": "Uppgradera till Premium för att använda AI-rådgivaren Agda."},
+            "answer": "🔒 AI-rådgivaren Agda är en Premium-funktion. Uppgradera för personliga råd om dina höns!"
         }
     
     # Get user's flock data
@@ -6536,14 +6538,30 @@ async def get_ai_advisor(request: Request):
     user = await db.users.find_one({"id": user_id}, {"_id": 0})
     user_name = user.get("name", "").split()[0] if user and user.get("name") else ""
     
+    # Robust AI call with timeout and logging
+    request_id = f"advisor-{user_id}-{uuid.uuid4().hex[:6]}"
+    start_time = time.time()
+    
+    # Fallback answers based on common questions
+    def generate_fallback_answer():
+        """Generate a fallback answer when AI is unavailable"""
+        common_tips = [
+            f"Med {hen_count} höns och {weekly_total} ägg senaste veckan ser din flock ut att må bra! Kom ihåg att ge dem tillgång till rent vatten och kalcium för starka äggskal.",
+            "Ett generellt tips: Kontrollera att dina höns har tillgång till torr sand för stoftbad - det hjälper dem att hålla parasiter borta naturligt.",
+            "Glöm inte att ge dina höns variation i kosten! Grönsaker som kål och spenat är både nyttigt och sysselsättande.",
+        ]
+        import random
+        return random.choice(common_tips) + "\n\n💛 Kacklande hälsningar, Agda 🐔"
+    
     try:
         if not EMERGENT_LLM_KEY:
             raise ValueError("EMERGENT_LLM_KEY not configured")
-            
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"advisor-{user_id}",
-            system_message=f"""{HONSGARD_KNOWLEDGE}
+        
+        async def call_agda():
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                session_id=f"advisor-{user_id}",
+                system_message=f"""{HONSGARD_KNOWLEDGE}
 
 Du pratar med {user_name if user_name else 'en hönsägare'}.
 Deras flock: {hen_count} höns och {rooster_count} tuppar.
@@ -6552,20 +6570,25 @@ Senaste hälsonoteringar: {len(health_logs)} st
 
 Ge konkreta, personliga råd baserat på deras situation.
 Svara på svenska, var vänlig men professionell.
-Om frågan är oklar, ge generella tips om hönsskötsel."""
-        ).with_model("openai", "gpt-4o")
+Om frågan är oklar, ge generella tips om hönsskötsel.
+Avsluta alltid med din signatur: '💛 Kacklande hälsningar, Agda 🐔'"""
+            ).with_model("openai", "gpt-4o")
+            
+            prompt = question if question else "Ge mig några tips för min hönsgård baserat på min nuvarande situation."
+            message = UserMessage(text=prompt)
+            return await chat.send_message(message)
         
-        prompt = question if question else "Ge mig några tips för min hönsgård baserat på min nuvarande situation."
-        
-        message = UserMessage(text=prompt)
-        ai_response = await chat.send_message(message)
+        # Execute with timeout
+        ai_response = await asyncio.wait_for(call_agda(), timeout=AI_TIMEOUT_SECONDS)
         
         # Normalize LLM response to plain string
         answer_text = normalize_llm_response(ai_response)
         
-        logger.info(f"AI advisor responded successfully for user {user_id}")
+        duration_ms = int((time.time() - start_time) * 1000)
+        logger.info(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/advisor duration_ms={duration_ms} status=success")
         
         return {
+            "ok": True,
             "is_premium": True,
             "preview": False,
             "used_fallback": False,
@@ -6577,15 +6600,43 @@ Om frågan är oklar, ge generella tips om hönsskötsel."""
                 "weekly_eggs": weekly_total
             }
         }
-    except Exception as e:
-        logger.error(f"AI advisor failed for user {user_id}: {e}")
+        
+    except asyncio.TimeoutError:
+        duration_ms = int((time.time() - start_time) * 1000)
+        logger.warning(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/advisor duration_ms={duration_ms} status=timeout")
+        
         return {
+            "ok": True,
+            "is_premium": True,
+            "preview": False,
+            "used_fallback": True,
+            "ai_provider_ok": True,
+            "error": {"code": "TIMEOUT", "message": "AI-tjänsten tog för lång tid. Försök igen om en stund."},
+            "answer": generate_fallback_answer(),
+            "context": {
+                "hen_count": hen_count,
+                "rooster_count": rooster_count,
+                "weekly_eggs": weekly_total
+            }
+        }
+        
+    except Exception as e:
+        duration_ms = int((time.time() - start_time) * 1000)
+        logger.error(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/advisor duration_ms={duration_ms} status=error error={str(e)}")
+        
+        return {
+            "ok": True,
             "is_premium": True,
             "preview": False,
             "used_fallback": True,
             "ai_provider_ok": False,
-            "answer": "Agda kunde tyvärr inte svara just nu. Det kan bero på tillfälliga problem med AI-tjänsten. Försök igen om en liten stund!",
-            "error": True
+            "error": {"code": "AI_ERROR", "message": "Agda kunde tyvärr inte svara just nu. Försök igen om en liten stund!"},
+            "answer": generate_fallback_answer(),
+            "context": {
+                "hen_count": hen_count,
+                "rooster_count": rooster_count,
+                "weekly_eggs": weekly_total
+            }
         }
 
 
