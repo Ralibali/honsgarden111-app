@@ -1125,8 +1125,8 @@ export default function HomeScreen() {
                 data-testid="ai-card-agda"
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>🐔</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Fråga Agda</Text>
-                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>Din AI-rådgivare</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{MICROCOPY.ai.askAgda.title}</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{MICROCOPY.ai.askAgda.subtitle}</Text>
               </TouchableOpacity>
 
               {/* Dagens tips */}
@@ -1145,8 +1145,8 @@ export default function HomeScreen() {
                 data-testid="ai-card-tip"
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>💡</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Dagens tips</Text>
-                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>Dagligt hönstips</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{MICROCOPY.ai.dailyTip.title}</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{MICROCOPY.ai.dailyTip.subtitle}</Text>
               </TouchableOpacity>
 
               {/* Dagsrapport */}
