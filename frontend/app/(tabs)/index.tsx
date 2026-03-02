@@ -1165,8 +1165,8 @@ export default function HomeScreen() {
                 data-testid="ai-card-report"
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>📋</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>Dagsrapport</Text>
-                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>Personlig AI-analys</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{MICROCOPY.ai.dailyReport.title}</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{MICROCOPY.ai.dailyReport.subtitle}</Text>
               </TouchableOpacity>
 
               {/* 7-dagars prognos */}
@@ -1185,8 +1185,8 @@ export default function HomeScreen() {
                 data-testid="ai-card-forecast"
               >
                 <Text style={{ fontSize: 26, marginBottom: 8 }}>📈</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>7-dagars prognos</Text>
-                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>Förutsäg produktion</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{MICROCOPY.ai.forecast.title}</Text>
+                <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{MICROCOPY.ai.forecast.subtitle}</Text>
               </TouchableOpacity>
             </View>
           </View>
