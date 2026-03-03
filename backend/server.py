@@ -6967,6 +6967,193 @@ async def get_daily_tip(request: Request):
     }
 
 
+# Weather-based AI tip endpoint with alerts (Premium only)
+class WeatherTipRequest(BaseModel):
+    weather: dict  # Current weather data
+    coop: dict  # Coop context: coop_name, hens_count, has_rooster
+
+class WeatherTipResponse(BaseModel):
+    ok: bool
+    data: Optional[dict] = None
+    error: Optional[str] = None
+
+WEATHER_FALLBACK_TIPS = [
+    "Håll koll på temperaturen i hönshuset. Höns trivs bäst mellan 10-24°C.",
+    "Vid kraftig vind, se till att hönshuset är tätt och drag-fritt.",
+    "Regn är sällan ett problem för höns, men de ska ha möjlighet att söka skydd.",
+    "Efter regn kan marken bli hal - kolla att ingen höna skadat sig.",
+    "Sol och värme är underbart, men se till att det finns skugga och vatten!",
+]
+
+WEATHER_ALERTS_DB = {
+    "extreme_cold": "⚠️ Extrem kyla! Se till att vattnet inte fryser och att hönshuset är isolerat.",
+    "extreme_heat": "⚠️ Värmevarning! Extra vattenkollar, skugga och eventuellt frysta frukter som godis.",
+    "storm": "⚠️ Storvarning! Stäng in hönsen och säkra allt som kan blåsa iväg.",
+    "heavy_rain": "⚠️ Kraftigt regn! Kontrollera att dräneringen fungerar och att hönshuset är torrt.",
+    "frost": "⚠️ Frost ikväll! Kolla att vattnet inte fryser - byt till tempererat vatten på morgonen.",
+}
+
+@api_router.post("/ai/weather-tip", response_model=WeatherTipResponse)
+async def get_weather_based_tip(request: Request, body: WeatherTipRequest):
+    """Premium-only: Get AI-generated weather-based tip with alerts
+    
+    Request body:
+    - weather: {temperature, description, humidity, wind_speed, etc.}
+    - coop: {coop_name, hens_count, has_rooster}
+    
+    Returns:
+    - {ok: true, data: {tip, alerts: []}} on success
+    - {ok: false, error: "message"} on failure
+    """
+    import asyncio
+    import uuid
+    
+    request_id = str(uuid.uuid4())[:8]
+    start_time = datetime.now(timezone.utc)
+    
+    try:
+        user_id = await require_user_id(request)
+        
+        # Check premium status
+        is_premium = await check_user_premium(user_id)
+        if not is_premium:
+            return WeatherTipResponse(
+                ok=False,
+                error="Den här funktionen kräver Premium. Uppgradera för att få väderbaserade råd!"
+            )
+        
+        weather = body.weather
+        coop = body.coop
+        
+        # Generate alerts based on conditions
+        alerts = []
+        temp = weather.get("temperature", weather.get("temp", 15))
+        description = weather.get("description", "").lower()
+        wind_speed = weather.get("wind_speed", 0)
+        
+        # Check for alert conditions
+        if temp < -10:
+            alerts.append(WEATHER_ALERTS_DB["extreme_cold"])
+        elif temp < 0:
+            alerts.append(WEATHER_ALERTS_DB["frost"])
+        elif temp > 30:
+            alerts.append(WEATHER_ALERTS_DB["extreme_heat"])
+        
+        if wind_speed > 20:
+            alerts.append(WEATHER_ALERTS_DB["storm"])
+        
+        if "storm" in description or "thunder" in description:
+            alerts.append(WEATHER_ALERTS_DB["storm"])
+        
+        if "heavy rain" in description or "kraftigt regn" in description:
+            alerts.append(WEATHER_ALERTS_DB["heavy_rain"])
+        
+        # Remove duplicates
+        alerts = list(set(alerts))[:3]  # Max 3 alerts
+        
+        # Try to generate AI tip with timeout
+        tip = None
+        used_fallback = False
+        
+        if OPENAI_API_KEY:
+            try:
+                # Build prompt
+                hens_info = f"{coop.get('hens_count', 'några')} höns"
+                rooster_info = " och en tupp" if coop.get('has_rooster') else ""
+                coop_name = coop.get('coop_name', 'din hönsgård')
+                
+                prompt = f"""Du är Agda, en varm och kunnig hönsmormor som ger råd till hönsgårdsägare.
+                
+Aktuellt väder:
+- Temperatur: {temp}°C
+- Väder: {description}
+- Vind: {wind_speed} m/s
+
+Gårdsinfo:
+- Namn: {coop_name}
+- Flock: {hens_info}{rooster_info}
+
+Ge ett kort, praktiskt råd (2-3 meningar) baserat på vädret och flockstorleken.
+Fokusera på vad ägaren bör tänka på idag. Var varm och personlig.
+Skriv på svenska. Avsluta inte med signatur."""
+
+                async def call_openai():
+                    import httpx
+                    async with httpx.AsyncClient() as client:
+                        response = await client.post(
+                            "https://api.openai.com/v1/chat/completions",
+                            headers={
+                                "Authorization": f"Bearer {OPENAI_API_KEY}",
+                                "Content-Type": "application/json"
+                            },
+                            json={
+                                "model": "gpt-4o-mini",
+                                "messages": [{"role": "user", "content": prompt}],
+                                "max_tokens": 200,
+                                "temperature": 0.7
+                            },
+                            timeout=14.0
+                        )
+                        if response.status_code == 200:
+                            data = response.json()
+                            return data["choices"][0]["message"]["content"].strip()
+                        return None
+                
+                tip = await asyncio.wait_for(call_openai(), timeout=15.0)
+                
+            except asyncio.TimeoutError:
+                logger.warning(f"[AI] weather-tip timeout for user {user_id}")
+                used_fallback = True
+            except Exception as e:
+                logger.error(f"[AI] weather-tip error: {e}")
+                used_fallback = True
+        else:
+            used_fallback = True
+        
+        # Use fallback if needed
+        if not tip:
+            import hashlib
+            today = today_str_stockholm()
+            seed = int(hashlib.md5(f"weather-{user_id}-{today}".encode()).hexdigest()[:8], 16)
+            tip = WEATHER_FALLBACK_TIPS[seed % len(WEATHER_FALLBACK_TIPS)]
+            
+            # Add temperature-specific addition
+            if temp < 5:
+                tip += " Tänk på att dina höns behöver extra energi när det är kallt."
+            elif temp > 25:
+                tip += " Se till att alla har gott om skugga och vatten idag!"
+            
+            used_fallback = True
+        
+        duration_ms = int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000)
+        logger.info(f"[AI] weather-tip request_id={request_id} user_id={user_id} duration_ms={duration_ms} used_fallback={used_fallback}")
+        
+        return WeatherTipResponse(
+            ok=True,
+            data={
+                "tip": tip,
+                "alerts": alerts,
+                "used_fallback": used_fallback,
+                "signature": "💛 Kacklande hälsningar, Agda 🐔"
+            }
+        )
+        
+    except HTTPException as e:
+        return WeatherTipResponse(ok=False, error=e.detail)
+    except Exception as e:
+        logger.error(f"[AI] weather-tip unexpected error: {e}")
+        # Always return a friendly fallback, never 500
+        return WeatherTipResponse(
+            ok=True,
+            data={
+                "tip": "Håll alltid koll på dina höns när vädret ändras. De är känsliga för snabba temperaturförändringar!",
+                "alerts": [],
+                "used_fallback": True,
+                "signature": "💛 Kacklande hälsningar, Agda 🐔"
+            }
+        )
+
+
 # Free tip endpoint for non-premium users (teaser)
 FREE_TIPS = [
     "Visste du att höns behöver 14-16 timmar ljus per dygn för optimal värpning? Under vintern kan artificiell belysning hjälpa.",

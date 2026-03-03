@@ -300,19 +300,22 @@ export default function AdminPanel() {
       
       if (res.ok) {
         const message = days === 0 
-          ? 'Premium borttaget' 
+          ? '✅ Premium borttaget' 
           : days === -1 
-            ? 'Premium för alltid aktiverat' 
-            : `Premium aktiverat i ${days} dagar`;
+            ? '✅ Premium för alltid aktiverat' 
+            : `✅ Premium aktiverat i ${days} dagar`;
         Alert.alert('Klart', message);
         setShowPremiumModal(false);
         loadUsers();
         loadSubscriptions();
       } else {
-        Alert.alert('Fel', 'Kunde inte uppdatera premium');
+        const errorData = await res.json().catch(() => ({}));
+        const errorMsg = errorData.detail || `Fel: ${res.status}`;
+        Alert.alert('Fel', `Kunde inte uppdatera premium.\n${errorMsg}`);
       }
     } catch (error) {
-      Alert.alert('Fel', 'Kunde inte ansluta till servern');
+      console.error('Admin premium update error:', error);
+      Alert.alert('Fel', 'Kunde inte ansluta till servern. Kontrollera din anslutning.');
     }
   };
 

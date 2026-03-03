@@ -32,16 +32,13 @@ export default function Premium() {
   const handlePurchase = async (plan: 'monthly' | 'yearly') => {
     setPurchasing(true);
     try {
-      // Use the full path including /api/web for proper routing
-      const baseUrl = window.location.origin + '/api/web';
-      
       const res = await fetch('/api/checkout/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           plan,
-          origin_url: baseUrl
+          origin_url: window.location.origin
         })
       });
       
@@ -57,8 +54,14 @@ export default function Premium() {
         throw new Error(errorData.detail || 'Failed to create checkout session');
       }
       
-      const { url } = await res.json();
-      window.location.href = url;
+      const data = await res.json();
+      // Use url or checkout_url from response
+      const checkoutUrl = data.url || data.checkout_url;
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error('Ingen checkout-URL mottagen');
+      }
     } catch (error) {
       console.error('Purchase failed:', error);
       alert('Något gick fel. Försök igen.');
