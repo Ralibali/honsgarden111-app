@@ -846,6 +846,7 @@
   line-height: 1.6;
   color: var(--text-primary);
   margin-bottom: 16px;
+  text-align: center;
 }
 
 .ai-category {
@@ -873,10 +874,38 @@
   background: var(--bg-secondary);
   border-radius: 10px;
   font-size: 14px;
+  margin-top: 16px;
 }
 
 .forecast-prediction strong {
   color: var(--accent-success);
+}
+
+.forecast-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.forecast-day {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.forecast-date {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.forecast-eggs {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 /* ══════════════════════════════════════════════════════════════════

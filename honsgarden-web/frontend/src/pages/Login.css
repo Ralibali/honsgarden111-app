@@ -426,6 +426,75 @@
 }
 
 /* Forgot Password Link */
+/* Remember Me Row */
+.remember-me-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.remember-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  position: relative;
+  padding-left: 28px;
+}
+
+.remember-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.remember-checkbox .checkmark {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 18px;
+  width: 18px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.remember-checkbox:hover .checkmark {
+  border-color: #4CAF50;
+}
+
+.remember-checkbox input:checked ~ .checkmark {
+  background: #4CAF50;
+  border-color: #4CAF50;
+}
+
+.remember-checkbox .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 5px;
+  top: 1px;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.remember-checkbox input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.remember-me-row .forgot-password-link {
+  margin-bottom: 0;
+  width: auto;
+}
+
 .forgot-password-link {
   background: none;
   border: none;

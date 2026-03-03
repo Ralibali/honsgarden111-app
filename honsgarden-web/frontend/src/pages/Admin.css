@@ -463,6 +463,15 @@
   display: flex;
   gap: 6px;
   align-items: center;
+  flex-wrap: nowrap;
+}
+
+.grant-premium-form .btn-success.btn-sm,
+.grant-premium-form .btn-cancel.btn-sm {
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+  min-width: 36px;
+  cursor: pointer;
 }
 
 .days-select {

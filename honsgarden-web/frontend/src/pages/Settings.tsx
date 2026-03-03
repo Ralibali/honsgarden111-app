@@ -454,7 +454,7 @@ export default function Settings() {
               className="btn-secondary test-btn"
               data-testid="send-test-reminder"
             >
-              {sendingTest ? 'Skickar...' : '📩 Skicka testpåminnelse'}
+              {sendingTest ? 'Skickar...' : '📩 Skicka påminnelse'}
             </button>
           </>
         )}

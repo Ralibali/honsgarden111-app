@@ -6243,18 +6243,17 @@ async def get_ai_daily_report(request: Request):
         return f"🐔 Daglig sammanfattning för {coop_name}: {total_eggs} ägg från {hen_count} höns idag. {productivity_text}{alert_text}\n\n💛 Kacklande hälsningar, Agda 🐔"
     
     try:
-        if not EMERGENT_LLM_KEY:
-            raise ValueError("EMERGENT_LLM_KEY not configured")
+        openai_key = os.environ.get('OPENAI_API_KEY') or os.environ.get('EMERGENT_LLM_KEY')
+        if not openai_key:
+            raise ValueError("No API key configured")
         
-        if not HAS_EMERGENT:
-            raise ValueError("AI features require emergentintegrations (not available on external deployments)")
-        
-        # Create AI chat with timeout
-        async def generate_ai_report():
-            chat = LlmChat(
-                api_key=EMERGENT_LLM_KEY,
-                session_id=f"daily-report-{user_id}-{today}",
-                system_message=f"""Du är Agda, en erfaren och varm hönsgårdsrådgivare med över 10 års erfarenhet.
+        # Use emergentintegrations if available, otherwise direct OpenAI
+        if HAS_EMERGENT and EMERGENT_LLM_KEY:
+            async def generate_ai_report():
+                chat = LlmChat(
+                    api_key=EMERGENT_LLM_KEY,
+                    session_id=f"daily-report-{user_id}-{today}",
+                    system_message=f"""Du är Agda, en erfaren och varm hönsgårdsrådgivare med över 10 års erfarenhet.
 Du skriver personliga, praktiska och uppmuntrande rapporter på svenska.
 Du använder din djupa kunskap om hönsskötsel för att ge relevanta tips baserat på säsong, väder och produktion.
 
@@ -6266,15 +6265,15 @@ VIKTIGT:
 - Ge ETT konkret, relevant tips baserat på data
 - Använd max 2-3 emojis
 - Avsluta alltid med 'Kacklande hälsningar, Agda 🐔'"""
-            ).with_model("openai", "gpt-4o")
-            
-            weather_info = ""
-            if weather_data:
-                temp = weather_data.get("temperature", "okänd")
-                desc = weather_data.get("description", "")
-                weather_info = f"- Väder idag: {temp}°C, {desc}"
-            
-            prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
+                ).with_model("openai", "gpt-4o")
+                
+                weather_info = ""
+                if weather_data:
+                    temp = weather_data.get("temperature", "okänd")
+                    desc = weather_data.get("description", "")
+                    weather_info = f"- Väder idag: {temp}°C, {desc}"
+                
+                prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
 
 DATA FÖR IDAG ({today}):
 - Antal ägg idag: {total_eggs}
@@ -6298,15 +6297,82 @@ Anpassa tipset efter:
 - Säsongen ({season_context})
 - Produktionsnivån ({productivity_pct:.0f}%)
 - Eventuella varningar"""
+                
+                message = UserMessage(text=prompt)
+                return await chat.send_message(message)
             
-            message = UserMessage(text=prompt)
-            return await chat.send_message(message)
-        
-        # Execute with timeout
-        ai_response = await asyncio.wait_for(generate_ai_report(), timeout=AI_TIMEOUT_SECONDS)
-        
-        # Normalize response
-        report_text = normalize_llm_response(ai_response)
+            ai_response = await asyncio.wait_for(generate_ai_report(), timeout=AI_TIMEOUT_SECONDS)
+            report_text = normalize_llm_response(ai_response)
+        else:
+            # Direct OpenAI API call for Render/external deployments
+            async def generate_openai_report():
+                import httpx
+                system_msg = f"""Du är Agda, en erfaren och varm hönsgårdsrådgivare med över 10 års erfarenhet.
+Du skriver personliga, praktiska och uppmuntrande rapporter på svenska.
+Du använder din djupa kunskap om hönsskötsel för att ge relevanta tips baserat på säsong, väder och produktion.
+
+{HONSGARD_KNOWLEDGE}
+
+VIKTIGT:
+- Håll rapporten under 120 ord
+- Var varm och personlig i tonen
+- Ge ETT konkret, relevant tips baserat på data
+- Använd max 2-3 emojis
+- Avsluta alltid med 'Kacklande hälsningar, Agda 🐔'"""
+                
+                weather_info = ""
+                if weather_data:
+                    temp = weather_data.get("temperature", "okänd")
+                    desc = weather_data.get("description", "")
+                    weather_info = f"- Väder idag: {temp}°C, {desc}"
+                
+                prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
+
+DATA FÖR IDAG ({today}):
+- Antal ägg idag: {total_eggs}
+- Antal aktiva höns: {hen_count}
+- Produktivitet: {productivity_pct:.0f}% (förväntat ~70-85% för bra värpraser)
+- Veckosnitt: {daily_average:.1f} ägg/dag
+- Produktivitetsvarningar: {', '.join(alerts) if alerts else 'Inga'}
+- Senaste hälsoanteckningar: {len(health_logs)} loggade
+{weather_info}
+
+SÄSONG: {season_context}
+
+Rapporten ska innehålla:
+1. En personlig hälsning till {user_name}
+2. Kort sammanfattning av produktion (jämför med veckosnitt/förväntat)
+3. ETT konkret, säsongsanpassat tips från din kunskap
+4. Din signatur"""
+                
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        "https://api.openai.com/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {openai_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "gpt-4o-mini",
+                            "messages": [
+                                {"role": "system", "content": system_msg},
+                                {"role": "user", "content": prompt}
+                            ],
+                            "max_tokens": 400,
+                            "temperature": 0.7
+                        },
+                        timeout=14.0
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        return data["choices"][0]["message"]["content"].strip()
+                    else:
+                        logger.error(f"[AI] OpenAI error: {response.status_code} - {response.text}")
+                        return None
+            
+            report_text = await asyncio.wait_for(generate_openai_report(), timeout=AI_TIMEOUT_SECONDS)
+            if not report_text:
+                raise ValueError("OpenAI returned empty response")
         
         duration_ms = int((time.time() - start_time) * 1000)
         logger.info(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/daily-report duration_ms={duration_ms} status=success")
@@ -6632,17 +6698,17 @@ async def get_ai_advisor(request: Request):
         return random.choice(common_tips) + "\n\n💛 Kacklande hälsningar, Agda 🐔"
     
     try:
-        if not EMERGENT_LLM_KEY:
-            raise ValueError("EMERGENT_LLM_KEY not configured")
+        openai_key = os.environ.get('OPENAI_API_KEY') or os.environ.get('EMERGENT_LLM_KEY')
+        if not openai_key:
+            raise ValueError("No API key configured")
         
-        if not HAS_EMERGENT:
-            raise ValueError("AI features require emergentintegrations")
-        
-        async def call_agda():
-            chat = LlmChat(
-                api_key=EMERGENT_LLM_KEY,
-                session_id=f"advisor-{user_id}",
-                system_message=f"""{HONSGARD_KNOWLEDGE}
+        # Use emergentintegrations if available, otherwise direct OpenAI
+        if HAS_EMERGENT and EMERGENT_LLM_KEY:
+            async def call_agda():
+                chat = LlmChat(
+                    api_key=EMERGENT_LLM_KEY,
+                    session_id=f"advisor-{user_id}",
+                    system_message=f"""{HONSGARD_KNOWLEDGE}
 
 Du pratar med {user_name if user_name else 'en hönsägare'}.
 Deras flock: {hen_count} höns och {rooster_count} tuppar.
@@ -6653,17 +6719,60 @@ Ge konkreta, personliga råd baserat på deras situation.
 Svara på svenska, var vänlig men professionell.
 Om frågan är oklar, ge generella tips om hönsskötsel.
 Avsluta alltid med din signatur: '💛 Kacklande hälsningar, Agda 🐔'"""
-            ).with_model("openai", "gpt-4o")
+                ).with_model("openai", "gpt-4o")
+                
+                prompt = question if question else "Ge mig några tips för min hönsgård baserat på min nuvarande situation."
+                message = UserMessage(text=prompt)
+                return await chat.send_message(message)
             
-            prompt = question if question else "Ge mig några tips för min hönsgård baserat på min nuvarande situation."
-            message = UserMessage(text=prompt)
-            return await chat.send_message(message)
-        
-        # Execute with timeout
-        ai_response = await asyncio.wait_for(call_agda(), timeout=AI_TIMEOUT_SECONDS)
-        
-        # Normalize LLM response to plain string
-        answer_text = normalize_llm_response(ai_response)
+            ai_response = await asyncio.wait_for(call_agda(), timeout=AI_TIMEOUT_SECONDS)
+            answer_text = normalize_llm_response(ai_response)
+        else:
+            # Direct OpenAI API call for Render/external deployments
+            async def call_openai_direct():
+                import httpx
+                system_msg = f"""{HONSGARD_KNOWLEDGE}
+
+Du pratar med {user_name if user_name else 'en hönsägare'}.
+Deras flock: {hen_count} höns och {rooster_count} tuppar.
+Ägg senaste veckan: {weekly_total}
+Senaste hälsonoteringar: {len(health_logs)} st
+
+Ge konkreta, personliga råd baserat på deras situation.
+Svara på svenska, var vänlig men professionell.
+Om frågan är oklar, ge generella tips om hönsskötsel.
+Avsluta alltid med din signatur: '💛 Kacklande hälsningar, Agda 🐔'"""
+                
+                prompt = question if question else "Ge mig några tips för min hönsgård baserat på min nuvarande situation."
+                
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        "https://api.openai.com/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {openai_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "gpt-4o-mini",
+                            "messages": [
+                                {"role": "system", "content": system_msg},
+                                {"role": "user", "content": prompt}
+                            ],
+                            "max_tokens": 500,
+                            "temperature": 0.7
+                        },
+                        timeout=14.0
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        return data["choices"][0]["message"]["content"].strip()
+                    else:
+                        logger.error(f"[AI] OpenAI error: {response.status_code} - {response.text}")
+                        return None
+            
+            answer_text = await asyncio.wait_for(call_openai_direct(), timeout=AI_TIMEOUT_SECONDS)
+            if not answer_text:
+                raise ValueError("OpenAI returned empty response")
         
         duration_ms = int((time.time() - start_time) * 1000)
         logger.info(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/advisor duration_ms={duration_ms} status=success")

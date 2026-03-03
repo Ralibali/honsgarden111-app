@@ -273,7 +273,8 @@ export default function Dashboard() {
       
       if (res.ok) {
         const data = await res.json();
-        setAdvisorHistory(prev => [...prev, { role: 'assistant', content: data.response }]);
+        const content = data.response || data.answer || "Kunde inte få svar.";
+        setAdvisorHistory(prev => [...prev, { role: 'assistant', content }]);
       }
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -701,7 +702,6 @@ export default function Dashboard() {
                   {aiModalType === 'tip' && (
                     <>
                       <p className="ai-tip">{aiData.tip}</p>
-                      {aiData.category && <span className="ai-category">{aiData.category}</span>}
                     </>
                   )}
                   {aiModalType === 'daily' && (
@@ -716,11 +716,23 @@ export default function Dashboard() {
                   )}
                   {aiModalType === 'forecast' && (
                     <>
-                      <p className="ai-forecast">{aiData.forecast}</p>
-                      {aiData.prediction && (
+                      {aiData.forecast?.message && (
+                        <p className="ai-forecast">{aiData.forecast.message}</p>
+                      )}
+                      {aiData.forecast?.daily_predictions && (
+                        <div className="forecast-list">
+                          {aiData.forecast.daily_predictions.map((day: any, i: number) => (
+                            <div key={i} className="forecast-day">
+                              <span className="forecast-date">{new Date(day.date).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+                              <span className="forecast-eggs">{day.predicted_eggs} ägg</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {aiData.forecast?.total_predicted && (
                         <div className="forecast-prediction">
-                          <span>Förväntat: </span>
-                          <strong>{aiData.prediction} ägg/dag</strong>
+                          <span>Totalt förväntat: </span>
+                          <strong>{aiData.forecast.total_predicted} ägg denna vecka</strong>
                         </div>
                       )}
                     </>

@@ -18,6 +18,7 @@ export default function Login() {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   
   // GDPR consent state
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -72,7 +73,7 @@ export default function Login() {
             accepted_terms: acceptedTerms,
             accepted_marketing: acceptedMarketing
           }
-        : { email, password };
+        : { email, password, remember_me: rememberMe };
       
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -225,14 +226,26 @@ export default function Login() {
                   data-testid="login-password"
                 />
               </div>
-
-              <button 
-                type="button" 
-                className="forgot-password-link"
-                onClick={() => setAuthMode('forgot')}
-              >
-                Glömt lösenord?
-              </button>
+              
+              <div className="remember-me-row">
+                <label className="remember-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    data-testid="remember-me"
+                  />
+                  <span className="checkmark"></span>
+                  <span>Kom ihåg mig i 30 dagar</span>
+                </label>
+                <button 
+                  type="button" 
+                  className="forgot-password-link"
+                  onClick={() => setAuthMode('forgot')}
+                >
+                  Glömt lösenord?
+                </button>
+              </div>
               
               <button 
                 type="submit" 
