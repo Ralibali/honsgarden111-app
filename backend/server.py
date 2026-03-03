@@ -8306,7 +8306,7 @@ else:
         "http://localhost:3000",
         "http://localhost:8081",
         "http://localhost:19006",
-        "https://garden-app-align.preview.emergentagent.com",
+        "https://honsgarden-render.preview.emergentagent.com",
     ]
     
     # Add any additional origins from environment variable

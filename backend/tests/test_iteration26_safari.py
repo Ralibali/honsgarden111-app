@@ -8,7 +8,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://garden-app-align.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://honsgarden-render.preview.emergentagent.com')
 
 class TestHealthAndBasicAPIs:
     """Test basic API endpoints"""

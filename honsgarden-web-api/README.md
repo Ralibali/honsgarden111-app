@@ -1,5 +1,24 @@
 # Hönsgården Web API
 
+## 🚨 VIKTIGT: MongoDB Connection String
+
+Din `MONGO_URL` måste använda `authSource=admin` - INTE `authSource=honsgarden`!
+
+### ❌ FEL (fungerar INTE):
+```
+mongodb+srv://honsgarden_main:PASSWORD@honsgarden.yatzdav.mongodb.net/honsgarden?retryWrites=true&w=majority&authSource=honsgarden
+```
+
+### ✅ RÄTT (fungerar):
+```
+mongodb+srv://honsgarden_main:PASSWORD@honsgarden.yatzdav.mongodb.net/honsgarden?retryWrites=true&w=majority&authSource=admin
+```
+
+### Varför?
+MongoDB Atlas-användare autentiseras mot `admin`-databasen, inte mot din app-databas.
+
+---
+
 Backend API för Hönsgården - en app för hönsägare.
 
 ## Deploy på Render
