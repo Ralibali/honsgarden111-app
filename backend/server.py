@@ -7014,8 +7014,25 @@ async def get_weather_based_tip(request: Request, body: WeatherTipRequest):
     try:
         user_id = await require_user_id(request)
         
-        # Check premium status
-        is_premium = await check_user_premium(user_id)
+        # Check premium status from subscriptions collection
+        subscription = await db.subscriptions.find_one(
+            {"user_id": user_id},
+            {"_id": 0, "is_active": 1, "expires_at": 1}
+        )
+        is_premium = False
+        if subscription:
+            is_active = subscription.get('is_active', False)
+            expires_at = subscription.get('expires_at')
+            if is_active:
+                if expires_at:
+                    # Handle both naive and aware datetime
+                    now = datetime.now(timezone.utc)
+                    if expires_at.tzinfo is None:
+                        expires_at = expires_at.replace(tzinfo=timezone.utc)
+                    is_premium = expires_at > now
+                else:
+                    is_premium = True
+        
         if not is_premium:
             return WeatherTipResponse(
                 ok=False,
@@ -7055,7 +7072,8 @@ async def get_weather_based_tip(request: Request, body: WeatherTipRequest):
         tip = None
         used_fallback = False
         
-        if OPENAI_API_KEY:
+        openai_key = os.environ.get('OPENAI_API_KEY') or os.environ.get('EMERGENT_LLM_KEY')
+        if openai_key:
             try:
                 # Build prompt
                 hens_info = f"{coop.get('hens_count', 'några')} höns"
@@ -7083,7 +7101,7 @@ Skriv på svenska. Avsluta inte med signatur."""
                         response = await client.post(
                             "https://api.openai.com/v1/chat/completions",
                             headers={
-                                "Authorization": f"Bearer {OPENAI_API_KEY}",
+                                "Authorization": f"Bearer {openai_key}",
                                 "Content-Type": "application/json"
                             },
                             json={

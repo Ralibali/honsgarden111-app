@@ -5,6 +5,39 @@ Hönsgården är en komplett hönsgårdshanteringsapp för iOS, Android och webb
 
 ## Nyligen Slutförda Uppgifter
 
+### Session 20: P0 Backend Implementation (2026-03-03)
+
+#### ✅ P0-8: Stripe Checkout/Create
+- **Fixat:** `origin_url = window.location.origin` i honsgarden-web
+- **Endpoint:** `POST /api/checkout/create` returnerar 200 + Stripe checkout URL
+- **Verifierat:** Stripe session skapas korrekt med metadata
+
+#### ✅ P0-10: AI Weather-Tip Endpoint
+- **Ny endpoint:** `POST /api/ai/weather-tip`
+- **Request:** `{weather: {temperature, description, wind_speed}, coop: {coop_name, hens_count, has_rooster}}`
+- **Response:** `{ok: true, data: {tip, alerts: [], used_fallback, signature}}`
+- **Features:**
+  - 15s timeout med snäll fallback
+  - Alerts för extrem kyla (<-10°C), frost (<0°C), värme (>30°C), storm (vind >20 m/s)
+  - Premium-only (returnerar `ok: false` för icke-premium)
+  - Aldrig 500-fel, alltid snäll svensk fallback
+
+#### ✅ P0-7: Admin PUT Subscriptions
+- **Endpoint:** `PUT /api/admin/subscriptions/{userId}`
+- **Request:** `{is_active: true, days: 30, plan: "admin_granted"}`
+- **Response:** `{message: "Prenumeration uppdaterad", user_id, is_active, days}`
+- **Förbättrad:** Tydlig UI-feedback med ✅ och felmeddelanden
+
+#### ✅ Frontend-fixar
+- Backend URL uppdaterad till `https://web-deploy-35.emergent.host`
+- Ägg-input gjord bredare och tydligare (height: 56, minWidth: 160, fontSize: 22)
+- Hönor actions wrap/overflow fixat med flexWrap
+- "Skicka testpåminnelse" → "Skicka påminnelse" i microcopy.ts
+- Väderbadge klickbar (öppnar vädermodal)
+- Safari responsivitetsfix för statistiksidan (gap → margin)
+
+---
+
 ### Session 19: Safari-fix + Testverifiering (2026-03-02)
 
 #### ✅ Safari responsivitetsfix för statistiksidan
