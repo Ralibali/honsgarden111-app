@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hönsgården Premium - Uppgradera idag</title>
+    <meta name="description" content="Uppgradera till Hönsgården Premium och lås upp alla funktioner. AI-rådgivning, äggprognos, hälsologg och mycket mer.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/api/web/favicon.svg">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --bg-card-hover: #22222e;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #4ade80;
+            --accent-green-dark: #22c55e;
+            --accent-gold: #ffd700;
+            --accent-orange: #f59e0b;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --gradient-green: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        
+        .logo-icon {
+            font-size: 2rem;
+        }
+        
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .header-cta {
+            padding: 0.625rem 1.25rem;
+            background: var(--gradient-green);
+            color: #000;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .header-cta:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(74, 222, 128, 0.4);
+        }
+        
+        /* Main Content */
+        .main {
+            padding-top: 80px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            position: relative;
+            padding: 5rem 2rem 4rem;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .hero-glow {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .hero-content {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 9999px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-badge ion-icon {
+            color: var(--accent-gold);
+            font-size: 1.25rem;
+        }
+        
+        .hero-badge span {
+            color: var(--accent-gold);
+            font-weight: 600;
+            font-size: 0.875rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero h1 span {
+            background: var(--gradient-green);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+        
+        /* Pricing Cards */
+        .pricing {
+            padding: 0 2rem 4rem;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .price-card {
+            position: relative;
+            background: var(--bg-card);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .price-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+        
+        .price-card.selected {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 30px rgba(74, 222, 128, 0.2);
+        }
+        
+        .price-card.popular {
+            background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: var(--accent-green);
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.375rem 0.875rem;
+            border-radius: 9999px;
+        }
+        
+        .price-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .price-card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .price-card-check {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .price-card.selected .price-card-check {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+        
+        .price-card.selected .price-card-check ion-icon {
+            color: #000;
+            font-size: 14px;
+        }
+        
+        .price-amount {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .price-amount .number {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        
+        .price-amount .currency {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+        
+        .price-per-month {
+            font-size: 0.875rem;
+            color: var(--accent-green);
+            font-weight: 500;
+        }
+        
+        .price-subtext {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        /* Trial Banner */
+        .trial-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 1rem;
+            max-width: 500px;
+            margin: 2rem auto;
+        }
+        
+        .trial-banner ion-icon {
+            color: var(--accent-orange);
+            font-size: 1.5rem;
+        }
+        
+        .trial-banner-text {
+            text-align: left;
+        }
+        
+        .trial-banner-title {
+            font-weight: 600;
+            color: var(--accent-orange);
+        }
+        
+        .trial-banner-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* CTA Button */
+        .cta-section {
+            padding: 0 2rem 4rem;
+            text-align: center;
+        }
+        
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.125rem 2.5rem;
+            background: var(--gradient-green);
+            color: #000;
+            font-size: 1.125rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 300px;
+        }
+        
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(74, 222, 128, 0.4);
+        }
+        
+        .cta-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .cta-button ion-icon {
+            font-size: 1.25rem;
+        }
+        
+        .cta-note {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        .cta-note ion-icon {
+            vertical-align: middle;
+            margin-right: 0.25rem;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 4rem 2rem;
+            background: var(--bg-secondary);
+        }
+        
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .features-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        
+        .features-header p {
+            color: var(--text-secondary);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .feature-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+        
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-icon ion-icon {
+            font-size: 1.5rem;
+            color: var(--accent-green);
+        }
+        
+        .feature-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        /* FAQ Section */
+        .faq {
+            padding: 4rem 2rem;
+        }
+        
+        .faq-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .faq-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        
+        .faq-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .faq-item {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .faq-question {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        
+        .faq-answer {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        .footer {
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .footer p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            color: var(--accent-green);
+        }
+        
+        /* Status Messages */
+        .status {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 500px;
+            border-radius: 0.75rem;
+        }
+        
+        .status.visible {
+            display: block;
+        }
+        
+        .status.success {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+        
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+        
+        .status.pending {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--accent-orange);
+            color: var(--accent-orange);
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .header {
+                padding: 0.875rem 1rem;
+            }
+            
+            .hero {
+                padding: 4rem 1.5rem 3rem;
+            }
+            
+            .pricing {
+                padding: 0 1rem 3rem;
+            }
+            
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .price-amount .number {
+                font-size: 2.5rem;
+            }
+            
+            .features {
+                padding: 3rem 1rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-button {
+                width: 100%;
+                min-width: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span class="logo-icon">🐔</span>
+                <span class="logo-text">Hönsgården</span>
+            </a>
+            <a href="/api/web/login" class="header-cta">Logga in</a>
+        </div>
+    </header>
+    
+    <main class="main">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-glow"></div>
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <ion-icon name="star"></ion-icon>
+                    <span>PREMIUM</span>
+                </div>
+                <h1>Lås upp hela <span>Hönsgården</span></h1>
+                <p class="hero-subtitle">
+                    Få AI-rådgivning, äggprognos, hälsologg och alla verktyg du behöver för en framgångsrik hönsgård.
+                </p>
+            </div>
+        </section>
+        
+        <!-- Pricing Cards -->
+        <section class="pricing">
+            <div class="pricing-grid">
+                <div class="price-card" data-plan="monthly" onclick="selectPlan('monthly')">
+                    <div class="price-card-header">
+                        <span class="price-card-title">Månatlig</span>
+                        <div class="price-card-check">
+                            <ion-icon name="checkmark"></ion-icon>
+                        </div>
+                    </div>
+                    <div class="price-amount">
+                        <span class="number">19</span>
+                        <span class="currency">kr/mån</span>
+                    </div>
+                    <p class="price-subtext">Flexibelt – avsluta när som helst</p>
+                </div>
+                
+                <div class="price-card popular selected" data-plan="yearly" onclick="selectPlan('yearly')">
+                    <div class="popular-badge">SPARA 35%</div>
+                    <div class="price-card-header">
+                        <span class="price-card-title">Årlig</span>
+                        <div class="price-card-check">
+                            <ion-icon name="checkmark"></ion-icon>
+                        </div>
+                    </div>
+                    <div class="price-amount">
+                        <span class="number">149</span>
+                        <span class="currency">kr/år</span>
+                    </div>
+                    <p class="price-per-month">12,42 kr/mån – bäst värde!</p>
+                </div>
+            </div>
+            
+            <div class="trial-banner">
+                <ion-icon name="gift"></ion-icon>
+                <div class="trial-banner-text">
+                    <div class="trial-banner-title">7 dagars gratis provperiod!</div>
+                    <div class="trial-banner-subtitle">Nya användare får prova Premium helt gratis</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div id="status" class="status"></div>
+            <button class="cta-button" id="checkoutBtn" onclick="initiateCheckout()">
+                <ion-icon name="card-outline"></ion-icon>
+                <span>Starta din prenumeration</span>
+            </button>
+            <p class="cta-note">
+                <ion-icon name="lock-closed"></ion-icon>
+                Säker betalning via Stripe. Avsluta när du vill.
+            </p>
+        </section>
+        
+        <!-- Features Section -->
+        <section class="features">
+            <div class="features-container">
+                <div class="features-header">
+                    <h2>Allt som ingår i Premium</h2>
+                    <p>Verktyg för att få ut det mesta av din hönsgård</p>
+                </div>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="sparkles"></ion-icon>
+                        </div>
+                        <h3>AI Dagsrapport</h3>
+                        <p>Få personliga insikter och rekommendationer baserat på din äggproduktion och väder.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="trending-up"></ion-icon>
+                        </div>
+                        <h3>Äggprognos 7 dagar</h3>
+                        <p>AI-driven prognos som hjälper dig planera baserat på historik och säsong.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="chatbubbles"></ion-icon>
+                        </div>
+                        <h3>AI-rådgivare "Agda"</h3>
+                        <p>Ställ frågor och få expertråd om allt från foder till sjukdomar.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="medkit"></ion-icon>
+                        </div>
+                        <h3>Hälsologg</h3>
+                        <p>Dokumentera och spåra dina hönors hälsa med varningar och påminnelser.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="egg"></ion-icon>
+                        </div>
+                        <h3>Kläckningsmodul</h3>
+                        <p>Håll koll på äggkläckning med nedräkning och detaljerad statistik.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="leaf"></ion-icon>
+                        </div>
+                        <h3>Foderhantering</h3>
+                        <p>Spåra foderinköp och förbrukning för bättre ekonomisk översikt.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="cloudy"></ion-icon>
+                        </div>
+                        <h3>Vädertips</h3>
+                        <p>Anpassade tips baserat på vädret för att skydda din flock.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="analytics"></ion-icon>
+                        </div>
+                        <h3>Avancerad statistik</h3>
+                        <p>Djupgående analyser, trender och PDF-export av din data.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="infinite"></ion-icon>
+                        </div>
+                        <h3>Obegränsad historik</h3>
+                        <p>Spara all data utan tidsgräns för långsiktig uppföljning.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <ion-icon name="layers"></ion-icon>
+                        </div>
+                        <h3>Obegränsade flockar</h3>
+                        <p>Hantera flera flockar och hönsgårdar i samma konto.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- FAQ Section -->
+        <section class="faq">
+            <div class="faq-container">
+                <div class="faq-header">
+                    <h2>Vanliga frågor</h2>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Hur fungerar provperioden?</div>
+                    <div class="faq-answer">
+                        Nya användare får 7 dagars gratis provperiod. Under denna tid har du full tillgång till alla Premium-funktioner. 
+                        Du debiteras inte förrän provperioden är över, och du kan avsluta när som helst innan dess.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Kan jag avsluta min prenumeration när som helst?</div>
+                    <div class="faq-answer">
+                        Ja! Du kan avsluta din prenumeration när som helst direkt från inställningarna i appen. 
+                        Din Premium-åtkomst fortsätter till slutet av din nuvarande betalningsperiod.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Vilka betalningsmetoder accepteras?</div>
+                    <div class="faq-answer">
+                        Vi accepterar alla större kredit- och betalkort (Visa, Mastercard, American Express) via Stripe. 
+                        Alla transaktioner är säkra och krypterade.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Fungerar Premium i både appen och på webben?</div>
+                    <div class="faq-answer">
+                        Ja! Din Premium-prenumeration ger dig tillgång till alla funktioner både i mobilappen (iOS/Android) 
+                        och på webben. Logga bara in med samma konto.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Har ni någon återbetalningspolicy?</div>
+                    <div class="faq-answer">
+                        Om du inte är nöjd med Premium kan du kontakta oss inom 30 dagar från ditt första köp 
+                        för full återbetalning. Kontakta oss på info@honsgarden.se.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <p>
+            © 2026 Hönsgården · 
+            <a href="/api/privacy">Integritetspolicy</a> · 
+            <a href="/api/terms">Villkor</a> · 
+            <a href="mailto:info@honsgarden.se">Kontakt</a>
+        </p>
+    </footer>
+    
+    <script>
+        let selectedPlan = 'yearly';
+        let currentUser = null;
+        
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            document.querySelectorAll('.price-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-plan="${plan}"]`).classList.add('selected');
+        }
+        
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status visible ${type}`;
+        }
+        
+        function hideStatus() {
+            document.getElementById('status').className = 'status';
+        }
+        
+        function setButtonLoading(loading) {
+            const btn = document.getElementById('checkoutBtn');
+            if (loading) {
+                btn.disabled = true;
+                btn.innerHTML = '<div class="spinner"></div><span>Förbereder betalning...</span>';
+            } else {
+                btn.disabled = false;
+                updateButtonState();
+            }
+        }
+        
+        function updateButtonState() {
+            const btn = document.getElementById('checkoutBtn');
+            if (currentUser) {
+                btn.innerHTML = '<ion-icon name="card-outline"></ion-icon><span>Starta din prenumeration</span>';
+                btn.onclick = initiateCheckout;
+            } else {
+                btn.innerHTML = '<ion-icon name="log-in-outline"></ion-icon><span>Logga in för att prenumerera</span>';
+                btn.onclick = redirectToLogin;
+            }
+        }
+        
+        function redirectToLogin() {
+            window.location.href = '/api/web/login?redirect=/api/premium-page';
+        }
+        
+        // Get auth token from cookies
+        function getAuthToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'session_token' || name === 'auth_token') {
+                    return value;
+                }
+            }
+            return localStorage.getItem('session_token') || localStorage.getItem('auth_token');
+        }
+        
+        // Check if user is logged in
+        async function checkAuthStatus() {
+            try {
+                const authToken = getAuthToken();
+                const headers = { 'Content-Type': 'application/json' };
+                
+                if (authToken) {
+                    headers['Authorization'] = 'Bearer ' + authToken;
+                }
+                
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include',
+                    headers: headers
+                });
+                if (response.ok) {
+                    currentUser = await response.json();
+                    updateHeaderForLoggedIn();
+                }
+            } catch (error) {
+                console.log('Not logged in');
+            }
+            updateButtonState();
+        }
+        
+        function updateHeaderForLoggedIn() {
+            const headerCta = document.querySelector('.header-cta');
+            if (headerCta && currentUser) {
+                headerCta.textContent = currentUser.name || currentUser.email.split('@')[0];
+                headerCta.href = '/api/web';
+            }
+        }
+        
+        // Check for return from Stripe
+        function checkReturnFromStripe() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session_id');
+            
+            if (sessionId) {
+                updateStatus('Verifierar betalning...', 'pending');
+                pollPaymentStatus(sessionId);
+            }
+        }
+        
+        async function pollPaymentStatus(sessionId, attempts = 0) {
+            const maxAttempts = 10;
+            const pollInterval = 2000;
+            
+            if (attempts >= maxAttempts) {
+                updateStatus('Kunde inte verifiera betalningen. Kontrollera din e-post för bekräftelse.', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/checkout/status/${sessionId}`);
+                if (!response.ok) throw new Error('Kunde inte kontrollera status');
+                
+                const data = await response.json();
+                
+                if (data.payment_status === 'paid' || data.status === 'complete') {
+                    updateStatus('🎉 Betalningen lyckades! Välkommen till Hönsgården Premium!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/api/web';
+                    }, 3000);
+                    return;
+                } else if (data.status === 'expired') {
+                    updateStatus('Betalningssessionen har gått ut. Försök igen.', 'error');
+                    return;
+                }
+                
+                setTimeout(() => pollPaymentStatus(sessionId, attempts + 1), pollInterval);
+            } catch (error) {
+                console.error('Fel vid statuskontroll:', error);
+                updateStatus('Fel vid verifiering. Försök igen eller kontakta support.', 'error');
+            }
+        }
+        
+        async function initiateCheckout() {
+            if (!currentUser) {
+                redirectToLogin();
+                return;
+            }
+            
+            hideStatus();
+            setButtonLoading(true);
+            
+            try {
+                const originUrl = window.location.origin;
+                
+                // Get auth token from localStorage
+                const authToken = localStorage.getItem('auth_token') || localStorage.getItem('token');
+                
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add authorization header if token exists
+                if (authToken) {
+                    headers['Authorization'] = 'Bearer ' + authToken;
+                }
+                
+                const response = await fetch('/api/checkout/create', {
+                    method: 'POST',
+                    headers: headers,
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        plan: selectedPlan,
+                        origin_url: originUrl,
+                        user_id: currentUser.id || currentUser._id
+                    })
+                });
+                
+                if (response.status === 401) {
+                    updateStatus('Du måste logga in för att prenumerera.', 'error');
+                    setButtonLoading(false);
+                    currentUser = null;
+                    updateButtonState();
+                    return;
+                }
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Kunde inte skapa betalningssession');
+                }
+                
+                const data = await response.json();
+                
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error('Ingen betalningslänk mottagen');
+                }
+            } catch (error) {
+                console.error('Betalningsfel:', error);
+                updateStatus(error.message, 'error');
+                setButtonLoading(false);
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkReturnFromStripe();
+            checkAuthStatus();
+        });
+    </script>
+</body>
+</html>
