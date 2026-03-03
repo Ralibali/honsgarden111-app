@@ -1211,6 +1211,24 @@ export default function HomeScreen() {
                   </Text>
                 </View>
                 
+                {/* Show alerts if any */}
+                {aiReport.data?.alerts && aiReport.data.alerts.length > 0 && (
+                  <View style={[styles.alertsCard, { backgroundColor: colors.error + '15', borderColor: colors.error + '30' }]}>
+                    <View style={styles.alertsHeader}>
+                      <Ionicons name="warning" size={20} color={colors.error} />
+                      <Text style={[styles.alertsTitle, { color: colors.error }]}>
+                        {isSv ? 'Varningar' : 'Alerts'}
+                      </Text>
+                    </View>
+                    {aiReport.data.alerts.map((alert: string, index: number) => (
+                      <View key={index} style={styles.alertRow}>
+                        <Text style={styles.alertBullet}>⚠️</Text>
+                        <Text style={[styles.alertText, { color: colors.text }]}>{alert}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                
                 {aiReport.tips && aiReport.tips.length > 0 && (
                   <View style={[styles.tipsCard, { backgroundColor: colors.surface }]}>
                     <Text style={[styles.tipsTitle, { color: colors.text }]}>
@@ -3423,6 +3441,37 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     marginTop: 2,
   },
   tipText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  // Alerts card styles
+  alertsCard: {
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  alertsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  alertsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  alertRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    alignItems: 'flex-start',
+  },
+  alertBullet: {
+    fontSize: 14,
+    marginRight: 8,
+  },
+  alertText: {
     flex: 1,
     fontSize: 14,
     lineHeight: 20,

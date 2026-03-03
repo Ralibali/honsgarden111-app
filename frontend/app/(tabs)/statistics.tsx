@@ -1359,18 +1359,18 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginBottom: 16,
-    // Safari fix: use margin instead of gap
-    marginHorizontal: -6,
+    marginHorizontal: -4,
+    justifyContent: 'space-between',
   },
   statItem: {
-    flex: 1,
-    minWidth: '30%',
+    width: '47%',
+    minWidth: 140,
     backgroundColor: colors.surface,
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     alignItems: 'center',
-    // Safari fix: use margin instead of gap
-    margin: 6,
+    margin: 4,
+    marginBottom: 8,
   },
   statHeader: {
     flexDirection: 'row',
