@@ -27,6 +27,7 @@ interface CompactDashboardProps {
   dateString: string;
   streak?: number;  // Registreringsstreak i dagar
   weather?: { temperature: number; description: string } | null;  // Väderdata
+  onWeatherPress?: () => void;  // Callback för att öppna vädermodal
 }
 
 export default function CompactDashboard({
@@ -42,6 +43,7 @@ export default function CompactDashboard({
   dateString,
   streak = 0,
   weather = null,
+  onWeatherPress,
 }: CompactDashboardProps) {
   const router = useRouter();
   const { colors } = useThemeStore();
@@ -90,12 +92,16 @@ export default function CompactDashboard({
             <Text style={styles.dateText}>{dateString}</Text>
           </View>
           {weather && (
-            <View style={{ alignItems: 'center', marginLeft: 12 }}>
+            <TouchableOpacity 
+              style={{ alignItems: 'center', marginLeft: 12, padding: 4 }}
+              onPress={onWeatherPress}
+              activeOpacity={0.7}
+            >
               <Text style={{ fontSize: 28 }}>{getWeatherIcon(weather.description)}</Text>
               <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
                 {Math.round(weather.temperature)}°
               </Text>
-            </View>
+            </TouchableOpacity>
           )}
         </View>
       </View>

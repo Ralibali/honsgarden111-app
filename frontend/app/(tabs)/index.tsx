@@ -764,6 +764,7 @@ export default function HomeScreen() {
             dateString={dateString}
             streak={summaryStats?.streak || 0}
             weather={weather}
+            onWeatherPress={() => setShowWeatherModal(true)}
           />
         </View>
         
@@ -3284,17 +3285,21 @@ const createStyles = (colors: ThemeColors, isDark: boolean) => StyleSheet.create
     flexDirection: 'row',
     gap: 12,
     marginBottom: 16,
+    alignItems: 'center',
   },
   customEggInput: {
     flex: 1,
     height: 56,
-    minWidth: 140,
-    backgroundColor: colors.surfaceSecondary,
+    minWidth: 160,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
     borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 20,
+    paddingHorizontal: 20,
+    fontSize: 22,
+    fontWeight: '600',
     color: colors.text,
     textAlign: 'center',
+    borderWidth: 2,
+    borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
   },
   customAddButton: {
     height: 50,

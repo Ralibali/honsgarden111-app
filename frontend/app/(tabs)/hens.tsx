@@ -1709,9 +1709,23 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   markSeenBtnHighlight: { backgroundColor: '#22c55e', shadowColor: '#22c55e', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 4 },
   markSeenText: { color: '#FFF', fontSize: 11, fontWeight: '600' },
   
-  // Action Buttons
-  henActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
-  actionBtn: { flex: 1, backgroundColor: colors.surfaceSecondary, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
+  // Action Buttons - Fixed overflow with flexWrap
+  henActions: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap',
+    marginHorizontal: -4,
+    marginTop: 12,
+  },
+  actionBtn: { 
+    minWidth: '30%',
+    flexGrow: 1,
+    backgroundColor: colors.surfaceSecondary, 
+    paddingVertical: 10, 
+    paddingHorizontal: 8,
+    borderRadius: 10, 
+    alignItems: 'center',
+    margin: 4,
+  },
   actionBtnText: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
   
   // Health Preview

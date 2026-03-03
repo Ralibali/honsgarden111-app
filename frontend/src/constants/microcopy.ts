@@ -206,7 +206,7 @@ export const MICROCOPY = {
       title: 'Påminnelser',
       enable: 'Aktivera påminnelser',
       time: 'Tid för påminnelse',
-      sendTest: 'Skicka testpåminnelse',
+      sendTest: 'Skicka påminnelse',
     },
     support: {
       title: 'Kontakt & support',
