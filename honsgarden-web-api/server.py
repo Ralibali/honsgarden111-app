@@ -23,14 +23,8 @@ import stripe
 from collections import defaultdict
 import time
 
-# AI Integration - Optional for external deployments (Render, etc.)
-try:
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
-    HAS_EMERGENT = True
-except ImportError:
-    HAS_EMERGENT = False
-    LlmChat = None
-    UserMessage = None
+# AI Integration - Uses OpenAI directly
+import httpx  # For direct OpenAI API calls
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -39,12 +33,12 @@ load_dotenv(ROOT_DIR / '.env')
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# AI Key - verify and log status at startup
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
-if not EMERGENT_LLM_KEY:
-    logger.error("⚠️ CRITICAL: EMERGENT_LLM_KEY is not set! AI features will use fallback responses.")
+# OpenAI API Key - verify and log status at startup
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+if not OPENAI_API_KEY:
+    logger.error("⚠️ CRITICAL: OPENAI_API_KEY is not set! AI features will use fallback responses.")
 else:
-    logger.info("✅ EMERGENT_LLM_KEY is configured")
+    logger.info("✅ OPENAI_API_KEY is configured")
 
 # Stockholm timezone helper
 STOCKHOLM_TZ = ZoneInfo("Europe/Stockholm")
@@ -624,8 +618,8 @@ NOVEMBER-DECEMBER:
 - Underhåll och reparationer i hönshuset
 """
 
-# Import Stripe checkout helper
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+# Import Stripe - using direct SDK instead of emergentintegrations
+import stripe
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -2658,48 +2652,49 @@ async def get_checkout_status(session_id: str, request: Request):
     """Get checkout session status"""
     user = await require_user(request)
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
-    status = await stripe_checkout.get_checkout_status(session_id)
-    
-    # Update transaction status
-    if status.payment_status == "paid":
-        # Find the transaction
-        transaction = await db.payment_transactions.find_one({"session_id": session_id})
-        if transaction and transaction.get("payment_status") != "paid":
-            # Update transaction
-            await db.payment_transactions.update_one(
-                {"session_id": session_id},
-                {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc)}}
-            )
-            
-            # Activate premium for user
-            plan = transaction.get("plan", "monthly")
-            if plan == "yearly":
-                expires_at = datetime.now(timezone.utc) + timedelta(days=365)
-            else:
-                expires_at = datetime.now(timezone.utc) + timedelta(days=30)
-            
-            await db.subscriptions.update_one(
-                {"user_id": user.user_id},
-                {"$set": {
-                    "is_active": True,
-                    "plan": plan,
-                    "expires_at": expires_at,
-                    "stripe_session_id": session_id,
-                    "updated_at": datetime.now(timezone.utc)
-                }},
-                upsert=True
-            )
-    
-    return {
-        "status": status.status,
-        "payment_status": status.payment_status,
-        "amount_total": status.amount_total,
-        "currency": status.currency
-    }
+    try:
+        stripe.api_key = STRIPE_API_KEY
+        session = stripe.checkout.Session.retrieve(session_id)
+        
+        # Update transaction status
+        if session.payment_status == "paid":
+            # Find the transaction
+            transaction = await db.payment_transactions.find_one({"session_id": session_id})
+            if transaction and transaction.get("payment_status") != "paid":
+                # Update transaction
+                await db.payment_transactions.update_one(
+                    {"session_id": session_id},
+                    {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc)}}
+                )
+                
+                # Activate premium for user
+                plan = transaction.get("plan", "monthly")
+                if plan == "yearly":
+                    expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+                else:
+                    expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+                
+                await db.subscriptions.update_one(
+                    {"user_id": user.user_id},
+                    {"$set": {
+                        "is_active": True,
+                        "plan": plan,
+                        "expires_at": expires_at,
+                        "stripe_session_id": session_id,
+                        "updated_at": datetime.now(timezone.utc)
+                    }},
+                    upsert=True
+                )
+        
+        return {
+            "status": session.status,
+            "payment_status": session.payment_status,
+            "amount_total": session.amount_total,
+            "currency": session.currency
+        }
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
@@ -2707,43 +2702,54 @@ async def stripe_webhook(request: Request):
     body = await request.body()
     signature = request.headers.get("Stripe-Signature")
     
-    host_url = str(request.base_url).rstrip('/')
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    stripe.api_key = STRIPE_API_KEY
+    webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
     
     try:
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
-        logger.info(f"Webhook received: {webhook_response.event_type}")
+        if webhook_secret:
+            event = stripe.Webhook.construct_event(body, signature, webhook_secret)
+        else:
+            # If no webhook secret, parse event directly (less secure)
+            import json
+            event = stripe.Event.construct_from(json.loads(body), stripe.api_key)
         
-        if webhook_response.payment_status == "paid":
-            user_id = webhook_response.metadata.get("user_id")
-            plan = webhook_response.metadata.get("plan", "monthly")
+        logger.info(f"Webhook received: {event.type}")
+        
+        if event.type == "checkout.session.completed":
+            session = event.data.object
             
-            if user_id:
-                if plan == "yearly":
-                    expires_at = datetime.now(timezone.utc) + timedelta(days=365)
-                else:
-                    expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+            if session.payment_status == "paid":
+                user_id = session.metadata.get("user_id")
+                plan = session.metadata.get("plan", "monthly")
                 
-                await db.subscriptions.update_one(
-                    {"user_id": user_id},
-                    {"$set": {
-                        "is_active": True,
-                        "plan": plan,
-                        "expires_at": expires_at,
-                        "stripe_session_id": webhook_response.session_id,
-                        "updated_at": datetime.now(timezone.utc)
-                    }},
-                    upsert=True
-                )
-                
-                # Update payment transaction
-                await db.payment_transactions.update_one(
-                    {"session_id": webhook_response.session_id},
-                    {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc)}}
-                )
+                if user_id:
+                    if plan == "yearly":
+                        expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+                    else:
+                        expires_at = datetime.now(timezone.utc) + timedelta(days=30)
+                    
+                    await db.subscriptions.update_one(
+                        {"user_id": user_id},
+                        {"$set": {
+                            "is_active": True,
+                            "plan": plan,
+                            "expires_at": expires_at,
+                            "stripe_session_id": session.id,
+                            "updated_at": datetime.now(timezone.utc)
+                        }},
+                        upsert=True
+                    )
+                    
+                    # Update payment transaction
+                    await db.payment_transactions.update_one(
+                        {"session_id": session.id},
+                        {"$set": {"payment_status": "paid", "updated_at": datetime.now(timezone.utc)}}
+                    )
         
         return {"status": "ok"}
+    except stripe.error.SignatureVerificationError as e:
+        logger.error(f"Webhook signature verification failed: {e}")
+        raise HTTPException(status_code=400, detail="Invalid signature")
     except Exception as e:
         logger.error(f"Webhook error: {e}")
         return {"status": "error", "message": str(e)}
@@ -6070,7 +6076,7 @@ async def update_user_subscription(request: Request, user_id: str):
 
 # AI Configuration
 AI_TIMEOUT_SECONDS = 15  # Max time for AI calls
-AI_PROVIDER_CONFIGURED = bool(EMERGENT_LLM_KEY)
+AI_PROVIDER_CONFIGURED = bool(OPENAI_API_KEY)
 
 @api_router.get("/ai/health")
 async def ai_health_check():
@@ -6243,17 +6249,12 @@ async def get_ai_daily_report(request: Request):
         return f"🐔 Daglig sammanfattning för {coop_name}: {total_eggs} ägg från {hen_count} höns idag. {productivity_text}{alert_text}\n\n💛 Kacklande hälsningar, Agda 🐔"
     
     try:
-        openai_key = os.environ.get('OPENAI_API_KEY') or os.environ.get('EMERGENT_LLM_KEY')
-        if not openai_key:
-            raise ValueError("No API key configured")
+        if not OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY not configured")
         
-        # Use emergentintegrations if available, otherwise direct OpenAI
-        if HAS_EMERGENT and EMERGENT_LLM_KEY:
-            async def generate_ai_report():
-                chat = LlmChat(
-                    api_key=EMERGENT_LLM_KEY,
-                    session_id=f"daily-report-{user_id}-{today}",
-                    system_message=f"""Du är Agda, en erfaren och varm hönsgårdsrådgivare med över 10 års erfarenhet.
+        # Direct OpenAI API call
+        async def generate_openai_report():
+            system_msg = f"""Du är Agda, en erfaren och varm hönsgårdsrådgivare med över 10 års erfarenhet.
 Du skriver personliga, praktiska och uppmuntrande rapporter på svenska.
 Du använder din djupa kunskap om hönsskötsel för att ge relevanta tips baserat på säsong, väder och produktion.
 
@@ -6265,68 +6266,14 @@ VIKTIGT:
 - Ge ETT konkret, relevant tips baserat på data
 - Använd max 2-3 emojis
 - Avsluta alltid med 'Kacklande hälsningar, Agda 🐔'"""
-                ).with_model("openai", "gpt-4o")
-                
-                weather_info = ""
-                if weather_data:
-                    temp = weather_data.get("temperature", "okänd")
-                    desc = weather_data.get("description", "")
-                    weather_info = f"- Väder idag: {temp}°C, {desc}"
-                
-                prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
-
-DATA FÖR IDAG ({today}):
-- Antal ägg idag: {total_eggs}
-- Antal aktiva höns: {hen_count}
-- Produktivitet: {productivity_pct:.0f}% (förväntat ~70-85% för bra värpraser)
-- Veckosnitt: {daily_average:.1f} ägg/dag
-- Produktivitetsvarningar: {', '.join(alerts) if alerts else 'Inga'}
-- Senaste hälsoanteckningar: {len(health_logs)} loggade
-{weather_info}
-
-SÄSONG: {season_context}
-
-Rapporten ska innehålla:
-1. En personlig hälsning till {user_name}
-2. Kort sammanfattning av produktion (jämför med veckosnitt/förväntat)
-3. ETT konkret, säsongsanpassat tips från din kunskap
-4. Din signatur
-
-Anpassa tipset efter:
-- Vädret (om data finns)
-- Säsongen ({season_context})
-- Produktionsnivån ({productivity_pct:.0f}%)
-- Eventuella varningar"""
-                
-                message = UserMessage(text=prompt)
-                return await chat.send_message(message)
             
-            ai_response = await asyncio.wait_for(generate_ai_report(), timeout=AI_TIMEOUT_SECONDS)
-            report_text = normalize_llm_response(ai_response)
-        else:
-            # Direct OpenAI API call for Render/external deployments
-            async def generate_openai_report():
-                import httpx
-                system_msg = f"""Du är Agda, en erfaren och varm hönsgårdsrådgivare med över 10 års erfarenhet.
-Du skriver personliga, praktiska och uppmuntrande rapporter på svenska.
-Du använder din djupa kunskap om hönsskötsel för att ge relevanta tips baserat på säsong, väder och produktion.
-
-{HONSGARD_KNOWLEDGE}
-
-VIKTIGT:
-- Håll rapporten under 120 ord
-- Var varm och personlig i tonen
-- Ge ETT konkret, relevant tips baserat på data
-- Använd max 2-3 emojis
-- Avsluta alltid med 'Kacklande hälsningar, Agda 🐔'"""
-                
-                weather_info = ""
-                if weather_data:
-                    temp = weather_data.get("temperature", "okänd")
-                    desc = weather_data.get("description", "")
-                    weather_info = f"- Väder idag: {temp}°C, {desc}"
-                
-                prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
+            weather_info = ""
+            if weather_data:
+                temp = weather_data.get("temperature", "okänd")
+                desc = weather_data.get("description", "")
+                weather_info = f"- Väder idag: {temp}°C, {desc}"
+            
+            prompt = f"""Skriv en kort daglig rapport för {user_name} som har {coop_name}.
 
 DATA FÖR IDAG ({today}):
 - Antal ägg idag: {total_eggs}
@@ -6344,35 +6291,35 @@ Rapporten ska innehålla:
 2. Kort sammanfattning av produktion (jämför med veckosnitt/förväntat)
 3. ETT konkret, säsongsanpassat tips från din kunskap
 4. Din signatur"""
-                
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        "https://api.openai.com/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {openai_key}",
-                            "Content-Type": "application/json"
-                        },
-                        json={
-                            "model": "gpt-4o-mini",
-                            "messages": [
-                                {"role": "system", "content": system_msg},
-                                {"role": "user", "content": prompt}
-                            ],
-                            "max_tokens": 400,
-                            "temperature": 0.7
-                        },
-                        timeout=14.0
-                    )
-                    if response.status_code == 200:
-                        data = response.json()
-                        return data["choices"][0]["message"]["content"].strip()
-                    else:
-                        logger.error(f"[AI] OpenAI error: {response.status_code} - {response.text}")
-                        return None
             
-            report_text = await asyncio.wait_for(generate_openai_report(), timeout=AI_TIMEOUT_SECONDS)
-            if not report_text:
-                raise ValueError("OpenAI returned empty response")
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {OPENAI_API_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "gpt-4o-mini",
+                        "messages": [
+                            {"role": "system", "content": system_msg},
+                            {"role": "user", "content": prompt}
+                        ],
+                        "max_tokens": 400,
+                        "temperature": 0.7
+                    },
+                    timeout=14.0
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    return data["choices"][0]["message"]["content"].strip()
+                else:
+                    logger.error(f"[AI] OpenAI error: {response.status_code} - {response.text}")
+                    return None
+        
+        report_text = await asyncio.wait_for(generate_openai_report(), timeout=AI_TIMEOUT_SECONDS)
+        if not report_text:
+            raise ValueError("OpenAI returned empty response")
         
         duration_ms = int((time.time() - start_time) * 1000)
         logger.info(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/daily-report duration_ms={duration_ms} status=success")
@@ -6698,17 +6645,12 @@ async def get_ai_advisor(request: Request):
         return random.choice(common_tips) + "\n\n💛 Kacklande hälsningar, Agda 🐔"
     
     try:
-        openai_key = os.environ.get('OPENAI_API_KEY') or os.environ.get('EMERGENT_LLM_KEY')
-        if not openai_key:
-            raise ValueError("No API key configured")
+        if not OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY not configured")
         
-        # Use emergentintegrations if available, otherwise direct OpenAI
-        if HAS_EMERGENT and EMERGENT_LLM_KEY:
-            async def call_agda():
-                chat = LlmChat(
-                    api_key=EMERGENT_LLM_KEY,
-                    session_id=f"advisor-{user_id}",
-                    system_message=f"""{HONSGARD_KNOWLEDGE}
+        # Direct OpenAI API call
+        async def call_openai_direct():
+            system_msg = f"""{HONSGARD_KNOWLEDGE}
 
 Du pratar med {user_name if user_name else 'en hönsägare'}.
 Deras flock: {hen_count} höns och {rooster_count} tuppar.
@@ -6719,60 +6661,37 @@ Ge konkreta, personliga råd baserat på deras situation.
 Svara på svenska, var vänlig men professionell.
 Om frågan är oklar, ge generella tips om hönsskötsel.
 Avsluta alltid med din signatur: '💛 Kacklande hälsningar, Agda 🐔'"""
-                ).with_model("openai", "gpt-4o")
-                
-                prompt = question if question else "Ge mig några tips för min hönsgård baserat på min nuvarande situation."
-                message = UserMessage(text=prompt)
-                return await chat.send_message(message)
             
-            ai_response = await asyncio.wait_for(call_agda(), timeout=AI_TIMEOUT_SECONDS)
-            answer_text = normalize_llm_response(ai_response)
-        else:
-            # Direct OpenAI API call for Render/external deployments
-            async def call_openai_direct():
-                import httpx
-                system_msg = f"""{HONSGARD_KNOWLEDGE}
-
-Du pratar med {user_name if user_name else 'en hönsägare'}.
-Deras flock: {hen_count} höns och {rooster_count} tuppar.
-Ägg senaste veckan: {weekly_total}
-Senaste hälsonoteringar: {len(health_logs)} st
-
-Ge konkreta, personliga råd baserat på deras situation.
-Svara på svenska, var vänlig men professionell.
-Om frågan är oklar, ge generella tips om hönsskötsel.
-Avsluta alltid med din signatur: '💛 Kacklande hälsningar, Agda 🐔'"""
-                
-                prompt = question if question else "Ge mig några tips för min hönsgård baserat på min nuvarande situation."
-                
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        "https://api.openai.com/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {openai_key}",
-                            "Content-Type": "application/json"
-                        },
-                        json={
-                            "model": "gpt-4o-mini",
-                            "messages": [
-                                {"role": "system", "content": system_msg},
-                                {"role": "user", "content": prompt}
-                            ],
-                            "max_tokens": 500,
-                            "temperature": 0.7
-                        },
-                        timeout=14.0
-                    )
-                    if response.status_code == 200:
-                        data = response.json()
-                        return data["choices"][0]["message"]["content"].strip()
-                    else:
-                        logger.error(f"[AI] OpenAI error: {response.status_code} - {response.text}")
-                        return None
+            prompt = question if question else "Ge mig några tips för min hönsgård baserat på min nuvarande situation."
             
-            answer_text = await asyncio.wait_for(call_openai_direct(), timeout=AI_TIMEOUT_SECONDS)
-            if not answer_text:
-                raise ValueError("OpenAI returned empty response")
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {OPENAI_API_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "gpt-4o-mini",
+                        "messages": [
+                            {"role": "system", "content": system_msg},
+                            {"role": "user", "content": prompt}
+                        ],
+                        "max_tokens": 500,
+                        "temperature": 0.7
+                    },
+                    timeout=14.0
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    return data["choices"][0]["message"]["content"].strip()
+                else:
+                    logger.error(f"[AI] OpenAI error: {response.status_code} - {response.text}")
+                    return None
+        
+        answer_text = await asyncio.wait_for(call_openai_direct(), timeout=AI_TIMEOUT_SECONDS)
+        if not answer_text:
+            raise ValueError("OpenAI returned empty response")
         
         duration_ms = int((time.time() - start_time) * 1000)
         logger.info(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/advisor duration_ms={duration_ms} status=success")
@@ -7194,8 +7113,7 @@ async def get_weather_based_tip(request: Request, body: WeatherTipRequest):
         tip = None
         used_fallback = False
         
-        openai_key = os.environ.get('OPENAI_API_KEY') or os.environ.get('EMERGENT_LLM_KEY')
-        if openai_key:
+        if OPENAI_API_KEY:
             try:
                 # Build prompt
                 hens_info = f"{coop.get('hens_count', 'några')} höns"
@@ -7218,12 +7136,11 @@ Fokusera på vad ägaren bör tänka på idag. Var varm och personlig.
 Skriv på svenska. Avsluta inte med signatur."""
 
                 async def call_openai():
-                    import httpx
                     async with httpx.AsyncClient() as client:
                         response = await client.post(
                             "https://api.openai.com/v1/chat/completions",
                             headers={
-                                "Authorization": f"Bearer {openai_key}",
+                                "Authorization": f"Bearer {OPENAI_API_KEY}",
                                 "Content-Type": "application/json"
                             },
                             json={
