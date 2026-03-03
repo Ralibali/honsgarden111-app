@@ -137,16 +137,17 @@
 
 .hen-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-top: 16px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .hen-actions .edit-btn,
 .hen-actions .delete-btn {
   flex: 1;
-  padding: 10px;
-  font-size: 13px;
+  min-width: fit-content;
+  padding: 8px 10px;
+  font-size: 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -656,11 +657,13 @@
 .hen-actions .view-btn,
 .hen-actions .status-btn {
   flex: 1;
-  padding: 10px;
-  font-size: 13px;
+  min-width: fit-content;
+  padding: 8px 10px;
+  font-size: 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .hen-actions .view-btn {
