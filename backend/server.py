@@ -2070,7 +2070,8 @@ async def login_email(data: EmailLogin, request: Request, response: Response):
     
     # Create session and set cookie
     session_token = str(uuid.uuid4())
-    session_ttl_days = 7  # Short-lived session
+    # If remember_me is true, use 30 days instead of 7
+    session_ttl_days = 30 if data.remember_me else 7
     session = UserSession(
         user_id=user_id,
         session_token=session_token,

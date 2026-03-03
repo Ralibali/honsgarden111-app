@@ -385,10 +385,18 @@ export default function HomeScreen() {
       }
       
       if (res.ok && data.forecast) {
+        // Map daily_predictions to expected format
+        const dailyForecast = data.forecast.daily_predictions?.map((day: any) => ({
+          day: day.date,
+          eggs: day.predicted_eggs || day.eggs || 0,
+          confidence: day.confidence
+        })) || [];
+        
         setEggForecast({
           ...data.forecast,
           forecast_7_days: data.forecast.total_predicted,
-          daily_forecast: data.forecast.daily_predictions
+          daily_forecast: dailyForecast,
+          max_daily: Math.max(...dailyForecast.map((d: any) => d.eggs), 1)
         });
       } else {
         if (__DEV__) console.error('[loadEggForecast] Issue:', res.status, data);

@@ -75,7 +75,8 @@ export default function LoginScreen() {
   
   const handleLogin = async () => {
     clearError();
-    const success = await login(email, password, Platform.OS === 'web' ? rememberMe : false);
+    // Always send rememberMe - backend handles it for both web cookies and mobile tokens
+    const success = await login(email, password, rememberMe);
     if (success) {
       router.replace('/(tabs)');
     } else {
