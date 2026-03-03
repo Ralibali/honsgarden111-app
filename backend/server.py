@@ -23,8 +23,14 @@ import stripe
 from collections import defaultdict
 import time
 
-# AI Integration
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+# AI Integration - Optional for external deployments (Render, etc.)
+try:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    HAS_EMERGENT = True
+except ImportError:
+    HAS_EMERGENT = False
+    LlmChat = None
+    UserMessage = None
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -6240,6 +6246,9 @@ async def get_ai_daily_report(request: Request):
         if not EMERGENT_LLM_KEY:
             raise ValueError("EMERGENT_LLM_KEY not configured")
         
+        if not HAS_EMERGENT:
+            raise ValueError("AI features require emergentintegrations (not available on external deployments)")
+        
         # Create AI chat with timeout
         async def generate_ai_report():
             chat = LlmChat(
@@ -6625,6 +6634,9 @@ async def get_ai_advisor(request: Request):
     try:
         if not EMERGENT_LLM_KEY:
             raise ValueError("EMERGENT_LLM_KEY not configured")
+        
+        if not HAS_EMERGENT:
+            raise ValueError("AI features require emergentintegrations")
         
         async def call_agda():
             chat = LlmChat(
