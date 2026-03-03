@@ -626,8 +626,16 @@ NOVEMBER-DECEMBER:
 - Underhåll och reparationer i hönshuset
 """
 
-# Import Stripe checkout helper
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+# Import Stripe checkout helper - Optional for external deployments
+try:
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+    HAS_STRIPE_HELPER = True
+except ImportError:
+    HAS_STRIPE_HELPER = False
+    StripeCheckout = None
+    CheckoutSessionResponse = None
+    CheckoutStatusResponse = None
+    CheckoutSessionRequest = None
 
 # Create the main app without a prefix
 app = FastAPI()
