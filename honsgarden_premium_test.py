@@ -16,7 +16,7 @@ import uuid
 import time
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://egg-logger-mobile.preview.emergentagent.com/api"
+BACKEND_URL = "https://chicken-hub-redesign.preview.emergentagent.com/api"
 
 class HonsgardenPremiumTester:
     def __init__(self):

@@ -10,7 +10,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://egg-logger-mobile.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://chicken-hub-redesign.preview.emergentagent.com')
 TEST_EMAIL = "test2@honsgarden.se"
 TEST_PASSWORD = "test123"
 

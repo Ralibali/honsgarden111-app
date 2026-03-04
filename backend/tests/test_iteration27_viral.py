@@ -10,7 +10,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/') or "https://egg-logger-mobile.preview.emergentagent.com"
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/') or "https://chicken-hub-redesign.preview.emergentagent.com"
 
 class TestViralFeatures:
     """Test viral engagement endpoints"""

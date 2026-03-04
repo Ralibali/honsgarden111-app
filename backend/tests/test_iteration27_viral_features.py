@@ -13,7 +13,7 @@ import base64
 # MUST use environment URL - DO NOT add default
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://egg-logger-mobile.preview.emergentagent.com"
+    BASE_URL = "https://chicken-hub-redesign.preview.emergentagent.com"
 
 # Test credentials from previous iterations
 TEST_EMAIL = "admin@test.com"

@@ -1,153 +1,183 @@
 <analysis>**original_problem_statement**:
-The user's primary goal is to build a feature-rich, AI-powered web application called Hönsgården (The Chicken Coop). The project is developed in sprints on a FastAPI/MongoDB/React stack.
+The user wants to enhance the Hönsgården application with a focus on stability, user engagement, and a more professional user experience. This involves fixing several outstanding bugs and implementing a range of new features.
 
-The latest request (Step 4) focuses on adding more AI insights (flock analysis, smart alerts), viral features (hen personality analysis), and significant UI/UX improvements to make the application feel more like a polished, modern, mobile-first PWA, preparing it for a larger user base. A key part of this request is fixing broken statistics graphs and refining the overall mobile experience.
-
-**PRODUCT REQUIREMENTS (current focus):**
-*   **Fix Statistics**: Resolve the issue where graphs are not rendering on the statistics page.
-*   **Improve Mobile Layout**: Make the statistics page more compact and mobile-friendly.
-*   **Refine Dashboard Flow**: Reorder dashboard components for a more intuitive daily routine.
-*   **UI Consistency**: Ensure all UI cards and elements have a consistent design (padding, radius, shadow).
-*   **Enhance UX**: Add micro-animations and behavioral design elements (e.g., animated progress bars, skeleton loading) to make the app feel more alive and encourage daily use.
-*   **Implement Step 4 Features**:
-    *   (Done) AI Flock Analysis
-    *   (Done) Smart aAerts/Notifications
-    *   (Done) National Statistics
-    *   (Pending) Hen Personality Viral Feature
-    *   (Pending) Affiliate Structure Preparation
-    *   (Done) Community Sharing Improvements
+**LATEST USER REQUESTS (In Priority Order):**
+1.  **P0 - Fix Bugs**:
+    *   **Statistics Page**: Graphs and data are not rendering correctly. The layout is broken on mobile (portrait/landscape).
+    *   **Register Egg Input**: The input field is clunky and needs a better UX with +/- buttons.
+    *   **Share Result Button**: The button does not function correctly; it should generate a shareable image via the mobile Share API.
+    *   **Settings Not Saving**: Toggles for main features (e.g., flock management) do not work and don't hide corresponding navigation items.
+    *   **Agda (AI) Poor Responses**: The AI gives irrelevant answers.
+    *   **Share Statistics Text**: The generated text for sharing is too short and should be more natural, with options for 7, 14, or 30-day periods.
+2.  **P0 - New Desktop Design**: Redesign the desktop dashboard to look more professional and visually appealing, moving away from the current amateurish layout. The mobile design should remain unchanged.
+3.  **P1 - New Features**:
+    *   **Fictitious Users**: Add ~15 fake users to the leaderboard to make the app feel more active.
+    *   **Friends Function**: Implement a social feature to add friends and see their flock's performance on the dashboard.
+    *   **In-App Support**: Create a support form and an inbox for users to communicate with support directly within the app.
+4.  **P2 - Enhancements**:
+    *   **More Settings**: Add toggles to let users customize which modules appear on their dashboard (e.g., weather, AI analysis, ranking).
 
 **User's preferred language**: Swedish (Svenska). The next agent MUST respond in Swedish.
 
 **what currently exists?**
-The application is a full-stack project with a monolithic FastAPI backend () and a React frontend. Sprints 1, 2, 3A, and 3B are fully implemented. Several features from the user's Step 4 request have also been implemented, including AI Flock Analysis, Smart Alerts (as a notification icon), and National Statistics on the backend, with corresponding UI elements on the frontend.
+The application is a full-stack project with a monolithic FastAPI backend () and a React frontend located at .
 
-Key recent changes include:
-*   **AI Architecture Hardening**: AI-powered endpoints now have a standardized, scalable pattern with 24-hour caching and rate-limiting to control costs.
-*   **Instant Registration**: The email verification step has been removed to streamline user onboarding.
-*   **UI Modernization**: The app now features animations, skeleton loading screens, haptic feedback on mobile, and a more modern card design.
-*   **Mobile-First Optimization**: The dashboard has been optimized for mobile/PWA use with a 2x2 grid for daily stats, quick log buttons for eggs, larger touch targets, and a sticky bottom navigation bar with safe-area padding.
-*   **Environment**: The preview environment now runs on a local MongoDB instance to bypass the previous Atlas authentication issues.
+The previous agent implemented the backend endpoints for the **Friends** and **In-app Support** features. It also added **15 fictitious users** to the leaderboard endpoint. On the frontend, the agent improved the **Register Egg** and **Share Result** modals, added conditional rendering for **dashboard modules based on user settings**, and created the initial files for the **Support** page.
+
+Critically, the agent started a major redesign of the desktop dashboard, creating a new  file to implement a Nordic Noir theme, as requested by the user to make it look more professional.
 
 **Last working item**:
--   **Last item agent was working**: Addressing a batch of UI/UX bug fixes and improvements requested by the user. The primary focus was on fixing the statistics graphs that were not rendering and re-ordering the dashboard components for a better mobile flow.
+-   **Last item agent was working**: Implementing a new, professional Nordic Noir design theme specifically for the desktop version () of the application. The goal was to fix the amateurish look with a dark theme, better fonts, and a Bento Grid layout.
 -   **Status**: IN PROGRESS
 -   **Agent Testing Done**: N
--   **Which testing method agent to use?**: both. The frontend testing agent is crucial to verify the numerous UI, layout, and animation changes across the dashboard and statistics page. The backend agent can ensure data endpoints for the graphs are still functioning correctly.
+-   **Which testing method agent to use?**: frontend testing agent. The agent should verify the new desktop design on resolutions wider than 1024px and confirm that the mobile design remains unaffected.
 -   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   Issue 1: Fix broken statistics graphs and complete UI/UX improvements (P0 - HIGHEST PRIORITY)
+-   Issue 1: Statistics page is broken (P0 - HIGHEST PRIORITY)
+-   Issue 2: Share Result button is not functional (P0)
+-   Issue 3: Main feature settings are not implemented (P2)
+-   Issue 4: Friends feature is incomplete (P1)
+-   Issue 5: In-app Support feature is incomplete (P1)
 
 **Issues Detail**:
--   **Issue 1: Fix broken statistics graphs and complete UI/UX improvements**
-    -   **Attempted fixes**: The agent correctly identified that the graph rendering issue on Safari was due to the CSS graph container lacking an explicit . The agent began modifying  to fix this and started re-organizing the component layout in .
+-   **Issue 1: Fix broken statistics graphs**
+    -   **Attempted fixes**: The agent replaced Recharts  with fixed  and  attributes on the chart components in . A screenshot showed one graph rendering with test data, but the user has re-reported that the page is still broken, especially on mobile. The error  was previously seen, indicating a layout rendering issue.
     -   **Next debug checklist**:
-        1.  In , complete the fix by ensuring all  or similar classes have a fixed  (e.g., ) instead of .
-        2.  In , refactor the layout to be more compact for mobile, as requested (move date filter below graph, adjust card heights).
-        3.  In , finish reordering the components to match the user's desired flow:  ->  ->  ->  ->  -> .
-        4.  Review all cards on the dashboard and stats page to ensure consistent , , and .
-        5.  Build the frontend (yarn run v1.22.22
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.) and copy the assets to the backend serving directory.
-        6.  Use the screenshot tool to verify the  page now shows graphs correctly and the main dashboard has the new component order.
-    -   **Why fix this issue and what will be achieved with the fix?**: This will resolve a broken core feature (statistics) and deliver on the user's request for a more polished, mobile-friendly user experience, making the app feel more professional and ready for growth.
+        1.  Re-examine  and .
+        2.  Investigate why the parent container of the charts might have a zero or negative dimension when rendering, especially on mobile.
+        3.  Ensure data fetching and state updates are happening correctly.
+        4.  Use the screenshot tool on both mobile and desktop resolutions to verify the fix for portrait and landscape views.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a core feature of the application. Fixing it is critical for user retention.
+    -   **Status**: IN PROGRESS
+    -   **Is recurring issue?**: Y
+    -   **Should Test frontend/backend/both after fix?**: frontend
+    -   **Blocked on other issue**: None.
+
+-   **Issue 2: Share Result button is not functional**
+    -   **Attempted fixes**: The agent reviewed the code in  and found the  implementation. However, the user reports that nothing happens. The agent did not find the root cause.
+    -   **Next debug checklist**:
+        1.  Check the browser console for errors when the Share button is clicked in the modal.
+        2.  The  endpoint works, but verify the frontend successfully receives the image data ( state).
+        3.  Verify the  API is being called correctly with the file data. This API has specific requirements and might fail silently if not met.
+    -   **Why fix this issue and what will be achieved with the fix?**: This is a key viral feature requested by the user to increase engagement.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Should Test frontend/backend/both after fix?**: frontend
+    -   **Blocked on other issue**: None.
+
+-   **Issue 3: Main feature settings are not implemented**
+    -   **Attempted fixes**: None. The agent implemented settings for *dashboard modules* (Point #6 of the user request) but overlooked the original request to fix settings for *main features* (like flock management, health log) that should hide navigation links.
+    -   **Next debug checklist**:
+        1.  Identify where navigation links are rendered (likely in a layout or header component).
+        2.  Use the  state (already implemented) to conditionally render these navigation links.
+        3.  The backend model  in  may need to be updated if it doesn't already contain toggles for these main features.
+    -   **Why fix this issue and what will be achieved with the fix?**: It gives users control over the app's core modules, fulfilling a key customization request.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: frontend
     -   **Blocked on other issue**: None.
 
 **In progress Task List**:
--   **Task 1: Complete Mobile UI/UX and Bug Fix Batch**
-    -   **Where to resume**: Resume work in  and  to finalize the graph fix and component reordering.
-    -   **What will be achieved with this?**: A functional and visually appealing statistics page, an intuitive dashboard flow, and a consistent, modern mobile UI.
+-   **Task 1: Complete Nordic Noir Desktop Redesign (P0)**
+    -   **Where to resume**: Continue adding styles to  and applying them to the components within  using media queries for screens .
+    -   **What will be achieved with this?**: A modern, professional, and visually appealing desktop user interface that addresses the user's feedback.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: frontend
+    -   **Blocked on something**: None.
+
+-   **Task 2: Complete Friends feature (P1)**
+    -   **Where to resume**: The backend and a basic UI section in  exist. The next steps are to build out the frontend logic: a user search component, and functionality to send, accept, and display friend requests and current friends.
+    -   **What will be achieved with this?**: A complete social feature allowing users to connect.
+    -   **Status**: IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Blocked on something**: None.
+
+-   **Task 3: Complete In-app Support feature (P1)**
+    -   **Where to resume**: The  page with a submission form and the backend API exist. The next step is to create the Support Inbox view where users can see their submitted tickets and the replies.
+    -   **What will be achieved with this?**: A full-featured in-app support system.
     -   **Status**: IN PROGRESS
     -   **Should Test frontend/backend/both after fix?**: both
     -   **Blocked on something**: None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   (P0) **Hen Personality Feature**: Implement the image upload and AI analysis for the  endpoint. Create the frontend component to allow users to upload an image and share the resulting personality card. This is a key viral feature.
-    -   (P1) **Affiliate (Adtraction) Backend**: The  MongoDB collection exists. The next step is to create backend CRUD endpoints to manage these affiliate products.
+    -   (P1) **Hen Personality Feature**: Implement the image upload and AI analysis for the  endpoint and create the corresponding frontend.
+    -   (P1) **Affiliate (Adtraction) Backend**: Create backend CRUD endpoints to manage affiliate products in the  collection.
 -   **Future Tasks**:
-    -   (P1) **Refactor Backend**: The  file is a large monolith. It should be broken down into smaller, more manageable files using FastAPI's  (e.g., , , , ).
-    -   (P2) **SEO for Community Q&A**: Investigate solutions for making the dynamically loaded React question pages () indexable by search engines to drive organic traffic.
-    -   (P3) **Migration to Next.js + Postgres**: This is the user's original long-term goal for the project, currently deferred.
+    -   (P1) **Refactor Backend**: Break down the monolithic  file into smaller modules using FastAPI's .
+    -   (P2) **SEO for Community Q&A**: Make dynamically loaded question pages indexable by search engines.
+    -   (P3) **Migration to Next.js + Postgres**: The user's original long-term goal for the project.
 
 **Completed work in this session**
--   **AI Architecture Hardened**: Implemented a scalable pattern for all AI endpoints with 24h caching and rate-limiting (10 calls/day for free users, 100 for premium) to control costs.
--   **Instant User Registration**: Removed the email verification requirement, allowing users to register and log in immediately.
--   **Mobile/PWA Optimization**: Overhauled the UI to be mobile-first. This included a 2x2 grid for daily stats, quick-log egg buttons (+1/+2/+3), larger touch targets, a sticky bottom navigation bar, and proper safe-area padding for iPhones.
--   **UI Modernization & Microinteractions**: Added smooth fade-in animations for cards, animated progress bars, skeleton loading screens, and haptic feedback to make the app feel more responsive and modern.
--   **Critical Bug Fixes**:
-    *   **Feature Visibility on Mobile**: Fixed an issue where new features were not visible on Safari by implementing missing backend endpoints from Sprints 1 & 2 (, , etc.) and correcting CSS build paths.
-    *   **Community Sharing Link**: Corrected the Community Q&A Share button to generate the proper public URL ().
-    *   **Alerts UI**: Replaced large, intrusive alert banners with a discreet notification bell icon in the header that shows a modal when clicked.
--   **Feature Implementation (Step 4)**: Implemented the backend and frontend for AI Flock Analysis, Smart Alerts, and National Statistics.
--   **MongoDB Issue Resolution**: Unblocked all development by switching the preview environment from a failing MongoDB Atlas instance to a stable local MongoDB.
+-   **Backend for New Features**: Implemented all backend endpoints for the Friends feature () and In-app Support ().
+-   **Fictitious Leaderboard**: Modified the leaderboard API to include 15 fake users to make the feature feel more alive.
+-   **Customizable Dashboard**: Implemented backend and frontend for letting users toggle the visibility of 8 different dashboard modules (, , , etc.) via the  page.
+-   **UX Improvements**:
+    -   Improved the Register Egg modal with +/- stepper buttons.
+    -   Enhanced the Share Result modal with a period selector (7/14/30 days) and a more descriptive share text.
+-   **AI Prompt Improvement**: Updated the system prompt for the Agda AI to encourage more relevant, conversational responses.
+-   **Desktop Redesign Started**: Created the necessary files () and added initial styles and fonts to begin the Nordic Noir desktop UI overhaul.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend**: FastAPI, MongoDB (Pymongo, Motor), Local MongoDB instance for preview.
--   **Frontend**: React, TypeScript.
--   **Scalable AI**: Caching of OpenAI responses (24h TTL), rate-limiting per user tier, standardized AI call patterns.
--   **UI/UX**: Mobile-first design, PWA optimizations, CSS animations (fade-in, progress bars), Skeleton Loading, Haptic Feedback.
--   **Authentication**: JWT-based, with email verification now disabled for faster onboarding.
+-   **Backend**: FastAPI, MongoDB, Pydantic.
+-   **Frontend**: React, TypeScript, CSS Media Queries for responsive design.
+-   **UI/UX**: Nordic Noir design theme (dark mode, accent colors, custom fonts), Bento Grid (planned for desktop), conditional rendering based on user preferences.
+-   **Data Mocking**: The leaderboard is populated with hardcoded fictitious users for a better new-user experience.
 
 **key DB schema**
 -   : 
 -   : 
--   : 
--   :  (tracks AI calls per day)
--   :  (generic cache for AI responses)
--   (Existing collections for streaks, challenges, etc. remain)
-
-**changes in tech stack**
--   The preview environment's backend has been reconfigured to use a local MongoDB instance () instead of MongoDB Atlas to resolve persistent authentication errors. **The user must still fix their credentials on the production Render environment.**
+-   : (The  field was expanded to include dashboard module toggles like ).
 
 **All files of reference**
--   : The monolithic backend file containing all API endpoints and logic.
--   : The primary component for the user's main view, contains logic for all new features.
--   : The primary CSS file defining the app's appearance, including all recent mobile optimizations and animations.
--   : The file for the statistics page, which needs immediate fixing.
--   : Updated to use the local MongoDB URL.
+-   : Contains all backend logic. Updated with Friends, Support, and settings endpoints.
+-   : The main hub for all frontend features. Conditionally renders modules based on settings.
+-   : The new file for the desktop redesign.
+-   : Contains the UI for toggling dashboard modules.
+-   : The file for the broken statistics page.
+-   : New file for the in-app support feature.
 
 **Areas that need refactoring**:
--   ****: This file is now extremely large and complex. It is a high-priority candidate for refactoring into smaller, feature-specific modules using FastAPI's .
--   ** / **: The statistics page and its associated CSS need to be refactored to properly fix the graph rendering and improve the mobile layout.
+-   ****: Still a large monolith and a high-priority candidate for refactoring.
+-   ** / **: Needs a definitive fix for the recurring chart rendering and mobile layout issues.
 
 **key api endpoints**
--   
--   
--   
--    (Structure exists, needs image handling)
--   
--   
--   
--   
+-   : (Updated) Saves user settings for dashboard modules.
+-   , , : (New) Manages friends.
+-   , : (New) Manages support tickets.
 
 **Critical Info for New Agent**
--   Your immediate priority is to complete the fixes and improvements from the user's last message (#448), starting with the broken statistics graphs. The problem is a missing  property in the CSS for the graph container.
--   The preview environment now uses a local MongoDB. Do not attempt to use or fix the MongoDB Atlas connection in this environment. The user is aware they need to fix credentials on their production Render server.
--   Follow the established patterns for mobile-first UI development and scalable AI features (caching, rate-limiting) when implementing new functionality.
--   User registration is now instant (no email verification). A test user can be created by simply signing up.
+-   **Priority**: Your first priority is to complete the **Desktop Redesign** (). Immediately after, you must address the user's P0 bug list, starting with the **recurring Statistics page issue**.
+-   **Frontend Path**: The correct and active frontend code is in . The directory  is obsolete and should be ignored.
+-   **User-Reported Bugs**: The user has reported that the Statistics page and Share Result button are still broken, even after the previous agent's fixes. Prioritize the user's feedback over the agent's previous test results.
+-   **Incomplete Features**: The Friends and Support features have a backend but are not fully implemented on the frontend. Plan to complete these after the P0 bugs are resolved.
+-   **Missed Requirement**: The agent did not implement the setting to hide *main navigation items*, only dashboard modules. This is still a pending task from the user's list (Point #5).
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: Asks to make the UI more modern with animations and a floating egg-log button.
-2.  **Agent**: Implements animations, skeleton loading, and the floating button.
-3.  **User**: Asks to remove the floating button and further optimize for mobile (2x2 grid, quick-log buttons, sticky nav).
-4.  **Agent**: Implements the mobile optimizations.
-5.  **User**: Reports that alert banners are intrusive and the community share button is broken.
-6.  **Agent**: Fixes both issues, replacing banners with a notification icon and correcting the share link.
-7.  **User**: Reports that user registration is failing.
-8.  **Agent**: Identifies an email sending issue. Per user request (want it to be fast), removes email verification entirely for instant registration.
-9.  **User**: Provides a detailed list of new UI fixes: broken statistics graphs, poor statistics layout on mobile, and desired dashboard component order.
-10. **Agent**: Acknowledges the list and starts working on the fixes, beginning with the graph issue.
+1.  **User**: Provides a detailed list of 10 bugs to fix and features to implement, with priorities.
+2.  **Agent**: Asks for confirmation on the order and details.
+3.  **User**: Confirms the order (fixa allt i den ordningen) and provides detail for the friends list.
+4.  **Agent**: Begins work on the list, starting with P0 bug fixes.
+5.  **Agent**: Finishes a batch of work and asks for confirmation to proceed with remaining tasks.
+6.  **User**: Instructs the agent to fix all remaining suggestions and ensure they work on mobile and desktop.
+7.  **Agent**: Finishes another batch of work (Friends, Support backend; AI prompt fix).
+8.  **User**: Asks the agent to start Step 1 (implementing the settings feature).
+9.  **Agent**: Implements the settings for dashboard modules.
+10. **User**: After asking how to save to GitHub, asks how to make the desktop frontpage more visually appealing and less amateurish.
+11. **Agent**: Calls the design agent and proposes a Nordic Noir theme.
+12. **User**: Agrees to the new design, with the condition that it only applies to desktop and not mobile.
 
 **Project Health Check:**
--   **Broken**: Statistics page graphs do not render.
--   **Mocked**: None. AI features have functional fallbacks in case of API errors.
+-   **Broken**:
+    -   Statistics page rendering and layout (recurring issue).
+    -   Share Result button functionality.
+    -   Settings for hiding main application features/navigation links.
+-   **Mocked**:
+    -   The leaderboard contains 15 hardcoded fictitious users to make it feel populated.
 
 **3rd Party Integrations**
 -   **OpenAI**:  (via usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
@@ -189,24 +219,19 @@ options:
                         id
   -V, --version         show program's version number and exit SDK). Requires .
 -   **Stripe**: Requires .
--   **Render**: User's deployment platform.
--   **Resend**: For sending emails (e.g., welcome email). Requires . Currently bypassed for registration.
+-   **Resend**: Requires .
+-   **Google Fonts**:  and  were added for the new desktop design.
 
 **Testing status**
--   Testing agent used after significant changes: NO
+-   Testing agent used after significant changes: YES. The testing agent was used multiple times and successfully identified bugs in the settings implementation, which the main agent then fixed.
 -   Troubleshoot agent used after agent stuck in loop: NO
--   Test files created: []
--   Known regressions: The statistics graphs are not rendering, which is a regression.
+-   Test files created: None.
+-   Known regressions: The statistics page is a known regression that persists despite attempted fixes.
 
 **Credentials to test flow:**
-Registration is open and does not require email verification. You can create a new user to test the full flow. A previously created user is  / .
+Registration is open and instant. Create a new user ( / ) to test the flow, as the state of the original  user may be inconsistent.
 
 **What agent forgot to execute**
--   The agent did not fully complete the last batch of UI/UX fixes requested by the user, as the session ended. The task is in progress.
--   No ============================= test session starts ==============================
-platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0
-rootdir: /app/frontend
-plugins: anyio-4.12.1
-collected 0 items
-
-============================ no tests ran in 0.01s ============================= test files have been created for the backend, which is a recommended practice that has been overlooked.</analysis>
+-   **Fix main feature settings**: The agent implemented settings for dashboard modules but did not address the user's request to fix settings that hide main navigation items (e.g., flockhantering, hälsologg).
+-   **Fully debug Share Result**: The agent identified the code for the share button but did not resolve why it fails to function for the user.
+-   **Confirm Statistics Fix**: The agent implemented a fix for the statistics page but did not do a final verification check that covered all aspects of the user's report (especially mobile portrait/landscape layout), leading to the issue being re-reported.</analysis>

@@ -57,7 +57,7 @@
         "projectId": "a9ac112a-908a-41bc-982c-50b86487e36b"
       },
       "APP_ENV": "production",
-      "EXPO_PUBLIC_BACKEND_URL": "https://egg-logger-mobile.preview.emergentagent.com",
+      "EXPO_PUBLIC_BACKEND_URL": "https://chicken-hub-redesign.preview.emergentagent.com",
       "EXPO_PUBLIC_REVENUECAT_IOS_API_KEY": "test_hyDYIzhCbqNxMdjcHEIfFjEFJpO",
       "EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY": "test_hyDYIzhCbqNxMdjcHEIfFjEFJpO"
     }
