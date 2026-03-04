@@ -1,0 +1,142 @@
+{
+  "design_strategy": {
+    "identity": "The Modern Digital Coop - Scandi-Rustic Dark Mode",
+    "core_philosophy": "Digital Farmhouse: Where rustic warmth meets SaaS precision. Eliminate the 'amateur hobbyist' feel by using professional typography, deep contrast, and structured data visualization.",
+    "emotional_tone": "Grounded, Capable, Serene, Professional",
+    "target_audience": "Swedish hobby farmers (30-60yo) who want their tools to feel as premium as their produce.",
+    "theme_strategy": "Nordic Noir: Deep charcoal backgrounds instead of pure black. Warm amber and wood tones for accents to evoke a coop's warmth in winter."
+  },
+  "typography": {
+    "primary_font": "Young Serif",
+    "primary_font_import": "https://fonts.googleapis.com/css2?family=Young+Serif&display=swap",
+    "secondary_font": "Inter",
+    "secondary_font_import": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
+    "rules": {
+      "headings": "font-serif text-amber-50 tracking-tight leading-tight",
+      "body": "font-sans text-slate-300 leading-relaxed",
+      "data_labels": "font-sans text-xs uppercase tracking-widest text-slate-500 font-semibold",
+      "numbers": "font-sans font-bold text-white tabular-nums"
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": {
+        "main": "#0F172A",
+        "surface": "#1E293B",
+        "surface_highlight": "#334155"
+      },
+      "primary": {
+        "yolk_gold": "#F59E0B",
+        "barn_red": "#DC2626",
+        "deep_forest": "#14532D"
+      },
+      "text": {
+        "primary": "#F8FAFC",
+        "secondary": "#94A3B8",
+        "muted": "#64748B"
+      },
+      "status": {
+        "success": "#22C55E",
+        "warning": "#EAB308",
+        "error": "#EF4444"
+      }
+    },
+    "usage_rules": {
+      "dashboard_bg": "bg-slate-950",
+      "card_bg": "bg-slate-900 border border-slate-800",
+      "action_primary": "bg-amber-600 hover:bg-amber-700 text-white shadow-[0_4px_14px_0_rgba(245,158,11,0.39)]",
+      "action_secondary": "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700",
+      "gradients": "Avoid generic gradients. Use subtle radial gradients for 'spotlight' effects on key metrics."
+    }
+  },
+  "layout_system": {
+    "grid_structure": "Bento Grid",
+    "container_max_width": "max-w-7xl",
+    "spacing_scale": {
+      "section_gap": "gap-8",
+      "card_padding": "p-6 md:p-8",
+      "element_gap": "gap-4"
+    },
+    "responsive_rules": {
+      "mobile": "Single column (grid-cols-1). Cards maximize width.",
+      "tablet": "Two columns (grid-cols-2).",
+      "desktop": "12-column grid. Key stats span 3 cols, Main chart spans 8 or 9 cols, Side panels span 3 or 4 cols."
+    }
+  },
+  "components": {
+    "Card": {
+      "path": "@/components/ui/card",
+      "style": "rounded-xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm shadow-sm hover:border-slate-700 transition-all duration-300",
+      "instruction": "Refactor raw divs with class 'card' or inline styles to Shadcn Card component."
+    },
+    "Button": {
+      "path": "@/components/ui/button",
+      "style": "rounded-lg font-medium tracking-wide transition-all active:scale-95",
+      "instruction": "Replace html <button> with Shadcn Button. Use 'default' variant for primary actions (Egg Log), 'outline' for filters."
+    },
+    "Input": {
+      "path": "@/components/ui/input",
+      "style": "bg-slate-950 border-slate-700 focus:ring-amber-500/20 focus:border-amber-500",
+      "instruction": "Replace html <input> with Shadcn Input."
+    },
+    "Dialog": {
+      "path": "@/components/ui/dialog",
+      "instruction": "Use for 'Egg Registration' and 'Daily Summary' popups instead of custom modals."
+    },
+    "Chart": {
+      "instruction": "Use Recharts (already in package.json) but styled with the new color palette. Remove default grid lines or make them extremely subtle (#334155). Tooltips must be dark with amber accents."
+    },
+    "Navigation": {
+      "style": "Sidebar on desktop (fixed left), Bottom Tab Bar on mobile (fixed bottom). Glassmorphism effect (backdrop-blur-md) required for sticky navs."
+    }
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "card": "shadow-[0_2px_8px_rgba(0,0,0,0.3)]",
+      "glow": "shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+    },
+    "borders": {
+      "subtle": "border border-slate-800",
+      "highlight": "border-l-4 border-amber-500"
+    },
+    "textures": "Add a very subtle 'noise' texture overlay to the main background to reduce digital flatness and enhance the rustic feel."
+  },
+  "media": {
+    "image_urls": {
+      "hero_hens": "https://images.unsplash.com/photo-1687766824050-037c75d8f03b?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "rooster_portrait": "https://images.unsplash.com/photo-1586040689759-774fb64d71dd?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "hen_wood": "https://images.unsplash.com/photo-1687766823648-0e1602cca294?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "coop_texture": "https://images.unsplash.com/photo-1751635234953-a2cf0ecd0c96?crop=entropy&cs=srgb&fm=jpg&q=85"
+    },
+    "icons": {
+      "library": "lucide-react",
+      "mapping": {
+        "eggs": "CircleDot",
+        "hens": "Bird",
+        "finance": "Coins",
+        "weather": "CloudSun",
+        "settings": "Settings",
+        "health": "HeartPulse"
+      }
+    }
+  },
+  "instructions_to_main_agent": [
+    "CRITICAL: The current codebase uses raw CSS and inline styles in /app/webapp. You MUST refactor this to use Tailwind CSS.",
+    "STEP 1: Install Tailwind CSS and its dependencies (postcss, autoprefixer) in /app/webapp.",
+    "STEP 2: Initialize tailwind.config.js and postcss.config.js.",
+    "STEP 3: Add the Tailwind directives to a new /app/webapp/src/index.css file (or replace existing css).",
+    "STEP 4: Install 'clsx' and 'tailwind-merge' for class handling.",
+    "STEP 5: Create a 'lib/utils.ts' file for the cn() utility function.",
+    "STEP 6: Systematically replace inline styles (style={{...}}) with Tailwind classes based on the Design Strategy above.",
+    "STEP 7: Install 'lucide-react' for icons if not present.",
+    "STEP 8: Ensure 'Young Serif' and 'Inter' fonts are imported in index.html or css.",
+    "NOTE: Do not try to run the Expo app in /app/frontend. Focus strictly on /app/webapp.",
+    "Use data-testid attributes on all interactive elements (buttons, inputs) for testing."
+  ],
+  "UNIVERSAL_GUIDELINES": {
+    "design_philosophy": "Avoid generic 'Bootstrap' looks. Use generous padding (p-6, p-8) and deep contrast. No 100% pure blacks, always tinted (slate-950).",
+    "interactions": "All interactive elements must have :hover and :active states. Buttons should scale down slightly (scale-95) on click.",
+    "accessibility": "Ensure text contrast ratios are met. Use text-slate-400 for secondary text on slate-900 backgrounds, not darker.",
+    "motion": "Use smooth transitions (transition-all duration-200) for hover effects. Avoid instant color changes."
+  }
+}
