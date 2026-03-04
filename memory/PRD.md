@@ -43,6 +43,16 @@ Build a feature-rich, AI-powered web application called "Hönsgården" (The Chic
 - **Affiliate-struktur**: `GET /api/products` - Ready for Adtraction integration
 - **Dashboard förbättringar**: Alerts, AI Analysis, National Stats sections added
 
+### Steg 5: Virala Engagemangsfunktioner ✅ (2026-03-04)
+- **Flockjämförelse**: `GET /api/stats/flock-comparison` - Visar användarens flock vs app-snitt (ägg/dag)
+- **Percentilplacering**: `GET /api/stats/percentile` - "Din flock ligger i topp X%"
+- **Veckans Toppflockar**: `GET /api/stats/leaderboard` - Leaderboard med förnamn (anonymiserat)
+- **Delbar Resultatbild**: `POST /api/share/generate-image` - Genererar PNG (1200x630) för social delning
+- **AI Förbättringstips**: `GET /api/ai/improvement-tips` - Tips om användaren ligger under snittet
+- **UI-komponenter**: FlockComparison-sektion, Leaderboard-sektion, Share Modal med nedladdning
+- **Statistics-fix**: Chart-container har nu explicit height (240px) för Safari-kompatibilitet
+- **Fungerar på**: Mobil (390x844) + Desktop (1920x800)
+
 ## Premium Features
 - 7-day egg forecast
 - AI advisor "Agda"
@@ -65,15 +75,23 @@ Build a feature-rich, AI-powered web application called "Hönsgården" (The Chic
 ## Known Issues
 - MongoDB Atlas auth needs fixing for production
 - OpenAI API key needs to be configured
-- `server.py` is monolithic (9000+ lines) - needs refactoring
+- `server.py` is monolithic (10600+ lines) - needs refactoring
 
 ## Backlog (P1/P2)
 1. **Adtraction Integration** - Import product feed, AI recommendations
 2. **Backend Refactoring** - Split server.py into modules using APIRouter
 3. **SEO for Community** - Make questions indexable
 4. **Next.js Migration** - Long-term goal
+5. **Höna-personlighet bilduppladdning** - Fullständig implementation av viral feature
 
 ## API Endpoints Summary
+
+### Steg 5 New Viral Endpoints
+- `GET /api/stats/flock-comparison` - User vs app average eggs/day
+- `GET /api/stats/percentile` - User's percentile ranking with badge/tips
+- `GET /api/stats/leaderboard` - Weekly top 10 flocks (anonymized)
+- `POST /api/share/generate-image` - Generate 1200x630 PNG for social sharing
+- `GET /api/ai/improvement-tips` - AI tips for users below average
 
 ### Steg 4 New Endpoints
 - `GET /api/ai/flock-analysis` - AI analysis with causes & tips
