@@ -4195,6 +4195,8 @@ async def create_egg_record(record: EggRecordCreate, request: Request):
     if record.hen_id:
         egg_record = EggRecord(user_id=user_id, **record.dict())
         await db.egg_records.insert_one(egg_record.dict())
+        # Touch streak after logging eggs
+        await touch_streak_internal(user_id)
         return egg_record
     
     existing = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
@@ -4206,10 +4208,14 @@ async def create_egg_record(record: EggRecordCreate, request: Request):
             {"$set": {"count": new_count, "notes": record.notes if record.notes else existing.get('notes')}}
         )
         updated = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
+        # Touch streak after logging eggs
+        await touch_streak_internal(user_id)
         return EggRecord(**updated)
     
     egg_record = EggRecord(user_id=user_id, **record.dict())
     await db.egg_records.insert_one(egg_record.dict())
+    # Touch streak after logging eggs
+    await touch_streak_internal(user_id)
     return egg_record
 
 @api_router.get("/eggs", response_model=List[EggRecord])
@@ -6595,6 +6601,17 @@ async def get_ai_advisor(request: Request):
     except:
         question = ''
     
+    # SPRINT 1: Handle "hej" greetings directly without AI
+    question_lower = question.strip().lower()
+    if question_lower in ["hej", "hejsan", "tjena", "hallå", "hello", "hi", "hej!"]:
+        return {
+            "ok": True,
+            "is_premium": True,
+            "answer": "Hej! 😊 Vad vill du ha hjälp med i din hönsgård idag? Jag kan svara på frågor om ägg, foder, hälsa, flock, väder eller rovdjur!\n\n💛 Kacklande hälsningar, Agda 🐔",
+            "used_fallback": False,
+            "was_greeting": True
+        }
+    
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
     is_premium = subscription.get('is_active', False) if subscription else False
@@ -8435,6 +8452,502 @@ async def track_conversion(data: ConversionData, user: dict = Depends(get_curren
     )
     
     return {"success": True}
+
+
+# ============ SPRINT 1: STREAK SYSTEM ============
+
+async def touch_streak_internal(user_id: str):
+    """Internal function to touch streak - called after logging eggs etc."""
+    today = today_str_stockholm()
+    yesterday = days_ago_stockholm(1)
+    
+    streak_data = await db.user_streaks.find_one({"user_id": user_id})
+    
+    current_streak = 0
+    longest_streak = 0
+    last_touch = None
+    rewarded_streaks = []
+    
+    if streak_data:
+        current_streak = streak_data.get("current_streak", 0)
+        longest_streak = streak_data.get("longest_streak", 0)
+        last_touch = streak_data.get("last_touch_date")
+        rewarded_streaks = streak_data.get("rewarded_streaks", [])
+    
+    # Already touched today
+    if last_touch == today:
+        return {"current_streak": current_streak, "touched": False}
+    
+    # Calculate new streak
+    if last_touch == yesterday:
+        current_streak += 1
+    else:
+        current_streak = 1
+    
+    longest_streak = max(longest_streak, current_streak)
+    
+    # Check for rewards: 10 days = 7 premium days
+    new_reward = None
+    if current_streak >= 10 and 10 not in rewarded_streaks:
+        rewarded_streaks.append(10)
+        new_reward = {"streak": 10, "premium_days": 7}
+        
+        # Grant 7 premium days
+        subscription = await db.subscriptions.find_one({"user_id": user_id})
+        if subscription:
+            current_expires = subscription.get("expires_at", datetime.now(timezone.utc))
+            if isinstance(current_expires, str):
+                current_expires = datetime.fromisoformat(current_expires.replace('Z', '+00:00'))
+            new_expires = max(current_expires, datetime.now(timezone.utc)) + timedelta(days=7)
+            await db.subscriptions.update_one(
+                {"user_id": user_id},
+                {"$set": {"is_active": True, "expires_at": new_expires, "updated_at": datetime.now(timezone.utc)}}
+            )
+        else:
+            await db.subscriptions.insert_one({
+                "user_id": user_id,
+                "is_active": True,
+                "plan": "streak_reward",
+                "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
+                "created_at": datetime.now(timezone.utc)
+            })
+        logger.info(f"[STREAK] User {user_id} earned 7 premium days for 10-day streak!")
+    
+    # Save streak
+    await db.user_streaks.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "user_id": user_id,
+            "current_streak": current_streak,
+            "longest_streak": longest_streak,
+            "last_touch_date": today,
+            "rewarded_streaks": rewarded_streaks,
+            "updated_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    return {"current_streak": current_streak, "touched": True, "new_reward": new_reward}
+
+
+@api_router.get("/me/streak")
+async def get_user_streak(request: Request):
+    """Get current user's streak data"""
+    user_id = await require_user_id(request)
+    
+    streak_data = await db.user_streaks.find_one({"user_id": user_id}, {"_id": 0})
+    
+    if not streak_data:
+        return {
+            "current_streak": 0,
+            "longest_streak": 0,
+            "last_touch_date": None,
+            "rewarded_streaks": [],
+            "next_reward_at": 10,
+            "days_until_reward": 10
+        }
+    
+    current = streak_data.get("current_streak", 0)
+    next_reward = 10 if 10 not in streak_data.get("rewarded_streaks", []) else 30
+    days_until = max(0, next_reward - current)
+    
+    return {
+        "current_streak": current,
+        "longest_streak": streak_data.get("longest_streak", 0),
+        "last_touch_date": streak_data.get("last_touch_date"),
+        "rewarded_streaks": streak_data.get("rewarded_streaks", []),
+        "next_reward_at": next_reward,
+        "days_until_reward": days_until
+    }
+
+
+@api_router.post("/me/streak/touch")
+async def touch_user_streak(request: Request):
+    """Touch streak - call after user logs eggs/health etc."""
+    user_id = await require_user_id(request)
+    result = await touch_streak_internal(user_id)
+    
+    # Get full streak data for response
+    streak_data = await db.user_streaks.find_one({"user_id": user_id}, {"_id": 0})
+    longest = streak_data.get("longest_streak", 0) if streak_data else result.get("current_streak", 0)
+    
+    return {
+        "current_streak": result.get("current_streak", 0),
+        "longest_streak": longest,
+        "touched": result.get("touched", False),
+        "new_reward": result.get("new_reward")
+    }
+
+
+# ============ SPRINT 1: AI CACHE HELPERS ============
+
+async def get_ai_cache(user_id: str, cache_key: str):
+    """Get cached AI response if not expired"""
+    cached = await db.ai_cache.find_one({
+        "user_id": user_id,
+        "key": cache_key,
+        "expires_at": {"$gt": datetime.now(timezone.utc)}
+    }, {"_id": 0})
+    return cached.get("payload") if cached else None
+
+
+async def set_ai_cache(user_id: str, cache_key: str, payload: dict, ttl_hours: int = 24):
+    """Cache AI response with TTL"""
+    await db.ai_cache.update_one(
+        {"user_id": user_id, "key": cache_key},
+        {"$set": {
+            "user_id": user_id,
+            "key": cache_key,
+            "payload": payload,
+            "expires_at": datetime.now(timezone.utc) + timedelta(hours=ttl_hours),
+            "created_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+
+
+# ============ SPRINT 1: AGDAS INBOX ============
+
+@api_router.get("/agda/inbox/today")
+async def get_agda_inbox_today(request: Request):
+    """Get today's Agda card (generates if not exists)"""
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    # Check if card exists for today
+    existing = await db.agda_cards.find_one({
+        "user_id": user_id,
+        "date": today
+    }, {"_id": 0})
+    
+    if existing:
+        return {"card": existing}
+    
+    # Generate new card via OpenAI
+    if not OPENAI_API_KEY:
+        # Fallback card
+        card = {
+            "user_id": user_id,
+            "date": today,
+            "title": "Dagens påminnelse",
+            "body": "Kolla att dina höns har rent vatten och foder. En nöjd höna är en produktiv höna!",
+            "created_at": datetime.now(timezone.utc)
+        }
+    else:
+        # Get user context
+        week_ago = days_ago_stockholm(7)
+        recent_eggs = await db.egg_records.find({"user_id": user_id, "date": {"$gte": week_ago}}).to_list(100)
+        total_eggs = sum(e.get("count", 0) for e in recent_eggs)
+        
+        hen_count = await db.hens.count_documents({"user_id": user_id, "is_active": True, "hen_type": {"$ne": "rooster"}})
+        
+        # Get current month for seasonal tips
+        month = now_stockholm().month
+        season = "vinter" if month in [12, 1, 2] else "vår" if month in [3, 4, 5] else "sommar" if month in [6, 7, 8] else "höst"
+        
+        prompt = f"""Du är Agda, en vänlig rådgivare för hönsägare.
+
+Kontext:
+- Användaren har {hen_count} höns
+- Senaste 7 dagarna: {total_eggs} ägg
+- Säsong: {season}
+
+Ge ett kort tips (max 1-2 meningar) om hönsskötsel anpassat efter säsong och situation.
+
+Returnera ENDAST JSON (ingen markdown):
+{{"title":"...","body":"..."}}"""
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {OPENAI_API_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "gpt-4o-mini",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 150,
+                        "temperature": 0.7
+                    },
+                    timeout=10.0
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    ai_text = data["choices"][0]["message"]["content"].strip()
+                    # Parse JSON
+                    import json
+                    try:
+                        ai_card = json.loads(ai_text)
+                        card = {
+                            "user_id": user_id,
+                            "date": today,
+                            "title": ai_card.get("title", "Dagens tips"),
+                            "body": ai_card.get("body", "Ha en fin dag med dina höns!"),
+                            "created_at": datetime.now(timezone.utc)
+                        }
+                    except:
+                        card = {
+                            "user_id": user_id,
+                            "date": today,
+                            "title": "Dagens tips",
+                            "body": ai_text[:200],
+                            "created_at": datetime.now(timezone.utc)
+                        }
+                else:
+                    raise Exception(f"OpenAI error: {response.status_code}")
+        except Exception as e:
+            logger.error(f"[AGDA INBOX] Error generating card: {e}")
+            card = {
+                "user_id": user_id,
+                "date": today,
+                "title": "Dagens påminnelse",
+                "body": "Glöm inte att kolla vattnet och samla in ägg!",
+                "created_at": datetime.now(timezone.utc)
+            }
+    
+    # Save card
+    await db.agda_cards.insert_one(card)
+    del card["_id"] if "_id" in card else None
+    
+    return {"card": card}
+
+
+# ============ SPRINT 1: FIX AGDA "HEJ" + IMPROVED CHAT ============
+# This is handled in the existing /ai/advisor endpoint - we need to modify it
+
+
+# ============ SPRINT 1: STATISTIK AI-INSIKTER ============
+
+@api_router.get("/stats/eggs")
+async def get_egg_stats(request: Request, days: int = 30):
+    """Get egg statistics for charts"""
+    user_id = await require_user_id(request)
+    
+    start_date = days_ago_stockholm(days)
+    
+    eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": start_date}
+    }).to_list(1000)
+    
+    # Aggregate by date
+    daily_totals = {}
+    for egg in eggs:
+        date_str = egg.get("date")
+        if date_str:
+            daily_totals[date_str] = daily_totals.get(date_str, 0) + egg.get("count", 0)
+    
+    # Build series sorted by date
+    series = [{"date": d, "total": t} for d, t in sorted(daily_totals.items())]
+    
+    return {
+        "series": series,
+        "total": sum(t for t in daily_totals.values()),
+        "days": days,
+        "has_data": len(series) > 0
+    }
+
+
+@api_router.get("/stats/insights")
+async def get_stats_insights(request: Request, days: int = 30):
+    """Get AI-powered insights for egg statistics"""
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    cache_key = f"stats_insights:{days}:{today}"
+    
+    # Check cache
+    cached = await get_ai_cache(user_id, cache_key)
+    if cached:
+        return cached
+    
+    # Get egg data
+    start_date = days_ago_stockholm(days)
+    eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": start_date}
+    }).to_list(1000)
+    
+    daily_totals = {}
+    for egg in eggs:
+        date_str = egg.get("date")
+        if date_str:
+            daily_totals[date_str] = daily_totals.get(date_str, 0) + egg.get("count", 0)
+    
+    series = [{"date": d, "total": t} for d, t in sorted(daily_totals.items())]
+    total_eggs = sum(daily_totals.values())
+    
+    # Get hen count
+    hen_count = await db.hens.count_documents({"user_id": user_id, "is_active": True, "hen_type": {"$ne": "rooster"}})
+    
+    if not series or not OPENAI_API_KEY:
+        fallback = {
+            "summary": f"Du har loggat {total_eggs} ägg de senaste {days} dagarna.",
+            "tips": [
+                "Fortsätt logga ägg dagligen för bättre statistik",
+                "Kontrollera att hönsen har tillräckligt med kalcium",
+                "Håll hönshuset rent och torrt"
+            ]
+        }
+        return fallback
+    
+    # Generate AI insights
+    prompt = f"""Analysera denna äggproduktion för en hönsgård.
+
+Data:
+- Antal höns: {hen_count}
+- Senaste {days} dagarna: {total_eggs} ägg totalt
+- Daglig data: {series[-14:]}
+
+Ge:
+1. En kort analys (2 meningar)
+2. 3 konkreta tips för bättre äggproduktion
+
+Svara på svenska. Returnera ENDAST JSON:
+{{"summary":"...","tips":["...","...","..."]}}"""
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENAI_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "gpt-4o-mini",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 300,
+                    "temperature": 0.7
+                },
+                timeout=15.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                ai_text = data["choices"][0]["message"]["content"].strip()
+                import json
+                try:
+                    insights = json.loads(ai_text)
+                except:
+                    insights = {"summary": ai_text[:200], "tips": []}
+            else:
+                raise Exception(f"OpenAI error: {response.status_code}")
+    except Exception as e:
+        logger.error(f"[STATS INSIGHTS] Error: {e}")
+        insights = {
+            "summary": f"Du har producerat {total_eggs} ägg de senaste {days} dagarna med {hen_count} höns.",
+            "tips": [
+                "Bra jobbat med äggloggningen!",
+                "Fortsätt hålla koll på produktionen",
+                "Jämför med tidigare perioder för att se trender"
+            ]
+        }
+    
+    # Cache for 24 hours
+    await set_ai_cache(user_id, cache_key, insights, 24)
+    
+    return insights
+
+
+# ============ SPRINT 1: HÖNA-PERSONLIGHET (VIRAL FUNKTION) ============
+
+@api_router.post("/hen/personality")
+async def analyze_hen_personality(request: Request):
+    """Analyze hen personality from image using AI Vision"""
+    user_id = await require_user_id(request)
+    
+    try:
+        body = await request.json()
+        image_url = body.get("image_url")
+        image_base64 = body.get("image_base64")
+        hen_name = body.get("hen_name", "din höna")
+        
+        if not image_url and not image_base64:
+            raise HTTPException(status_code=400, detail="Bild krävs (image_url eller image_base64)")
+        
+        if not OPENAI_API_KEY:
+            # Fallback personalities
+            import random
+            personalities = [
+                {"name": "Divan", "description": "Dominant, nyfiken och älskar att vara i centrum. Alltid först vid matskålen!"},
+                {"name": "Utforskaren", "description": "Modig och äventyrlig. Alltid först ut i hönsgården på morgonen."},
+                {"name": "Mysaren", "description": "Lugn och harmonisk. Trivs bäst i närheten av sina flockvänner."},
+                {"name": "Bossen", "description": "Naturlig ledare som håller ordning på flocken. Respekterad av alla."},
+                {"name": "Blygan", "description": "Försiktig och eftertänksam. Observerar noga innan hon agerar."}
+            ]
+            result = random.choice(personalities)
+            return {"ok": True, "personality": result, "used_ai": False}
+        
+        # Build the message content
+        content = [
+            {
+                "type": "text",
+                "text": """Du ska analysera en bild på en höna och ge den en rolig personlighet.
+
+Välj EN av dessa personlighetstyper och anpassa beskrivningen:
+- Divan (dominant, älskar uppmärksamhet)
+- Utforskaren (modig, nyfiken)
+- Mysaren (lugn, social)
+- Bossen (naturlig ledare)
+- Blygan (försiktig, observant)
+- Rebellen (gör som hon vill)
+- Gourmet (matälskare)
+
+Basera personligheten på hönans utseende, färg, ställning och uttryck i bilden.
+
+Svara ENDAST med JSON:
+{"name":"...", "description":"En rolig beskrivning på 1-2 meningar på svenska"}"""
+            }
+        ]
+        
+        if image_url:
+            content.append({"type": "image_url", "image_url": {"url": image_url}})
+        elif image_base64:
+            content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}})
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENAI_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "gpt-4o",  # Vision requires gpt-4o
+                    "messages": [{"role": "user", "content": content}],
+                    "max_tokens": 200,
+                    "temperature": 0.8
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                ai_text = data["choices"][0]["message"]["content"].strip()
+                import json
+                try:
+                    personality = json.loads(ai_text)
+                except:
+                    # Try to extract from text
+                    personality = {
+                        "name": "Mystiska Hönan",
+                        "description": ai_text[:150]
+                    }
+                
+                return {"ok": True, "personality": personality, "used_ai": True}
+            else:
+                logger.error(f"[HEN PERSONALITY] OpenAI error: {response.status_code} - {response.text}")
+                raise HTTPException(status_code=500, detail="Kunde inte analysera bilden")
+                
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[HEN PERSONALITY] Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # Include the router in the main app - MUST be after all route definitions

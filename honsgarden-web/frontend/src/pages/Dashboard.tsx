@@ -109,6 +109,12 @@ export default function Dashboard() {
   const [selectedHen, setSelectedHen] = useState<string>('');
   const [saving, setSaving] = useState(false);
   
+  // SPRINT 1: Streak state
+  const [streak, setStreak] = useState<{current_streak: number, longest_streak: number, days_until_reward: number, next_reward_at: number} | null>(null);
+  
+  // SPRINT 1: Agdas Inbox state
+  const [agdaCard, setAgdaCard] = useState<{title: string, body: string} | null>(null);
+  
   // Modal states
   const [showEggModal, setShowEggModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -165,7 +171,7 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
@@ -175,7 +181,9 @@ export default function Dashboard() {
         fetch('/api/insights', { credentials: 'include' }),
         fetch('/api/weather', { credentials: 'include' }),
         fetch('/api/flock/statistics', { credentials: 'include' }),
-        fetch('/api/stats/yesterday-summary', { credentials: 'include' })
+        fetch('/api/stats/yesterday-summary', { credentials: 'include' }),
+        fetch('/api/me/streak', { credentials: 'include' }),
+        fetch('/api/agda/inbox/today', { credentials: 'include' })
       ]);
 
       if (statsRes.ok) setTodayStats(await statsRes.json());
@@ -188,6 +196,20 @@ export default function Dashboard() {
       if (weatherRes.ok) setWeather(await weatherRes.json());
       if (flockStatsRes.ok) setFlockStats(await flockStatsRes.json());
       if (yesterdayRes.ok) setYesterdaySummary(await yesterdayRes.json());
+      
+      // SPRINT 1: Load streak data
+      if (streakRes.ok) {
+        const streakData = await streakRes.json();
+        setStreak(streakData);
+      }
+      
+      // SPRINT 1: Load Agda's Inbox card
+      if (agdaCardRes.ok) {
+        const cardData = await agdaCardRes.json();
+        if (cardData.card) {
+          setAgdaCard(cardData.card);
+        }
+      }
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -373,6 +395,16 @@ export default function Dashboard() {
             <span className="stat-value">{yesterdaySummary?.eggs_this_week ?? 0}</span>
             <span className="stat-label">veckan</span>
           </div>
+          {streak && streak.current_streak > 0 && (
+            <>
+              <div className="stat-divider" />
+              <div className="stat-item streak">
+                <span className="stat-icon">🔥</span>
+                <span className="stat-value">{streak.current_streak}</span>
+                <span className="stat-label">dagar</span>
+              </div>
+            </>
+          )}
           <div className="stat-divider" />
           <div className="stat-item highlight">
             <span className="stat-icon">💰</span>
@@ -381,6 +413,21 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SPRINT 1: Streak motivation banner
+      ══════════════════════════════════════════════════════════════════ */}
+      {streak && streak.current_streak > 0 && streak.current_streak < 10 && (
+        <section className="streak-banner">
+          <div className="streak-content">
+            <span className="streak-fire">🔥</span>
+            <div className="streak-text">
+              <strong>Du är inne på dag {streak.current_streak}!</strong>
+              <span>Logga ägg {streak.days_until_reward} dagar till för 7 dagar premium!</span>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════
           SEKTION 2: Primär CTA - Registrera ägg
@@ -403,6 +450,26 @@ export default function Dashboard() {
           <span className="cta-arrow">→</span>
         </button>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SPRINT 1: Agdas Inbox
+      ══════════════════════════════════════════════════════════════════ */}
+      {agdaCard && (
+        <section className="agda-inbox-section">
+          <div className="section-header">
+            <span>📬 Agdas Inbox</span>
+            <span className="today-label">Idag</span>
+          </div>
+          <div className="agda-card">
+            <div className="agda-card-header">
+              <span className="agda-icon">🐔</span>
+              <span className="agda-name">Agda</span>
+            </div>
+            <h4 className="agda-card-title">{agdaCard.title}</h4>
+            <p className="agda-card-body">{agdaCard.body}</p>
+          </div>
+        </section>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════
           SEKTION 3: Premium Teaser (aspirational, inte blockerande)
