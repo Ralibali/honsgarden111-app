@@ -153,6 +153,32 @@ export default function Dashboard() {
     all_completed: boolean
   } | null>(null);
   
+  // STEG 4: AI Flockanalys state
+  const [flockAnalysis, setFlockAnalysis] = useState<{
+    summary: string,
+    possible_causes: string[],
+    recommendations: string[]
+  } | null>(null);
+  
+  // STEG 4: Alerts state
+  const [alerts, setAlerts] = useState<Array<{
+    id: string,
+    type: string,
+    icon: string,
+    message: string,
+    severity: string
+  }>>([]);
+  
+  // STEG 4: National stats state
+  const [nationalStats, setNationalStats] = useState<{
+    avg_eggs_per_day: number,
+    weekly_change: number,
+    total_users: number,
+    user_avg_eggs_per_day: number,
+    user_vs_average: number,
+    comparison_text: string
+  } | null>(null);
+  
   // Modal states
   const [showEggModal, setShowEggModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -221,7 +247,7 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes, rankingRes, challengesRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes, rankingRes, challengesRes, flockAnalysisRes, alertsRes, nationalStatsRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
@@ -237,7 +263,10 @@ export default function Dashboard() {
         fetch('/api/farm/today', { credentials: 'include' }),
         fetch('/api/flock/health', { credentials: 'include' }),
         fetch('/api/ranking/summary', { credentials: 'include' }),
-        fetch('/api/challenges/week', { credentials: 'include' })
+        fetch('/api/challenges/week', { credentials: 'include' }),
+        fetch('/api/ai/flock-analysis', { credentials: 'include' }),
+        fetch('/api/alerts', { credentials: 'include' }),
+        fetch('/api/stats/national', { credentials: 'include' })
       ]);
 
       if (statsRes.ok) setTodayStats(await statsRes.json());
@@ -287,6 +316,24 @@ export default function Dashboard() {
       if (challengesRes.ok) {
         const challengesData = await challengesRes.json();
         setChallenges(challengesData);
+      }
+      
+      // STEG 4: Load AI Flock Analysis
+      if (flockAnalysisRes.ok) {
+        const analysisData = await flockAnalysisRes.json();
+        setFlockAnalysis(analysisData);
+      }
+      
+      // STEG 4: Load Alerts
+      if (alertsRes.ok) {
+        const alertsData = await alertsRes.json();
+        setAlerts(alertsData.alerts || []);
+      }
+      
+      // STEG 4: Load National Stats
+      if (nationalStatsRes.ok) {
+        const nationalData = await nationalStatsRes.json();
+        setNationalStats(nationalData);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -435,6 +482,29 @@ export default function Dashboard() {
     <div className={`dashboard ${isVisible ? 'visible' : ''}`} data-testid="dashboard">
       <DataLimitsBanner />
       <ProductivityAlerts flocks={flocks} />
+      
+      {/* ══════════════════════════════════════════════════════════════════
+          STEG 4: Smarta Notiser (Alerts)
+      ══════════════════════════════════════════════════════════════════ */}
+      {alerts.length > 0 && (
+        <section className="alerts-section" data-testid="alerts-section">
+          {alerts.map((alert) => (
+            <div key={alert.id} className={`alert-card alert-${alert.severity}`}>
+              <span className="alert-icon">{alert.icon}</span>
+              <span className="alert-message">{alert.message}</span>
+              <button 
+                className="alert-dismiss" 
+                onClick={async () => {
+                  await fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'POST', credentials: 'include' });
+                  setAlerts(alerts.filter(a => a.id !== alert.id));
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </section>
+      )}
       
       {/* ══════════════════════════════════════════════════════════════════
           SEKTION 1: Header + Kompakt Stat-rad
@@ -676,6 +746,73 @@ export default function Dashboard() {
               <span>Alla mål klara! Bra jobbat!</span>
             </div>
           )}
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          STEG 4: AI Flockanalys (Premium)
+      ══════════════════════════════════════════════════════════════════ */}
+      {flockAnalysis && flockAnalysis.summary && (
+        <section className="flock-analysis-section" data-testid="flock-analysis">
+          <div className="section-header">
+            <span>🧠 AI Flockanalys</span>
+          </div>
+          <div className="flock-analysis-card">
+            <p className="analysis-summary">{flockAnalysis.summary}</p>
+            
+            {flockAnalysis.possible_causes && flockAnalysis.possible_causes.length > 0 && (
+              <div className="analysis-causes">
+                <span className="causes-label">Möjliga orsaker:</span>
+                <ul>
+                  {flockAnalysis.possible_causes.map((cause, i) => (
+                    <li key={i}>• {cause}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {flockAnalysis.recommendations && flockAnalysis.recommendations.length > 0 && (
+              <div className="analysis-tips">
+                <span className="tips-label">💡 Tips:</span>
+                <ul>
+                  {flockAnalysis.recommendations.map((tip, i) => (
+                    <li key={i}>• {tip}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          STEG 4: Nationell Statistik
+      ══════════════════════════════════════════════════════════════════ */}
+      {nationalStats && nationalStats.total_users > 1 && (
+        <section className="national-stats-section" data-testid="national-stats">
+          <div className="section-header">
+            <span>📊 Höns i Sverige</span>
+          </div>
+          <div className="national-stats-card">
+            <div className="national-stat-row">
+              <span className="stat-label">Snittproduktion:</span>
+              <span className="stat-value">{nationalStats.avg_eggs_per_day} ägg/dag</span>
+            </div>
+            {nationalStats.weekly_change !== 0 && (
+              <div className="national-stat-row">
+                <span className="stat-label">Förändring denna vecka:</span>
+                <span className={`stat-value ${nationalStats.weekly_change > 0 ? 'positive' : 'negative'}`}>
+                  {nationalStats.weekly_change > 0 ? '+' : ''}{nationalStats.weekly_change}%
+                </span>
+              </div>
+            )}
+            <div className="national-comparison">
+              <span className="your-stat">Din flock: {nationalStats.user_avg_eggs_per_day} ägg/dag</span>
+              <span className={`comparison-text ${nationalStats.user_vs_average >= 0 ? 'above' : 'below'}`}>
+                {nationalStats.comparison_text}
+              </span>
+            </div>
+          </div>
         </section>
       )}
 

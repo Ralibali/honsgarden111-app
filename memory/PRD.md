@@ -1,100 +1,86 @@
 # Hönsgården - Product Requirements Document
 
-## Projektöversikt
-Hönsgården är en digital assistent för hönsägare. Appen hjälper användare att:
-- Logga ägg dagligen
-- Hålla koll på sina höns (hälsa, produktivitet)
-- Få AI-drivna tips och analyser
-- Se statistik och trender
-- Tävla mot andra hönsägare via ranking
+## Original Problem Statement
+Build a feature-rich, AI-powered web application called "Hönsgården" (The Chicken Coop) for Swedish chicken farmers. The app helps users track egg production, manage their flock, and get AI-powered insights.
 
 ## Tech Stack
 - **Backend**: FastAPI + MongoDB
-- **Frontend**: React (Vite) + TypeScript
-- **AI**: OpenAI GPT-4o-mini
-- **Hosting**: Render (standalone deployment)
+- **Frontend**: React + TypeScript
+- **AI**: OpenAI gpt-4o-mini
+- **Payments**: Stripe
+- **Deployment**: Render
 
----
+## Completed Sprints
 
-## Sprint 1 - KLART ✅
+### Sprint 1 ✅
+- User streaks with rewards
+- Agda's Inbox (daily AI tips)
+- Statistics fixes
+- AI insights
+- Hen personality analysis
 
-### Implementerade funktioner:
-1. **Streak-system** - 10 dagars streak = 7 premium-dagar
-2. **Agdas Inbox** - AI-genererat dagligt kort (1/dag)
-3. **"Hej"-hantering** - Agda svarar direkt utan AI vid hälsning
-4. **AI-cache** - Alla AI-svar cachas i MongoDB
-5. **Statistik + AI-insikter**
-6. **Höna-personlighet** - Viral funktion med OpenAI Vision
+### Sprint 2 ✅
+- Daily AI overview ("Din hönsgård idag")
+- Flock health score
+- PWA functionality (manifest.json, service-worker.js)
 
----
+### Sprint 3A ✅
+- Flock ranking system (top X%)
+- Weekly challenges/quests
+- Endpoints: `/api/ranking/summary`, `/api/challenges/week`
 
-## Sprint 2 - KLART ✅
+### Sprint 3B ✅
+- Community Q&A with content gating
+- AI-generated first answer from Agda
+- Shareable question URLs
+- Endpoints: `/api/community/questions`, `/api/community/questions/{id}/preview`
 
-### Implementerade funktioner:
-1. **Din hönsgård idag** - AI-prognos och tips
-2. **Hälsoscore (0-100)** - Baserat på produktionstrend och hälsa
-3. **PWA** - Installera som app på mobilen
-4. **Dashboard-förbättringar**
+### Steg 4 ✅ (2026-03-04)
+- **AI Flockanalys**: `GET /api/ai/flock-analysis` - Analyzes production, causes, recommendations
+- **Smarta Notiser**: `GET /api/alerts` - Warnings like "Greta hasn't laid eggs in 4 days"
+- **Nationell Statistik**: `GET /api/stats/national` - Compare against all Swedish users
+- **Höna-personlighet**: `POST /api/ai/hen-personality` - Viral personality quiz
+- **Affiliate-struktur**: `GET /api/products` - Ready for Adtraction integration
+- **Dashboard förbättringar**: Alerts, AI Analysis, National Stats sections added
 
----
+## Premium Features
+- 7-day egg forecast
+- AI advisor "Agda"
+- Weather-based tips
+- Anomaly detection
+- Health logging
+- Hatching module
+- Feed management
+- Unlimited flocks
 
-## Sprint 3A - KLART ✅
+## Key Collections (MongoDB)
+- `users`, `hens`, `flocks`, `egg_records`
+- `ai_cache`, `ai_flock_analysis` (24h cache)
+- `alerts` (dismissible notifications)
+- `community_questions`, `community_answers`
+- `products` (affiliate structure)
+- `hen_personalities` (viral tracking)
+- `user_weekly_challenges`
 
-### Implementerade funktioner:
+## Known Issues
+- MongoDB Atlas auth needs fixing for production
+- OpenAI API key needs to be configured
+- `server.py` is monolithic (9000+ lines) - needs refactoring
 
-1. **Ranking + Tävlingsmekanik**
-   - `GET /api/ranking/summary`
-   - Visar "topp X%" baserat på ägg/dag
-   - Nivåer: 🏆 Topp 5%, 🥇 Topp 10%, 🥈 Topp 25%, 🥉 Topp 50%
-   - Visar "nästa nivå" och hur många ägg/dag som krävs
-   - `GET /api/ranking/coach` - AI-tips för att nå nästa nivå (cachad 24h)
+## Backlog (P1/P2)
+1. **Adtraction Integration** - Import product feed, AI recommendations
+2. **Backend Refactoring** - Split server.py into modules using APIRouter
+3. **SEO for Community** - Make questions indexable
+4. **Next.js Migration** - Long-term goal
 
-2. **Veckomål (Quests)**
-   - `GET /api/challenges/week`
-   - `POST /api/challenges/progress`
-   - 3 veckomål: Logga ägg 5 dagar, Hälsocheck, Besök statistik
-   - Progress-bar för varje mål
-   - Badge vid alla mål klara
+## API Endpoints Summary
 
----
-
-## Kommande (Sprint 3B)
-
-### Planerat:
-- **Community Q&A** - Viral delning med content gating
-- **AI första svar** - Agda svarar automatiskt på nya frågor
-- **Public preview** - Frågor kan ses utan konto (gated)
-
----
-
-## API-kostnadskontroll
-
-| Funktion | Max anrop |
-|----------|-----------|
-| Agdas Inbox | 1/user/dag |
-| Farm Today | 1/user/dag |
-| Stats Insights | 1/user/dag |
-| Ranking Coach | 1/user/dag |
-| Agda Chat | Per fråga |
-
-Alla AI-svar cachas i MongoDB.
-
----
-
-## Miljövariabler (Render)
-
-```
-MONGO_URL=mongodb+srv://...
-DB_NAME=honsgarden
-OPENAI_API_KEY=sk-proj-...
-STRIPE_API_KEY=sk_live_...
-```
-
----
-
-## Changelog
-
-### 2024-03-03
-- Sprint 1 implementerat
-- Sprint 2 implementerat
-- Sprint 3A implementerat (Ranking + Veckomål)
+### Steg 4 New Endpoints
+- `GET /api/ai/flock-analysis` - AI analysis with causes & tips
+- `GET /api/alerts` - Smart notifications
+- `POST /api/alerts/{id}/dismiss` - Dismiss alert
+- `GET /api/stats/national` - National statistics comparison
+- `POST /api/ai/hen-personality` - Viral personality feature
+- `GET /api/products` - Affiliate products
+- `POST /api/admin/products` - Add product (admin)
+- `GET /api/ai/product-recommendation` - AI product suggestion

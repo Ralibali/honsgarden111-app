@@ -8378,6 +8378,554 @@ async def accept_answer(request: Request, question_id: str, answer_id: str):
     return {"accepted": True, "message": "Svar accepterat!"}
 
 
+# ============ STEG 4: AI FLOCKANALYS, NOTISER, NATIONELL STATISTIK ============
+
+@api_router.get("/ai/flock-analysis")
+async def get_flock_analysis(request: Request):
+    """
+    AI Flockanalys (Premium)
+    Analyserar äggproduktion, väder och historik.
+    Returnerar summary, possible_causes[], recommendations[]
+    """
+    user_id = await require_user_id(request)
+    
+    # Check cache (24h)
+    today = today_str_stockholm()
+    cached = await db.ai_flock_analysis.find_one({
+        "user_id": user_id,
+        "date": today
+    }, {"_id": 0})
+    
+    if cached:
+        return {
+            "summary": cached.get("summary", ""),
+            "possible_causes": cached.get("possible_causes", []),
+            "recommendations": cached.get("recommendations", []),
+            "cached": True
+        }
+    
+    # Get user's egg data (last 14 days)
+    fourteen_days_ago = (now_stockholm() - timedelta(days=14)).strftime('%Y-%m-%d')
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    
+    eggs_14d = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": fourteen_days_ago}
+    }, {"_id": 0}).to_list(100)
+    
+    # Calculate production stats
+    eggs_this_week = [e for e in eggs_14d if e.get("date", "") >= seven_days_ago]
+    eggs_last_week = [e for e in eggs_14d if e.get("date", "") < seven_days_ago]
+    
+    total_this_week = sum(e.get("count", 1) for e in eggs_this_week)
+    total_last_week = sum(e.get("count", 1) for e in eggs_last_week)
+    
+    # Get flock size
+    hens = await db.hens.find({"user_id": user_id, "is_active": True}, {"_id": 0}).to_list(100)
+    flock_size = len(hens)
+    
+    # Get weather data
+    weather_data = None
+    try:
+        weather_res = await db.weather_cache.find_one({"user_id": user_id}, {"_id": 0})
+        if weather_res:
+            weather_data = weather_res
+    except:
+        pass
+    
+    # Calculate percentage change
+    if total_last_week > 0:
+        change_percent = round(((total_this_week - total_last_week) / total_last_week) * 100, 1)
+    else:
+        change_percent = 0
+    
+    eggs_per_day = round(total_this_week / 7, 1) if total_this_week else 0
+    
+    # Build AI prompt
+    weather_info = ""
+    if weather_data:
+        temp = weather_data.get("temperature", "okänd")
+        weather_info = f"Temperatur: {temp}°C"
+    
+    prompt = f"""Du är Agda, en erfaren hönsgårdsrådgivare. Analysera följande flockdata:
+
+FLOCKDATA:
+- Antal hönor: {flock_size}
+- Ägg denna vecka: {total_this_week} ({eggs_per_day} per dag)
+- Ägg förra veckan: {total_last_week}
+- Förändring: {change_percent}%
+- {weather_info}
+- Datum: {today} (vinter/vår i Sverige)
+
+Ge en kort, personlig analys på svenska. Returnera JSON med exakt detta format:
+{{
+  "summary": "En mening som sammanfattar produktionen",
+  "possible_causes": ["orsak 1", "orsak 2"],
+  "recommendations": ["tips 1", "tips 2"]
+}}
+
+Håll det kort och praktiskt. Max 2-3 orsaker och tips."""
+
+    # Call AI
+    try:
+        openai_key = EMERGENT_LLM_KEY or os.environ.get('OPENAI_API_KEY')
+        if openai_key:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {openai_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "gpt-4o-mini",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 500,
+                        "temperature": 0.7
+                    }
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    content = data["choices"][0]["message"]["content"]
+                    # Parse JSON from response
+                    import json
+                    try:
+                        # Try to extract JSON from the response
+                        json_start = content.find('{')
+                        json_end = content.rfind('}') + 1
+                        if json_start >= 0 and json_end > json_start:
+                            analysis = json.loads(content[json_start:json_end])
+                        else:
+                            raise ValueError("No JSON found")
+                    except:
+                        analysis = {
+                            "summary": content[:200],
+                            "possible_causes": [],
+                            "recommendations": []
+                        }
+                else:
+                    raise Exception(f"API error: {response.status_code}")
+        else:
+            raise Exception("No API key")
+    except Exception as e:
+        logger.error(f"AI flock analysis error: {e}")
+        # Fallback response
+        if change_percent < -10:
+            analysis = {
+                "summary": f"Din flock producerar {abs(change_percent)}% färre ägg denna vecka.",
+                "possible_causes": ["Kallare temperatur", "Kortare dagsljus", "Ruggning"],
+                "recommendations": ["Öka protein i fodret", "Kontrollera reden", "Se till att hönsen har värme"]
+            }
+        elif change_percent > 10:
+            analysis = {
+                "summary": f"Bra jobbat! Din flock producerar {change_percent}% fler ägg denna vecka.",
+                "possible_causes": ["Bättre väder", "Bra foder", "Friska höns"],
+                "recommendations": ["Fortsätt med nuvarande rutin", "Dokumentera vad som fungerar"]
+            }
+        else:
+            analysis = {
+                "summary": f"Din flock producerar stabilt med {eggs_per_day} ägg per dag.",
+                "possible_causes": [],
+                "recommendations": ["Fortsätt med nuvarande rutin"]
+            }
+    
+    # Cache result
+    await db.ai_flock_analysis.update_one(
+        {"user_id": user_id, "date": today},
+        {"$set": {
+            "summary": analysis.get("summary", ""),
+            "possible_causes": analysis.get("possible_causes", []),
+            "recommendations": analysis.get("recommendations", []),
+            "eggs_this_week": total_this_week,
+            "eggs_last_week": total_last_week,
+            "change_percent": change_percent,
+            "created_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    return {
+        "summary": analysis.get("summary", ""),
+        "possible_causes": analysis.get("possible_causes", []),
+        "recommendations": analysis.get("recommendations", []),
+        "cached": False
+    }
+
+
+@api_router.get("/alerts")
+async def get_user_alerts(request: Request):
+    """
+    Smarta notiser - problem-detektion
+    Returnerar aktiva varningar för användaren.
+    """
+    user_id = await require_user_id(request)
+    
+    # Generate alerts based on current data
+    alerts = []
+    today = today_str_stockholm()
+    
+    # Check 1: Hens that haven't laid eggs in 4+ days
+    hens = await db.hens.find({"user_id": user_id, "is_active": True}, {"_id": 0}).to_list(100)
+    four_days_ago = (now_stockholm() - timedelta(days=4)).strftime('%Y-%m-%d')
+    
+    for hen in hens:
+        hen_id = hen.get("id")
+        hen_name = hen.get("name", "Okänd höna")
+        
+        # Check if this hen has laid eggs in last 4 days
+        recent_eggs = await db.egg_records.find_one({
+            "user_id": user_id,
+            "hen_id": hen_id,
+            "date": {"$gte": four_days_ago}
+        })
+        
+        if not recent_eggs and hen_id:
+            # Check if alert already dismissed today
+            dismissed = await db.alerts.find_one({
+                "user_id": user_id,
+                "type": "hen_no_eggs",
+                "hen_id": hen_id,
+                "dismissed_date": today
+            })
+            
+            if not dismissed:
+                alerts.append({
+                    "id": f"hen_no_eggs_{hen_id}",
+                    "type": "hen_no_eggs",
+                    "hen_id": hen_id,
+                    "icon": "⚠️",
+                    "message": f"{hen_name} har inte värpt på 4 dagar",
+                    "severity": "warning"
+                })
+    
+    # Check 2: Production drop > 20%
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    fourteen_days_ago = (now_stockholm() - timedelta(days=14)).strftime('%Y-%m-%d')
+    
+    eggs_this_week = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0}).to_list(100)
+    
+    eggs_last_week = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": fourteen_days_ago, "$lt": seven_days_ago}
+    }, {"_id": 0}).to_list(100)
+    
+    total_this = sum(e.get("count", 1) for e in eggs_this_week)
+    total_last = sum(e.get("count", 1) for e in eggs_last_week)
+    
+    if total_last > 0:
+        change = ((total_this - total_last) / total_last) * 100
+        if change <= -20:
+            dismissed = await db.alerts.find_one({
+                "user_id": user_id,
+                "type": "production_drop",
+                "dismissed_date": today
+            })
+            
+            if not dismissed:
+                alerts.append({
+                    "id": "production_drop",
+                    "type": "production_drop",
+                    "icon": "📉",
+                    "message": f"Din flock producerar {abs(int(change))}% färre ägg än förra veckan",
+                    "severity": "warning"
+                })
+    
+    return {"alerts": alerts, "count": len(alerts)}
+
+
+@api_router.post("/alerts/{alert_id}/dismiss")
+async def dismiss_alert(request: Request, alert_id: str):
+    """Dismiss an alert for today"""
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    # Parse alert type from id
+    if alert_id.startswith("hen_no_eggs_"):
+        hen_id = alert_id.replace("hen_no_eggs_", "")
+        await db.alerts.update_one(
+            {"user_id": user_id, "type": "hen_no_eggs", "hen_id": hen_id},
+            {"$set": {"dismissed_date": today, "updated_at": datetime.now(timezone.utc)}},
+            upsert=True
+        )
+    else:
+        await db.alerts.update_one(
+            {"user_id": user_id, "type": alert_id},
+            {"$set": {"dismissed_date": today, "updated_at": datetime.now(timezone.utc)}},
+            upsert=True
+        )
+    
+    return {"dismissed": True}
+
+
+@api_router.get("/stats/national")
+async def get_national_statistics(request: Request):
+    """
+    Nationell flockstatistik
+    Visar anonym aggregerad data från alla användare.
+    """
+    user_id = await require_user_id(request)
+    
+    today = today_str_stockholm()
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    fourteen_days_ago = (now_stockholm() - timedelta(days=14)).strftime('%Y-%m-%d')
+    
+    # Get all eggs this week (all users)
+    all_eggs_this_week = await db.egg_records.find({
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0, "user_id": 1, "count": 1}).to_list(10000)
+    
+    all_eggs_last_week = await db.egg_records.find({
+        "date": {"$gte": fourteen_days_ago, "$lt": seven_days_ago}
+    }, {"_id": 0, "user_id": 1, "count": 1}).to_list(10000)
+    
+    # Calculate per-user averages
+    users_this_week = defaultdict(int)
+    users_last_week = defaultdict(int)
+    
+    for e in all_eggs_this_week:
+        users_this_week[e.get("user_id")] += e.get("count", 1)
+    
+    for e in all_eggs_last_week:
+        users_last_week[e.get("user_id")] += e.get("count", 1)
+    
+    # Calculate national average (eggs per day per active user)
+    active_users = len(users_this_week)
+    total_eggs_this_week = sum(users_this_week.values())
+    total_eggs_last_week = sum(users_last_week.values())
+    
+    if active_users > 0:
+        national_avg = round(total_eggs_this_week / (active_users * 7), 1)
+    else:
+        national_avg = 0
+    
+    # Weekly change
+    if total_eggs_last_week > 0:
+        weekly_change = round(((total_eggs_this_week - total_eggs_last_week) / total_eggs_last_week) * 100, 1)
+    else:
+        weekly_change = 0
+    
+    # User's stats
+    user_eggs_this_week = users_this_week.get(user_id, 0)
+    user_avg = round(user_eggs_this_week / 7, 1)
+    
+    # User vs average
+    if national_avg > 0:
+        user_vs_average = round(((user_avg - national_avg) / national_avg) * 100, 1)
+    else:
+        user_vs_average = 0
+    
+    return {
+        "avg_eggs_per_day": national_avg,
+        "weekly_change": weekly_change,
+        "total_users": active_users,
+        "user_avg_eggs_per_day": user_avg,
+        "user_vs_average": user_vs_average,
+        "comparison_text": f"Du ligger {abs(user_vs_average)}% {'över' if user_vs_average >= 0 else 'under'} snittet denna vecka" if user_vs_average != 0 else "Du ligger på snittet"
+    }
+
+
+@api_router.post("/ai/hen-personality")
+async def analyze_hen_personality(request: Request):
+    """
+    Viral funktion - Höna-personlighet
+    Analyserar en bild och genererar personlighet.
+    """
+    user_id = await require_user_id(request)
+    
+    # Get request body
+    try:
+        body = await request.json()
+        image_url = body.get("image_url", "")
+        hen_name = body.get("hen_name", "din höna")
+    except:
+        image_url = ""
+        hen_name = "din höna"
+    
+    # Personality types
+    personalities = [
+        {"type": "Divan", "emoji": "👑", "description": "Dominant, nyfiken och alltid först vid maten. En riktig ledartyp!"},
+        {"type": "Äventyraren", "emoji": "🌟", "description": "Modig och utforskande. Älskar att hitta nya platser och godsaker!"},
+        {"type": "Mysfågeln", "emoji": "💕", "description": "Social och kärleksfull. Trivs bäst nära sina flockkompisar."},
+        {"type": "Filosofen", "emoji": "🧘", "description": "Lugn och eftertänksam. Observerar gärna innan hon agerar."},
+        {"type": "Rebellen", "emoji": "🔥", "description": "Självständig och lite bångstyrig. Gör saker på sitt eget sätt!"},
+        {"type": "Solstrålen", "emoji": "☀️", "description": "Glad och energisk. Sprider glädje i hela hönsgården!"},
+        {"type": "Skygga Saga", "emoji": "🌸", "description": "Lite försiktig men väldigt trogen. En pålitlig vän!"},
+        {"type": "Matälskaren", "emoji": "🍴", "description": "Lever för goda godsaker! Alltid på jakt efter nästa snack."}
+    ]
+    
+    # If we have an image, try AI analysis
+    if image_url:
+        try:
+            openai_key = EMERGENT_LLM_KEY or os.environ.get('OPENAI_API_KEY')
+            if openai_key:
+                prompt = f"""Analysera denna hönabild och välj EN personlighetstyp som passar bäst.
+                
+Välj från dessa typer:
+1. Divan - Dominant, ledare
+2. Äventyraren - Modig, nyfiken
+3. Mysfågeln - Social, kärleksfull
+4. Filosofen - Lugn, eftertänksam
+5. Rebellen - Självständig, bångstyrig
+6. Solstrålen - Glad, energisk
+7. Skygga Saga - Försiktig, trogen
+8. Matälskaren - Älskar mat
+
+Basera på hönans utseende, pose och uttryck i bilden.
+Svara med ENDAST siffran (1-8) för den personlighetstyp som passar bäst."""
+
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    response = await client.post(
+                        "https://api.openai.com/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {openai_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "gpt-4o-mini",
+                            "messages": [
+                                {
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "text", "text": prompt},
+                                        {"type": "image_url", "image_url": {"url": image_url}}
+                                    ]
+                                }
+                            ],
+                            "max_tokens": 50
+                        }
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        content = data["choices"][0]["message"]["content"].strip()
+                        # Extract number
+                        import re
+                        match = re.search(r'[1-8]', content)
+                        if match:
+                            idx = int(match.group()) - 1
+                            personality = personalities[idx]
+                        else:
+                            personality = personalities[hash(image_url) % len(personalities)]
+                    else:
+                        personality = personalities[hash(image_url) % len(personalities)]
+            else:
+                personality = personalities[hash(image_url) % len(personalities)]
+        except Exception as e:
+            logger.error(f"Hen personality AI error: {e}")
+            personality = personalities[hash(str(datetime.now())) % len(personalities)]
+    else:
+        # Random personality based on hen name
+        personality = personalities[hash(hen_name) % len(personalities)]
+    
+    result = {
+        "hen_name": hen_name,
+        "personality_type": personality["type"],
+        "emoji": personality["emoji"],
+        "description": personality["description"],
+        "share_text": f"Min höna {hen_name} är en {personality['type']} {personality['emoji']}\n\n{personality['description']}\n\nVilken personlighet har din höna? Testa på honsgarden.se!",
+        "share_image_text": f"{hen_name} är en {personality['type']} {personality['emoji']}"
+    }
+    
+    # Save to database for viral tracking
+    await db.hen_personalities.insert_one({
+        "user_id": user_id,
+        "hen_name": hen_name,
+        "personality_type": personality["type"],
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return result
+
+
+# ============ AFFILIATE STRUCTURE ============
+
+class ProductCreate(BaseModel):
+    title: str
+    description: str
+    category: str
+    affiliate_url: str
+    image: Optional[str] = None
+    price: Optional[str] = None
+
+@api_router.get("/products")
+async def get_products(category: Optional[str] = None, limit: int = 10):
+    """Get affiliate products (public endpoint)"""
+    query = {}
+    if category:
+        query["category"] = category
+    
+    products = await db.products.find(query, {"_id": 0}).limit(limit).to_list(limit)
+    return {"products": products}
+
+@api_router.post("/admin/products")
+async def create_product(request: Request, product: ProductCreate):
+    """Admin: Add affiliate product"""
+    # Check admin status
+    user_id = await require_user_id(request)
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or user.get("email") not in ["peter@honsgarden.se", "admin@honsgarden.se"]:
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    product_data = {
+        "id": str(uuid.uuid4())[:8],
+        "title": product.title,
+        "description": product.description,
+        "category": product.category,
+        "affiliate_url": product.affiliate_url,
+        "image": product.image,
+        "price": product.price,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.products.insert_one(product_data)
+    product_data.pop("_id", None)
+    
+    return {"product": product_data}
+
+
+@api_router.get("/ai/product-recommendation")
+async def get_product_recommendation(request: Request):
+    """
+    AI-baserad produktrekommendation baserad på flockdata.
+    """
+    user_id = await require_user_id(request)
+    
+    # Get recent analysis
+    analysis = await db.ai_flock_analysis.find_one(
+        {"user_id": user_id},
+        {"_id": 0},
+        sort=[("created_at", -1)]
+    )
+    
+    # Get products
+    products = await db.products.find({}, {"_id": 0}).to_list(20)
+    
+    if not products:
+        return {"recommendation": None, "message": "Inga produkter tillgängliga"}
+    
+    # Simple matching based on analysis
+    if analysis:
+        causes = analysis.get("possible_causes", [])
+        for cause in causes:
+            cause_lower = cause.lower()
+            if "foder" in cause_lower or "protein" in cause_lower:
+                # Find food products
+                food_products = [p for p in products if p.get("category") == "foder"]
+                if food_products:
+                    return {"recommendation": food_products[0], "reason": "Baserat på din flockanalys"}
+            if "värme" in cause_lower or "kall" in cause_lower:
+                # Find heating products
+                heating_products = [p for p in products if p.get("category") == "värme"]
+                if heating_products:
+                    return {"recommendation": heating_products[0], "reason": "Baserat på din flockanalys"}
+    
+    # Default: return random product
+    import random
+    return {"recommendation": random.choice(products) if products else None, "reason": "Populär produkt"}
+
+
 # ============ COMMUNITY ENDPOINTS ============
 
 @api_router.get("/community/posts")
