@@ -7778,6 +7778,262 @@ async def get_flock_statistics(request: Request):
     }
 
 
+# ============ SPRINT 1 & 2: STREAK, AGDA INBOX, FARM TODAY, HEALTH ============
+
+@api_router.get("/me/streak")
+async def get_user_streak(request: Request):
+    """
+    Get user's current streak data.
+    Streak increases when user logs eggs daily.
+    """
+    user_id = await require_user_id(request)
+    
+    # Get streak from database
+    streak_doc = await db.user_streaks.find_one({"user_id": user_id}, {"_id": 0})
+    
+    if not streak_doc:
+        return {
+            "current_streak": 0,
+            "longest_streak": 0,
+            "last_touch_date": None,
+            "rewarded_streaks": []
+        }
+    
+    return {
+        "current_streak": streak_doc.get("current_streak", 0),
+        "longest_streak": streak_doc.get("longest_streak", 0),
+        "last_touch_date": streak_doc.get("last_touch_date"),
+        "rewarded_streaks": streak_doc.get("rewarded_streaks", [])
+    }
+
+
+@api_router.post("/me/streak/touch")
+async def touch_user_streak(request: Request):
+    """
+    Update user's streak (called when logging eggs).
+    """
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    streak_doc = await db.user_streaks.find_one({"user_id": user_id}, {"_id": 0})
+    
+    if not streak_doc:
+        # First touch ever
+        await db.user_streaks.insert_one({
+            "user_id": user_id,
+            "current_streak": 1,
+            "longest_streak": 1,
+            "last_touch_date": today,
+            "rewarded_streaks": []
+        })
+        return {"current_streak": 1, "longest_streak": 1, "streak_increased": True}
+    
+    last_touch = streak_doc.get("last_touch_date")
+    current_streak = streak_doc.get("current_streak", 0)
+    longest_streak = streak_doc.get("longest_streak", 0)
+    
+    if last_touch == today:
+        # Already touched today
+        return {"current_streak": current_streak, "longest_streak": longest_streak, "streak_increased": False}
+    
+    # Check if yesterday
+    yesterday = (now_stockholm() - timedelta(days=1)).strftime('%Y-%m-%d')
+    
+    if last_touch == yesterday:
+        # Continue streak
+        current_streak += 1
+    else:
+        # Streak broken, start new
+        current_streak = 1
+    
+    longest_streak = max(longest_streak, current_streak)
+    
+    await db.user_streaks.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "current_streak": current_streak,
+            "longest_streak": longest_streak,
+            "last_touch_date": today
+        }}
+    )
+    
+    return {"current_streak": current_streak, "longest_streak": longest_streak, "streak_increased": True}
+
+
+@api_router.get("/agda/inbox/today")
+async def get_agda_inbox_today(request: Request):
+    """
+    Get today's Agda inbox card (daily AI tip).
+    Cached per user per day.
+    """
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    # Check cache
+    cached = await db.agda_cards.find_one({
+        "user_id": user_id,
+        "date": today
+    }, {"_id": 0})
+    
+    if cached:
+        return {"card": cached, "cached": True}
+    
+    # Generate new card
+    tips = [
+        {"title": "Vattencheck! 💧", "body": "Se till att dina höns har rent, friskt vatten. Byt gärna två gånger om dagen."},
+        {"title": "Redeinspektion 🪺", "body": "Kolla att redena är rena och har tillräckligt med strö. Smutsiga reden kan leda till smutsiga ägg."},
+        {"title": "Proteinboost 🥚", "body": "Ge dina höns lite extra protein idag - t.ex. kokt ägg eller mjölmask. Bra för fjäderdräkten!"},
+        {"title": "Motion är viktigt 🐔", "body": "Låt hönsen vara ute och picka om vädret tillåter. Motionerade höns är friskare höns!"},
+        {"title": "Kolla fötterna 🦶", "body": "Ta en titt på hönsens fötter - håll utkik efter skador eller kvalster."},
+        {"title": "Sandbadet 🛁", "body": "Se till att hönsen har tillgång till ett sandbad. Det hjälper mot parasiter och håller fjädrarna fina."},
+        {"title": "Lugn och ro ☮️", "body": "Höns trivs bäst med rutiner. Försök mata och samla ägg vid samma tid varje dag."},
+    ]
+    
+    # Pick tip based on day of year
+    day_of_year = now_stockholm().timetuple().tm_yday
+    tip = tips[day_of_year % len(tips)]
+    
+    card = {
+        "user_id": user_id,
+        "date": today,
+        "title": tip["title"],
+        "body": tip["body"]
+    }
+    
+    await db.agda_cards.insert_one(card)
+    card.pop("_id", None)
+    
+    return {"card": card, "cached": False}
+
+
+@api_router.get("/farm/today")
+async def get_farm_today(request: Request):
+    """
+    Get today's farm overview with AI-generated forecast, warning, and tip.
+    Cached per user per day.
+    """
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    # Check cache
+    cached = await db.daily_farm_status.find_one({
+        "user_id": user_id,
+        "date": today
+    }, {"_id": 0})
+    
+    if cached:
+        return cached
+    
+    # Get weather data
+    weather = None
+    try:
+        weather_doc = await db.weather_cache.find_one({"user_id": user_id}, {"_id": 0})
+        if weather_doc:
+            weather = weather_doc
+    except:
+        pass
+    
+    # Get recent egg data
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    recent_eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0}).to_list(100)
+    
+    total_eggs = sum(e.get("count", 1) for e in recent_eggs)
+    avg_eggs = round(total_eggs / 7, 1)
+    
+    # Generate simple forecast and tip
+    temp = weather.get("temperature", 10) if weather else 10
+    
+    if temp < 0:
+        warning = "Kyla! Se till att hönshuset är välskyddat."
+        tip = "Ge extra foder för att hönsen ska hålla värmen."
+    elif temp > 25:
+        warning = "Varmt! Se till att hönsen har skugga och vatten."
+        tip = "Fyll på vattnet extra ofta idag."
+    else:
+        warning = None
+        tip = "Bra väder för dina höns idag!"
+    
+    result = {
+        "user_id": user_id,
+        "date": today,
+        "forecast": f"Förväntad produktion: ~{avg_eggs} ägg/dag",
+        "warning": warning,
+        "tip": tip,
+        "temperature": temp,
+        "eggs_last_7_days": total_eggs
+    }
+    
+    await db.daily_farm_status.insert_one(result)
+    result.pop("_id", None)
+    
+    return result
+
+
+@api_router.get("/flock/health")
+async def get_flock_health(request: Request):
+    """
+    Get flock health score (0-100) based on various factors.
+    """
+    user_id = await require_user_id(request)
+    
+    # Get hens
+    hens = await db.hens.find({"user_id": user_id, "is_active": True}, {"_id": 0}).to_list(100)
+    hen_count = len(hens)
+    
+    if hen_count == 0:
+        return {"score": 0, "reasons": ["Ingen flock registrerad"], "hen_count": 0}
+    
+    # Calculate health score
+    score = 100
+    reasons = []
+    
+    # Check recent egg production
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    recent_eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0}).to_list(100)
+    
+    total_eggs = sum(e.get("count", 1) for e in recent_eggs)
+    eggs_per_hen = total_eggs / (hen_count * 7) if hen_count > 0 else 0
+    
+    if eggs_per_hen < 0.3:
+        score -= 30
+        reasons.append("Låg äggproduktion")
+    elif eggs_per_hen < 0.5:
+        score -= 15
+        reasons.append("Under genomsnittlig äggproduktion")
+    else:
+        reasons.append("Bra äggproduktion")
+    
+    # Check for health logs (if any recent issues)
+    recent_health = await db.health_logs.find({
+        "user_id": user_id,
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0}).to_list(20)
+    
+    if recent_health:
+        issues = [h for h in recent_health if h.get("is_issue")]
+        if len(issues) > 2:
+            score -= 20
+            reasons.append("Flera hälsoproblem rapporterade")
+        elif len(issues) > 0:
+            score -= 10
+            reasons.append("Något hälsoproblem rapporterat")
+    
+    score = max(0, min(100, score))
+    
+    return {
+        "score": score,
+        "reasons": reasons,
+        "hen_count": hen_count,
+        "eggs_per_hen_per_day": round(eggs_per_hen, 2)
+    }
+
+
 # ============ SPRINT 3A: RANKING & CHALLENGES ============
 
 @api_router.get("/ranking/summary")
