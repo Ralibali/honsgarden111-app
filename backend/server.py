@@ -4208,6 +4208,8 @@ async def create_egg_record(record: EggRecordCreate, request: Request):
     if record.hen_id:
         egg_record = EggRecord(user_id=user_id, **record.dict())
         await db.egg_records.insert_one(egg_record.dict())
+        # Trigger weekly challenge progress
+        await trigger_challenge_progress(user_id, "egg_logged")
         return egg_record
     
     existing = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
@@ -4219,10 +4221,14 @@ async def create_egg_record(record: EggRecordCreate, request: Request):
             {"$set": {"count": new_count, "notes": record.notes if record.notes else existing.get('notes')}}
         )
         updated = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
+        # Trigger weekly challenge progress
+        await trigger_challenge_progress(user_id, "egg_logged")
         return EggRecord(**updated)
     
     egg_record = EggRecord(user_id=user_id, **record.dict())
     await db.egg_records.insert_one(egg_record.dict())
+    # Trigger weekly challenge progress
+    await trigger_challenge_progress(user_id, "egg_logged")
     return egg_record
 
 @api_router.get("/eggs", response_model=List[EggRecord])
@@ -7654,6 +7660,724 @@ async def get_flock_statistics(request: Request):
         "by_flock": {}   # Could be expanded
     }
 
+
+# ============ SPRINT 3A: RANKING & CHALLENGES ============
+
+@api_router.get("/ranking/summary")
+async def get_ranking_summary(request: Request, flock_id: Optional[str] = None):
+    """
+    Get user's ranking compared to all Hönsgården users.
+    Returns percentile bucket (top 5%, 10%, 25%, 50%) and next level target.
+    """
+    user_id = await require_user_id(request)
+    
+    # Calculate user's eggs per day (last 30 days)
+    thirty_days_ago = (now_stockholm() - timedelta(days=30)).strftime('%Y-%m-%d')
+    
+    user_eggs = await db.eggs.find({
+        "user_id": user_id,
+        "date": {"$gte": thirty_days_ago}
+    }).to_list(1000)
+    
+    user_total = sum(e.get("count", 1) for e in user_eggs)
+    user_eggs_per_day = round(user_total / 30, 2)
+    
+    # Get all users' eggs per day for comparison
+    all_users = await db.users.find({}, {"_id": 0, "id": 1}).to_list(10000)
+    user_averages = []
+    
+    for u in all_users:
+        uid = u.get("id")
+        if not uid:
+            continue
+        u_eggs = await db.eggs.find({
+            "user_id": uid,
+            "date": {"$gte": thirty_days_ago}
+        }).to_list(1000)
+        u_total = sum(e.get("count", 1) for e in u_eggs)
+        if u_total > 0:  # Only count active users
+            user_averages.append(u_total / 30)
+    
+    # Calculate percentile
+    if not user_averages or user_eggs_per_day == 0:
+        return {
+            "eggs_per_day": user_eggs_per_day,
+            "badge": "🥚",
+            "badge_text": "Nybörjare",
+            "percentile": None,
+            "next_bucket": "🥉 Topp 50%",
+            "delta_to_target": 1.0,
+            "message": "Logga dina första ägg för att se din ranking!"
+        }
+    
+    # Sort averages and find user's position
+    user_averages.sort(reverse=True)
+    total_users = len(user_averages)
+    
+    # Find user's position (how many users have higher average)
+    users_above = sum(1 for avg in user_averages if avg > user_eggs_per_day)
+    percentile = ((total_users - users_above) / total_users) * 100
+    
+    # Determine badge based on percentile
+    if percentile >= 95:
+        badge = "🏆"
+        badge_text = "Topp 5%"
+        next_bucket = None
+        delta_to_target = 0
+    elif percentile >= 90:
+        badge = "🥇"
+        badge_text = "Topp 10%"
+        # Find p95 threshold
+        p95_idx = int(total_users * 0.05)
+        p95_threshold = user_averages[p95_idx] if p95_idx < len(user_averages) else user_averages[0]
+        next_bucket = "🏆 Topp 5%"
+        delta_to_target = round(p95_threshold - user_eggs_per_day, 1)
+    elif percentile >= 75:
+        badge = "🥈"
+        badge_text = "Topp 25%"
+        p90_idx = int(total_users * 0.10)
+        p90_threshold = user_averages[p90_idx] if p90_idx < len(user_averages) else user_averages[0]
+        next_bucket = "🥇 Topp 10%"
+        delta_to_target = round(p90_threshold - user_eggs_per_day, 1)
+    elif percentile >= 50:
+        badge = "🥉"
+        badge_text = "Topp 50%"
+        p75_idx = int(total_users * 0.25)
+        p75_threshold = user_averages[p75_idx] if p75_idx < len(user_averages) else user_averages[0]
+        next_bucket = "🥈 Topp 25%"
+        delta_to_target = round(p75_threshold - user_eggs_per_day, 1)
+    else:
+        badge = "🥚"
+        badge_text = "Under topp 50%"
+        p50_idx = int(total_users * 0.50)
+        p50_threshold = user_averages[p50_idx] if p50_idx < len(user_averages) else user_averages[0]
+        next_bucket = "🥉 Topp 50%"
+        delta_to_target = round(p50_threshold - user_eggs_per_day, 1)
+    
+    # Generate motivational message
+    if delta_to_target > 0:
+        message = f"Öka med {delta_to_target} ägg/dag för att nå {next_bucket}!"
+    else:
+        message = "Fantastiskt! Du är bland de bästa hönsägarna!"
+    
+    return {
+        "eggs_per_day": user_eggs_per_day,
+        "badge": badge,
+        "badge_text": badge_text,
+        "percentile": round(percentile, 1),
+        "next_bucket": next_bucket,
+        "delta_to_target": max(0, delta_to_target),
+        "message": message,
+        "total_users_ranked": total_users
+    }
+
+
+@api_router.get("/ranking/coach")
+async def get_ranking_coach_tip(request: Request):
+    """
+    Get AI-generated coaching tip to improve ranking.
+    Cached for 24 hours.
+    """
+    user_id = await require_user_id(request)
+    
+    # Check cache
+    cache_key = f"ranking_coach_{user_id}"
+    today = today_str_stockholm()
+    
+    cached = await db.ai_cache.find_one({
+        "user_id": user_id,
+        "key": cache_key,
+        "date": today
+    }, {"_id": 0})
+    
+    if cached:
+        return {"tip": cached.get("payload", ""), "cached": True}
+    
+    # Get user's ranking data
+    ranking = await get_ranking_summary(request)
+    
+    # Generate AI tip
+    prompt = f"""Du är Agda, en erfaren hönsgårdsrådgivare. Användaren har {ranking.get('eggs_per_day', 0)} ägg/dag 
+    och är {ranking.get('badge_text', 'ny användare')}. 
+    
+    Ge ETT kort, konkret tips (max 2 meningar) för att öka äggproduktionen.
+    Fokusera på något praktiskt de kan göra idag eller denna vecka.
+    Svara på svenska, vänligt och uppmuntrande."""
+    
+    try:
+        import openai
+        openai_key = os.environ.get('OPENAI_API_KEY', '')
+        if openai_key:
+            client = openai.OpenAI(api_key=openai_key)
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=150
+            )
+            tip = response.choices[0].message.content.strip()
+        else:
+            tip = "Se till att dina höns har tillgång till friskt vatten och bra foder varje dag!"
+    except Exception as e:
+        logger.error(f"Ranking coach AI error: {e}")
+        tip = "Se till att dina höns har tillgång till friskt vatten och bra foder varje dag!"
+    
+    # Cache the response
+    await db.ai_cache.update_one(
+        {"user_id": user_id, "key": cache_key},
+        {"$set": {"payload": tip, "date": today, "updated_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    
+    return {"tip": tip, "cached": False}
+
+
+def get_week_start() -> str:
+    """Get Monday of current week as YYYY-MM-DD"""
+    today = now_stockholm().date()
+    monday = today - timedelta(days=today.weekday())
+    return monday.strftime('%Y-%m-%d')
+
+
+# Weekly Challenges definitions
+WEEKLY_CHALLENGES = [
+    {
+        "key": "log_eggs_5_days",
+        "title": "Flitig äggjägare",
+        "description": "Logga ägg 5 dagar denna vecka",
+        "icon": "🥚",
+        "target": 5,
+        "action": "egg_logged"
+    },
+    {
+        "key": "health_check",
+        "title": "Hälsokoll",
+        "description": "Gör en hälsokontroll av dina höns",
+        "icon": "💚",
+        "target": 1,
+        "action": "health_check"
+    },
+    {
+        "key": "visit_statistics",
+        "title": "Statistiknörd",
+        "description": "Besök statistiksidan",
+        "icon": "📊",
+        "target": 1,
+        "action": "visit_statistics"
+    }
+]
+
+
+# Helper function to trigger challenge progress from other endpoints
+async def trigger_challenge_progress(user_id: str, action: str):
+    """
+    Helper function to update challenge progress.
+    Called internally from endpoints like /api/eggs.
+    """
+    week_start = get_week_start()
+    
+    # Find matching challenge
+    matching_challenge = None
+    for challenge in WEEKLY_CHALLENGES:
+        if challenge.get("action") == action:
+            matching_challenge = challenge
+            break
+    
+    if not matching_challenge:
+        return
+    
+    challenge_key = matching_challenge["key"]
+    target = matching_challenge["target"]
+    
+    # Get current progress
+    existing = await db.user_weekly_challenges.find_one({
+        "user_id": user_id,
+        "week_start": week_start,
+        "challenge_key": challenge_key
+    }, {"_id": 0})
+    
+    current_progress = existing.get("progress", 0) if existing else 0
+    
+    # For daily actions like egg_logged, only count once per day
+    if action == "egg_logged":
+        today = today_str_stockholm()
+        days_logged = existing.get("days_logged", []) if existing else []
+        if today in days_logged:
+            return  # Already logged today
+        days_logged.append(today)
+        new_progress = len(days_logged)
+        extra_data = {"days_logged": days_logged}
+    else:
+        new_progress = min(current_progress + 1, target)
+        extra_data = {}
+    
+    completed = new_progress >= target
+    completed_at = datetime.now(timezone.utc) if completed and not (existing and existing.get("completed_at")) else existing.get("completed_at") if existing else None
+    
+    await db.user_weekly_challenges.update_one(
+        {"user_id": user_id, "week_start": week_start, "challenge_key": challenge_key},
+        {"$set": {
+            "progress": new_progress,
+            "completed_at": completed_at,
+            "updated_at": datetime.now(timezone.utc),
+            **extra_data
+        }},
+        upsert=True
+    )
+
+
+@api_router.get("/challenges/week")
+async def get_weekly_challenges(request: Request):
+    """
+    Get current week's challenges and user's progress.
+    """
+    user_id = await require_user_id(request)
+    week_start = get_week_start()
+    
+    # Get user's progress for this week
+    progress_docs = await db.user_weekly_challenges.find({
+        "user_id": user_id,
+        "week_start": week_start
+    }, {"_id": 0}).to_list(10)
+    
+    progress_map = {p["challenge_key"]: p for p in progress_docs}
+    
+    challenges = []
+    completed_count = 0
+    
+    for challenge in WEEKLY_CHALLENGES:
+        key = challenge["key"]
+        user_progress = progress_map.get(key, {})
+        current_progress = user_progress.get("progress", 0)
+        target = challenge["target"]
+        completed = current_progress >= target
+        
+        if completed:
+            completed_count += 1
+        
+        challenges.append({
+            "key": key,
+            "title": challenge["title"],
+            "description": challenge["description"],
+            "icon": challenge["icon"],
+            "progress": current_progress,
+            "target": target,
+            "completed": completed,
+            "percent": min(100, int((current_progress / target) * 100)),
+            "completed_at": user_progress.get("completed_at")
+        })
+    
+    return {
+        "week_start": week_start,
+        "challenges": challenges,
+        "completed_count": completed_count,
+        "total_count": len(WEEKLY_CHALLENGES),
+        "all_completed": completed_count == len(WEEKLY_CHALLENGES)
+    }
+
+
+@api_router.post("/challenges/progress")
+async def update_challenge_progress(
+    request: Request,
+    action: str = Query(..., description="Action type: egg_logged, health_check, visit_statistics")
+):
+    """
+    Update progress for a challenge based on user action.
+    Called automatically when user performs relevant actions.
+    """
+    user_id = await require_user_id(request)
+    week_start = get_week_start()
+    
+    # Find matching challenge
+    matching_challenge = None
+    for challenge in WEEKLY_CHALLENGES:
+        if challenge.get("action") == action:
+            matching_challenge = challenge
+            break
+    
+    if not matching_challenge:
+        return {"updated": False, "message": "No matching challenge for this action"}
+    
+    challenge_key = matching_challenge["key"]
+    target = matching_challenge["target"]
+    
+    # Get current progress
+    existing = await db.user_weekly_challenges.find_one({
+        "user_id": user_id,
+        "week_start": week_start,
+        "challenge_key": challenge_key
+    }, {"_id": 0})
+    
+    current_progress = existing.get("progress", 0) if existing else 0
+    
+    # For daily actions like egg_logged, only count once per day
+    if action == "egg_logged":
+        today = today_str_stockholm()
+        days_logged = existing.get("days_logged", []) if existing else []
+        if today in days_logged:
+            return {"updated": False, "message": "Already logged today", "progress": current_progress}
+        days_logged.append(today)
+        new_progress = len(days_logged)
+        extra_data = {"days_logged": days_logged}
+    else:
+        new_progress = min(current_progress + 1, target)
+        extra_data = {}
+    
+    completed = new_progress >= target
+    completed_at = datetime.now(timezone.utc) if completed and not (existing and existing.get("completed_at")) else existing.get("completed_at") if existing else None
+    
+    await db.user_weekly_challenges.update_one(
+        {"user_id": user_id, "week_start": week_start, "challenge_key": challenge_key},
+        {"$set": {
+            "progress": new_progress,
+            "completed_at": completed_at,
+            "updated_at": datetime.now(timezone.utc),
+            **extra_data
+        }},
+        upsert=True
+    )
+    
+    return {
+        "updated": True,
+        "challenge_key": challenge_key,
+        "progress": new_progress,
+        "target": target,
+        "completed": completed,
+        "just_completed": completed and not (existing and existing.get("completed_at"))
+    }
+
+
+# ============ SPRINT 3B: COMMUNITY Q&A ============
+
+class QuestionCreate(BaseModel):
+    title: str = Field(..., min_length=5, max_length=200)
+    body: str = Field(..., min_length=10, max_length=5000)
+    category: str = Field(default="general")
+
+class AnswerCreate(BaseModel):
+    body: str = Field(..., min_length=5, max_length=5000)
+
+
+@api_router.post("/community/questions")
+async def create_community_question(request: Request, question_data: QuestionCreate):
+    """
+    Create a new community question.
+    Agda (AI) will automatically generate the first answer.
+    Requires login.
+    """
+    user_id = await require_user_id(request)
+    
+    # Get user info
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "name": 1, "email": 1})
+    
+    question_id = str(uuid.uuid4())[:8]
+    now = datetime.now(timezone.utc)
+    
+    question = {
+        "id": question_id,
+        "user_id": user_id,
+        "author_name": user.get("name", "Anonym") if user else "Anonym",
+        "title": question_data.title,
+        "body": question_data.body,
+        "category": question_data.category,
+        "created_at": now,
+        "updated_at": now,
+        "answer_count": 0,
+        "views": 0,
+        "is_answered": False,
+        "is_featured": False
+    }
+    
+    await db.community_questions.insert_one(question)
+    question.pop("_id", None)
+    
+    # Generate Agda's answer asynchronously
+    asyncio.create_task(generate_agda_answer(question_id, question_data.title, question_data.body))
+    
+    return {
+        "question": question,
+        "message": "Din fråga har skapats! Agda arbetar på ett svar...",
+        "share_url": f"/api/web/community/q/{question_id}"
+    }
+
+
+async def generate_agda_answer(question_id: str, title: str, body: str):
+    """Generate Agda's AI answer to a question"""
+    try:
+        prompt = f"""Du är Agda, en erfaren och vänlig hönsgårdsrådgivare med över 10 års erfarenhet.
+        
+En användare har ställt följande fråga:
+
+TITEL: {title}
+
+FRÅGA: {body}
+
+Ge ett hjälpsamt, personligt och praktiskt svar. Inkludera:
+- Direkta råd baserade på erfarenhet
+- Eventuella varningar eller saker att tänka på
+- Uppmuntran
+
+Håll svaret lagom långt (2-4 stycken). Svara alltid på svenska."""
+
+        import openai
+        openai_key = os.environ.get('OPENAI_API_KEY', '')
+        
+        if openai_key:
+            client = openai.OpenAI(api_key=openai_key)
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": HONSGARD_KNOWLEDGE[:2000]},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=800
+            )
+            answer_text = response.choices[0].message.content.strip()
+        else:
+            answer_text = "Tack för din fråga! Jag, Agda, har tyvärr tekniska problem just nu. Någon i communityn kommer säkert hjälpa dig snart!"
+        
+        answer_id = str(uuid.uuid4())[:8]
+        now = datetime.now(timezone.utc)
+        
+        answer = {
+            "id": answer_id,
+            "question_id": question_id,
+            "user_id": "agda",
+            "author_name": "Agda",
+            "is_agda": True,
+            "body": answer_text,
+            "created_at": now,
+            "likes": 0,
+            "is_accepted": False
+        }
+        
+        await db.community_answers.insert_one(answer)
+        
+        # Update question
+        await db.community_questions.update_one(
+            {"id": question_id},
+            {"$inc": {"answer_count": 1}, "$set": {"is_answered": True, "updated_at": now}}
+        )
+        
+        logger.info(f"Agda answered question {question_id}")
+        
+    except Exception as e:
+        logger.error(f"Failed to generate Agda answer: {e}")
+
+
+@api_router.get("/community/questions")
+async def list_community_questions(
+    request: Request,
+    category: Optional[str] = None,
+    limit: int = 20,
+    offset: int = 0
+):
+    """
+    List community questions.
+    Available to all users (including non-logged-in).
+    """
+    query = {}
+    if category:
+        query["category"] = category
+    
+    questions = await db.community_questions.find(
+        query, {"_id": 0}
+    ).sort("created_at", -1).skip(offset).limit(limit).to_list(limit)
+    
+    total = await db.community_questions.count_documents(query)
+    
+    return {
+        "questions": questions,
+        "total": total,
+        "has_more": offset + len(questions) < total
+    }
+
+
+@api_router.get("/community/questions/{question_id}/preview")
+async def get_question_preview(question_id: str):
+    """
+    Get question with LIMITED preview of answers.
+    Available to all users. Shows first 100 chars of Agda's answer.
+    Non-logged-in users see a CTA to sign up.
+    """
+    question = await db.community_questions.find_one(
+        {"id": question_id}, {"_id": 0}
+    )
+    
+    if not question:
+        raise HTTPException(status_code=404, detail="Frågan hittades inte")
+    
+    # Increment view count
+    await db.community_questions.update_one(
+        {"id": question_id},
+        {"$inc": {"views": 1}}
+    )
+    
+    # Get answers but truncate for preview
+    answers = await db.community_answers.find(
+        {"question_id": question_id}, {"_id": 0}
+    ).sort([("is_agda", -1), ("created_at", 1)]).to_list(10)
+    
+    preview_answers = []
+    for a in answers:
+        preview = {
+            "id": a["id"],
+            "author_name": a.get("author_name", "Anonym"),
+            "is_agda": a.get("is_agda", False),
+            "preview": a["body"][:150] + "..." if len(a["body"]) > 150 else a["body"],
+            "full_body_length": len(a["body"]),
+            "created_at": a["created_at"],
+            "likes": a.get("likes", 0)
+        }
+        preview_answers.append(preview)
+    
+    return {
+        "question": question,
+        "answers_preview": preview_answers,
+        "total_answers": len(answers),
+        "requires_login_for_full": True,
+        "cta_message": "Logga in för att se hela diskussionen och svara själv!"
+    }
+
+
+@api_router.get("/community/questions/{question_id}")
+async def get_full_question(request: Request, question_id: str):
+    """
+    Get full question with ALL answers.
+    Requires login (content gating).
+    """
+    user_id = await require_user_id(request)
+    
+    question = await db.community_questions.find_one(
+        {"id": question_id}, {"_id": 0}
+    )
+    
+    if not question:
+        raise HTTPException(status_code=404, detail="Frågan hittades inte")
+    
+    # Get all answers
+    answers = await db.community_answers.find(
+        {"question_id": question_id}, {"_id": 0}
+    ).sort([("is_agda", -1), ("likes", -1), ("created_at", 1)]).to_list(100)
+    
+    # Check if current user owns the question
+    is_owner = question.get("user_id") == user_id
+    
+    return {
+        "question": question,
+        "answers": answers,
+        "is_owner": is_owner,
+        "can_answer": True
+    }
+
+
+@api_router.post("/community/questions/{question_id}/answers")
+async def add_answer(request: Request, question_id: str, answer_data: AnswerCreate):
+    """
+    Add an answer to a question.
+    Requires login.
+    """
+    user_id = await require_user_id(request)
+    
+    # Check question exists
+    question = await db.community_questions.find_one(
+        {"id": question_id}, {"_id": 0}
+    )
+    if not question:
+        raise HTTPException(status_code=404, detail="Frågan hittades inte")
+    
+    # Get user info
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "name": 1})
+    
+    answer_id = str(uuid.uuid4())[:8]
+    now = datetime.now(timezone.utc)
+    
+    answer = {
+        "id": answer_id,
+        "question_id": question_id,
+        "user_id": user_id,
+        "author_name": user.get("name", "Anonym") if user else "Anonym",
+        "is_agda": False,
+        "body": answer_data.body,
+        "created_at": now,
+        "likes": 0,
+        "is_accepted": False
+    }
+    
+    await db.community_answers.insert_one(answer)
+    answer.pop("_id", None)
+    
+    # Update question answer count
+    await db.community_questions.update_one(
+        {"id": question_id},
+        {"$inc": {"answer_count": 1}, "$set": {"updated_at": now}}
+    )
+    
+    return {"answer": answer, "message": "Ditt svar har publicerats!"}
+
+
+@api_router.post("/community/answers/{answer_id}/like")
+async def like_answer(request: Request, answer_id: str):
+    """Like/unlike an answer"""
+    user_id = await require_user_id(request)
+    
+    # Check if already liked
+    existing_like = await db.answer_likes.find_one({
+        "user_id": user_id,
+        "answer_id": answer_id
+    })
+    
+    if existing_like:
+        # Unlike
+        await db.answer_likes.delete_one({"_id": existing_like["_id"]})
+        await db.community_answers.update_one(
+            {"id": answer_id},
+            {"$inc": {"likes": -1}}
+        )
+        return {"liked": False, "message": "Like borttagen"}
+    else:
+        # Like
+        await db.answer_likes.insert_one({
+            "user_id": user_id,
+            "answer_id": answer_id,
+            "created_at": datetime.now(timezone.utc)
+        })
+        await db.community_answers.update_one(
+            {"id": answer_id},
+            {"$inc": {"likes": 1}}
+        )
+        return {"liked": True, "message": "Gillat!"}
+
+
+@api_router.post("/community/questions/{question_id}/accept/{answer_id}")
+async def accept_answer(request: Request, question_id: str, answer_id: str):
+    """Mark an answer as accepted (only question owner)"""
+    user_id = await require_user_id(request)
+    
+    question = await db.community_questions.find_one(
+        {"id": question_id}, {"_id": 0}
+    )
+    
+    if not question:
+        raise HTTPException(status_code=404, detail="Frågan hittades inte")
+    
+    if question.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Endast frågeställaren kan acceptera svar")
+    
+    # Unaccept any previously accepted answer
+    await db.community_answers.update_many(
+        {"question_id": question_id},
+        {"$set": {"is_accepted": False}}
+    )
+    
+    # Accept this answer
+    await db.community_answers.update_one(
+        {"id": answer_id},
+        {"$set": {"is_accepted": True}}
+    )
+    
+    return {"accepted": True, "message": "Svar accepterat!"}
+
+
 # ============ COMMUNITY ENDPOINTS ============
 
 @api_router.get("/community/posts")
@@ -8306,7 +9030,7 @@ else:
         "http://localhost:3000",
         "http://localhost:8081",
         "http://localhost:19006",
-        "https://honsgarden-render.preview.emergentagent.com",
+        "https://honsgarden-staging.preview.emergentagent.com",
     ]
     
     # Add any additional origins from environment variable

@@ -18,6 +18,7 @@ import Hatching from './pages/Hatching';
 import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import Community, { QuestionDetail } from './pages/Community';
 import Layout from './components/Layout';
 
 function AppRouter() {
@@ -37,6 +38,9 @@ function AppRouter() {
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/checkout/success" element={<CheckoutSuccess />} />
       <Route path="/checkout-success" element={<CheckoutSuccess />} />
+      {/* Community routes - accessible to all (with content gating) */}
+      <Route path="/community" element={<Community />} />
+      <Route path="/community/q/:questionId" element={<QuestionDetail />} />
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/eggs" element={<Eggs />} />

@@ -59,6 +59,17 @@ def days_ahead_stockholm(days: int) -> str:
     """Get date X days ahead as YYYY-MM-DD string in Stockholm timezone"""
     return (datetime.now(STOCKHOLM_TZ) + timedelta(days=days)).strftime('%Y-%m-%d')
 
+def get_monday_of_week(date_str: str = None) -> str:
+    """Get Monday of the week for a given date (or today)"""
+    if date_str:
+        d = datetime.fromisoformat(date_str)
+    else:
+        d = now_stockholm()
+    
+    days_since_monday = d.weekday()
+    monday = d - timedelta(days=days_since_monday)
+    return monday.strftime("%Y-%m-%d")
+
 # Webapp static files path
 WEBAPP_DIR = ROOT_DIR / 'webapp_dist'
 
@@ -4197,6 +4208,8 @@ async def create_egg_record(record: EggRecordCreate, request: Request):
         await db.egg_records.insert_one(egg_record.dict())
         # Touch streak after logging eggs
         await touch_streak_internal(user_id)
+        # Track challenge progress
+        await update_challenge_progress(user_id, "egg_log_days", 1)
         return egg_record
     
     existing = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
@@ -4210,12 +4223,16 @@ async def create_egg_record(record: EggRecordCreate, request: Request):
         updated = await db.egg_records.find_one({"date": record.date, "hen_id": None, "user_id": user_id})
         # Touch streak after logging eggs
         await touch_streak_internal(user_id)
+        # Track challenge progress (only once per day - handled in function)
+        await update_challenge_progress(user_id, "egg_log_days", 1)
         return EggRecord(**updated)
     
     egg_record = EggRecord(user_id=user_id, **record.dict())
     await db.egg_records.insert_one(egg_record.dict())
     # Touch streak after logging eggs
     await touch_streak_internal(user_id)
+    # Track challenge progress
+    await update_challenge_progress(user_id, "egg_log_days", 1)
     return egg_record
 
 @api_router.get("/eggs", response_model=List[EggRecord])
@@ -8295,7 +8312,7 @@ else:
         "http://localhost:3000",
         "http://localhost:8081",
         "http://localhost:19006",
-        "https://honsgarden-render.preview.emergentagent.com",
+        "https://honsgarden-staging.preview.emergentagent.com",
     ]
     
     # Add any additional origins from environment variable
@@ -8528,6 +8545,43 @@ async def touch_streak_internal(user_id: str):
     )
     
     return {"current_streak": current_streak, "touched": True, "new_reward": new_reward}
+
+
+# Forward declaration for challenge progress (actual implementation in Sprint 3A section)
+async def update_challenge_progress(user_id: str, challenge_type: str, increment: int = 1):
+    """Update progress for a specific challenge type - implemented in Sprint 3A"""
+    week_start = get_monday_of_week() if 'get_monday_of_week' in dir() else today_str_stockholm()[:10]
+    
+    try:
+        result = await db.user_weekly_challenges.update_one(
+            {
+                "user_id": user_id,
+                "week_start": week_start,
+                "type": challenge_type,
+                "completed_at": None
+            },
+            {
+                "$inc": {"progress": increment}
+            }
+        )
+        
+        if result.modified_count > 0:
+            challenge = await db.user_weekly_challenges.find_one({
+                "user_id": user_id,
+                "week_start": week_start,
+                "type": challenge_type
+            })
+            
+            if challenge and challenge.get("progress", 0) >= challenge.get("target", 1):
+                await db.user_weekly_challenges.update_one(
+                    {"_id": challenge["_id"]},
+                    {"$set": {"completed_at": datetime.now(timezone.utc)}}
+                )
+                return {"completed": True, "challenge": challenge.get("title")}
+    except Exception as e:
+        logger.debug(f"Challenge progress update skipped: {e}")
+    
+    return {"completed": False}
 
 
 @api_router.get("/me/streak")
@@ -9201,6 +9255,459 @@ async def get_flock_health_score(request: Request):
         "trend": trend,
         "cached": False
     }
+
+
+# ============ SPRINT 3A: RANKING + TÄVLINGSMEKANIK ============
+
+def get_monday_of_week(date_str: str = None) -> str:
+    """Get Monday of the week for a given date (or today)"""
+    if date_str:
+        d = datetime.fromisoformat(date_str)
+    else:
+        d = now_stockholm()
+    
+    days_since_monday = d.weekday()
+    monday = d - timedelta(days=days_since_monday)
+    return monday.strftime("%Y-%m-%d")
+
+
+async def update_user_weekly_metrics(user_id: str, flock_id: str = None):
+    """Update weekly metrics for ranking calculation"""
+    week_start = get_monday_of_week()
+    week_end = (datetime.fromisoformat(week_start) + timedelta(days=7)).strftime("%Y-%m-%d")
+    
+    # Get eggs for this week
+    eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": week_start, "$lt": week_end}
+    }).to_list(100)
+    
+    eggs_total = sum(e.get("count", 0) for e in eggs)
+    days_with_data = len(set(e.get("date") for e in eggs if e.get("date")))
+    eggs_per_day = eggs_total / max(days_with_data, 1)
+    
+    # Update metrics
+    await db.flock_weekly_metrics.update_one(
+        {"user_id": user_id, "week_start": week_start},
+        {"$set": {
+            "user_id": user_id,
+            "flock_id": flock_id,
+            "week_start": week_start,
+            "eggs_total": eggs_total,
+            "eggs_per_day": round(eggs_per_day, 2),
+            "days_with_data": days_with_data,
+            "updated_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    return {"eggs_total": eggs_total, "eggs_per_day": eggs_per_day}
+
+
+async def calculate_weekly_benchmarks():
+    """Calculate percentile benchmarks for all users this week"""
+    week_start = get_monday_of_week()
+    
+    # Get all metrics for this week
+    metrics = await db.flock_weekly_metrics.find({
+        "week_start": week_start,
+        "eggs_per_day": {"$gt": 0}
+    }).to_list(10000)
+    
+    if len(metrics) < 5:
+        # Not enough data, use defaults
+        return {
+            "p50": 2.0,
+            "p75": 3.0,
+            "p90": 4.0,
+            "p95": 5.0,
+            "sample_size": len(metrics)
+        }
+    
+    # Sort by eggs_per_day
+    values = sorted([m["eggs_per_day"] for m in metrics])
+    n = len(values)
+    
+    def percentile(p):
+        k = (n - 1) * p / 100
+        f = int(k)
+        c = f + 1 if f + 1 < n else f
+        return values[f] + (values[c] - values[f]) * (k - f)
+    
+    benchmarks = {
+        "week_start": week_start,
+        "metric": "eggs_per_day",
+        "p50": round(percentile(50), 2),
+        "p75": round(percentile(75), 2),
+        "p90": round(percentile(90), 2),
+        "p95": round(percentile(95), 2),
+        "sample_size": n,
+        "updated_at": datetime.now(timezone.utc)
+    }
+    
+    # Cache benchmarks
+    await db.weekly_benchmarks.update_one(
+        {"week_start": week_start, "metric": "eggs_per_day"},
+        {"$set": benchmarks},
+        upsert=True
+    )
+    
+    return benchmarks
+
+
+@api_router.get("/ranking/summary")
+async def get_ranking_summary(request: Request):
+    """Get user's ranking summary with competition mechanics"""
+    user_id = await require_user_id(request)
+    week_start = get_monday_of_week()
+    
+    # Update user's metrics first
+    user_metrics = await update_user_weekly_metrics(user_id)
+    eggs_per_day = user_metrics["eggs_per_day"]
+    
+    # Get or calculate benchmarks
+    benchmarks = await db.weekly_benchmarks.find_one({
+        "week_start": week_start,
+        "metric": "eggs_per_day"
+    }, {"_id": 0})
+    
+    if not benchmarks or benchmarks.get("sample_size", 0) < 5:
+        benchmarks = await calculate_weekly_benchmarks()
+    
+    p50 = benchmarks.get("p50", 2.0)
+    p75 = benchmarks.get("p75", 3.0)
+    p90 = benchmarks.get("p90", 4.0)
+    p95 = benchmarks.get("p95", 5.0)
+    
+    # Determine percentile bucket
+    if eggs_per_day >= p95:
+        bucket = "top_5"
+        badge = "🏆"
+        badge_text = "Topp 5%"
+        next_bucket = None
+        target = None
+        delta = 0
+        message = "Du är bland de allra bästa! Fortsätt det fantastiska arbetet!"
+    elif eggs_per_day >= p90:
+        bucket = "top_10"
+        badge = "🥇"
+        badge_text = "Topp 10%"
+        next_bucket = "top_5"
+        target = p95
+        delta = round(p95 - eggs_per_day, 2)
+        message = f"Fantastiskt! Du är i topp 10%. Nästa nivå: topp 5% – du behöver +{delta} ägg/dag."
+    elif eggs_per_day >= p75:
+        bucket = "top_25"
+        badge = "🥈"
+        badge_text = "Topp 25%"
+        next_bucket = "top_10"
+        target = p90
+        delta = round(p90 - eggs_per_day, 2)
+        message = f"Bra jobbat! Du är i topp 25%. Nästa nivå: topp 10% – du behöver +{delta} ägg/dag."
+    elif eggs_per_day >= p50:
+        bucket = "top_50"
+        badge = "🥉"
+        badge_text = "Topp 50%"
+        next_bucket = "top_25"
+        target = p75
+        delta = round(p75 - eggs_per_day, 2)
+        message = f"Du producerar fler ägg än 50% av användarna. Nästa nivå: topp 25% – du behöver +{delta} ägg/dag."
+    else:
+        bucket = "below_50"
+        badge = ""
+        badge_text = ""
+        next_bucket = "top_50"
+        target = p50
+        delta = round(p50 - eggs_per_day, 2)
+        message = f"Fortsätt logga! Du behöver +{delta} ägg/dag för att nå topp 50%."
+    
+    return {
+        "week_start": week_start,
+        "eggs_per_day": round(eggs_per_day, 2),
+        "eggs_total": user_metrics["eggs_total"],
+        "avg_all_users": round(p50, 2),
+        "percentile_bucket": bucket,
+        "badge": badge,
+        "badge_text": badge_text,
+        "next_bucket": next_bucket,
+        "target_eggs_per_day": target,
+        "delta_to_target": delta,
+        "message": message,
+        "benchmarks": {
+            "p50": p50,
+            "p75": p75,
+            "p90": p90,
+            "p95": p95
+        }
+    }
+
+
+@api_router.get("/ranking/coach")
+async def get_ranking_coach(request: Request):
+    """Get AI coaching tips to reach next level (cached 24h)"""
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    cache_key = f"ranking_coach:{today}"
+    cached = await get_ai_cache(user_id, cache_key)
+    if cached:
+        return cached
+    
+    # Get ranking data
+    ranking = await get_ranking_summary.__wrapped__(request)
+    eggs_per_day = ranking.get("eggs_per_day", 0)
+    target = ranking.get("target_eggs_per_day")
+    bucket = ranking.get("percentile_bucket", "below_50")
+    
+    if not OPENAI_API_KEY or not target:
+        fallback = {
+            "summary": "Fortsätt logga ägg för att se dina framsteg!",
+            "tips": [
+                "Håll hönsen friska med rent vatten och bra foder",
+                "Extra belysning på vintern kan öka produktionen"
+            ]
+        }
+        return fallback
+    
+    hen_count = await db.hens.count_documents({"user_id": user_id, "is_active": True, "hen_type": {"$ne": "rooster"}})
+    
+    prompt = f"""Du är Agda, en erfaren hönsgårdsrådgivare.
+
+Användarens data:
+- Ägg per dag (snitt): {eggs_per_day}
+- Mål för nästa nivå: {target} ägg/dag
+- Antal höns: {hen_count}
+- Nuvarande ranking: {bucket}
+
+Ge 2 konkreta tips för att öka äggproduktionen och nå målet.
+
+Svara på svenska. Returnera ENDAST JSON:
+{{"summary":"En kort uppmuntrande mening","tips":["Tip 1","Tip 2"]}}"""
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.openai.com/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {OPENAI_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "gpt-4o-mini",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 200,
+                    "temperature": 0.7
+                },
+                timeout=10.0
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                ai_text = data["choices"][0]["message"]["content"].strip()
+                import json
+                try:
+                    coach = json.loads(ai_text)
+                except:
+                    coach = {"summary": ai_text[:100], "tips": []}
+            else:
+                raise Exception("OpenAI error")
+    except Exception as e:
+        logger.error(f"[RANKING COACH] Error: {e}")
+        coach = {
+            "summary": f"Du är på god väg! +{ranking.get('delta_to_target', 0.5)} ägg/dag till nästa nivå.",
+            "tips": ["Ge hönsen proteinrikt foder", "Kontrollera ljus och temperatur i hönshuset"]
+        }
+    
+    await set_ai_cache(user_id, cache_key, coach, 24)
+    return coach
+
+
+# ============ SPRINT 3A: VECKOMÅL (QUESTS) ============
+
+# Default weekly challenges
+DEFAULT_CHALLENGES = [
+    {
+        "key": "log_eggs_5_days",
+        "title": "Flitig loggare",
+        "description": "Logga ägg 5 dagar denna vecka",
+        "target": 5,
+        "type": "egg_log_days",
+        "icon": "🥚"
+    },
+    {
+        "key": "health_check_1",
+        "title": "Hälsokoll",
+        "description": "Gör 1 hälsocheck på en höna",
+        "target": 1,
+        "type": "health_log",
+        "icon": "🩺"
+    },
+    {
+        "key": "visit_stats",
+        "title": "Statistiknörd",
+        "description": "Besök statistiksidan",
+        "target": 1,
+        "type": "visit_stats",
+        "icon": "📊"
+    }
+]
+
+
+async def get_or_create_weekly_challenges(user_id: str, week_start: str):
+    """Get or create user's weekly challenges"""
+    existing = await db.user_weekly_challenges.find({
+        "user_id": user_id,
+        "week_start": week_start
+    }).to_list(10)
+    
+    if existing:
+        return existing
+    
+    # Create new challenges for this week
+    challenges = []
+    for challenge in DEFAULT_CHALLENGES:
+        doc = {
+            "user_id": user_id,
+            "week_start": week_start,
+            "challenge_key": challenge["key"],
+            "title": challenge["title"],
+            "description": challenge["description"],
+            "target": challenge["target"],
+            "type": challenge["type"],
+            "icon": challenge["icon"],
+            "progress": 0,
+            "completed_at": None,
+            "reward_granted": False,
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.user_weekly_challenges.insert_one(doc)
+        challenges.append(doc)
+    
+    return challenges
+
+
+async def update_challenge_progress(user_id: str, challenge_type: str, increment: int = 1):
+    """Update progress for a specific challenge type"""
+    week_start = get_monday_of_week()
+    
+    result = await db.user_weekly_challenges.update_one(
+        {
+            "user_id": user_id,
+            "week_start": week_start,
+            "type": challenge_type,
+            "completed_at": None
+        },
+        {
+            "$inc": {"progress": increment}
+        }
+    )
+    
+    # Check if challenge is now complete
+    if result.modified_count > 0:
+        challenge = await db.user_weekly_challenges.find_one({
+            "user_id": user_id,
+            "week_start": week_start,
+            "type": challenge_type
+        })
+        
+        if challenge and challenge.get("progress", 0) >= challenge.get("target", 1):
+            await db.user_weekly_challenges.update_one(
+                {"_id": challenge["_id"]},
+                {"$set": {"completed_at": datetime.now(timezone.utc)}}
+            )
+            return {"completed": True, "challenge": challenge.get("title")}
+    
+    return {"completed": False}
+
+
+@api_router.get("/challenges/week")
+async def get_weekly_challenges(request: Request):
+    """Get user's weekly challenges with progress"""
+    user_id = await require_user_id(request)
+    week_start = get_monday_of_week()
+    
+    challenges = await get_or_create_weekly_challenges(user_id, week_start)
+    
+    # Calculate completion status
+    completed_count = sum(1 for c in challenges if c.get("completed_at"))
+    total_count = len(challenges)
+    all_completed = completed_count == total_count
+    
+    # Check if reward should be granted (all challenges completed)
+    reward_granted = False
+    if all_completed:
+        # Check if reward already granted this week
+        reward_check = await db.user_weekly_challenges.find_one({
+            "user_id": user_id,
+            "week_start": week_start,
+            "reward_granted": True
+        })
+        
+        if not reward_check:
+            # Grant reward (badge for now, could be premium days)
+            await db.user_weekly_challenges.update_many(
+                {"user_id": user_id, "week_start": week_start},
+                {"$set": {"reward_granted": True}}
+            )
+            
+            # Save achievement
+            await db.user_achievements.update_one(
+                {"user_id": user_id, "key": f"weekly_master_{week_start}"},
+                {"$set": {
+                    "user_id": user_id,
+                    "key": f"weekly_master_{week_start}",
+                    "title": "Veckans mästare",
+                    "unlocked_at": datetime.now(timezone.utc)
+                }},
+                upsert=True
+            )
+            reward_granted = True
+    
+    # Format response
+    result = []
+    for c in challenges:
+        result.append({
+            "key": c.get("challenge_key"),
+            "title": c.get("title"),
+            "description": c.get("description"),
+            "icon": c.get("icon", "✅"),
+            "progress": c.get("progress", 0),
+            "target": c.get("target", 1),
+            "completed": c.get("completed_at") is not None,
+            "percent": min(100, int((c.get("progress", 0) / c.get("target", 1)) * 100))
+        })
+    
+    return {
+        "week_start": week_start,
+        "challenges": result,
+        "completed_count": completed_count,
+        "total_count": total_count,
+        "all_completed": all_completed,
+        "reward_granted": reward_granted
+    }
+
+
+@api_router.post("/challenges/progress")
+async def track_challenge_progress(request: Request):
+    """Track progress for challenges (called from various actions)"""
+    user_id = await require_user_id(request)
+    
+    try:
+        body = await request.json()
+        challenge_type = body.get("type")
+        increment = body.get("increment", 1)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request body")
+    
+    if not challenge_type:
+        raise HTTPException(status_code=400, detail="Challenge type required")
+    
+    # Make sure challenges exist
+    week_start = get_monday_of_week()
+    await get_or_create_weekly_challenges(user_id, week_start)
+    
+    result = await update_challenge_progress(user_id, challenge_type, increment)
+    return result
 
 
 # Include the router in the main app - MUST be after all route definitions

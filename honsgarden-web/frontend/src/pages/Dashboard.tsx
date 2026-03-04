@@ -126,6 +126,33 @@ export default function Dashboard() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   
+  // SPRINT 3A: Ranking state
+  const [ranking, setRanking] = useState<{
+    eggs_per_day: number,
+    badge: string,
+    badge_text: string,
+    next_bucket: string | null,
+    delta_to_target: number,
+    message: string
+  } | null>(null);
+  
+  // SPRINT 3A: Weekly Challenges state
+  const [challenges, setChallenges] = useState<{
+    challenges: Array<{
+      key: string,
+      title: string,
+      description: string,
+      icon: string,
+      progress: number,
+      target: number,
+      completed: boolean,
+      percent: number
+    }>,
+    completed_count: number,
+    total_count: number,
+    all_completed: boolean
+  } | null>(null);
+  
   // Modal states
   const [showEggModal, setShowEggModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -194,7 +221,7 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes, rankingRes, challengesRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
@@ -208,7 +235,9 @@ export default function Dashboard() {
         fetch('/api/me/streak', { credentials: 'include' }),
         fetch('/api/agda/inbox/today', { credentials: 'include' }),
         fetch('/api/farm/today', { credentials: 'include' }),
-        fetch('/api/flock/health', { credentials: 'include' })
+        fetch('/api/flock/health', { credentials: 'include' }),
+        fetch('/api/ranking/summary', { credentials: 'include' }),
+        fetch('/api/challenges/week', { credentials: 'include' })
       ]);
 
       if (statsRes.ok) setTodayStats(await statsRes.json());
@@ -246,6 +275,18 @@ export default function Dashboard() {
       if (healthRes.ok) {
         const healthData = await healthRes.json();
         setHealthScore(healthData);
+      }
+      
+      // SPRINT 3A: Load Ranking data
+      if (rankingRes.ok) {
+        const rankingData = await rankingRes.json();
+        setRanking(rankingData);
+      }
+      
+      // SPRINT 3A: Load Weekly Challenges
+      if (challengesRes.ok) {
+        const challengesData = await challengesRes.json();
+        setChallenges(challengesData);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -573,6 +614,68 @@ export default function Dashboard() {
             <h4 className="agda-card-title">{agdaCard.title}</h4>
             <p className="agda-card-body">{agdaCard.body}</p>
           </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SPRINT 3A: Ranking + Tävlingsmekanik
+      ══════════════════════════════════════════════════════════════════ */}
+      {ranking && ranking.eggs_per_day > 0 && (
+        <section className="ranking-section">
+          <div className="section-header">
+            <span>🏆 Din ranking</span>
+            <span className="week-label">Denna vecka</span>
+          </div>
+          <div className="ranking-card">
+            <div className="ranking-header">
+              {ranking.badge && <span className="ranking-badge">{ranking.badge}</span>}
+              <div className="ranking-info">
+                <span className="ranking-title">{ranking.badge_text || 'Börja logga!'}</span>
+                <span className="ranking-eggs">{ranking.eggs_per_day} ägg/dag</span>
+              </div>
+            </div>
+            {ranking.next_bucket && (
+              <div className="ranking-progress">
+                <div className="ranking-target">
+                  <span>Nästa nivå: {ranking.next_bucket === 'top_25' ? 'Topp 25%' : ranking.next_bucket === 'top_10' ? 'Topp 10%' : ranking.next_bucket === 'top_5' ? 'Topp 5%' : 'Topp 50%'}</span>
+                  <span className="delta">+{ranking.delta_to_target} ägg/dag</span>
+                </div>
+                <p className="ranking-message">{ranking.message}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SPRINT 3A: Veckomål (Quests)
+      ══════════════════════════════════════════════════════════════════ */}
+      {challenges && challenges.challenges.length > 0 && (
+        <section className="challenges-section">
+          <div className="section-header">
+            <span>✅ Veckans mål</span>
+            <span className="progress-label">{challenges.completed_count}/{challenges.total_count}</span>
+          </div>
+          <div className="challenges-list">
+            {challenges.challenges.map((c) => (
+              <div key={c.key} className={`challenge-item ${c.completed ? 'completed' : ''}`}>
+                <span className="challenge-icon">{c.completed ? '✓' : c.icon}</span>
+                <div className="challenge-info">
+                  <span className="challenge-title">{c.title}</span>
+                  <div className="challenge-progress-bar">
+                    <div className="challenge-progress-fill" style={{width: `${c.percent}%`}}></div>
+                  </div>
+                </div>
+                <span className="challenge-count">{c.progress}/{c.target}</span>
+              </div>
+            ))}
+          </div>
+          {challenges.all_completed && (
+            <div className="challenges-complete-badge">
+              <span>🎉</span>
+              <span>Alla mål klara! Bra jobbat!</span>
+            </div>
+          )}
         </section>
       )}
 

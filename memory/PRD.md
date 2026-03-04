@@ -6,6 +6,7 @@ Hönsgården är en digital assistent för hönsägare. Appen hjälper användar
 - Hålla koll på sina höns (hälsa, produktivitet)
 - Få AI-drivna tips och analyser
 - Se statistik och trender
+- Tävla mot andra hönsägare via ranking
 
 ## Tech Stack
 - **Backend**: FastAPI + MongoDB
@@ -15,77 +16,54 @@ Hönsgården är en digital assistent för hönsägare. Appen hjälper användar
 
 ---
 
-## Sprint 1 - KLART ✅ (2024-03-03)
+## Sprint 1 - KLART ✅
 
 ### Implementerade funktioner:
-
-1. **Streak-system**
-   - `GET /api/me/streak` - Hämtar streak-data
-   - `POST /api/me/streak/touch` - Uppdaterar streak
-   - 10 dagars streak = 7 premium-dagar (belöning)
-   - Triggas automatiskt vid äggloggning
-
-2. **Agdas Inbox**
-   - `GET /api/agda/inbox/today` - AI-genererat dagligt kort
-   - 1 kort per dag, cachad i MongoDB
-   - Anpassat efter säsong och flockstorlek
-
-3. **"Hej"-hantering**
-   - Agda svarar direkt på hälsningar utan AI-anrop
-   - Sparar API-kostnader
-
-4. **AI-cache**
-   - Alla AI-svar cachas i MongoDB (`ai_cache` collection)
-   - 24h TTL för de flesta funktioner
-
+1. **Streak-system** - 10 dagars streak = 7 premium-dagar
+2. **Agdas Inbox** - AI-genererat dagligt kort (1/dag)
+3. **"Hej"-hantering** - Agda svarar direkt utan AI vid hälsning
+4. **AI-cache** - Alla AI-svar cachas i MongoDB
 5. **Statistik + AI-insikter**
-   - `GET /api/stats/eggs?days=30`
-   - `GET /api/stats/insights` - AI-analys av äggproduktion
-
-6. **Höna-personlighet (Viral funktion)**
-   - `POST /api/hen/personality` - OpenAI Vision analyserar hönbilder
-   - Returnerar personlighetstyp (Diva, Utforskare, Mysare, etc.)
+6. **Höna-personlighet** - Viral funktion med OpenAI Vision
 
 ---
 
-## Sprint 2 - KLART ✅ (2024-03-03)
+## Sprint 2 - KLART ✅
+
+### Implementerade funktioner:
+1. **Din hönsgård idag** - AI-prognos och tips
+2. **Hälsoscore (0-100)** - Baserat på produktionstrend och hälsa
+3. **PWA** - Installera som app på mobilen
+4. **Dashboard-förbättringar**
+
+---
+
+## Sprint 3A - KLART ✅
 
 ### Implementerade funktioner:
 
-1. **Din hönsgård idag (AI Daily Overview)**
-   - `GET /api/farm/today`
-   - Visar äggprognos, temperatur, hälsoscore
-   - AI-genererade tips och varningar
-   - Cachad 24h
+1. **Ranking + Tävlingsmekanik**
+   - `GET /api/ranking/summary`
+   - Visar "topp X%" baserat på ägg/dag
+   - Nivåer: 🏆 Topp 5%, 🥇 Topp 10%, 🥈 Topp 25%, 🥉 Topp 50%
+   - Visar "nästa nivå" och hur många ägg/dag som krävs
+   - `GET /api/ranking/coach` - AI-tips för att nå nästa nivå (cachad 24h)
 
-2. **Hälsoscore (0-100)**
-   - `GET /api/flock/health`
-   - Beräknas baserat på:
-     - Äggproduktionstrend (+10/-15)
-     - Sjukdomsloggar (-10 per)
-     - Flockstorlek (+5)
-   - Färgkodad (grön/gul/röd)
-
-3. **PWA (Progressive Web App)**
-   - `manifest.json` för hemskärmsinstallation
-   - `service-worker.js` för offline-caching
-   - iOS Safari-instruktioner för installation
-   - Banner som visas 3 sekunder efter page load
-
-4. **Dashboard-förbättringar**
-   - "Din hönsgård idag"-kortet högst upp
-   - Hälsoscore integrerad
-   - PWA install-banner
-   - Bättre visuell hierarki
+2. **Veckomål (Quests)**
+   - `GET /api/challenges/week`
+   - `POST /api/challenges/progress`
+   - 3 veckomål: Logga ägg 5 dagar, Hälsocheck, Besök statistik
+   - Progress-bar för varje mål
+   - Badge vid alla mål klara
 
 ---
 
-## Kommande (Sprint 3)
+## Kommande (Sprint 3B)
 
 ### Planerat:
-- **Affiliate (Adtraction)** - AI-rekommenderade produkter
-- **Veckovis AI-rapport** - Sammanfattning av veckan
-- **Desktop 2-kolumn layout**
+- **Community Q&A** - Viral delning med content gating
+- **AI första svar** - Agda svarar automatiskt på nya frågor
+- **Public preview** - Frågor kan ses utan konto (gated)
 
 ---
 
@@ -96,6 +74,7 @@ Hönsgården är en digital assistent för hönsägare. Appen hjälper användar
 | Agdas Inbox | 1/user/dag |
 | Farm Today | 1/user/dag |
 | Stats Insights | 1/user/dag |
+| Ranking Coach | 1/user/dag |
 | Agda Chat | Per fråga |
 
 Alla AI-svar cachas i MongoDB.
@@ -116,9 +95,6 @@ STRIPE_API_KEY=sk_live_...
 ## Changelog
 
 ### 2024-03-03
-- Sprint 1 + Sprint 2 implementerade
-- Streak-system med premium-belöningar
-- AI Daily Overview ("Din hönsgård idag")
-- Hälsoscore
-- PWA support
-- Agdas Inbox
+- Sprint 1 implementerat
+- Sprint 2 implementerat
+- Sprint 3A implementerat (Ranking + Veckomål)

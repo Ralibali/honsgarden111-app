@@ -11,7 +11,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://honsgarden-render.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://honsgarden-staging.preview.emergentagent.com')
 
 class TestLoginFlow:
     """Test authentication flows"""

@@ -1235,3 +1235,190 @@
   color: var(--text-secondary);
   margin: 0;
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   SPRINT 3A: Ranking styling
+   ══════════════════════════════════════════════════════════════════ */
+
+.ranking-section {
+  margin-bottom: 16px;
+}
+
+.ranking-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ranking-section .week-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.ranking-card {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.ranking-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ranking-badge {
+  font-size: 32px;
+}
+
+.ranking-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ranking-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ranking-eggs {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.ranking-progress {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.ranking-target {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.ranking-target .delta {
+  font-weight: 600;
+  color: #ff9800;
+}
+
+.ranking-message {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SPRINT 3A: Challenges (Quests) styling
+   ══════════════════════════════════════════════════════════════════ */
+
+.challenges-section {
+  margin-bottom: 16px;
+}
+
+.challenges-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.challenges-section .progress-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.challenges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.challenge-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.challenge-item.completed {
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.challenge-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.challenge-item.completed .challenge-icon {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.challenge-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.challenge-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.challenge-progress-bar {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.challenge-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.challenge-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.challenges-complete-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(139, 195, 74, 0.1) 100%);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4CAF50;
+}
