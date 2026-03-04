@@ -8,6 +8,7 @@ const navItems = [
   { path: '/', label: 'Hem', icon: '🏠' },
   { path: '/eggs', label: 'Ägg', icon: '🥚' },
   { path: '/hens', label: 'Hönor', icon: '🐔' },
+  { path: '/community', label: 'Community', icon: '💬' },
   { path: '/finance', label: 'Ekonomi', icon: '💰' },
   { path: '/statistics', label: 'Statistik', icon: '📊' },
   { path: '/settings', label: 'Inställningar', icon: '⚙️' },

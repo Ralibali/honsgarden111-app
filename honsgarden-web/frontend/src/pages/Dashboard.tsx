@@ -810,6 +810,24 @@ export default function Dashboard() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
+          SEKTION 6: Community Q&A
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="community-section">
+        <div className="section-header">
+          <span>💬 Community</span>
+          <Link to="/community" className="see-all-link">Se alla →</Link>
+        </div>
+        <Link to="/community" className="community-promo-card" data-testid="community-link">
+          <div className="community-promo-icon">🐔</div>
+          <div className="community-promo-content">
+            <h3>Frågor & Svar</h3>
+            <p>Ställ frågor och få svar från Agda (AI) och andra hönsägare!</p>
+          </div>
+          <span className="community-arrow">→</span>
+        </Link>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
           MODALS
       ══════════════════════════════════════════════════════════════════ */}
       
