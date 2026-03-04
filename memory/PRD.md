@@ -53,7 +53,21 @@ Build a feature-rich, AI-powered web application called "Hönsgården" (The Chic
 - **Statistics-fix**: Chart-container har nu explicit height (240px) för Safari-kompatibilitet
 - **Fungerar på**: Mobil (390x844) + Desktop (1920x800)
 
-### Steg 6: Stabilitet, Social & UX ✅ (2026-03-04)
+### Steg 7: Anpassningsbara Dashboard-moduler ✅ (2026-03-04)
+- **Dashboard-modul inställningar**: Tillgängliga för ALLA användare (ej bara Premium)
+- **8 valbara moduler**:
+  - 🌤️ Väder - Visa aktuellt väder
+  - 🤖 AI-flockanalys - Visa AI-genererad analys
+  - 🎯 Veckomål - Visa veckans äggmål och progress
+  - 📈 Ranking - Visa din ranking jämfört med andra
+  - 🏆 Toppflockar - Visa veckans leaderboard
+  - 👥 Vänner - Visa dina vänners statistik
+  - 🇸🇪 Nationell statistik - Visa snitt för alla i Hönsgården
+  - 🐔 Agdas inbox - Visa dagliga tips från Agda
+- **Backend**: `GET/PUT /api/feature-preferences` uppdaterade för dashboard-moduler
+- **Frontend**: Settings-sida har "Dashboard-moduler" sektion med toggles
+- **Dashboard**: Respekterar inställningar med `featurePrefs.show_dashboard_X !== false`
+- **Testat på**: Mobil (390x844) + Desktop
 - **15 Fiktiva Leaderboard-användare**: Anna, Johan, Sara, Magnus, Lisa, Erik, Maria, Peter, Emma, Daniel, Fredrik, Linda, Andreas, Karin, Niklas
 - **Förbättrad Ägg-registrering**: Större input med +/- stepper-knappar
 - **Dela statistik med periodval**: Välj mellan 7, 14, 30 dagar + längre delningstext

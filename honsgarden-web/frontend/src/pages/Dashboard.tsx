@@ -632,7 +632,7 @@ export default function Dashboard() {
                 <span className="bell-badge">{alerts.length}</span>
               </button>
             )}
-            {weather?.current && (
+            {weather?.current && (featurePrefs.show_dashboard_weather !== false) && (
               <button className="weather-pill" onClick={() => setShowWeatherModal(true)}>
                 <span>{weather.current.temp < 5 ? '❄️' : weather.current.temp < 15 ? '🌥️' : '☀️'}</span>
                 <span>{Math.round(weather.current.temp)}°</span>
@@ -927,7 +927,7 @@ export default function Dashboard() {
       {/* ══════════════════════════════════════════════════════════════════
           STEG 4: AI Flockanalys (Premium)
       ══════════════════════════════════════════════════════════════════ */}
-      {flockAnalysis && flockAnalysis.summary && (
+      {flockAnalysis && flockAnalysis.summary && (featurePrefs.show_dashboard_ai_analysis !== false) && (
         <section className="flock-analysis-section" data-testid="flock-analysis">
           <div className="section-header">
             <span>🧠 AI Flockanalys</span>
