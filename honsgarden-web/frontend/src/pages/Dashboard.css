@@ -1058,6 +1058,174 @@
   font-size: 15px;
   font-weight: 600;
   margin: 0 0 6px 0;
+
+/* ══════════════════════════════════════════════════════════════════
+   SPRINT 2: PWA Install Banner
+   ══════════════════════════════════════════════════════════════════ */
+
+.pwa-banner {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.pwa-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pwa-icon {
+  font-size: 24px;
+}
+
+.pwa-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pwa-text strong {
+  font-size: 14px;
+  color: #2e7d32;
+}
+
+.pwa-text span {
+  font-size: 12px;
+  color: #388e3c;
+  opacity: 0.9;
+}
+
+.pwa-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #388e3c;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.pwa-close:hover {
+  background: rgba(76, 175, 80, 0.1);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SPRINT 2: Din hönsgård idag
+   ══════════════════════════════════════════════════════════════════ */
+
+.farm-today-section {
+  margin-bottom: 16px;
+}
+
+.farm-today-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.farm-today-icon {
+  font-size: 20px;
+}
+
+.farm-today-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.farm-today-card {
+  background: linear-gradient(135deg, rgba(97, 116, 87, 0.1) 0%, rgba(97, 116, 87, 0.05) 100%);
+  border: 1px solid rgba(97, 116, 87, 0.2);
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.farm-today-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.farm-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.farm-stat-icon {
+  font-size: 18px;
+}
+
+.farm-stat-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.farm-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.farm-stat-value.health-good {
+  color: #4CAF50;
+}
+
+.farm-stat-value.health-ok {
+  color: #FF9800;
+}
+
+.farm-stat-value.health-low {
+  color: #f44336;
+}
+
+.farm-today-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255, 152, 0, 0.15);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #e65100;
+}
+
+.farm-today-tip {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.tip-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.farm-today-tip p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin: 0;
+}
+
   color: var(--text-primary);
 }
 

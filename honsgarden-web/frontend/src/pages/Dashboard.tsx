@@ -115,6 +115,17 @@ export default function Dashboard() {
   // SPRINT 1: Agdas Inbox state
   const [agdaCard, setAgdaCard] = useState<{title: string, body: string} | null>(null);
   
+  // SPRINT 2: Farm Today state
+  const [farmToday, setFarmToday] = useState<{forecast: string, warning: string | null, tip: string, temperature: string} | null>(null);
+  
+  // SPRINT 2: Health Score state
+  const [healthScore, setHealthScore] = useState<{score: number, trend: string, reasons: any[]} | null>(null);
+  
+  // SPRINT 2: PWA Install Banner state
+  const [showPWABanner, setShowPWABanner] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  
   // Modal states
   const [showEggModal, setShowEggModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -150,6 +161,18 @@ export default function Dashboard() {
         { enableHighAccuracy: false, timeout: 5000 }
       );
     }
+    
+    // SPRINT 2: Check PWA install status
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    setIsIOS(isIOSDevice);
+    setIsStandalone(isInStandaloneMode);
+    
+    // Show PWA banner if not installed and not dismissed
+    const pwaDismissed = localStorage.getItem('pwa_banner_dismissed');
+    if (!isInStandaloneMode && !pwaDismissed) {
+      setTimeout(() => setShowPWABanner(true), 3000);
+    }
   }, []);
   
   const fetchWeatherWithLocation = async (lat: number, lon: number) => {
@@ -171,7 +194,7 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
@@ -183,7 +206,9 @@ export default function Dashboard() {
         fetch('/api/flock/statistics', { credentials: 'include' }),
         fetch('/api/stats/yesterday-summary', { credentials: 'include' }),
         fetch('/api/me/streak', { credentials: 'include' }),
-        fetch('/api/agda/inbox/today', { credentials: 'include' })
+        fetch('/api/agda/inbox/today', { credentials: 'include' }),
+        fetch('/api/farm/today', { credentials: 'include' }),
+        fetch('/api/flock/health', { credentials: 'include' })
       ]);
 
       if (statsRes.ok) setTodayStats(await statsRes.json());
@@ -209,6 +234,18 @@ export default function Dashboard() {
         if (cardData.card) {
           setAgdaCard(cardData.card);
         }
+      }
+      
+      // SPRINT 2: Load Farm Today data
+      if (farmTodayRes.ok) {
+        const farmData = await farmTodayRes.json();
+        setFarmToday(farmData);
+      }
+      
+      // SPRINT 2: Load Health Score
+      if (healthRes.ok) {
+        const healthData = await healthRes.json();
+        setHealthScore(healthData);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -413,6 +450,74 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SPRINT 2: PWA Install Banner
+      ══════════════════════════════════════════════════════════════════ */}
+      {showPWABanner && !isStandalone && (
+        <section className="pwa-banner">
+          <div className="pwa-content">
+            <span className="pwa-icon">📱</span>
+            <div className="pwa-text">
+              <strong>Installera Hönsgården</strong>
+              {isIOS ? (
+                <span>Tryck på dela-knappen ⤴️ och välj "Lägg till på hemskärmen"</span>
+              ) : (
+                <span>Lägg till appen på hemskärmen för snabbare åtkomst</span>
+              )}
+            </div>
+            <button className="pwa-close" onClick={() => {
+              setShowPWABanner(false);
+              localStorage.setItem('pwa_banner_dismissed', 'true');
+            }}>×</button>
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SPRINT 2: Din hönsgård idag (AI Daily Overview)
+      ══════════════════════════════════════════════════════════════════ */}
+      {farmToday && (
+        <section className="farm-today-section">
+          <div className="farm-today-header">
+            <span className="farm-today-icon">🐔</span>
+            <h3>Din hönsgård idag</h3>
+          </div>
+          <div className="farm-today-card">
+            <div className="farm-today-stats">
+              <div className="farm-stat">
+                <span className="farm-stat-icon">🥚</span>
+                <span className="farm-stat-label">Prognos</span>
+                <span className="farm-stat-value">{farmToday.forecast}</span>
+              </div>
+              <div className="farm-stat">
+                <span className="farm-stat-icon">🌡️</span>
+                <span className="farm-stat-label">Temperatur</span>
+                <span className="farm-stat-value">{farmToday.temperature}°C</span>
+              </div>
+              {healthScore && (
+                <div className="farm-stat">
+                  <span className="farm-stat-icon">💯</span>
+                  <span className="farm-stat-label">Hälsoscore</span>
+                  <span className={`farm-stat-value health-${healthScore.score >= 80 ? 'good' : healthScore.score >= 60 ? 'ok' : 'low'}`}>
+                    {healthScore.score}/100
+                  </span>
+                </div>
+              )}
+            </div>
+            {farmToday.warning && (
+              <div className="farm-today-warning">
+                <span>⚠️</span>
+                <span>{farmToday.warning}</span>
+              </div>
+            )}
+            <div className="farm-today-tip">
+              <span className="tip-label">💡 Tips från Agda</span>
+              <p>{farmToday.tip}</p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════
           SPRINT 1: Streak motivation banner

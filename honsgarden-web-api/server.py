@@ -8950,6 +8950,259 @@ Svara ENDAST med JSON:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============ SPRINT 2: DIN HÖNSGÅRD IDAG (AI DAILY OVERVIEW) ============
+
+@api_router.get("/farm/today")
+async def get_farm_today(request: Request):
+    """Get AI-powered daily farm overview - most important retention feature"""
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    # Check cache first
+    cached = await db.daily_farm_status.find_one({
+        "user_id": user_id,
+        "date": today
+    }, {"_id": 0})
+    
+    if cached:
+        return {
+            "forecast": cached.get("forecast", "?"),
+            "warning": cached.get("warning"),
+            "tip": cached.get("tip", "Ha en fin dag med dina höns!"),
+            "temperature": cached.get("temperature"),
+            "cached": True
+        }
+    
+    # Gather context data
+    hen_count = await db.hens.count_documents({"user_id": user_id, "is_active": True, "hen_type": {"$ne": "rooster"}})
+    
+    # Get last 7 days eggs
+    week_ago = days_ago_stockholm(7)
+    recent_eggs = await db.egg_records.find({"user_id": user_id, "date": {"$gte": week_ago}}).to_list(100)
+    total_eggs_7d = sum(e.get("count", 0) for e in recent_eggs)
+    avg_per_day = total_eggs_7d / 7 if total_eggs_7d > 0 else 0
+    
+    # Get weather if available
+    weather_data = None
+    try:
+        weather_doc = await db.weather_cache.find_one({"user_id": user_id}, {"_id": 0})
+        if weather_doc:
+            weather_data = weather_doc
+    except:
+        pass
+    
+    temp = weather_data.get("temperature", "?") if weather_data else "?"
+    weather_desc = weather_data.get("description", "") if weather_data else ""
+    
+    # Get current month for seasonal context
+    month = now_stockholm().month
+    season = "vinter" if month in [12, 1, 2] else "vår" if month in [3, 4, 5] else "sommar" if month in [6, 7, 8] else "höst"
+    
+    # Calculate expected eggs (simple forecast)
+    expected_low = max(0, int(avg_per_day * 0.8))
+    expected_high = max(1, int(avg_per_day * 1.2))
+    forecast = f"{expected_low}-{expected_high} ägg"
+    
+    # Generate AI tip if OpenAI is available
+    warning = None
+    tip = "Ha en fin dag med dina höns!"
+    
+    if OPENAI_API_KEY:
+        try:
+            prompt = f"""Du är Agda, en vänlig rådgivare för hönsägare.
+
+Kontext:
+- Antal höns: {hen_count}
+- Snitt ägg/dag senaste veckan: {avg_per_day:.1f}
+- Temperatur: {temp}°C
+- Väder: {weather_desc}
+- Säsong: {season}
+
+Analysera och returnera ENDAST JSON (ingen markdown):
+{{"warning":"null eller en kort varning om något är viktigt","tip":"ett kort praktiskt tips för idag"}}
+
+Regler:
+- warning ska vara null om inget är viktigt, annars max 10 ord
+- tip ska vara max 15 ord, konkret och anpassat till väder/säsong
+- Svara på svenska"""
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {OPENAI_API_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "gpt-4o-mini",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 150,
+                        "temperature": 0.7
+                    },
+                    timeout=10.0
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    ai_text = data["choices"][0]["message"]["content"].strip()
+                    import json
+                    try:
+                        ai_result = json.loads(ai_text)
+                        warning = ai_result.get("warning") if ai_result.get("warning") != "null" else None
+                        tip = ai_result.get("tip", tip)
+                    except:
+                        pass
+        except Exception as e:
+            logger.error(f"[FARM TODAY] AI error: {e}")
+    else:
+        # Fallback tips based on season/weather
+        if temp != "?" and float(temp) < 0:
+            warning = "Risk: vattnet kan frysa!"
+            tip = "Kolla att vattnet inte frusit och byt ut vid behov."
+        elif season == "vinter":
+            tip = "Extra belysning kan hjälpa hönsen att värpa mer."
+        elif season == "sommar":
+            tip = "Se till att hönsen har skugga och tillräckligt med vatten."
+    
+    # Save to cache
+    farm_status = {
+        "user_id": user_id,
+        "date": today,
+        "forecast": forecast,
+        "warning": warning,
+        "tip": tip,
+        "temperature": temp,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.daily_farm_status.update_one(
+        {"user_id": user_id, "date": today},
+        {"$set": farm_status},
+        upsert=True
+    )
+    
+    return {
+        "forecast": forecast,
+        "warning": warning,
+        "tip": tip,
+        "temperature": temp,
+        "cached": False
+    }
+
+
+# ============ SPRINT 2: HÄLSOSCORE (0-100) ============
+
+@api_router.get("/flock/health")
+async def get_flock_health_score(request: Request):
+    """Get health score for user's flock (0-100)"""
+    user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    # Check cache (recalculate once per day)
+    cached = await db.flock_health.find_one({
+        "user_id": user_id,
+        "date": today
+    }, {"_id": 0})
+    
+    if cached:
+        return {
+            "score": cached.get("score", 80),
+            "reasons": cached.get("reasons", []),
+            "trend": cached.get("trend", "stable"),
+            "cached": True
+        }
+    
+    # Calculate health score
+    score = 80  # baseline
+    reasons = []
+    
+    # Factor 1: Egg production trend
+    week_ago = days_ago_stockholm(7)
+    two_weeks_ago = days_ago_stockholm(14)
+    
+    recent_eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": week_ago}
+    }).to_list(100)
+    
+    prev_eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": two_weeks_ago, "$lt": week_ago}
+    }).to_list(100)
+    
+    this_week_total = sum(e.get("count", 0) for e in recent_eggs)
+    prev_week_total = sum(e.get("count", 0) for e in prev_eggs)
+    
+    if prev_week_total > 0:
+        change = (this_week_total - prev_week_total) / prev_week_total
+        if change >= 0.1:
+            score += 10
+            reasons.append({"type": "production_up", "text": "Äggproduktionen har ökat!", "delta": "+10"})
+        elif change <= -0.15:
+            score -= 15
+            reasons.append({"type": "production_down", "text": "Äggproduktionen har minskat", "delta": "-15"})
+        else:
+            score += 5
+            reasons.append({"type": "production_stable", "text": "Stabil äggproduktion", "delta": "+5"})
+    else:
+        reasons.append({"type": "no_history", "text": "Inte tillräckligt med historik", "delta": "0"})
+    
+    # Factor 2: Health logs (illness)
+    health_logs = await db.health_logs.find({
+        "user_id": user_id,
+        "date": {"$gte": week_ago}
+    }).to_list(50)
+    
+    illness_count = sum(1 for h in health_logs if h.get("type") in ["illness", "symptom", "sick"])
+    if illness_count > 0:
+        score -= min(20, illness_count * 10)
+        reasons.append({"type": "illness", "text": f"{illness_count} sjukdomsnoteringar", "delta": f"-{min(20, illness_count * 10)}"})
+    
+    # Factor 3: Flock size consistency
+    hen_count = await db.hens.count_documents({"user_id": user_id, "is_active": True})
+    if hen_count > 0:
+        if hen_count >= 3:
+            score += 5
+            reasons.append({"type": "flock_size", "text": "Bra flockstorlek", "delta": "+5"})
+    else:
+        score -= 10
+        reasons.append({"type": "no_hens", "text": "Inga höns registrerade", "delta": "-10"})
+    
+    # Clamp score
+    score = max(0, min(100, score))
+    
+    # Determine trend
+    trend = "stable"
+    if prev_week_total > 0:
+        if this_week_total > prev_week_total:
+            trend = "up"
+        elif this_week_total < prev_week_total:
+            trend = "down"
+    
+    # Save to cache
+    health_data = {
+        "user_id": user_id,
+        "date": today,
+        "score": score,
+        "reasons": reasons,
+        "trend": trend,
+        "updated_at": datetime.now(timezone.utc)
+    }
+    
+    await db.flock_health.update_one(
+        {"user_id": user_id, "date": today},
+        {"$set": health_data},
+        upsert=True
+    )
+    
+    return {
+        "score": score,
+        "reasons": reasons,
+        "trend": trend,
+        "cached": False
+    }
+
+
 # Include the router in the main app - MUST be after all route definitions
 app.include_router(api_router)
 
