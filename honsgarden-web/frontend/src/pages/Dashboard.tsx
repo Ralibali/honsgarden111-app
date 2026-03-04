@@ -624,49 +624,107 @@ export default function Dashboard() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════════
-          SPRINT 2: Din hönsgård idag (AI Daily Overview)
+          SPRINT 2: Din hönsgård idag (2x2 Grid Layout)
       ══════════════════════════════════════════════════════════════════ */}
-      {farmToday && (
-        <section className="farm-today-section">
-          <div className="farm-today-header">
-            <span className="farm-today-icon">🐔</span>
-            <h3>Din hönsgård idag</h3>
+      <section className="farm-today-section">
+        <div className="farm-today-header">
+          <span className="farm-today-icon">🐔</span>
+          <h3>Din hönsgård idag</h3>
+        </div>
+        <div className="farm-today-grid">
+          <div className="farm-today-card prognos" data-testid="farm-prognos">
+            <span className="card-icon">🥚</span>
+            <span className="card-value">{farmToday?.forecast?.replace('Förväntad produktion: ~', '').replace(' ägg/dag', '') || '0'}</span>
+            <span className="card-label">ägg/dag prognos</span>
           </div>
-          <div className="farm-today-card">
-            <div className="farm-today-stats">
-              <div className="farm-stat">
-                <span className="farm-stat-icon">🥚</span>
-                <span className="farm-stat-label">Prognos</span>
-                <span className="farm-stat-value">{farmToday.forecast}</span>
-              </div>
-              <div className="farm-stat">
-                <span className="farm-stat-icon">🌡️</span>
-                <span className="farm-stat-label">Temperatur</span>
-                <span className="farm-stat-value">{farmToday.temperature}°C</span>
-              </div>
-              {healthScore && (
-                <div className="farm-stat">
-                  <span className="farm-stat-icon">💯</span>
-                  <span className="farm-stat-label">Hälsoscore</span>
-                  <span className={`farm-stat-value health-${healthScore.score >= 80 ? 'good' : healthScore.score >= 60 ? 'ok' : 'low'}`}>
-                    {healthScore.score}/100
-                  </span>
-                </div>
-              )}
-            </div>
-            {farmToday.warning && (
-              <div className="farm-today-warning">
-                <span>⚠️</span>
-                <span>{farmToday.warning}</span>
-              </div>
-            )}
-            <div className="farm-today-tip">
-              <span className="tip-label">💡 Tips från Agda</span>
-              <p>{farmToday.tip}</p>
-            </div>
+          <div className="farm-today-card temperatur" data-testid="farm-temp">
+            <span className="card-icon">🌡️</span>
+            <span className="card-value">{farmToday?.temperature || weather?.temperature || '—'}°</span>
+            <span className="card-label">temperatur</span>
           </div>
-        </section>
-      )}
+          <div className="farm-today-card halsoscore" data-testid="farm-health">
+            <span className="card-icon">💚</span>
+            <span className="card-value">{healthScore?.score ?? 0}/100</span>
+            <span className="card-label">hälsoscore</span>
+          </div>
+          <div className="farm-today-card tips" data-testid="farm-tips">
+            <span className="card-icon">💡</span>
+            <span className="card-value">{farmToday?.tip || 'Lägg till höns!'}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SNABB ÄGGLOGGNING (Mobil-optimerad)
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="quick-egg-section">
+        <div className="quick-egg-card">
+          <div className="quick-egg-header">
+            <h3>🥚 Registrera ägg</h3>
+            <span className="egg-count">{todayStats?.total_eggs ?? 0} idag</span>
+          </div>
+          <div className="quick-egg-buttons">
+            <button 
+              className="quick-egg-btn btn-1 btn-press"
+              onClick={async () => {
+                triggerHaptic('success');
+                await fetch('/api/eggs', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ count: 1, date: new Date().toISOString().split('T')[0] })
+                });
+                loadData();
+              }}
+              data-testid="quick-egg-1"
+            >
+              +1
+            </button>
+            <button 
+              className="quick-egg-btn btn-2 btn-press"
+              onClick={async () => {
+                triggerHaptic('success');
+                await fetch('/api/eggs', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ count: 2, date: new Date().toISOString().split('T')[0] })
+                });
+                loadData();
+              }}
+              data-testid="quick-egg-2"
+            >
+              +2
+            </button>
+            <button 
+              className="quick-egg-btn btn-3 btn-press"
+              onClick={async () => {
+                triggerHaptic('success');
+                await fetch('/api/eggs', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({ count: 3, date: new Date().toISOString().split('T')[0] })
+                });
+                loadData();
+              }}
+              data-testid="quick-egg-3"
+            >
+              +3
+            </button>
+            <button 
+              className="quick-egg-btn btn-custom btn-press"
+              onClick={() => {
+                triggerHaptic('light');
+                setShowEggModal(true);
+              }}
+              data-testid="quick-egg-custom"
+            >
+              ...
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════════════════════
           SPRINT 1: Streak motivation banner
@@ -1211,19 +1269,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-      
-      {/* Floating Egg Button (Mobile Only) */}
-      <button 
-        className="floating-egg-btn btn-press"
-        onClick={() => {
-          triggerHaptic('medium');
-          setShowEggModal(true);
-        }}
-        data-testid="floating-egg-btn"
-      >
-        <span className="egg-icon">🥚</span>
-        Registrera ägg
-      </button>
     </div>
   );
 }

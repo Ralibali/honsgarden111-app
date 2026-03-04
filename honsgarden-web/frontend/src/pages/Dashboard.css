@@ -2009,3 +2009,207 @@
   opacity: 0.3;
   animation: pulse 1.5s infinite;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   MOBIL/PWA OPTIMERING
+   ══════════════════════════════════════════════════════════════════ */
+
+/* === SAFE AREA PADDING (iPhone notch/home indicator) === */
+.dashboard {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* === STÖRRE TOUCHYTOR (min 44-56px) === */
+.dashboard button,
+.dashboard a,
+.dashboard .touchable {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.stat-item {
+  min-height: 56px;
+  padding: 12px 16px;
+}
+
+.secondary-card {
+  min-height: 56px;
+  padding: 16px;
+}
+
+.challenge-item {
+  min-height: 52px;
+  padding: 14px 16px;
+}
+
+/* === SNABB ÄGGLOGGNING === */
+.quick-egg-section {
+  margin: 16px;
+}
+
+.quick-egg-card {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.quick-egg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.quick-egg-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #E65100;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quick-egg-header .egg-count {
+  font-size: 14px;
+  color: #F57C00;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 16px;
+}
+
+.quick-egg-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.quick-egg-btn {
+  flex: 1;
+  max-width: 100px;
+  height: 56px;
+  border-radius: 16px;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.quick-egg-btn:active {
+  transform: scale(0.95);
+}
+
+.quick-egg-btn.btn-1 {
+  background: linear-gradient(135deg, #81C784 0%, #66BB6A 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 187, 106, 0.3);
+}
+
+.quick-egg-btn.btn-2 {
+  background: linear-gradient(135deg, #4CAF50 0%, #43A047 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.quick-egg-btn.btn-3 {
+  background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(56, 142, 60, 0.3);
+}
+
+.quick-egg-btn.btn-custom {
+  background: white;
+  color: #E65100;
+  border: 2px solid #FFCA28;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+}
+
+/* === "DIN HÖNSGÅRD IDAG" 2x2 GRID === */
+.farm-today-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 16px;
+}
+
+.farm-today-card {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  min-height: 90px;
+  justify-content: center;
+}
+
+.farm-today-card .card-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.farm-today-card .card-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.farm-today-card .card-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.farm-today-card.prognos {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-color: rgba(76, 175, 80, 0.2);
+}
+
+.farm-today-card.prognos .card-value {
+  color: #2E7D32;
+}
+
+.farm-today-card.temperatur {
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  border-color: rgba(33, 150, 243, 0.2);
+}
+
+.farm-today-card.temperatur .card-value {
+  color: #1565C0;
+}
+
+.farm-today-card.halsoscore {
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+  border-color: rgba(255, 152, 0, 0.2);
+}
+
+.farm-today-card.halsoscore .card-value {
+  color: #E65100;
+}
+
+.farm-today-card.tips {
+  background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
+  border-color: rgba(156, 39, 176, 0.2);
+}
+
+.farm-today-card.tips .card-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #7B1FA2;
+}
+
+/* === REMOVE OLD FLOATING BUTTON === */
+.floating-egg-btn {
+  display: none !important;
+}
