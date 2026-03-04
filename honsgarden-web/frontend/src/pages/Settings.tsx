@@ -26,6 +26,23 @@ interface FeaturePreferences {
   hatching_module: boolean;
   show_economy_insights: boolean;
   can_customize: boolean;
+  preferences?: {
+    show_flock_management?: boolean;
+    show_health_log?: boolean;
+    show_productivity_alerts?: boolean;
+    show_hatching_module?: boolean;
+    show_economy_insights?: boolean;
+    show_weather_data?: boolean;
+    // Dashboard modules
+    show_dashboard_weather?: boolean;
+    show_dashboard_ai_analysis?: boolean;
+    show_dashboard_weekly_goal?: boolean;
+    show_dashboard_ranking?: boolean;
+    show_dashboard_leaderboard?: boolean;
+    show_dashboard_friends?: boolean;
+    show_dashboard_national_stats?: boolean;
+    show_dashboard_agda_inbox?: boolean;
+  };
 }
 
 export default function Settings() {
@@ -413,6 +430,140 @@ export default function Settings() {
           )}
         </div>
       )}
+      
+      {/* Dashboard Module Settings - Available for ALL users */}
+      <div className="card dashboard-modules-card">
+        <h3>📊 Dashboard-moduler</h3>
+        <p className="card-desc">Välj vilka moduler som visas på din dashboard</p>
+        
+        <div className="toggle-row">
+          <div className="toggle-info">
+            <span>🌤️ Väder</span>
+            <small>Visa aktuellt väder</small>
+          </div>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={featurePrefs?.preferences?.show_dashboard_weather ?? true}
+              onChange={(e) => updateFeaturePreference('show_dashboard_weather', e.target.checked)}
+              data-testid="toggle-dashboard-weather"
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <div className="toggle-row">
+          <div className="toggle-info">
+            <span>🤖 AI-flockanalys</span>
+            <small>Visa AI-genererad analys av din flock</small>
+          </div>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={featurePrefs?.preferences?.show_dashboard_ai_analysis ?? true}
+              onChange={(e) => updateFeaturePreference('show_dashboard_ai_analysis', e.target.checked)}
+              data-testid="toggle-dashboard-ai"
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <div className="toggle-row">
+          <div className="toggle-info">
+            <span>🎯 Veckomål</span>
+            <small>Visa veckans äggmål och progress</small>
+          </div>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={featurePrefs?.preferences?.show_dashboard_weekly_goal ?? true}
+              onChange={(e) => updateFeaturePreference('show_dashboard_weekly_goal', e.target.checked)}
+              data-testid="toggle-dashboard-goal"
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <div className="toggle-row">
+          <div className="toggle-info">
+            <span>📈 Ranking</span>
+            <small>Visa din ranking jämfört med andra</small>
+          </div>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={featurePrefs?.preferences?.show_dashboard_ranking ?? true}
+              onChange={(e) => updateFeaturePreference('show_dashboard_ranking', e.target.checked)}
+              data-testid="toggle-dashboard-ranking"
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <div className="toggle-row">
+          <div className="toggle-info">
+            <span>🏆 Toppflockar</span>
+            <small>Visa veckans leaderboard</small>
+          </div>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={featurePrefs?.preferences?.show_dashboard_leaderboard ?? true}
+              onChange={(e) => updateFeaturePreference('show_dashboard_leaderboard', e.target.checked)}
+              data-testid="toggle-dashboard-leaderboard"
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <div className="toggle-row">
+          <div className="toggle-info">
+            <span>👥 Vänner</span>
+            <small>Visa dina vänners statistik</small>
+          </div>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={featurePrefs?.preferences?.show_dashboard_friends ?? true}
+              onChange={(e) => updateFeaturePreference('show_dashboard_friends', e.target.checked)}
+              data-testid="toggle-dashboard-friends"
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <div className="toggle-row">
+          <div className="toggle-info">
+            <span>🇸🇪 Nationell statistik</span>
+            <small>Visa snitt för alla i Hönsgården</small>
+          </div>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={featurePrefs?.preferences?.show_dashboard_national_stats ?? true}
+              onChange={(e) => updateFeaturePreference('show_dashboard_national_stats', e.target.checked)}
+              data-testid="toggle-dashboard-national"
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <div className="toggle-row">
+          <div className="toggle-info">
+            <span>🐔 Agdas inbox</span>
+            <small>Visa dagliga tips från Agda</small>
+          </div>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={featurePrefs?.preferences?.show_dashboard_agda_inbox ?? true}
+              onChange={(e) => updateFeaturePreference('show_dashboard_agda_inbox', e.target.checked)}
+              data-testid="toggle-dashboard-agda"
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
       
       {/* Reminder Settings */}
       <div className="card reminder-card">

@@ -1,0 +1,79 @@
+{
+  "summary": "Iteration 29: Dashboard Module Settings Testing. Backend: 8/8 tests PASSED. Frontend: Settings page works correctly (8 toggles visible), but Dashboard does NOT respect Weather and AI settings.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Dashboard.tsx - Weather pill",
+        "issue": "Weather pill in header does NOT respect show_dashboard_weather=false setting. Still visible when toggle is OFF.",
+        "selector": ".weather-pill",
+        "priority": "HIGH",
+        "location": "Line 635 - missing (featurePrefs.show_dashboard_weather !== false) check"
+      },
+      {
+        "component": "Dashboard.tsx - AI Flockanalys",
+        "issue": "AI Flockanalys section does NOT respect show_dashboard_ai_analysis=false setting. Still visible when toggle is OFF.",
+        "selector": "[data-testid='flock-analysis']",
+        "priority": "HIGH",
+        "location": "Line 930 - missing (featurePrefs.show_dashboard_ai_analysis !== false) check"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration29_dashboard_modules.py",
+    "/app/test_reports/pytest/iteration29_results.xml"
+  ],
+  "action_items": [
+    "Fix Dashboard.tsx line 635: Add (featurePrefs.show_dashboard_weather !== false) && check before weather pill",
+    "Fix Dashboard.tsx line 930: Add (featurePrefs.show_dashboard_ai_analysis !== false) && check before AI Flockanalys section"
+  ],
+  "critical_code_review_comments": [
+    "Dashboard.tsx: Weather pill at line 635 renders when weather?.current exists but ignores featurePrefs.show_dashboard_weather",
+    "Dashboard.tsx: AI Flockanalys section at line 930 renders when flockAnalysis?.summary exists but ignores featurePrefs.show_dashboard_ai_analysis",
+    "Other modules (Agda inbox line 848, Ranking line 868, National stats line 966, Leaderboard line 1061, Friends line 1082) correctly check featurePrefs - Weather and AI should follow same pattern"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration29_dashboard_modules.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "75%"
+  },
+  "test_credentials": {
+    "email": "test2@honsgarden.se",
+    "password": "test123"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend feature-preferences API works perfectly. Settings page UI with 8 dashboard module toggles works. The issue is in Dashboard.tsx where Weather pill and AI Flockanalys sections need conditional rendering based on featurePrefs state. Similar pattern is already used for other modules.",
+  "verified_features": {
+    "backend_apis": {
+      "GET_feature_preferences": "PASSED - Returns all 8 dashboard module settings correctly",
+      "PUT_feature_preferences": "PASSED - Updates settings and persists them",
+      "show_dashboard_weather_false_persists": "PASSED",
+      "show_dashboard_ai_analysis_false_persists": "PASSED",
+      "available_for_all_users": "PASSED - Non-premium can toggle dashboard modules"
+    },
+    "frontend_mobile_390x844": {
+      "settings_dashboard_moduler_section": "PASSED - All 8 toggles visible with data-testid",
+      "toggle_interaction": "PASSED - Clicking toggle calls PUT API and updates state",
+      "dashboard_weather_hidden": "FAILED - Weather pill still visible when setting is OFF",
+      "dashboard_ai_hidden": "FAILED - AI Flockanalys still visible when setting is OFF"
+    },
+    "frontend_desktop_1920x800": {
+      "settings_dashboard_moduler_section": "PASSED - All 8 toggles visible",
+      "dashboard_weather_hidden": "FAILED - Weather pill still visible (7°) when setting is OFF",
+      "dashboard_ai_hidden": "FAILED - AI Flockanalys section still visible when setting is OFF"
+    }
+  },
+  "fix_suggestions": {
+    "Dashboard.tsx_line_635": "{weather?.current && (featurePrefs.show_dashboard_weather !== false) && (",
+    "Dashboard.tsx_line_930": "{flockAnalysis && flockAnalysis.summary && (featurePrefs.show_dashboard_ai_analysis !== false) && ("
+  }
+}

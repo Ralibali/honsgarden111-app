@@ -742,6 +742,17 @@ class FeaturePreferences(BaseModel):
     show_productivity_alerts: bool = True
     show_economy_insights: bool = True
     show_daily_summary_popup: bool = True  # Daily summary popup on app start
+    
+    # Dashboard module visibility
+    show_dashboard_weather: bool = True
+    show_dashboard_ai_analysis: bool = True
+    show_dashboard_weekly_goal: bool = True
+    show_dashboard_ranking: bool = True
+    show_dashboard_leaderboard: bool = True
+    show_dashboard_friends: bool = True
+    show_dashboard_national_stats: bool = True
+    show_dashboard_agda_inbox: bool = True
+    
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class FeaturePreferencesUpdate(BaseModel):
@@ -753,6 +764,16 @@ class FeaturePreferencesUpdate(BaseModel):
     show_productivity_alerts: Optional[bool] = None
     show_economy_insights: Optional[bool] = None
     show_daily_summary_popup: Optional[bool] = None
+    
+    # Dashboard module visibility
+    show_dashboard_weather: Optional[bool] = None
+    show_dashboard_ai_analysis: Optional[bool] = None
+    show_dashboard_weekly_goal: Optional[bool] = None
+    show_dashboard_ranking: Optional[bool] = None
+    show_dashboard_leaderboard: Optional[bool] = None
+    show_dashboard_friends: Optional[bool] = None
+    show_dashboard_national_stats: Optional[bool] = None
+    show_dashboard_agda_inbox: Optional[bool] = None
 
 # ============ AFFILIATE/PRODUCT RECOMMENDATION MODELS ============
 class ProductCategory(str, Enum):
@@ -3453,60 +3474,76 @@ async def get_yesterday_summary(request: Request):
 # ============ FEATURE PREFERENCES ENDPOINTS ============
 @api_router.get("/feature-preferences")
 async def get_feature_preferences(request: Request):
-    """Get user's feature preferences (Premium feature)"""
+    """Get user's feature preferences"""
     user_id = await require_user_id(request)
     
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
     is_premium = subscription.get('is_active', False) if subscription else False
     
-    prefs = await db.feature_preferences.find_one({"user_id": user_id})
+    prefs = await db.feature_preferences.find_one({"user_id": user_id}, {"_id": 0})
     
     if not prefs:
-        # Return defaults
+        # Return defaults - create them in DB first
         default_prefs = FeaturePreferences(user_id=user_id)
+        prefs_dict = default_prefs.dict()
+        await db.feature_preferences.insert_one(prefs_dict)
         return {
             "is_premium": is_premium,
-            "can_customize": is_premium,
-            "preferences": default_prefs.dict()
+            "can_customize": True,  # Dashboard modules are customizable for all
+            "preferences": prefs_dict
         }
     
     return {
         "is_premium": is_premium,
-        "can_customize": is_premium,
-        "preferences": {
-            "show_flock_management": prefs.get("show_flock_management", True),
-            "show_health_log": prefs.get("show_health_log", True),
-            "show_feed_management": prefs.get("show_feed_management", True),
-            "show_weather_data": prefs.get("show_weather_data", True),
-            "show_hatching_module": prefs.get("show_hatching_module", True),
-            "show_productivity_alerts": prefs.get("show_productivity_alerts", True),
-            "show_economy_insights": prefs.get("show_economy_insights", True),
-        }
+        "can_customize": True,  # Dashboard modules are customizable for all
+        "preferences": prefs
     }
 
 @api_router.put("/feature-preferences")
 async def update_feature_preferences(update: FeaturePreferencesUpdate, request: Request):
-    """Update user's feature preferences (Premium only)"""
+    """Update user's feature preferences
+    - Dashboard modules: Available for ALL users
+    - Feature toggles (flock_management, health_log, etc.): Premium only
+    """
     user_id = await require_user_id(request)
     
     # Check premium status
     subscription = await db.subscriptions.find_one({"user_id": user_id})
     is_premium = subscription.get('is_active', False) if subscription else False
     
+    # Dashboard module settings are available for ALL users
+    dashboard_settings = [
+        'show_dashboard_weather', 'show_dashboard_ai_analysis', 'show_dashboard_weekly_goal',
+        'show_dashboard_ranking', 'show_dashboard_leaderboard', 'show_dashboard_friends',
+        'show_dashboard_national_stats', 'show_dashboard_agda_inbox'
+    ]
+    
+    # Feature toggles require Premium
+    premium_settings = [
+        'show_flock_management', 'show_health_log', 'show_feed_management',
+        'show_weather_data', 'show_hatching_module', 'show_productivity_alerts',
+        'show_economy_insights', 'show_daily_summary_popup'
+    ]
+    
+    update_dict = update.dict(exclude_none=True)
+    
+    # Check if non-premium user is trying to change premium-only settings
     if not is_premium:
-        raise HTTPException(status_code=403, detail="Premium krävs för att anpassa funktioner")
+        for key in premium_settings:
+            if key in update_dict:
+                raise HTTPException(status_code=403, detail="Premium krävs för att anpassa denna inställning")
     
     prefs = await db.feature_preferences.find_one({"user_id": user_id})
     
     if not prefs:
         # Create new preferences
-        new_prefs = FeaturePreferences(user_id=user_id, **update.dict(exclude_none=True))
+        new_prefs = FeaturePreferences(user_id=user_id, **update_dict)
         await db.feature_preferences.insert_one(new_prefs.dict())
         prefs = new_prefs.dict()
     else:
         # Update existing
-        update_data = {k: v for k, v in update.dict().items() if v is not None}
+        update_data = {k: v for k, v in update_dict.items() if v is not None}
         update_data['updated_at'] = datetime.now(timezone.utc)
         
         await db.feature_preferences.update_one(
@@ -3515,18 +3552,14 @@ async def update_feature_preferences(update: FeaturePreferencesUpdate, request: 
         )
         prefs = await db.feature_preferences.find_one({"user_id": user_id})
     
+    # Remove _id if present
+    if prefs and '_id' in prefs:
+        del prefs['_id']
+    
     return {
-        "is_premium": True,
-        "can_customize": True,
-        "preferences": {
-            "show_flock_management": prefs.get("show_flock_management", True),
-            "show_health_log": prefs.get("show_health_log", True),
-            "show_feed_management": prefs.get("show_feed_management", True),
-            "show_weather_data": prefs.get("show_weather_data", True),
-            "show_hatching_module": prefs.get("show_hatching_module", True),
-            "show_productivity_alerts": prefs.get("show_productivity_alerts", True),
-            "show_economy_insights": prefs.get("show_economy_insights", True),
-        },
+        "is_premium": is_premium,
+        "can_customize": True,  # Dashboard modules are customizable for all
+        "preferences": prefs,
         "message": "Inställningar sparade!"
     }
 

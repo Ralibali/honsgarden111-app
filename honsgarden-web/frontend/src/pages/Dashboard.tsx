@@ -228,6 +228,18 @@ export default function Dashboard() {
     pending_sent: number
   } | null>(null);
   
+  // Feature Preferences state (for showing/hiding dashboard modules)
+  const [featurePrefs, setFeaturePrefs] = useState<{
+    show_dashboard_weather?: boolean;
+    show_dashboard_ai_analysis?: boolean;
+    show_dashboard_weekly_goal?: boolean;
+    show_dashboard_ranking?: boolean;
+    show_dashboard_leaderboard?: boolean;
+    show_dashboard_friends?: boolean;
+    show_dashboard_national_stats?: boolean;
+    show_dashboard_agda_inbox?: boolean;
+  }>({});
+  
   // Fråga Agda state
   const [advisorQuestion, setAdvisorQuestion] = useState('');
   const [advisorHistory, setAdvisorHistory] = useState<Array<{role: 'user' | 'assistant', content: string}>>([]);
@@ -286,7 +298,7 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes, rankingRes, challengesRes, flockAnalysisRes, alertsRes, nationalStatsRes, flockCompRes, percentileRes, leaderboardRes, friendsRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes, rankingRes, challengesRes, flockAnalysisRes, alertsRes, nationalStatsRes, flockCompRes, percentileRes, leaderboardRes, friendsRes, featurePrefsRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
@@ -311,7 +323,9 @@ export default function Dashboard() {
         fetch('/api/stats/percentile', { credentials: 'include' }),
         fetch('/api/stats/leaderboard', { credentials: 'include' }),
         // Friends endpoint
-        fetch('/api/friends', { credentials: 'include' })
+        fetch('/api/friends', { credentials: 'include' }),
+        // Feature preferences
+        fetch('/api/feature-preferences', { credentials: 'include' })
       ]);
 
       if (statsRes.ok) setTodayStats(await statsRes.json());
@@ -403,6 +417,12 @@ export default function Dashboard() {
       if (friendsRes.ok) {
         const friendsData = await friendsRes.json();
         setFriends(friendsData);
+      }
+      
+      // Load Feature Preferences
+      if (featurePrefsRes.ok) {
+        const prefsData = await featurePrefsRes.json();
+        setFeaturePrefs(prefsData.preferences || {});
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -825,7 +845,7 @@ export default function Dashboard() {
       {/* ══════════════════════════════════════════════════════════════════
           SPRINT 1: Agdas Inbox
       ══════════════════════════════════════════════════════════════════ */}
-      {agdaCard && (
+      {agdaCard && (featurePrefs.show_dashboard_agda_inbox !== false) && (
         <section className="agda-inbox-section">
           <div className="section-header">
             <span>📬 Agdas Inbox</span>
@@ -845,7 +865,7 @@ export default function Dashboard() {
       {/* ══════════════════════════════════════════════════════════════════
           SPRINT 3A: Ranking + Tävlingsmekanik
       ══════════════════════════════════════════════════════════════════ */}
-      {ranking && ranking.eggs_per_day > 0 && (
+      {ranking && ranking.eggs_per_day > 0 && (featurePrefs.show_dashboard_ranking !== false) && (
         <section className="ranking-section">
           <div className="section-header">
             <span>🏆 Din ranking</span>
@@ -943,7 +963,7 @@ export default function Dashboard() {
       {/* ══════════════════════════════════════════════════════════════════
           STEG 4: Nationell Statistik
       ══════════════════════════════════════════════════════════════════ */}
-      {nationalStats && nationalStats.total_users > 1 && (
+      {nationalStats && nationalStats.total_users > 1 && (featurePrefs.show_dashboard_national_stats !== false) && (
         <section className="national-stats-section" data-testid="national-stats">
           <div className="section-header">
             <span>📊 Höns i Sverige</span>
@@ -1038,7 +1058,7 @@ export default function Dashboard() {
       {/* ══════════════════════════════════════════════════════════════════
           VIRAL: Veckans Toppflockar (Leaderboard)
       ══════════════════════════════════════════════════════════════════ */}
-      {leaderboard && leaderboard.leaderboard && leaderboard.leaderboard.length > 0 && (
+      {leaderboard && leaderboard.leaderboard && leaderboard.leaderboard.length > 0 && (featurePrefs.show_dashboard_leaderboard !== false) && (
         <section className="leaderboard-section" data-testid="leaderboard">
           <div className="section-header">
             <span>🏅 Veckans toppflockar</span>
@@ -1059,6 +1079,7 @@ export default function Dashboard() {
       {/* ══════════════════════════════════════════════════════════════════
           SOCIAL: Vänner-modul
       ══════════════════════════════════════════════════════════════════ */}
+      {(featurePrefs.show_dashboard_friends !== false) && (
       <section className="friends-section" data-testid="friends-section">
         <div className="section-header">
           <span>👥 Vänner</span>
@@ -1092,6 +1113,7 @@ export default function Dashboard() {
           </Link>
         </div>
       </section>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════
           SEKTION 3: Premium Teaser (aspirational, inte blockerande)
