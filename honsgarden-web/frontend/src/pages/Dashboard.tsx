@@ -221,6 +221,13 @@ export default function Dashboard() {
   const [showAlertsModal, setShowAlertsModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
   
+  // Friends state
+  const [friends, setFriends] = useState<{
+    friends: Array<{user_id: string, name: string, eggs_per_day: number, trend: number, trend_text: string}>,
+    pending_received: number,
+    pending_sent: number
+  } | null>(null);
+  
   // Fråga Agda state
   const [advisorQuestion, setAdvisorQuestion] = useState('');
   const [advisorHistory, setAdvisorHistory] = useState<Array<{role: 'user' | 'assistant', content: string}>>([]);
@@ -279,7 +286,7 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes, rankingRes, challengesRes, flockAnalysisRes, alertsRes, nationalStatsRes, flockCompRes, percentileRes, leaderboardRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes, rankingRes, challengesRes, flockAnalysisRes, alertsRes, nationalStatsRes, flockCompRes, percentileRes, leaderboardRes, friendsRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
@@ -302,7 +309,9 @@ export default function Dashboard() {
         // VIRAL: New endpoints
         fetch('/api/stats/flock-comparison', { credentials: 'include' }),
         fetch('/api/stats/percentile', { credentials: 'include' }),
-        fetch('/api/stats/leaderboard', { credentials: 'include' })
+        fetch('/api/stats/leaderboard', { credentials: 'include' }),
+        // Friends endpoint
+        fetch('/api/friends', { credentials: 'include' })
       ]);
 
       if (statsRes.ok) setTodayStats(await statsRes.json());
@@ -388,6 +397,12 @@ export default function Dashboard() {
       if (leaderboardRes.ok) {
         const lbData = await leaderboardRes.json();
         setLeaderboard(lbData);
+      }
+      
+      // Load Friends
+      if (friendsRes.ok) {
+        const friendsData = await friendsRes.json();
+        setFriends(friendsData);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -1040,6 +1055,43 @@ export default function Dashboard() {
           </div>
         </section>
       )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SOCIAL: Vänner-modul
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="friends-section" data-testid="friends-section">
+        <div className="section-header">
+          <span>👥 Vänner</span>
+          {friends?.pending_received ? (
+            <span className="pending-badge">{friends.pending_received} ny</span>
+          ) : null}
+        </div>
+        <div className="friends-card">
+          {friends?.friends && friends.friends.length > 0 ? (
+            <div className="friends-list">
+              {friends.friends.slice(0, 5).map((friend, i) => (
+                <div key={friend.user_id} className="friend-item">
+                  <span className="friend-name">{friend.name}</span>
+                  <div className="friend-stats">
+                    <span className="friend-eggs">{friend.eggs_per_day} ägg/dag</span>
+                    <span className={`friend-trend ${friend.trend >= 0 ? 'up' : 'down'}`}>
+                      {friend.trend_text}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="friends-empty">
+              <p>Du har inga vänner ännu</p>
+              <p className="hint">Bjud in vänner för att jämföra resultat!</p>
+            </div>
+          )}
+          <Link to="/settings" className="add-friends-btn">
+            + Lägg till vänner
+          </Link>
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════════════════════
           SEKTION 3: Premium Teaser (aspirational, inte blockerande)

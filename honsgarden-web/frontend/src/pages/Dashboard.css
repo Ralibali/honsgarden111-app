@@ -2785,3 +2785,135 @@
   line-height: 1.5;
   color: var(--text-secondary);
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   Friends Section
+   ══════════════════════════════════════════════════════════════════ */
+
+.friends-section {
+  padding: 0 0 16px;
+}
+
+.friends-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.friends-section .pending-badge {
+  background: var(--accent-primary);
+  color: #1a1a2e;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.friends-card {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.friend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+}
+
+.friend-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.friend-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.friend-eggs {
+  font-size: 13px;
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.friend-trend {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.friend-trend.up {
+  background: rgba(74, 222, 128, 0.15);
+  color: var(--accent-primary);
+}
+
+.friend-trend.down {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--accent-error);
+}
+
+.friends-empty {
+  text-align: center;
+  padding: 20px;
+}
+
+.friends-empty p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.friends-empty .hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.add-friends-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: 10px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.add-friends-btn:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--accent-primary);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .friend-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  
+  .friend-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

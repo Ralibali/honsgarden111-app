@@ -19,6 +19,7 @@ import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Community, { QuestionDetail } from './pages/Community';
+import Support from './pages/Support';
 import Layout from './components/Layout';
 
 function AppRouter() {
@@ -52,6 +53,7 @@ function AppRouter() {
         <Route path="/hens/:henId" element={<HenProfile />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/premium" element={<Premium />} />
+        <Route path="/support" element={<Support />} />
         <Route path="/admin" element={<Admin />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
