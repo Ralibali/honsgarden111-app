@@ -542,7 +542,8 @@
 
 .chart-container {
   width: 100%;
-  min-height: 200px;
+  height: 240px;
+  min-height: 240px;
 }
 
 /* Lock Overlay */
@@ -1177,5 +1178,140 @@
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+}
+
+/* === FIXAD GRAF-RENDERING FÖR SAFARI === */
+.chart-container {
+  width: 100% !important;
+  height: 240px !important;
+  min-height: 240px !important;
+  position: relative;
+}
+
+.chart-container > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* === KOMPAKTARE STATISTIK-KORT === */
+.stat-card {
+  padding: 14px 16px;
+  min-height: auto;
+}
+
+.stat-card .stat-icon {
+  font-size: 20px;
+}
+
+.stat-card .stat-value {
+  font-size: 22px;
+}
+
+.stat-card .stat-label {
+  font-size: 11px;
+}
+
+/* === BÄTTRE TABS FÖR MOBIL === */
+.tabs {
+  display: flex;
+  background: var(--bg-surface);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.tabs .tab {
+  flex: 1;
+  padding: 12px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 48px;
+}
+
+.tabs .tab.active {
+  background: var(--accent-primary);
+  color: #1a1a2e;
+  font-weight: 600;
+}
+
+/* === GRAF-KORT KOMPAKTARE === */
+.graph-card {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.graph-card h3 {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+/* === TID-FILTER UNDER GRAF === */
+.graph-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.time-filters {
+  display: flex;
+  gap: 8px;
+  order: 2;
+}
+
+.time-filters button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-secondary);
+  min-height: 44px;
+}
+
+.time-filters button.active {
+  background: var(--accent-primary);
+  color: #1a1a2e;
+  border-color: var(--accent-primary);
+}
+
+/* === MOBIL MEDIA QUERY === */
+@media (max-width: 480px) {
+  .statistics-page {
+    padding: 12px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+  
+  .stats-grid {
+    gap: 10px;
+  }
+  
+  .stat-card {
+    padding: 12px;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 20px;
+  }
+  
+  .graph-card {
+    padding: 14px;
+  }
+  
+  .chart-container {
+    height: 220px !important;
+    min-height: 220px !important;
   }
 }

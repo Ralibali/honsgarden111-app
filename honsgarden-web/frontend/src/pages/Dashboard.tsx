@@ -179,6 +179,36 @@ export default function Dashboard() {
     comparison_text: string
   } | null>(null);
   
+  // VIRAL: Flockjämförelse state
+  const [flockComparison, setFlockComparison] = useState<{
+    app_avg_eggs_per_day: number,
+    user_avg_eggs_per_day: number,
+    percent_difference: number,
+    comparison_text: string,
+    status: string,
+    total_active_users: number
+  } | null>(null);
+  
+  // VIRAL: Percentile state
+  const [percentile, setPercentile] = useState<{
+    percentile: number | null,
+    badge: string,
+    message: string,
+    user_eggs_this_week: number,
+    tips: string[],
+    total_users: number
+  } | null>(null);
+  
+  // VIRAL: Leaderboard state
+  const [leaderboard, setLeaderboard] = useState<{
+    leaderboard: Array<{name: string, eggs_per_day: number, total_eggs: number}>,
+    total_users: number
+  } | null>(null);
+  
+  // VIRAL: Share image state
+  const [shareImageData, setShareImageData] = useState<string | null>(null);
+  const [generatingShare, setGeneratingShare] = useState(false);
+  
   // Modal states
   const [showEggModal, setShowEggModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -248,7 +278,7 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes, rankingRes, challengesRes, flockAnalysisRes, alertsRes, nationalStatsRes] = await Promise.all([
+      const [statsRes, summaryRes, coopRes, premiumRes, hensRes, flocksRes, insightsRes, weatherRes, flockStatsRes, yesterdayRes, streakRes, agdaCardRes, farmTodayRes, healthRes, rankingRes, challengesRes, flockAnalysisRes, alertsRes, nationalStatsRes, flockCompRes, percentileRes, leaderboardRes] = await Promise.all([
         fetch('/api/statistics/today', { credentials: 'include' }),
         fetch('/api/statistics/summary', { credentials: 'include' }),
         fetch('/api/coop', { credentials: 'include' }),
@@ -267,7 +297,11 @@ export default function Dashboard() {
         fetch('/api/challenges/week', { credentials: 'include' }),
         fetch('/api/ai/flock-analysis', { credentials: 'include' }),
         fetch('/api/alerts', { credentials: 'include' }),
-        fetch('/api/stats/national', { credentials: 'include' })
+        fetch('/api/stats/national', { credentials: 'include' }),
+        // VIRAL: New endpoints
+        fetch('/api/stats/flock-comparison', { credentials: 'include' }),
+        fetch('/api/stats/percentile', { credentials: 'include' }),
+        fetch('/api/stats/leaderboard', { credentials: 'include' })
       ]);
 
       if (statsRes.ok) setTodayStats(await statsRes.json());
@@ -335,6 +369,24 @@ export default function Dashboard() {
       if (nationalStatsRes.ok) {
         const nationalData = await nationalStatsRes.json();
         setNationalStats(nationalData);
+      }
+      
+      // VIRAL: Load Flock Comparison
+      if (flockCompRes.ok) {
+        const compData = await flockCompRes.json();
+        setFlockComparison(compData);
+      }
+      
+      // VIRAL: Load Percentile
+      if (percentileRes.ok) {
+        const percData = await percentileRes.json();
+        setPercentile(percData);
+      }
+      
+      // VIRAL: Load Leaderboard
+      if (leaderboardRes.ok) {
+        const lbData = await leaderboardRes.json();
+        setLeaderboard(lbData);
       }
     } catch (error) {
       console.error('Failed to load data:', error);
@@ -904,6 +956,91 @@ export default function Dashboard() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════════
+          VIRAL: Flockjämförelse - Hur presterar din flock?
+      ══════════════════════════════════════════════════════════════════ */}
+      {flockComparison && flockComparison.total_active_users > 1 && (
+        <section className="flock-comparison-section" data-testid="flock-comparison">
+          <div className="section-header">
+            <span>🏆 Hur presterar din flock?</span>
+          </div>
+          <div className="flock-comparison-card">
+            <div className="comparison-stats">
+              <div className="comparison-stat app-avg">
+                <span className="stat-label">Snitt i Hönsgården</span>
+                <span className="stat-value">{flockComparison.app_avg_eggs_per_day} ägg/dag</span>
+              </div>
+              <div className="comparison-stat user-avg">
+                <span className="stat-label">Din flock</span>
+                <span className="stat-value highlight">{flockComparison.user_avg_eggs_per_day} ägg/dag</span>
+              </div>
+            </div>
+            <div className={`comparison-badge ${flockComparison.status}`}>
+              <span className="badge-text">{flockComparison.comparison_text}</span>
+            </div>
+            {percentile && percentile.percentile && percentile.percentile <= 25 && (
+              <div className="percentile-badge">
+                <span className="badge-icon">{percentile.badge}</span>
+                <span className="badge-msg">{percentile.message}</span>
+              </div>
+            )}
+            {/* AI Tips if below average */}
+            {percentile && percentile.tips && percentile.tips.length > 0 && flockComparison.status === 'below' && (
+              <div className="improvement-tips">
+                <span className="tips-header">💡 Tips för att öka produktionen:</span>
+                <ul>
+                  {percentile.tips.slice(0, 3).map((tip, i) => (
+                    <li key={i}>• {tip}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {/* Share button */}
+            <button 
+              className="share-result-btn btn-press"
+              onClick={async () => {
+                setGeneratingShare(true);
+                try {
+                  const res = await fetch('/api/share/generate-image', { method: 'POST', credentials: 'include' });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setShareImageData(data.image_data);
+                    setShowShareModal(true);
+                  }
+                } catch (e) {
+                  console.error('Failed to generate share image:', e);
+                }
+                setGeneratingShare(false);
+              }}
+              disabled={generatingShare}
+            >
+              {generatingShare ? '⏳ Genererar...' : '📤 Dela resultat'}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          VIRAL: Veckans Toppflockar (Leaderboard)
+      ══════════════════════════════════════════════════════════════════ */}
+      {leaderboard && leaderboard.leaderboard && leaderboard.leaderboard.length > 0 && (
+        <section className="leaderboard-section" data-testid="leaderboard">
+          <div className="section-header">
+            <span>🏅 Veckans toppflockar</span>
+            <span className="users-label">{leaderboard.total_users} flockar</span>
+          </div>
+          <div className="leaderboard-list">
+            {leaderboard.leaderboard.slice(0, 5).map((entry, i) => (
+              <div key={i} className={`leaderboard-item ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}`}>
+                <span className="lb-rank">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}</span>
+                <span className="lb-name">{entry.name}</span>
+                <span className="lb-eggs">{entry.eggs_per_day} ägg/dag</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════
           SEKTION 3: Premium Teaser (aspirational, inte blockerande)
       ══════════════════════════════════════════════════════════════════ */}
       {!premium?.is_premium && (
@@ -1107,28 +1244,73 @@ export default function Dashboard() {
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => { setShowShareModal(false); setShareImageData(null); }}>
+          <div className="modal share-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📤 Dela statistik</h3>
-              <button className="close-btn" onClick={() => setShowShareModal(false)}>×</button>
+              <h3>📤 Dela din statistik</h3>
+              <button className="close-btn" onClick={() => { setShowShareModal(false); setShareImageData(null); }}>×</button>
             </div>
             <div className="share-preview">
-              <div className="share-card">
-                <h4>🥚 {coop?.coop_name || 'Min Hönsgård'}</h4>
-                <p>{todayStats?.egg_count || 0} ägg idag</p>
-                <p>{yesterdaySummary?.eggs_this_week || 0} ägg denna vecka</p>
-              </div>
+              {shareImageData ? (
+                <div className="share-image-preview">
+                  <img src={shareImageData} alt="Delbar statistik" className="share-img" />
+                </div>
+              ) : (
+                <div className="share-card">
+                  <h4>🥚 {coop?.coop_name || 'Min Hönsgård'}</h4>
+                  <p>{todayStats?.egg_count || 0} ägg idag</p>
+                  <p>{yesterdaySummary?.eggs_this_week || 0} ägg denna vecka</p>
+                </div>
+              )}
             </div>
             <div className="share-actions">
+              {shareImageData && (
+                <button className="share-action primary" onClick={() => {
+                  // Download image
+                  const link = document.createElement('a');
+                  link.href = shareImageData;
+                  link.download = 'honsgarden-resultat.png';
+                  link.click();
+                }}>
+                  💾 Ladda ner bild
+                </button>
+              )}
               <button className="share-action" onClick={() => {
-                navigator.clipboard?.writeText(
-                  `🥚 ${coop?.coop_name || 'Min Hönsgård'}\n${todayStats?.egg_count || 0} ägg idag\n${yesterdaySummary?.eggs_this_week || 0} ägg denna vecka`
-                );
-                setShowShareModal(false);
+                const text = flockComparison 
+                  ? `🐔 Min flock i Hönsgården\n${flockComparison.user_avg_eggs_per_day} ägg/dag\n${flockComparison.comparison_text}\n\napp.honsgarden.se`
+                  : `🥚 ${coop?.coop_name || 'Min Hönsgård'}\n${todayStats?.egg_count || 0} ägg idag\n${yesterdaySummary?.eggs_this_week || 0} ägg denna vecka`;
+                navigator.clipboard?.writeText(text);
+                alert('Kopierad till urklipp!');
               }}>
                 📋 Kopiera text
               </button>
+              {navigator.share && (
+                <button className="share-action" onClick={async () => {
+                  try {
+                    if (shareImageData) {
+                      // Convert base64 to blob
+                      const res = await fetch(shareImageData);
+                      const blob = await res.blob();
+                      const file = new File([blob], 'honsgarden-resultat.png', { type: 'image/png' });
+                      await navigator.share({
+                        files: [file],
+                        title: 'Min Hönsgård',
+                        text: `🐔 Min flock ligger ${flockComparison?.comparison_text || 'på snittet'}!`
+                      });
+                    } else {
+                      await navigator.share({
+                        title: 'Min Hönsgård',
+                        text: `🐔 Min flock i Hönsgården - ${flockComparison?.user_avg_eggs_per_day || 0} ägg/dag!`,
+                        url: 'https://app.honsgarden.se'
+                      });
+                    }
+                  } catch (e) {
+                    console.log('Share cancelled');
+                  }
+                }}>
+                  📱 Dela via app
+                </button>
+              )}
             </div>
           </div>
         </div>

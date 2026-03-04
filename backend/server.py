@@ -9123,6 +9123,437 @@ async def get_national_statistics(request: Request):
     }
 
 
+# ============ VIRAL FEATURES: Flockjämförelse, Ranking, Leaderboard ============
+
+@api_router.get("/stats/flock-comparison")
+async def get_flock_comparison(request: Request):
+    """
+    Viral funktion: Flockjämförelse
+    Visar hur användarens flock presterar jämfört med app-genomsnittet.
+    """
+    user_id = await require_user_id(request)
+    
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    
+    # Get all eggs this week (all users)
+    all_eggs_this_week = await db.egg_records.find({
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0, "user_id": 1, "count": 1}).to_list(10000)
+    
+    # Calculate per-user totals
+    users_eggs = defaultdict(int)
+    for e in all_eggs_this_week:
+        users_eggs[e.get("user_id")] += e.get("count", 1)
+    
+    active_users = len(users_eggs)
+    total_eggs = sum(users_eggs.values())
+    
+    # App average (eggs per day)
+    app_avg = round(total_eggs / (active_users * 7), 2) if active_users > 0 else 0
+    
+    # User's average
+    user_eggs_week = users_eggs.get(user_id, 0)
+    user_avg = round(user_eggs_week / 7, 2)
+    
+    # Percentage difference
+    if app_avg > 0:
+        percent_diff = round(((user_avg - app_avg) / app_avg) * 100, 0)
+    else:
+        percent_diff = 0
+    
+    # Comparison text
+    if percent_diff > 0:
+        comparison_text = f"🔥 {int(percent_diff)}% över snittet"
+        status = "above"
+    elif percent_diff < 0:
+        comparison_text = f"📉 {abs(int(percent_diff))}% under snittet"
+        status = "below"
+    else:
+        comparison_text = "Du ligger på snittet"
+        status = "equal"
+    
+    return {
+        "app_avg_eggs_per_day": app_avg,
+        "user_avg_eggs_per_day": user_avg,
+        "percent_difference": percent_diff,
+        "comparison_text": comparison_text,
+        "status": status,
+        "total_active_users": active_users
+    }
+
+
+@api_router.get("/stats/percentile")
+async def get_user_percentile(request: Request):
+    """
+    Viral funktion: Percentilplacering
+    Visar vilken procentgrupp användaren tillhör.
+    """
+    user_id = await require_user_id(request)
+    
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    
+    # Get all eggs this week (all users)
+    all_eggs_this_week = await db.egg_records.find({
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0, "user_id": 1, "count": 1}).to_list(10000)
+    
+    # Calculate per-user totals
+    users_eggs = defaultdict(int)
+    for e in all_eggs_this_week:
+        users_eggs[e.get("user_id")] += e.get("count", 1)
+    
+    if not users_eggs:
+        return {
+            "percentile": None,
+            "message": "Logga dina första ägg för att se din placering!",
+            "tips": []
+        }
+    
+    # User's total
+    user_total = users_eggs.get(user_id, 0)
+    
+    # Calculate percentile
+    all_totals = sorted(users_eggs.values())
+    num_users = len(all_totals)
+    
+    if user_total == 0:
+        percentile = 100  # Bottom
+    else:
+        users_below = sum(1 for t in all_totals if t < user_total)
+        percentile = 100 - round((users_below / num_users) * 100)
+    
+    # Generate message
+    if percentile <= 5:
+        message = f"Din flock ligger i topp {percentile}% i Hönsgården! 🏆"
+        badge = "🥇"
+    elif percentile <= 10:
+        message = f"Din flock ligger i topp {percentile}%! Imponerande! 🌟"
+        badge = "🥈"
+    elif percentile <= 25:
+        message = f"Din flock ligger i topp {percentile}%! Bra jobbat! 💪"
+        badge = "🥉"
+    elif percentile <= 50:
+        message = f"Din flock ligger i topp {percentile}%. På god väg!"
+        badge = "📈"
+    else:
+        message = f"Din flock ligger under snittet denna vecka."
+        badge = "💡"
+    
+    # AI tips if below average (simple fallback tips)
+    tips = []
+    if percentile > 50:
+        tips = [
+            "Mer protein i fodret kan öka produktionen",
+            "Kontrollera att redena är rena och bekväma",
+            "14-16 timmars dagsljus behövs för optimal värpning"
+        ]
+    
+    return {
+        "percentile": percentile,
+        "badge": badge,
+        "message": message,
+        "user_eggs_this_week": user_total,
+        "tips": tips,
+        "total_users": num_users
+    }
+
+
+@api_router.get("/stats/leaderboard")
+async def get_weekly_leaderboard(request: Request):
+    """
+    Viral funktion: Veckans toppflockar
+    Visar en anonym leaderboard med förnamn/alias.
+    """
+    await require_user_id(request)
+    
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    
+    # Get all eggs this week (all users)
+    all_eggs_this_week = await db.egg_records.find({
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0, "user_id": 1, "count": 1}).to_list(10000)
+    
+    # Calculate per-user totals
+    users_eggs = defaultdict(int)
+    for e in all_eggs_this_week:
+        users_eggs[e.get("user_id")] += e.get("count", 1)
+    
+    if not users_eggs:
+        return {"leaderboard": [], "total_users": 0}
+    
+    # Get user names (first name only for privacy)
+    user_ids = list(users_eggs.keys())
+    users_data = await db.users.find(
+        {"$or": [{"id": {"$in": user_ids}}, {"user_id": {"$in": user_ids}}]},
+        {"_id": 0, "id": 1, "user_id": 1, "name": 1}
+    ).to_list(1000)
+    
+    user_names = {}
+    for u in users_data:
+        uid = u.get("user_id") or u.get("id")
+        full_name = u.get("name", "Anonym")
+        # Extract first name only
+        first_name = full_name.split()[0] if full_name else "Anonym"
+        user_names[uid] = first_name
+    
+    # Build leaderboard
+    leaderboard = []
+    for uid, total_eggs in users_eggs.items():
+        eggs_per_day = round(total_eggs / 7, 1)
+        first_name = user_names.get(uid, "Anonym")
+        leaderboard.append({
+            "name": first_name,
+            "eggs_per_day": eggs_per_day,
+            "total_eggs": total_eggs
+        })
+    
+    # Sort by eggs_per_day descending
+    leaderboard.sort(key=lambda x: x["eggs_per_day"], reverse=True)
+    
+    # Return top 10
+    return {
+        "leaderboard": leaderboard[:10],
+        "total_users": len(leaderboard)
+    }
+
+
+@api_router.post("/share/generate-image")
+async def generate_share_image(request: Request):
+    """
+    Viral funktion: Generera delbar resultatbild
+    Skapar en PNG-bild med användarens flockstatistik för social delning.
+    """
+    from PIL import Image, ImageDraw, ImageFont
+    import io
+    import base64
+    
+    user_id = await require_user_id(request)
+    
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    
+    # Get user's stats
+    user_eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0, "count": 1}).to_list(1000)
+    
+    user_total = sum(e.get("count", 0) for e in user_eggs)
+    user_avg = round(user_total / 7, 1)
+    
+    # Get app average
+    all_eggs = await db.egg_records.find({
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0, "user_id": 1, "count": 1}).to_list(10000)
+    
+    users_eggs = defaultdict(int)
+    for e in all_eggs:
+        users_eggs[e.get("user_id")] += e.get("count", 1)
+    
+    active_users = len(users_eggs)
+    total_eggs = sum(users_eggs.values())
+    app_avg = round(total_eggs / (active_users * 7), 1) if active_users > 0 else 0
+    
+    # Calculate percentage
+    if app_avg > 0:
+        percent_diff = round(((user_avg - app_avg) / app_avg) * 100, 0)
+    else:
+        percent_diff = 0
+    
+    # Create image (1200x630 - optimal for social sharing)
+    img_width, img_height = 1200, 630
+    
+    # Dark theme colors (matching app)
+    bg_color = (26, 26, 46)  # #1a1a2e
+    card_color = (30, 41, 59)  # #1e293b
+    accent_color = (74, 222, 128)  # #4ade80 (green)
+    warning_color = (248, 113, 113)  # #f87171 (red)
+    text_primary = (255, 255, 255)
+    text_secondary = (156, 163, 175)  # #9ca3af
+    
+    img = Image.new('RGB', (img_width, img_height), bg_color)
+    draw = ImageDraw.Draw(img)
+    
+    # Try to load a nice font, fallback to default
+    try:
+        font_large = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 72)
+        font_medium = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
+        font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32)
+        font_tiny = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
+    except:
+        font_large = ImageFont.load_default()
+        font_medium = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+        font_tiny = ImageFont.load_default()
+    
+    # Draw card background
+    card_margin = 40
+    card_radius = 20
+    draw.rounded_rectangle(
+        [card_margin, card_margin, img_width - card_margin, img_height - card_margin],
+        radius=card_radius,
+        fill=card_color
+    )
+    
+    # Header: "Min flock lägger"
+    header_text = "Min flock lägger"
+    draw.text((80, 80), header_text, fill=text_secondary, font=font_small)
+    
+    # Main stat: User's eggs/day
+    main_stat = f"{user_avg} ägg/dag"
+    draw.text((80, 140), main_stat, fill=text_primary, font=font_large)
+    
+    # Separator line
+    draw.line([(80, 250), (img_width - 80, 250)], fill=text_secondary, width=2)
+    
+    # App average section
+    draw.text((80, 280), "Snitt i Hönsgården:", fill=text_secondary, font=font_small)
+    draw.text((80, 330), f"{app_avg} ägg/dag", fill=text_primary, font=font_medium)
+    
+    # Percentage badge
+    badge_y = 420
+    if percent_diff > 0:
+        badge_text = f"🔥 {int(percent_diff)}% över snittet"
+        badge_color = accent_color
+    elif percent_diff < 0:
+        badge_text = f"📉 {abs(int(percent_diff))}% under snittet"
+        badge_color = warning_color
+    else:
+        badge_text = "På snittet"
+        badge_color = text_secondary
+    
+    # Draw badge background
+    badge_width = 450
+    badge_height = 70
+    badge_x = 80
+    draw.rounded_rectangle(
+        [badge_x, badge_y, badge_x + badge_width, badge_y + badge_height],
+        radius=35,
+        fill=badge_color
+    )
+    draw.text((badge_x + 30, badge_y + 12), badge_text, fill=bg_color, font=font_small)
+    
+    # Footer: app URL
+    footer_text = "app.honsgarden.se"
+    draw.text((80, img_height - 90), footer_text, fill=text_secondary, font=font_tiny)
+    
+    # Right side: Chicken emoji decoration
+    try:
+        emoji_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 120)
+        draw.text((img_width - 250, 150), "🐔", fill=text_primary, font=emoji_font)
+    except:
+        pass
+    
+    # Save to base64
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG', optimize=True)
+    buffer.seek(0)
+    
+    img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    
+    return {
+        "image_data": f"data:image/png;base64,{img_base64}",
+        "stats": {
+            "user_avg": user_avg,
+            "app_avg": app_avg,
+            "percent_diff": percent_diff
+        }
+    }
+
+
+@api_router.get("/ai/improvement-tips")
+async def get_ai_improvement_tips(request: Request):
+    """
+    AI-genererade tips för att förbättra produktionen.
+    Kallas om användaren ligger under snittet.
+    """
+    user = await require_user(request)
+    user_id = user.user_id
+    
+    # Check cache first (24h)
+    cache_key = f"improvement_tips_{user_id}"
+    cached = await db.ai_cache.find_one({
+        "user_id": user_id,
+        "key": cache_key,
+        "expires_at": {"$gt": datetime.now(timezone.utc)}
+    }, {"_id": 0})
+    
+    if cached:
+        return cached.get("payload", {"tips": []})
+    
+    # Get user's stats
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    user_eggs = await db.egg_records.find({
+        "user_id": user_id,
+        "date": {"$gte": seven_days_ago}
+    }, {"_id": 0, "count": 1}).to_list(1000)
+    
+    user_total = sum(e.get("count", 0) for e in user_eggs)
+    hen_count = await db.hens.count_documents({"user_id": user_id, "status": "active"})
+    
+    # Simple rule-based tips (fallback if no AI)
+    tips = []
+    
+    if hen_count == 0:
+        tips = ["Lägg till dina hönor i appen för personliga tips!"]
+    elif user_total == 0:
+        tips = [
+            "Börja logga ägg varje dag för att spåra produktionen",
+            "Kontrollera att hönsen har tillgång till rent vatten",
+            "Se till att fodret innehåller tillräckligt med protein (16-18%)"
+        ]
+    else:
+        eggs_per_hen = user_total / hen_count if hen_count > 0 else 0
+        if eggs_per_hen < 3:  # Low production
+            tips = [
+                "Öka proteinhalten i fodret (18% rekommenderas)",
+                "Kontrollera att redena är rena och inbjudande",
+                "Säkerställ 14-16 timmars ljus per dag",
+                "Ge fri tillgång till kalcium (ostronskalskal)",
+                "Minimera stress - undvik plötsliga förändringar"
+            ]
+    
+    # Try AI if available
+    if HAS_EMERGENT and EMERGENT_LLM_KEY:
+        try:
+            chat = LlmChat(
+                api_key=EMERGENT_LLM_KEY,
+                model="gpt-4o-mini"
+            )
+            
+            prompt = f"""Du är Agda, en erfaren hönsgårdsrådgivare.
+Användaren har {hen_count} hönor och har loggat {user_total} ägg de senaste 7 dagarna.
+Det ger ca {round(user_total/7, 1)} ägg per dag, vilket är under genomsnittet.
+
+Ge 3-5 konkreta, korta tips för att förbättra äggproduktionen.
+Fokusera på praktiska åtgärder. Svara på svenska. 
+Format: En punktlista med korta tips (max 15 ord per punkt)."""
+
+            response = await chat.send_async([UserMessage(content=prompt)])
+            ai_response = normalize_llm_response(response)
+            
+            # Parse response into list
+            if ai_response:
+                lines = [l.strip() for l in ai_response.split('\n') if l.strip()]
+                tips = [l.lstrip('•-*123456789. ') for l in lines if len(l) > 5][:5]
+        except Exception as e:
+            logger.error(f"AI tips error: {e}")
+    
+    result = {"tips": tips}
+    
+    # Cache for 24h
+    await db.ai_cache.update_one(
+        {"user_id": user_id, "key": cache_key},
+        {"$set": {
+            "payload": result,
+            "expires_at": datetime.now(timezone.utc) + timedelta(hours=24),
+            "updated_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+    
+    return result
+
+
 @api_router.post("/ai/hen-personality")
 async def analyze_hen_personality(request: Request):
     """
@@ -9974,7 +10405,7 @@ else:
         "http://localhost:3000",
         "http://localhost:8081",
         "http://localhost:19006",
-        "https://honsgarden-staging.preview.emergentagent.com",
+        "https://egg-logger-mobile.preview.emergentagent.com",
     ]
     
     # Add any additional origins from environment variable
