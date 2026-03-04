@@ -469,13 +469,51 @@ export default function Dashboard() {
     return "Vi ser potential för optimering.";
   };
   
-  if (loading) {
-    return (
-      <div className="dashboard-loading">
-        <div className="loading-spinner">🥚</div>
-        <p>Laddar din hönsgård...</p>
+  // Haptic feedback helper (mobile)
+  const triggerHaptic = (type: 'light' | 'medium' | 'success' = 'light') => {
+    if ('vibrate' in navigator) {
+      switch (type) {
+        case 'light': navigator.vibrate(10); break;
+        case 'medium': navigator.vibrate(20); break;
+        case 'success': navigator.vibrate([10, 50, 20]); break;
+      }
+    }
+  };
+  
+  // Skeleton Loading Component
+  const SkeletonLoader = () => (
+    <div className="dashboard-loading" data-testid="skeleton-loader">
+      {/* Header skeleton */}
+      <div className="skeleton skeleton-card" style={{height: '100px', marginBottom: '16px'}} />
+      
+      {/* Stats row skeleton */}
+      <div className="skeleton-row">
+        <div className="skeleton" style={{flex: 1, height: '60px', borderRadius: '12px'}} />
+        <div className="skeleton" style={{flex: 1, height: '60px', borderRadius: '12px'}} />
+        <div className="skeleton" style={{flex: 1, height: '60px', borderRadius: '12px'}} />
       </div>
-    );
+      
+      {/* Main card skeleton */}
+      <div className="skeleton skeleton-card" style={{height: '180px'}} />
+      
+      {/* Challenges skeleton */}
+      <div style={{padding: '16px'}}>
+        <div className="skeleton skeleton-text short" style={{marginBottom: '12px'}} />
+        <div className="skeleton" style={{height: '50px', borderRadius: '12px', marginBottom: '8px'}} />
+        <div className="skeleton" style={{height: '50px', borderRadius: '12px', marginBottom: '8px'}} />
+        <div className="skeleton" style={{height: '50px', borderRadius: '12px'}} />
+      </div>
+      
+      {/* Bottom cards skeleton */}
+      <div className="skeleton-row">
+        <div className="skeleton" style={{flex: 1, height: '80px', borderRadius: '12px'}} />
+        <div className="skeleton" style={{flex: 1, height: '80px', borderRadius: '12px'}} />
+      </div>
+    </div>
+  );
+  
+  if (loading) {
+    return <SkeletonLoader />;
   }
 
   return (
@@ -1173,6 +1211,19 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+      
+      {/* Floating Egg Button (Mobile Only) */}
+      <button 
+        className="floating-egg-btn btn-press"
+        onClick={() => {
+          triggerHaptic('medium');
+          setShowEggModal(true);
+        }}
+        data-testid="floating-egg-btn"
+      >
+        <span className="egg-icon">🥚</span>
+        Registrera ägg
+      </button>
     </div>
   );
 }

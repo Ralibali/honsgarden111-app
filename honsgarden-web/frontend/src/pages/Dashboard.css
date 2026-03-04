@@ -1690,3 +1690,322 @@
   background: #FFF3E0;
   color: #E65100;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   MODERNA ANIMATIONER & MICROINTERACTIONS
+   ══════════════════════════════════════════════════════════════════ */
+
+/* === FADE-IN ANIMATIONS === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes progressFill {
+  from { width: 0; }
+}
+
+/* === STAGGERED CARD ANIMATIONS === */
+.dashboard section {
+  animation: fadeInUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.dashboard section:nth-child(1) { animation-delay: 0.05s; }
+.dashboard section:nth-child(2) { animation-delay: 0.1s; }
+.dashboard section:nth-child(3) { animation-delay: 0.15s; }
+.dashboard section:nth-child(4) { animation-delay: 0.2s; }
+.dashboard section:nth-child(5) { animation-delay: 0.25s; }
+.dashboard section:nth-child(6) { animation-delay: 0.3s; }
+.dashboard section:nth-child(7) { animation-delay: 0.35s; }
+.dashboard section:nth-child(8) { animation-delay: 0.4s; }
+
+/* === SKELETON LOADING === */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    #e8e8e8 50%,
+    var(--bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.skeleton-card {
+  height: 120px;
+  margin: 16px;
+  border-radius: 16px;
+}
+
+.skeleton-text {
+  height: 16px;
+  margin: 8px 16px;
+  width: 60%;
+}
+
+.skeleton-text.short { width: 40%; }
+.skeleton-text.long { width: 80%; }
+
+.skeleton-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+}
+
+/* === LOADING STATE === */
+.dashboard-loading {
+  padding: 16px;
+}
+
+.dashboard-loading .skeleton-header {
+  height: 80px;
+  margin-bottom: 16px;
+}
+
+.dashboard-loading .skeleton-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dashboard-loading .skeleton-stats .skeleton {
+  flex: 1;
+  height: 60px;
+}
+
+/* === ANIMATED PROGRESS BARS === */
+.challenge-progress-bar {
+  height: 8px;
+  background: rgba(76, 175, 80, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.challenge-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #66BB6A, #4CAF50);
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: progressFill 1s ease-out;
+}
+
+.challenge-progress-fill.completed {
+  background: linear-gradient(90deg, #4CAF50, #2E7D32);
+}
+
+/* === CARD HOVER EFFECTS === */
+.dashboard .stat-item,
+.dashboard .secondary-card,
+.dashboard .challenge-item,
+.dashboard .agda-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard .stat-item:hover,
+.dashboard .secondary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.dashboard .challenge-item:hover {
+  transform: scale(1.01);
+}
+
+/* === FLOATING EGG BUTTON (MOBILE) === */
+.floating-egg-btn {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 152, 0, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  animation: fadeInUp 0.5s ease-out 0.5s forwards;
+  opacity: 0;
+}
+
+.floating-egg-btn:hover {
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 6px 24px rgba(255, 152, 0, 0.5);
+}
+
+.floating-egg-btn:active {
+  transform: translateX(-50%) scale(0.98);
+}
+
+.floating-egg-btn .egg-icon {
+  font-size: 20px;
+}
+
+/* Hide on desktop */
+@media (min-width: 768px) {
+  .floating-egg-btn {
+    display: none;
+  }
+}
+
+/* === BUTTON PRESS ANIMATION === */
+.btn-press {
+  transition: transform 0.1s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.95);
+}
+
+/* === SUCCESS ANIMATION === */
+@keyframes successPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.success-animation {
+  animation: successPop 0.4s ease-out;
+}
+
+/* === STREAK FIRE ANIMATION === */
+@keyframes fireFlicker {
+  0%, 100% { transform: scale(1) rotate(-2deg); }
+  25% { transform: scale(1.1) rotate(2deg); }
+  50% { transform: scale(1) rotate(-1deg); }
+  75% { transform: scale(1.05) rotate(1deg); }
+}
+
+.streak-fire {
+  display: inline-block;
+  animation: fireFlicker 1s ease-in-out infinite;
+}
+
+/* === SMOOTH SCROLL BEHAVIOR === */
+.dashboard {
+  scroll-behavior: smooth;
+}
+
+/* === BADGE ANIMATIONS === */
+.ranking-badge {
+  animation: fadeIn 0.5s ease-out;
+  transition: transform 0.2s;
+}
+
+.ranking-badge:hover {
+  transform: scale(1.1);
+}
+
+/* === ALERT SLIDE IN === */
+.alert-card {
+  animation: slideInRight 0.4s ease-out;
+}
+
+/* === TAP HIGHLIGHT REMOVAL (MOBILE) === */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* === SMOOTH MODAL TRANSITIONS === */
+.modal-overlay {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* === HEALTH SCORE RING ANIMATION === */
+@keyframes ringFill {
+  from { stroke-dashoffset: 283; }
+}
+
+.health-ring {
+  animation: ringFill 1s ease-out forwards;
+}
+
+/* === WEATHER WIDGET ANIMATION === */
+.weather-widget {
+  animation: fadeIn 0.5s ease-out 0.3s forwards;
+  opacity: 0;
+}
+
+/* === IMPROVED TOUCH FEEDBACK === */
+@media (hover: none) {
+  .dashboard .stat-item:active,
+  .dashboard .secondary-card:active,
+  .dashboard .challenge-item:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+/* === COMMUNITY BUTTON PULSE === */
+.community-big-btn {
+  animation: fadeInUp 0.5s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+.community-big-btn::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.community-big-btn:hover::after {
+  opacity: 0.3;
+  animation: pulse 1.5s infinite;
+}
