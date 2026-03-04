@@ -1744,7 +1744,7 @@ def verify_password(password: str, hashed: str) -> bool:
 
 @api_router.post("/auth/register")
 async def register_email(data: EmailRegister, request: Request, response: Response):
-    """Start registration - sends verification code to email"""
+    """Direct registration - no email verification required for fast onboarding"""
     # Check if terms are accepted
     if not data.accepted_terms:
         raise HTTPException(status_code=400, detail="Du måste godkänna användarvillkoren")
@@ -1762,65 +1762,88 @@ async def register_email(data: EmailRegister, request: Request, response: Respon
     if len(data.password) < 6:
         raise HTTPException(status_code=400, detail="Lösenordet måste vara minst 6 tecken")
     
-    # Generate 6-digit verification code
-    import random
-    verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-    expires = datetime.now(timezone.utc) + timedelta(minutes=15)
-    
-    # Store pending registration
+    # Create user directly (no verification needed)
+    user_id = str(uuid.uuid4())
     hashed_pw = hash_password(data.password)
-    await db.pending_registrations.delete_many({"email": data.email.lower()})
     
-    await db.pending_registrations.insert_one({
+    user_doc = {
+        "id": user_id,
         "email": data.email.lower(),
         "name": data.name.strip(),
         "password_hash": hashed_pw,
+        "is_verified": True,  # Auto-verified
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc),
         "accepted_terms": True,
         "accepted_marketing": data.accepted_marketing,
         "referred_by": data.referral_code.upper() if data.referral_code else None,
-        "verification_code": verification_code,
-        "expires_at": expires.isoformat(),
-        "attempts": 0,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "analytics": {
+            "registration_source": "direct",
+            "registration_date": datetime.now(timezone.utc).isoformat()
+        }
+    }
+    
+    await db.users.insert_one(user_doc)
+    logger.info(f"New user registered directly: {data.email}")
+    
+    # Create session and log in immediately
+    session_token = str(uuid.uuid4())
+    expires = datetime.now(timezone.utc) + timedelta(days=30)
+    
+    await db.sessions.insert_one({
+        "token": session_token,
+        "user_id": user_id,
+        "created_at": datetime.now(timezone.utc),
+        "expires_at": expires
     })
     
-    # Send verification email
-    email_sent = False
+    # Set session cookie
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=30 * 24 * 60 * 60,
+        path="/"
+    )
+    
+    # Send welcome email (non-blocking, ignore errors)
     if RESEND_API_KEY:
         try:
             resend.api_key = RESEND_API_KEY
             resend.Emails.send({
                 "from": f"Hönsgården <{SENDER_EMAIL}>",
                 "to": data.email.lower(),
-                "subject": "Verifiera din e-postadress - Hönsgården 🐔",
+                "subject": "Välkommen till Hönsgården! 🐔",
                 "html": f"""
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; text-align: center;">
-                    <h2 style="color: #4ade80;">🐔 Hönsgården</h2>
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #4ade80;">🐔 Välkommen till Hönsgården!</h2>
                     <p>Hej {data.name.strip()}!</p>
-                    <p>Välkommen till Hönsgården! Verifiera din e-postadress genom att ange denna kod:</p>
-                    <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 24px 0;">
-                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">{verification_code}</span>
-                    </div>
-                    <p style="color: #6b7280; font-size: 14px;">Koden är giltig i 15 minuter.</p>
-                    <p style="margin-top: 24px;">Vänliga hälsningar,<br>Hönsgården</p>
+                    <p>Ditt konto är nu skapat och redo att användas.</p>
+                    <p>Med Hönsgården kan du:</p>
+                    <ul>
+                        <li>📊 Logga äggproduktion</li>
+                        <li>🐔 Hålla koll på dina hönor</li>
+                        <li>🤖 Få AI-drivna tips från Agda</li>
+                        <li>💬 Ställa frågor i communityn</li>
+                    </ul>
+                    <p style="margin-top: 24px;">Lycka till med hönsgården!</p>
+                    <p>Vänliga hälsningar,<br>Hönsgården</p>
                 </div>
                 """
             })
-            email_sent = True
-            logger.info(f"Verification code sent to {data.email}")
         except Exception as e:
-            logger.error(f"Failed to send verification email: {e}")
+            logger.warning(f"Welcome email failed (non-critical): {e}")
     
-    if email_sent:
-        return {
-            "message": "En verifieringskod har skickats till din e-postadress.",
-            "email": data.email.lower(),
-            "requires_verification": True
-        }
-    else:
-        # If email fails, delete pending registration
-        await db.pending_registrations.delete_many({"email": data.email.lower()})
-        raise HTTPException(status_code=500, detail="Kunde inte skicka verifieringskod. Försök igen senare.")
+    return {
+        "message": "Konto skapat! Du är nu inloggad.",
+        "user_id": user_id,
+        "email": data.email.lower(),
+        "name": data.name.strip(),
+        "session_token": session_token,
+        "requires_verification": False
+    }
 
 
 @api_router.post("/auth/verify-registration")
