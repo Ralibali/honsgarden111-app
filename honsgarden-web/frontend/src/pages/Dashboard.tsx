@@ -810,20 +810,16 @@ export default function Dashboard() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
-          SEKTION 6: Community Q&A
+          SEKTION 6: Community Q&A - Stor knapp
       ══════════════════════════════════════════════════════════════════ */}
       <section className="community-section">
-        <div className="section-header">
-          <span>💬 Community</span>
-          <Link to="/community" className="see-all-link">Se alla →</Link>
-        </div>
-        <Link to="/community" className="community-promo-card" data-testid="community-link">
-          <div className="community-promo-icon">🐔</div>
-          <div className="community-promo-content">
+        <Link to="/community" className="community-big-btn" data-testid="community-btn">
+          <div className="community-btn-icon">💬</div>
+          <div className="community-btn-content">
             <h3>Frågor & Svar</h3>
-            <p>Ställ frågor och få svar från Agda (AI) och andra hönsägare!</p>
+            <p>Få svar från Agda (AI) och andra hönsägare</p>
           </div>
-          <span className="community-arrow">→</span>
+          <span className="community-btn-arrow">→</span>
         </Link>
       </section>
 

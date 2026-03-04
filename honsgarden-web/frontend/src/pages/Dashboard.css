@@ -1424,78 +1424,69 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   COMMUNITY SEKTION
+   COMMUNITY SEKTION - Stor knapp
    ══════════════════════════════════════════════════════════════════ */
 
 .community-section {
   margin: 24px 0;
 }
 
-.community-section .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.see-all-link {
-  font-size: 13px;
-  color: var(--accent-primary);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.community-promo-card {
+.community-big-btn {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px;
-  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
   border-radius: 16px;
   text-decoration: none;
-  border: 1px solid rgba(33, 150, 243, 0.2);
+  border: none;
+  cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
-.community-promo-card:hover {
+.community-big-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(33, 150, 243, 0.15);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
 }
 
-.community-promo-icon {
-  font-size: 36px;
-  background: white;
+.community-big-btn:active {
+  transform: scale(0.98);
+}
+
+.community-btn-icon {
+  font-size: 32px;
+  background: rgba(255, 255, 255, 0.2);
   width: 56px;
   height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.community-promo-content {
+.community-btn-content {
   flex: 1;
+  text-align: left;
 }
 
-.community-promo-content h3 {
+.community-btn-content h3 {
   margin: 0 0 4px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1565C0;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
 }
 
-.community-promo-content p {
+.community-btn-content p {
   margin: 0;
   font-size: 13px;
-  color: #1976D2;
+  color: rgba(255, 255, 255, 0.9);
   line-height: 1.4;
 }
 
-.community-arrow {
-  font-size: 20px;
-  color: #1565C0;
+.community-btn-arrow {
+  font-size: 24px;
+  color: white;
+  opacity: 0.8;
 }
