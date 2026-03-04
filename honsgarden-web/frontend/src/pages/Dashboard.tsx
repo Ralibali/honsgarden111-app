@@ -187,6 +187,7 @@ export default function Dashboard() {
   const [aiData, setAiData] = useState<any>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [showWeatherModal, setShowWeatherModal] = useState(false);
+  const [showAlertsModal, setShowAlertsModal] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
   
   // Fråga Agda state
@@ -522,29 +523,6 @@ export default function Dashboard() {
       <ProductivityAlerts flocks={flocks} />
       
       {/* ══════════════════════════════════════════════════════════════════
-          STEG 4: Smarta Notiser (Alerts)
-      ══════════════════════════════════════════════════════════════════ */}
-      {alerts.length > 0 && (
-        <section className="alerts-section" data-testid="alerts-section">
-          {alerts.map((alert) => (
-            <div key={alert.id} className={`alert-card alert-${alert.severity}`}>
-              <span className="alert-icon">{alert.icon}</span>
-              <span className="alert-message">{alert.message}</span>
-              <button 
-                className="alert-dismiss" 
-                onClick={async () => {
-                  await fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'POST', credentials: 'include' });
-                  setAlerts(alerts.filter(a => a.id !== alert.id));
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </section>
-      )}
-      
-      {/* ══════════════════════════════════════════════════════════════════
           SEKTION 1: Header + Kompakt Stat-rad
       ══════════════════════════════════════════════════════════════════ */}
       <header className="dashboard-header">
@@ -554,12 +532,25 @@ export default function Dashboard() {
             <h1 className="header-title">{coop?.coop_name || 'Min Hönsgård'}</h1>
             <span className="header-date">{getSwedishDate()}</span>
           </div>
-          {weather?.current && (
-            <button className="weather-pill" onClick={() => setShowWeatherModal(true)}>
-              <span>{weather.current.temp < 5 ? '❄️' : weather.current.temp < 15 ? '🌥️' : '☀️'}</span>
-              <span>{Math.round(weather.current.temp)}°</span>
-            </button>
-          )}
+          <div className="header-actions">
+            {/* Notification bell with alerts */}
+            {alerts.length > 0 && (
+              <button 
+                className="notification-bell" 
+                onClick={() => setShowAlertsModal(true)}
+                data-testid="alerts-bell"
+              >
+                <span className="bell-icon">🔔</span>
+                <span className="bell-badge">{alerts.length}</span>
+              </button>
+            )}
+            {weather?.current && (
+              <button className="weather-pill" onClick={() => setShowWeatherModal(true)}>
+                <span>{weather.current.temp < 5 ? '❄️' : weather.current.temp < 15 ? '🌥️' : '☀️'}</span>
+                <span>{Math.round(weather.current.temp)}°</span>
+              </button>
+            )}
+          </div>
         </div>
         
         {/* Kompakt horisontell stat-rad */}
@@ -1264,6 +1255,39 @@ export default function Dashboard() {
                 <div className="ai-error">
                   <p>Kunde inte ladda data. Försök igen.</p>
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Alerts Modal */}
+      {showAlertsModal && (
+        <div className="modal-overlay" onClick={() => setShowAlertsModal(false)}>
+          <div className="modal-content alerts-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>🔔 Varningar</h2>
+              <button className="modal-close" onClick={() => setShowAlertsModal(false)}>✕</button>
+            </div>
+            <div className="alerts-list">
+              {alerts.length === 0 ? (
+                <p className="no-alerts">Inga varningar just nu! 🎉</p>
+              ) : (
+                alerts.map((alert) => (
+                  <div key={alert.id} className={`alert-item alert-${alert.severity}`}>
+                    <span className="alert-icon">{alert.icon}</span>
+                    <span className="alert-message">{alert.message}</span>
+                    <button 
+                      className="alert-dismiss-btn"
+                      onClick={async () => {
+                        await fetch(`/api/alerts/${alert.id}/dismiss`, { method: 'POST', credentials: 'include' });
+                        setAlerts(alerts.filter(a => a.id !== alert.id));
+                      }}
+                    >
+                      Stäng
+                    </button>
+                  </div>
+                ))
               )}
             </div>
           </div>

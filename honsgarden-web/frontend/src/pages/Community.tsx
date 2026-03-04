@@ -342,22 +342,39 @@ export function QuestionDetail() {
   }, [loadQuestion]);
   
   const handleShare = async () => {
-    const url = window.location.href;
+    // Use production URL for sharing, not preview URL
+    const baseUrl = 'https://app.honsgarden.se';
+    const shareUrl = `${baseUrl}/community/q/${questionId}`;
+    
     if (navigator.share) {
       try {
         await navigator.share({
           title: question?.title || 'Fråga på Hönsgården',
-          text: `${question?.title} - Se svaret på Hönsgården`,
-          url: url,
+          text: `${question?.title} - Se svaret på Hönsgården 🐔`,
+          url: shareUrl,
         });
       } catch (err) {
-        // User cancelled or error
+        // User cancelled or error - fallback to copy
+        copyToClipboard(shareUrl);
       }
     } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(url);
-      alert('Länk kopierad!');
+      copyToClipboard(shareUrl);
     }
+  };
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Länk kopierad! 📋');
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Länk kopierad! 📋');
+    });
   };
   
   const handleSubmitAnswer = async () => {

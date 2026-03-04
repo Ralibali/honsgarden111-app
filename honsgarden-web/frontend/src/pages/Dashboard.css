@@ -2213,3 +2213,121 @@
 .floating-egg-btn {
   display: none !important;
 }
+
+/* === NOTIFICATION BELL === */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-bell {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notification-bell .bell-icon {
+  font-size: 22px;
+}
+
+.notification-bell .bell-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #F44336;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* === ALERTS MODAL === */
+.alerts-modal {
+  max-width: 400px;
+  width: 90%;
+}
+
+.alerts-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.alerts-modal .modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.alerts-modal .modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--text-secondary);
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.no-alerts {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 24px;
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #FFF3E0;
+  border-left: 4px solid #FF9800;
+}
+
+.alert-item.alert-warning {
+  background: #FFF3E0;
+  border-left-color: #FF9800;
+}
+
+.alert-item.alert-error {
+  background: #FFEBEE;
+  border-left-color: #F44336;
+}
+
+.alert-item .alert-icon {
+  font-size: 20px;
+}
+
+.alert-item .alert-message {
+  flex: 1;
+  font-size: 14px;
+  color: #E65100;
+}
+
+.alert-dismiss-btn {
+  background: rgba(0,0,0,0.1);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #BF360C;
+}
