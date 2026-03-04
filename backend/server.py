@@ -640,6 +640,21 @@ except ImportError:
 # Create the main app without a prefix
 app = FastAPI()
 
+
+# --- CORS: tillåt Lovable preview + din riktiga app-domän ---
+# Behövs för att POST/OPTIONS (t.ex. /api/auth/login) ska fungera från Lovable preview-domäner.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://app.honsgarden.se",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ],
+    allow_origin_regex=r"https://([a-z0-9-]+\.)?(lovableproject\.com|lovable\.app)$",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
