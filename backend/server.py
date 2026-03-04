@@ -9263,6 +9263,7 @@ async def get_weekly_leaderboard(request: Request):
     """
     Viral funktion: Veckans toppflockar
     Visar en anonym leaderboard med förnamn/alias.
+    Inkluderar 15 fiktiva användare för att skapa liv i appen.
     """
     await require_user_id(request)
     
@@ -9277,9 +9278,6 @@ async def get_weekly_leaderboard(request: Request):
     users_eggs = defaultdict(int)
     for e in all_eggs_this_week:
         users_eggs[e.get("user_id")] += e.get("count", 1)
-    
-    if not users_eggs:
-        return {"leaderboard": [], "total_users": 0}
     
     # Get user names (first name only for privacy)
     user_ids = list(users_eggs.keys())
@@ -9296,7 +9294,7 @@ async def get_weekly_leaderboard(request: Request):
         first_name = full_name.split()[0] if full_name else "Anonym"
         user_names[uid] = first_name
     
-    # Build leaderboard
+    # Build leaderboard from real users
     leaderboard = []
     for uid, total_eggs in users_eggs.items():
         eggs_per_day = round(total_eggs / 7, 1)
@@ -9304,15 +9302,49 @@ async def get_weekly_leaderboard(request: Request):
         leaderboard.append({
             "name": first_name,
             "eggs_per_day": eggs_per_day,
-            "total_eggs": total_eggs
+            "total_eggs": total_eggs,
+            "is_real": True
+        })
+    
+    # Add 15 fictional users for engagement (permanent in leaderboard)
+    FICTIONAL_USERS = [
+        {"name": "Anna", "eggs_per_day": 7.8, "total_eggs": 55},
+        {"name": "Johan", "eggs_per_day": 7.2, "total_eggs": 50},
+        {"name": "Sara", "eggs_per_day": 6.9, "total_eggs": 48},
+        {"name": "Magnus", "eggs_per_day": 6.5, "total_eggs": 46},
+        {"name": "Lisa", "eggs_per_day": 6.2, "total_eggs": 43},
+        {"name": "Erik", "eggs_per_day": 5.9, "total_eggs": 41},
+        {"name": "Maria", "eggs_per_day": 5.6, "total_eggs": 39},
+        {"name": "Peter", "eggs_per_day": 5.3, "total_eggs": 37},
+        {"name": "Emma", "eggs_per_day": 5.0, "total_eggs": 35},
+        {"name": "Daniel", "eggs_per_day": 4.7, "total_eggs": 33},
+        {"name": "Fredrik", "eggs_per_day": 4.4, "total_eggs": 31},
+        {"name": "Linda", "eggs_per_day": 4.1, "total_eggs": 29},
+        {"name": "Andreas", "eggs_per_day": 3.8, "total_eggs": 27},
+        {"name": "Karin", "eggs_per_day": 3.5, "total_eggs": 25},
+        {"name": "Niklas", "eggs_per_day": 3.2, "total_eggs": 22},
+    ]
+    
+    for fu in FICTIONAL_USERS:
+        leaderboard.append({
+            "name": fu["name"],
+            "eggs_per_day": fu["eggs_per_day"],
+            "total_eggs": fu["total_eggs"],
+            "is_real": False
         })
     
     # Sort by eggs_per_day descending
     leaderboard.sort(key=lambda x: x["eggs_per_day"], reverse=True)
     
-    # Return top 10
+    # Return top 10 (mix of real and fictional)
+    top_10 = leaderboard[:10]
+    
+    # Remove is_real flag from response (internal use only)
+    for entry in top_10:
+        entry.pop("is_real", None)
+    
     return {
-        "leaderboard": leaderboard[:10],
+        "leaderboard": top_10,
         "total_users": len(leaderboard)
     }
 
@@ -10562,6 +10594,401 @@ async def track_conversion(data: ConversionData, user: dict = Depends(get_curren
     )
     
     return {"success": True}
+
+
+# ============ FRIENDS SYSTEM ============
+
+class FriendRequest(BaseModel):
+    target_user_id: str
+
+
+@api_router.get("/friends")
+async def get_friends(request: Request):
+    """Get user's friends list with statistics"""
+    user_id = await require_user_id(request)
+    
+    # Get user's friends
+    friendships = await db.friendships.find({
+        "$or": [{"user_id": user_id}, {"friend_id": user_id}],
+        "status": "accepted"
+    }, {"_id": 0}).to_list(100)
+    
+    friend_ids = []
+    for f in friendships:
+        if f.get("user_id") == user_id:
+            friend_ids.append(f.get("friend_id"))
+        else:
+            friend_ids.append(f.get("user_id"))
+    
+    if not friend_ids:
+        return {"friends": [], "pending_received": 0, "pending_sent": 0}
+    
+    # Get friend details with egg stats
+    seven_days_ago = (now_stockholm() - timedelta(days=7)).strftime('%Y-%m-%d')
+    friends_data = []
+    
+    for fid in friend_ids:
+        # Get user info
+        friend_user = await db.users.find_one(
+            {"$or": [{"id": fid}, {"user_id": fid}]},
+            {"_id": 0, "id": 1, "user_id": 1, "name": 1}
+        )
+        if not friend_user:
+            continue
+        
+        # Get friend's egg stats
+        friend_eggs = await db.egg_records.find({
+            "user_id": fid,
+            "date": {"$gte": seven_days_ago}
+        }, {"_id": 0, "count": 1}).to_list(100)
+        
+        total_eggs = sum(e.get("count", 0) for e in friend_eggs)
+        eggs_per_day = round(total_eggs / 7, 1)
+        
+        # Calculate trend (compare to previous week)
+        fourteen_days_ago = (now_stockholm() - timedelta(days=14)).strftime('%Y-%m-%d')
+        prev_eggs = await db.egg_records.find({
+            "user_id": fid,
+            "date": {"$gte": fourteen_days_ago, "$lt": seven_days_ago}
+        }, {"_id": 0, "count": 1}).to_list(100)
+        prev_total = sum(e.get("count", 0) for e in prev_eggs)
+        
+        if prev_total > 0:
+            trend = round(((total_eggs - prev_total) / prev_total) * 100, 0)
+        else:
+            trend = 0
+        
+        friends_data.append({
+            "user_id": fid,
+            "name": friend_user.get("name", "Anonym").split()[0],  # First name only
+            "eggs_per_day": eggs_per_day,
+            "total_eggs_week": total_eggs,
+            "trend": trend,
+            "trend_text": f"+{trend}%" if trend > 0 else f"{trend}%" if trend < 0 else "0%"
+        })
+    
+    # Sort by eggs_per_day
+    friends_data.sort(key=lambda x: x["eggs_per_day"], reverse=True)
+    
+    # Get pending requests count
+    pending_received = await db.friendships.count_documents({
+        "friend_id": user_id, "status": "pending"
+    })
+    pending_sent = await db.friendships.count_documents({
+        "user_id": user_id, "status": "pending"
+    })
+    
+    return {
+        "friends": friends_data,
+        "pending_received": pending_received,
+        "pending_sent": pending_sent
+    }
+
+
+@api_router.get("/friends/search")
+async def search_users(request: Request, q: str = ""):
+    """Search for users to add as friends"""
+    user_id = await require_user_id(request)
+    
+    if len(q) < 2:
+        return {"users": []}
+    
+    # Search by name (case-insensitive)
+    users = await db.users.find({
+        "$and": [
+            {"name": {"$regex": q, "$options": "i"}},
+            {"$nor": [{"id": user_id}, {"user_id": user_id}]}
+        ]
+    }, {"_id": 0, "id": 1, "user_id": 1, "name": 1}).to_list(10)
+    
+    result = []
+    for u in users:
+        uid = u.get("user_id") or u.get("id")
+        # Check if already friends or pending
+        existing = await db.friendships.find_one({
+            "$or": [
+                {"user_id": user_id, "friend_id": uid},
+                {"user_id": uid, "friend_id": user_id}
+            ]
+        })
+        
+        status = "none"
+        if existing:
+            if existing.get("status") == "accepted":
+                status = "friends"
+            elif existing.get("user_id") == user_id:
+                status = "pending_sent"
+            else:
+                status = "pending_received"
+        
+        result.append({
+            "user_id": uid,
+            "name": u.get("name", "Anonym").split()[0],
+            "status": status
+        })
+    
+    return {"users": result}
+
+
+@api_router.post("/friends/request")
+async def send_friend_request(request: Request, data: FriendRequest):
+    """Send a friend request"""
+    user_id = await require_user_id(request)
+    target_id = data.target_user_id
+    
+    if user_id == target_id:
+        raise HTTPException(status_code=400, detail="Du kan inte lägga till dig själv")
+    
+    # Check if already exists
+    existing = await db.friendships.find_one({
+        "$or": [
+            {"user_id": user_id, "friend_id": target_id},
+            {"user_id": target_id, "friend_id": user_id}
+        ]
+    })
+    
+    if existing:
+        if existing.get("status") == "accepted":
+            raise HTTPException(status_code=400, detail="Ni är redan vänner")
+        raise HTTPException(status_code=400, detail="Vänförfrågan finns redan")
+    
+    # Create friend request
+    await db.friendships.insert_one({
+        "user_id": user_id,
+        "friend_id": target_id,
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return {"message": "Vänförfrågan skickad!"}
+
+
+@api_router.post("/friends/accept/{request_user_id}")
+async def accept_friend_request(request: Request, request_user_id: str):
+    """Accept a friend request"""
+    user_id = await require_user_id(request)
+    
+    # Find the pending request
+    friendship = await db.friendships.find_one({
+        "user_id": request_user_id,
+        "friend_id": user_id,
+        "status": "pending"
+    })
+    
+    if not friendship:
+        raise HTTPException(status_code=404, detail="Ingen vänförfrågan hittades")
+    
+    # Accept
+    await db.friendships.update_one(
+        {"user_id": request_user_id, "friend_id": user_id},
+        {"$set": {"status": "accepted", "accepted_at": datetime.now(timezone.utc)}}
+    )
+    
+    return {"message": "Vänförfrågan accepterad!"}
+
+
+@api_router.delete("/friends/{friend_user_id}")
+async def remove_friend(request: Request, friend_user_id: str):
+    """Remove a friend or reject request"""
+    user_id = await require_user_id(request)
+    
+    result = await db.friendships.delete_one({
+        "$or": [
+            {"user_id": user_id, "friend_id": friend_user_id},
+            {"user_id": friend_user_id, "friend_id": user_id}
+        ]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Vänskapen hittades inte")
+    
+    return {"message": "Vänskap borttagen"}
+
+
+@api_router.get("/friends/requests")
+async def get_friend_requests(request: Request):
+    """Get pending friend requests"""
+    user_id = await require_user_id(request)
+    
+    # Get pending requests sent to this user
+    requests = await db.friendships.find({
+        "friend_id": user_id,
+        "status": "pending"
+    }, {"_id": 0}).to_list(50)
+    
+    result = []
+    for r in requests:
+        requester = await db.users.find_one(
+            {"$or": [{"id": r.get("user_id")}, {"user_id": r.get("user_id")}]},
+            {"_id": 0, "name": 1}
+        )
+        result.append({
+            "user_id": r.get("user_id"),
+            "name": requester.get("name", "Anonym").split()[0] if requester else "Anonym",
+            "created_at": r.get("created_at")
+        })
+    
+    return {"requests": result}
+
+
+# ============ SUPPORT SYSTEM ============
+
+class SupportTicket(BaseModel):
+    subject: str
+    message: str
+
+
+class SupportReply(BaseModel):
+    ticket_id: str
+    message: str
+
+
+@api_router.get("/support/tickets")
+async def get_support_tickets(request: Request):
+    """Get user's support tickets"""
+    user_id = await require_user_id(request)
+    
+    tickets = await db.support_tickets.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    return {"tickets": tickets}
+
+
+@api_router.post("/support/tickets")
+async def create_support_ticket(request: Request, data: SupportTicket):
+    """Create a new support ticket"""
+    user_id = await require_user_id(request)
+    user = await db.users.find_one({"$or": [{"id": user_id}, {"user_id": user_id}]}, {"_id": 0, "email": 1, "name": 1})
+    
+    ticket = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "user_email": user.get("email", "") if user else "",
+        "user_name": user.get("name", "Användare") if user else "Användare",
+        "subject": data.subject,
+        "messages": [{
+            "id": str(uuid.uuid4()),
+            "sender": "user",
+            "message": data.message,
+            "created_at": datetime.now(timezone.utc)
+        }],
+        "status": "open",
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
+    }
+    
+    await db.support_tickets.insert_one(ticket)
+    
+    return {"message": "Ditt ärende har skickats!", "ticket_id": ticket["id"]}
+
+
+@api_router.get("/support/tickets/{ticket_id}")
+async def get_support_ticket(request: Request, ticket_id: str):
+    """Get a specific support ticket"""
+    user_id = await require_user_id(request)
+    
+    ticket = await db.support_tickets.find_one(
+        {"id": ticket_id, "user_id": user_id},
+        {"_id": 0}
+    )
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ärendet hittades inte")
+    
+    return ticket
+
+
+@api_router.post("/support/tickets/{ticket_id}/reply")
+async def reply_to_ticket(request: Request, ticket_id: str, data: SupportReply):
+    """Add a reply to a support ticket (user side)"""
+    user_id = await require_user_id(request)
+    
+    ticket = await db.support_tickets.find_one({"id": ticket_id, "user_id": user_id})
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ärendet hittades inte")
+    
+    new_message = {
+        "id": str(uuid.uuid4()),
+        "sender": "user",
+        "message": data.message,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.support_tickets.update_one(
+        {"id": ticket_id},
+        {
+            "$push": {"messages": new_message},
+            "$set": {"updated_at": datetime.now(timezone.utc), "status": "open"}
+        }
+    )
+    
+    return {"message": "Meddelande skickat!"}
+
+
+@api_router.get("/admin/support/tickets")
+async def admin_get_tickets(request: Request, status: str = "all"):
+    """Admin: Get all support tickets"""
+    user_id = await require_user_id(request)
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Endast administratörer")
+    
+    query = {} if status == "all" else {"status": status}
+    tickets = await db.support_tickets.find(query, {"_id": 0}).sort("updated_at", -1).to_list(200)
+    
+    return {"tickets": tickets}
+
+
+@api_router.post("/admin/support/tickets/{ticket_id}/reply")
+async def admin_reply_to_ticket(request: Request, ticket_id: str, data: SupportReply):
+    """Admin: Reply to a support ticket"""
+    user_id = await require_user_id(request)
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Endast administratörer")
+    
+    ticket = await db.support_tickets.find_one({"id": ticket_id})
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ärendet hittades inte")
+    
+    new_message = {
+        "id": str(uuid.uuid4()),
+        "sender": "admin",
+        "admin_name": user.get("name", "Support"),
+        "message": data.message,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.support_tickets.update_one(
+        {"id": ticket_id},
+        {
+            "$push": {"messages": new_message},
+            "$set": {"updated_at": datetime.now(timezone.utc), "status": "answered"}
+        }
+    )
+    
+    return {"message": "Svar skickat!"}
+
+
+@api_router.post("/admin/support/tickets/{ticket_id}/close")
+async def admin_close_ticket(request: Request, ticket_id: str):
+    """Admin: Close a support ticket"""
+    user_id = await require_user_id(request)
+    
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user or not user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Endast administratörer")
+    
+    await db.support_tickets.update_one(
+        {"id": ticket_id},
+        {"$set": {"status": "closed", "closed_at": datetime.now(timezone.utc)}}
+    )
+    
+    return {"message": "Ärende stängt"}
 
 
 # Include the router in the main app - MUST be after all route definitions

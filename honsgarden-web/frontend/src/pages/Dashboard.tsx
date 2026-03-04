@@ -208,6 +208,7 @@ export default function Dashboard() {
   // VIRAL: Share image state
   const [shareImageData, setShareImageData] = useState<string | null>(null);
   const [generatingShare, setGeneratingShare] = useState(false);
+  const [sharePeriod, setSharePeriod] = useState<7 | 14 | 30>(7);
   
   // Modal states
   const [showEggModal, setShowEggModal] = useState(false);
@@ -1222,22 +1223,39 @@ export default function Dashboard() {
               ))}
             </div>
             
-            <div className="custom-input">
+            <div className="custom-input egg-input-improved">
+              <button 
+                className="egg-stepper minus"
+                onClick={() => setEggCount(prev => Math.max(0, (parseInt(prev) || 0) - 1).toString())}
+                disabled={saving}
+              >
+                −
+              </button>
               <input
                 type="number"
-                placeholder="Annat antal"
+                placeholder="0"
                 value={eggCount}
                 onChange={(e) => setEggCount(e.target.value)}
                 min="0"
+                className="egg-count-input"
+                inputMode="numeric"
               />
-              <button
-                onClick={() => eggCount && handleQuickAdd(parseInt(eggCount))}
-                disabled={!eggCount || saving}
-                className="btn-primary"
+              <button 
+                className="egg-stepper plus"
+                onClick={() => setEggCount(prev => ((parseInt(prev) || 0) + 1).toString())}
+                disabled={saving}
               >
-                Lägg till
+                +
               </button>
             </div>
+            
+            <button
+              onClick={() => eggCount && handleQuickAdd(parseInt(eggCount))}
+              disabled={!eggCount || parseInt(eggCount) === 0 || saving}
+              className="btn-primary btn-add-eggs"
+            >
+              {saving ? '⏳ Sparar...' : `Lägg till ${eggCount || 0} ägg`}
+            </button>
           </div>
         </div>
       )}
@@ -1250,6 +1268,23 @@ export default function Dashboard() {
               <h3>📤 Dela din statistik</h3>
               <button className="close-btn" onClick={() => { setShowShareModal(false); setShareImageData(null); }}>×</button>
             </div>
+            
+            {/* Period selector */}
+            <div className="share-period-selector">
+              <span className="period-label">Välj period:</span>
+              <div className="period-buttons">
+                {[7, 14, 30].map(days => (
+                  <button
+                    key={days}
+                    className={`period-btn ${sharePeriod === days ? 'active' : ''}`}
+                    onClick={() => setSharePeriod(days as 7 | 14 | 30)}
+                  >
+                    {days} dagar
+                  </button>
+                ))}
+              </div>
+            </div>
+            
             <div className="share-preview">
               {shareImageData ? (
                 <div className="share-image-preview">
@@ -1258,15 +1293,19 @@ export default function Dashboard() {
               ) : (
                 <div className="share-card">
                   <h4>🥚 {coop?.coop_name || 'Min Hönsgård'}</h4>
-                  <p>{todayStats?.egg_count || 0} ägg idag</p>
-                  <p>{yesterdaySummary?.eggs_this_week || 0} ägg denna vecka</p>
+                  <p className="share-text-preview">
+                    {flockComparison 
+                      ? `Min flock producerar just nu ${flockComparison.user_avg_eggs_per_day} ägg per dag, vilket är ${flockComparison.status === 'above' ? 'över' : flockComparison.status === 'below' ? 'under' : 'på'} snittet i Hönsgården de senaste ${sharePeriod} dagarna.`
+                      : `${todayStats?.egg_count || 0} ägg idag • ${yesterdaySummary?.eggs_this_week || 0} ägg denna vecka`
+                    }
+                  </p>
                 </div>
               )}
             </div>
+            
             <div className="share-actions">
               {shareImageData && (
                 <button className="share-action primary" onClick={() => {
-                  // Download image
                   const link = document.createElement('a');
                   link.href = shareImageData;
                   link.download = 'honsgarden-resultat.png';
@@ -1276,9 +1315,10 @@ export default function Dashboard() {
                 </button>
               )}
               <button className="share-action" onClick={() => {
+                const periodText = sharePeriod === 7 ? 'denna vecka' : sharePeriod === 14 ? 'de senaste 14 dagarna' : 'denna månad';
                 const text = flockComparison 
-                  ? `🐔 Min flock i Hönsgården\n${flockComparison.user_avg_eggs_per_day} ägg/dag\n${flockComparison.comparison_text}\n\napp.honsgarden.se`
-                  : `🥚 ${coop?.coop_name || 'Min Hönsgård'}\n${todayStats?.egg_count || 0} ägg idag\n${yesterdaySummary?.eggs_this_week || 0} ägg denna vecka`;
+                  ? `🐔 Min flock i Hönsgården\n\nMin flock producerar just nu ${flockComparison.user_avg_eggs_per_day} ägg per dag, vilket är ${Math.abs(flockComparison.percent_difference)}% ${flockComparison.status === 'above' ? 'över' : flockComparison.status === 'below' ? 'under' : 'på'} snittet i Hönsgården ${periodText}.\n\n${flockComparison.status === 'above' ? '🔥 ' : ''}${flockComparison.comparison_text}\n\nSe hur din flock presterar på app.honsgarden.se`
+                  : `🥚 ${coop?.coop_name || 'Min Hönsgård'}\n${todayStats?.egg_count || 0} ägg idag\n${yesterdaySummary?.eggs_this_week || 0} ägg denna vecka\n\napp.honsgarden.se`;
                 navigator.clipboard?.writeText(text);
                 alert('Kopierad till urklipp!');
               }}>
@@ -1286,21 +1326,21 @@ export default function Dashboard() {
               </button>
               {navigator.share && (
                 <button className="share-action" onClick={async () => {
+                  const periodText = sharePeriod === 7 ? 'denna vecka' : sharePeriod === 14 ? 'de senaste 14 dagarna' : 'denna månad';
                   try {
                     if (shareImageData) {
-                      // Convert base64 to blob
                       const res = await fetch(shareImageData);
                       const blob = await res.blob();
                       const file = new File([blob], 'honsgarden-resultat.png', { type: 'image/png' });
                       await navigator.share({
                         files: [file],
                         title: 'Min Hönsgård',
-                        text: `🐔 Min flock ligger ${flockComparison?.comparison_text || 'på snittet'}!`
+                        text: `🐔 Min flock producerar ${flockComparison?.user_avg_eggs_per_day || 0} ägg/dag - ${flockComparison?.comparison_text || 'kolla in appen!'}`,
                       });
                     } else {
                       await navigator.share({
                         title: 'Min Hönsgård',
-                        text: `🐔 Min flock i Hönsgården - ${flockComparison?.user_avg_eggs_per_day || 0} ägg/dag!`,
+                        text: `🐔 Min flock i Hönsgården producerar ${flockComparison?.user_avg_eggs_per_day || 0} ägg per dag ${periodText}!\n\n${flockComparison?.comparison_text || ''}`,
                         url: 'https://app.honsgarden.se'
                       });
                     }

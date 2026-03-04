@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { format, subMonths, subDays, startOfMonth, endOfMonth, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, startOfWeek, endOfWeek } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
 import { formatNumber, formatCurrency, formatNet } from '../utils/format';
 import './Statistics.css';
 
@@ -439,9 +439,13 @@ export default function Statistics() {
                 </button>
               </div>
             </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={showDemoData ? DEMO_EGG_DATA : eggChartData}>
+            <div className="chart-container" style={{ width: '100%', height: '280px', minHeight: '280px' }}>
+              <LineChart 
+                width={350} 
+                height={260}
+                data={showDemoData ? DEMO_EGG_DATA : eggChartData}
+                style={{ margin: '0 auto' }}
+              >
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} />
                   <YAxis stroke="#9ca3af" fontSize={12} />
@@ -458,16 +462,14 @@ export default function Statistics() {
                     name="Ägg"
                   />
                 </LineChart>
-              </ResponsiveContainer>
             </div>
           </div>
           
           {/* FREE: Economy Graph */}
           <div className="graph-card">
             <h3>💰 Ekonomi</h3>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
+            <div className="chart-container" style={{ width: '100%', height: '240px', minHeight: '240px' }}>
+              <PieChart width={350} height={220} style={{ margin: '0 auto' }}>
                   <Pie
                     data={showDemoData ? DEMO_ECONOMY_DATA : economyChartData}
                     dataKey="value"
@@ -488,7 +490,6 @@ export default function Statistics() {
                   />
                   <Legend />
                 </PieChart>
-              </ResponsiveContainer>
             </div>
           </div>
           
@@ -505,9 +506,8 @@ export default function Statistics() {
             )}
             <h3>📊 Förväntad vs faktisk produktion</h3>
             <p className="graph-desc">Jämför vad dina hönor förväntas lägga med vad de faktiskt lagt</p>
-            <div className="chart-container" style={{ filter: !isPremium ? 'blur(8px)' : 'none' }}>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={expectedVsActualData}>
+            <div className="chart-container" style={{ width: '100%', height: '240px', minHeight: '240px', filter: !isPremium ? 'blur(8px)' : 'none' }}>
+              <BarChart width={350} height={220} data={showDemoData ? DEMO_EXPECTED_VS_ACTUAL : expectedVsActualData} style={{ margin: '0 auto' }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis dataKey="week" stroke="#9ca3af" fontSize={12} />
                   <YAxis stroke="#9ca3af" fontSize={12} />
@@ -519,7 +519,6 @@ export default function Statistics() {
                   <Bar dataKey="expected" fill="#6366f1" name="Förväntat" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="actual" fill="#4ade80" name="Faktiskt" radius={[4, 4, 0, 0]} />
                 </BarChart>
-              </ResponsiveContainer>
             </div>
           </div>
           
@@ -536,9 +535,8 @@ export default function Statistics() {
             )}
             <h3>🐔 Per-höna-produktion</h3>
             <p className="graph-desc">Se vilken höna som är stjärnan i flocken</p>
-            <div className="chart-container" style={{ filter: !isPremium ? 'blur(8px)' : 'none' }}>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={perHenData} layout="vertical">
+            <div className="chart-container" style={{ width: '100%', height: '280px', minHeight: '280px', filter: !isPremium ? 'blur(8px)' : 'none' }}>
+              <BarChart width={350} height={260} data={showDemoData ? DEMO_PER_HEN_DATA : perHenData} layout="vertical" style={{ margin: '0 auto' }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis type="number" stroke="#9ca3af" fontSize={12} />
                   <YAxis dataKey="name" type="category" stroke="#9ca3af" fontSize={12} width={80} />
@@ -547,12 +545,11 @@ export default function Statistics() {
                     labelStyle={{ color: '#fff' }}
                   />
                   <Bar dataKey="eggs" name="Ägg" radius={[0, 4, 4, 0]}>
-                    {perHenData.map((entry, index) => (
+                    {(showDemoData ? DEMO_PER_HEN_DATA : perHenData).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={index === 0 ? '#fbbf24' : '#4ade80'} />
                     ))}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
             </div>
           </div>
         </div>
