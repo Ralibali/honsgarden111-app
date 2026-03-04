@@ -2175,6 +2175,68 @@ def check_magic_link_rate_limit(user_id: str) -> bool:
         return False
     return True
 
+
+# ============ AI RATE LIMITING ============
+# Rate limiting for AI endpoints (in-memory, resets on restart)
+ai_rate_limit: Dict[str, list] = defaultdict(list)
+AI_RATE_LIMIT_FREE_PER_DAY = 10  # Free users: 10 AI calls per day
+AI_RATE_LIMIT_PREMIUM_PER_DAY = 100  # Premium users: 100 AI calls per day
+
+async def check_ai_rate_limit(user_id: str) -> tuple[bool, int]:
+    """
+    Check if user has exceeded AI rate limit.
+    Returns (is_allowed, remaining_calls)
+    """
+    now = time.time()
+    day_seconds = 86400  # 24 hours
+    
+    # Clean old entries (older than 24h)
+    requests = ai_rate_limit[user_id]
+    requests = [t for t in requests if now - t < day_seconds]
+    ai_rate_limit[user_id] = requests
+    
+    # Check if premium
+    subscription = await db.subscriptions.find_one({"user_id": user_id})
+    is_premium = subscription.get('is_active', False) if subscription else False
+    
+    limit = AI_RATE_LIMIT_PREMIUM_PER_DAY if is_premium else AI_RATE_LIMIT_FREE_PER_DAY
+    current_count = len(requests)
+    remaining = max(0, limit - current_count)
+    
+    if current_count >= limit:
+        return False, 0
+    return True, remaining
+
+def record_ai_call(user_id: str):
+    """Record an AI API call for rate limiting"""
+    ai_rate_limit[user_id].append(time.time())
+
+
+# ============ AI CACHE HELPERS ============
+async def get_ai_cache(user_id: str, cache_key: str, max_age_hours: int = 24):
+    """
+    Get cached AI response if exists and not expired.
+    Returns None if no valid cache.
+    """
+    min_time = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+    cached = await db.ai_cache.find_one({
+        "user_id": user_id,
+        "key": cache_key,
+        "created_at": {"$gte": min_time}
+    }, {"_id": 0})
+    return cached.get("payload") if cached else None
+
+async def set_ai_cache(user_id: str, cache_key: str, payload: dict):
+    """Save AI response to cache"""
+    await db.ai_cache.update_one(
+        {"user_id": user_id, "key": cache_key},
+        {"$set": {
+            "payload": payload,
+            "created_at": datetime.now(timezone.utc)
+        }},
+        upsert=True
+    )
+
 @api_router.post("/auth/magic-link")
 async def create_magic_link(request: Request, data: MagicLinkRequest):
     """Create magic link for web login (from app)
@@ -6114,8 +6176,32 @@ async def ai_health_check():
 @api_router.get("/ai/daily-report")
 async def get_ai_daily_report(request: Request):
     """Generate AI daily report - Premium only
-    Returns a blurred preview for free users"""
+    Returns a blurred preview for free users
+    
+    SKALBAR AI-ARKITEKTUR:
+    1. Check cache först (24h)
+    2. Check rate limit
+    3. Generera via OpenAI om ingen cache
+    4. Spara i cache
+    5. Returnera
+    """
     user_id = await require_user_id(request)
+    today = today_str_stockholm()
+    
+    # STEG 1: Check cache (24h) - idempotent nyckel
+    cache_key = f"daily_report:{user_id}:{today}"
+    cached_report = await get_ai_cache(user_id, cache_key, max_age_hours=24)
+    if cached_report:
+        return {**cached_report, "cached": True}
+    
+    # STEG 2: Check rate limit
+    rate_ok, remaining = await check_ai_rate_limit(user_id)
+    if not rate_ok:
+        return {
+            "error": "rate_limit",
+            "message": "Du har nått din dagliga gräns för AI-funktioner. Försök igen imorgon eller uppgradera till Premium.",
+            "remaining_calls": 0
+        }
     
     # Get user info
     user = await db.users.find_one({"id": user_id}, {"_id": 0})
@@ -6353,7 +6439,11 @@ Anpassa tipset efter:
         duration_ms = int((time.time() - start_time) * 1000)
         logger.info(f"[AI] request_id={request_id} user_id={user_id} endpoint=/ai/daily-report duration_ms={duration_ms} status=success")
         
-        return {
+        # Record AI call for rate limiting
+        record_ai_call(user_id)
+        
+        # Build response
+        response_data = {
             "ok": True,
             "is_premium": True,
             "preview": False,
@@ -6367,6 +6457,11 @@ Anpassa tipset efter:
                 "generated_at": now_stockholm().isoformat()
             }
         }
+        
+        # STEG 4: Save to cache (24h)
+        await set_ai_cache(user_id, cache_key, response_data)
+        
+        return response_data
         
     except asyncio.TimeoutError:
         duration_ms = int((time.time() - start_time) * 1000)
@@ -7077,6 +7172,13 @@ async def get_weather_based_tip(request: Request, body: WeatherTipRequest):
     Returns:
     - {ok: true, data: {tip, alerts: []}} on success
     - {ok: false, error: "message"} on failure
+    
+    SKALBAR AI-ARKITEKTUR:
+    1. Check cache först (6h för väder som ändras oftare)
+    2. Check rate limit
+    3. Generera via OpenAI om ingen cache
+    4. Spara i cache
+    5. Returnera
     """
     import asyncio
     import uuid
@@ -7086,6 +7188,21 @@ async def get_weather_based_tip(request: Request, body: WeatherTipRequest):
     
     try:
         user_id = await require_user_id(request)
+        today = today_str_stockholm()
+        
+        # STEG 1: Check cache (6h för väder-tips)
+        cache_key = f"weather_tip:{user_id}:{today}"
+        cached_tip = await get_ai_cache(user_id, cache_key, max_age_hours=6)
+        if cached_tip:
+            return WeatherTipResponse(**cached_tip, cached=True)
+        
+        # STEG 2: Check rate limit
+        rate_ok, remaining = await check_ai_rate_limit(user_id)
+        if not rate_ok:
+            return WeatherTipResponse(
+                ok=False,
+                error="Du har nått din dagliga gräns för AI-funktioner."
+            )
         
         # Check premium status from subscriptions collection
         subscription = await db.subscriptions.find_one(
