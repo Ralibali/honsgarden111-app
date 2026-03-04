@@ -57,19 +57,23 @@ Build a feature-rich, AI-powered web application called "Hönsgården" (The Chic
 - **15 Fiktiva Leaderboard-användare**: Anna, Johan, Sara, Magnus, Lisa, Erik, Maria, Peter, Emma, Daniel, Fredrik, Linda, Andreas, Karin, Niklas
 - **Förbättrad Ägg-registrering**: Större input med +/- stepper-knappar
 - **Dela statistik med periodval**: Välj mellan 7, 14, 30 dagar + längre delningstext
-- **Vänner-funktion** (Backend klar):
+- **Vänner-funktion** (Frontend + Backend klart):
   - `GET /api/friends` - Vännerlista med statistik
   - `GET /api/friends/search?q=` - Sök användare
   - `POST /api/friends/request` - Skicka vänförfrågan
   - `POST /api/friends/accept/{user_id}` - Acceptera
   - `DELETE /api/friends/{user_id}` - Ta bort vän
   - `GET /api/friends/requests` - Se väntande förfrågningar
-- **Support i appen** (Backend klar):
+  - **UI**: Vänner-sektion på Dashboard med namn, ägg/dag, trend
+- **Support i appen** (Frontend + Backend klart):
   - `GET /api/support/tickets` - Användarens ärenden
-  - `POST /api/support/tickets` - Skapa ärende
+  - `POST /api/support/tickets` - Skapa ärende (subject + message)
   - `GET /api/support/tickets/{id}` - Se ärende
   - `POST /api/support/tickets/{id}/reply` - Svara
-  - Admin: `/api/admin/support/tickets` endpoints
+  - **UI**: Support-sida på /support med formulär + inbox
+- **Förbättrad AI (Agda)**: Mer konversationella och relevanta svar
+- **Statistikgrafer fixade**: Bytt från ResponsiveContainer till direkt storlek för Safari-kompatibilitet
+- **Testat på**: Mobil Safari/Chrome (390x844) + Desktop (1920x800)
 
 ## Premium Features
 - 7-day egg forecast
